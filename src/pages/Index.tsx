@@ -1,12 +1,112 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import Header from '@/components/Header';
+import Post from '@/components/Post';
+import WalletCard from '@/components/WalletCard';
+import UserProfile from '@/components/UserProfile';
+import { useState } from 'react';
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState<'feed' | 'profile'>('feed');
+
+  // Mock data for the posts
+  const posts = [
+    {
+      id: '1',
+      username: 'alex_creator',
+      userAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=600&fit=crop',
+      caption: 'Just captured this amazing sunset! Nature never fails to inspire my creativity. 🌅✨',
+      likes: 1247,
+      timeAgo: '2h',
+      walletEarnings: 0.15
+    },
+    {
+      id: '2',
+      username: 'sarah_artist',
+      userAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face',
+      image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=600&h=600&fit=crop',
+      caption: 'New artwork completed! This piece took me 3 weeks to finish. Every brushstroke was worth it 🎨',
+      likes: 892,
+      timeAgo: '4h',
+      walletEarnings: 0.12
+    },
+    {
+      id: '3',
+      username: 'mike_photographer',
+      userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+      image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&h=600&fit=crop',
+      caption: 'Urban exploration at its finest. The city has so many hidden gems waiting to be discovered 🏙️',
+      likes: 2156,
+      timeAgo: '6h',
+      walletEarnings: 0.28
+    }
+  ];
+
+  const userStats = {
+    balance: 47.83,
+    todayEarnings: 0.55,
+    totalPosts: 127
+  };
+
+  const profileData = {
+    username: 'your_username',
+    displayName: 'Your Name',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+    followers: 1248,
+    following: 567,
+    posts: 127,
+    bio: 'Content Creator | Digital Artist\nEarning through creativity 💚\nJoin the GreenGram revolution!'
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-black">
+      <Header />
+      
+      <main className="pt-20 pb-8">
+        <div className="max-w-4xl mx-auto px-4">
+          {/* Tab Navigation */}
+          <div className="flex justify-center mb-8">
+            <div className="flex bg-gray-900 rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab('feed')}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                  activeTab === 'feed' 
+                    ? 'bg-green-500 text-black' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Feed
+              </button>
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                  activeTab === 'profile' 
+                    ? 'bg-green-500 text-black' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Profile
+              </button>
+            </div>
+          </div>
+
+          {activeTab === 'feed' ? (
+            <div className="max-w-lg mx-auto">
+              {/* Wallet Card */}
+              <WalletCard {...userStats} />
+              
+              {/* Posts Feed */}
+              <div>
+                {posts.map((post) => (
+                  <Post key={post.id} {...post} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <UserProfile {...profileData} />
+          )}
+        </div>
+      </main>
     </div>
   );
 };
