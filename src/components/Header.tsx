@@ -9,10 +9,14 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-green-600 rounded-lg flex items-center justify-center">
-              <span className="text-black font-bold text-sm">G</span>
+            <div className="w-8 h-8 flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/af5dfbd6-d4e4-4f84-be84-7086fe302cd2.png" 
+                alt="Network Logo" 
+                className="w-8 h-8 object-contain"
+              />
             </div>
-            <h1 className="text-xl font-bold neon-text">GreenGram</h1>
+            <h1 className="text-xl font-bold neon-text">Network</h1>
           </div>
 
           {/* Search Bar */}
