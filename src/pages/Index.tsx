@@ -1,12 +1,53 @@
-
 import Header from '@/components/Header';
 import Post from '@/components/Post';
 import WalletCard from '@/components/WalletCard';
 import UserProfile from '@/components/UserProfile';
+import Stories from '@/components/Stories';
 import { useState } from 'react';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'feed' | 'profile'>('feed');
+
+  // Mock data for stories
+  const stories = [
+    {
+      id: 'own',
+      username: 'your_username',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+      hasViewed: false,
+      isOwn: true
+    },
+    {
+      id: '1',
+      username: 'alex_creator',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+      hasViewed: false
+    },
+    {
+      id: '2',
+      username: 'sarah_artist',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face',
+      hasViewed: true
+    },
+    {
+      id: '3',
+      username: 'mike_photographer',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+      hasViewed: false
+    },
+    {
+      id: '4',
+      username: 'emma_design',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+      hasViewed: true
+    },
+    {
+      id: '5',
+      username: 'david_travel',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+      hasViewed: false
+    }
+  ];
 
   // Mock data for the posts
   const posts = [
@@ -55,7 +96,7 @@ const Index = () => {
     followers: 1248,
     following: 567,
     posts: 127,
-    bio: 'Content Creator | Digital Artist\nEarning through creativity 💚\nJoin the GreenGram revolution!'
+    bio: 'Content Creator | Digital Artist\nEarning through creativity 💚\nJoin the Network revolution!'
   };
 
   return (
@@ -92,6 +133,9 @@ const Index = () => {
 
           {activeTab === 'feed' ? (
             <div className="max-w-lg mx-auto">
+              {/* Stories */}
+              <Stories stories={stories} />
+              
               {/* Wallet Card */}
               <WalletCard {...userStats} />
               
