@@ -1,5 +1,5 @@
 
-import { Heart, Home, MessageCircle, PlusSquare, Search, User, Video, Building2, Users } from 'lucide-react';
+import { Heart, Home, MessageCircle, PlusSquare, Search, User, Video, Building2, Users, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -34,7 +34,7 @@ const Header = () => {
 
           {/* Navigation Icons */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
+            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900" onClick={() => navigate('/')}>
               <Home className="w-6 h-6" />
             </Button>
             <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
@@ -72,6 +72,14 @@ const Header = () => {
             </Button>
             <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
               <User className="w-6 h-6" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-900"
+              onClick={() => navigate('/login')}
+            >
+              <LogIn className="w-6 h-6" />
             </Button>
           </div>
         </div>
