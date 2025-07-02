@@ -1,5 +1,5 @@
 
-import { Heart, Home, MessageCircle, PlusSquare, Search, User, Video, Building2 } from 'lucide-react';
+import { Heart, Home, MessageCircle, PlusSquare, Search, User, Video, Building2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -50,6 +50,14 @@ const Header = () => {
               onClick={() => navigate('/broadcast')}
             >
               <Video className="w-6 h-6" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-900"
+              onClick={() => navigate('/pages')}
+            >
+              <Users className="w-6 h-6" />
             </Button>
             <Button 
               variant="ghost" 
