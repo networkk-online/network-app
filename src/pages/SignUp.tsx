@@ -34,10 +34,11 @@ const SignUp = () => {
         {/* Logo */}
         <div className="text-center mb-12">
           <div className="w-24 h-24 mx-auto mb-8 relative">
-            <div className="w-full h-full bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-green-500/25">
-              <span className="text-4xl font-bold text-white">R</span>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl blur-lg opacity-50"></div>
+            <img 
+              src="/lovable-uploads/3228b102-769a-43ee-92c5-9f0c0b2b928e.png" 
+              alt="Network Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Sign Up</h1>
         </div>
