@@ -29,7 +29,8 @@ const PageCard = ({
   isVerified,
   isFollowing,
   onFollow,
-  typeIcon
+  typeIcon,
+  type
 }: PageCardProps) => {
   const formatFollowers = (count: number) => {
     if (count >= 1000000) {
@@ -39,6 +40,22 @@ const PageCard = ({
     }
     return count.toString();
   };
+
+  // تحديد لون الشارة حسب نوع الحساب
+  const getVerificationBadgeColor = (accountType: 'celebrity' | 'business' | 'media') => {
+    switch (accountType) {
+      case 'business':
+        return 'text-yellow-500'; // ذهبي للشركات
+      case 'celebrity':
+        return 'text-blue-500'; // أزرق للمشاهير
+      case 'media':
+        return 'text-gray-400'; // رصاصي للشخصيات المهمة
+      default:
+        return 'text-green-500';
+    }
+  };
+
+  const verificationColor = getVerificationBadgeColor(type);
 
   return (
     <Card className="bg-gray-900 border-gray-800 overflow-hidden hover:border-green-500/30 transition-all duration-300">
@@ -62,7 +79,7 @@ const PageCard = ({
               className="w-16 h-16 rounded-full border-4 border-gray-900 object-cover"
             />
             {isVerified && (
-              <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
+              <div className={`absolute -bottom-1 -right-1 ${type === 'business' ? 'bg-yellow-500' : type === 'celebrity' ? 'bg-blue-500' : 'bg-gray-400'} rounded-full p-1`}>
                 <Shield className="w-3 h-3 text-black" />
               </div>
             )}
@@ -71,7 +88,7 @@ const PageCard = ({
             <div className="flex items-center space-x-2 mb-1">
               <h3 className="font-bold text-white text-lg">{name}</h3>
               {isVerified && (
-                <Shield className="w-4 h-4 text-green-500" />
+                <Shield className={`w-4 h-4 ${verificationColor}`} />
               )}
             </div>
             <Badge variant="secondary" className="text-xs">
@@ -91,6 +108,14 @@ const PageCard = ({
           <span className="text-gray-400 text-sm">
             {formatFollowers(followers)} متابع
           </span>
+          {isVerified && (
+            <div className="flex items-center space-x-1">
+              <Shield className={`w-3 h-3 ${verificationColor}`} />
+              <span className={`text-xs ${verificationColor} font-medium`}>
+                {type === 'business' ? 'شركة موثقة' : type === 'celebrity' ? 'مشهور موثق' : 'شخصية مهمة'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Follow Button */}
