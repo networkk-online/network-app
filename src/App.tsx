@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Broadcast from "./pages/Broadcast";
 import BusinessAccount from "./pages/BusinessAccount";
 import Pages from "./pages/Pages";
+import Shorts from "./pages/Shorts";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/broadcast" element={<Broadcast />} />
           <Route path="/business" element={<BusinessAccount />} />
           <Route path="/pages" element={<Pages />} />
+          <Route path="/shorts" element={<Shorts />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="*" element={<NotFound />} />
