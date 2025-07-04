@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Play, Heart, MessageCircle, Bookmark, MoreHorizontal, User } from 'lucide-react';
 import Header from '@/components/Header';
@@ -123,11 +122,6 @@ const Explore = () => {
             {content.duration}
           </div>
         )}
-        
-        {/* نوع المحتوى */}
-        <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-          {content.type === 'reel' ? 'ريل' : 'بوست'}
-        </div>
         
         {/* إجراءات سريعة */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
