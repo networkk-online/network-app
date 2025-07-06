@@ -53,7 +53,12 @@ const Header = () => {
             >
               <Film className="w-6 h-6" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-900"
+              onClick={() => navigate('/messages')}
+            >
               <MessageCircle className="w-6 h-6" />
             </Button>
             <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
