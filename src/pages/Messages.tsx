@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Search, Phone, Video, MoreHorizontal, Send, Smile, Paperclip } from 'lucide-react';
+import { Search, Phone, Video, MoreHorizontal, Send, Smile, Paperclip, MessageCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +7,43 @@ import { Input } from '@/components/ui/input';
 const Messages = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>('1');
   const [newMessage, setNewMessage] = useState('');
+  const [messages, setMessages] = useState([
+    {
+      id: '1',
+      senderId: '2',
+      text: 'مرحبًا! كيف الحال؟',
+      timestamp: '10:30 ص',
+      isOwn: false
+    },
+    {
+      id: '2',
+      senderId: '1',
+      text: 'أهلاً بك! الحمد لله بخير',
+      timestamp: '10:31 ص',
+      isOwn: true
+    },
+    {
+      id: '3',
+      senderId: '2',
+      text: 'هل يمكنك مساعدتي في شيء؟',
+      timestamp: '10:32 ص',
+      isOwn: false
+    },
+    {
+      id: '4',
+      senderId: '1',
+      text: 'بالطبع! ما الذي تحتاج إليه؟',
+      timestamp: '10:33 ص',
+      isOwn: true
+    },
+    {
+      id: '5',
+      senderId: '2',
+      text: 'شكرًا لك على المساعدة',
+      timestamp: '10:35 ص',
+      isOwn: false
+    }
+  ]);
 
   // بيانات وهمية للمحادثات
   const conversations = [
@@ -49,49 +85,26 @@ const Messages = () => {
     }
   ];
 
-  // رسائل المحادثة المختارة
-  const messages = [
-    {
-      id: '1',
-      senderId: '2',
-      text: 'مرحبًا! كيف الحال؟',
-      timestamp: '10:30 ص',
-      isOwn: false
-    },
-    {
-      id: '2',
-      senderId: '1',
-      text: 'أهلاً بك! الحمد لله بخير',
-      timestamp: '10:31 ص',
-      isOwn: true
-    },
-    {
-      id: '3',
-      senderId: '2',
-      text: 'هل يمكنك مساعدتي في شيء؟',
-      timestamp: '10:32 ص',
-      isOwn: false
-    },
-    {
-      id: '4',
-      senderId: '1',
-      text: 'بالطبع! ما الذي تحتاج إليه؟',
-      timestamp: '10:33 ص',
-      isOwn: true
-    },
-    {
-      id: '5',
-      senderId: '2',
-      text: 'شكرًا لك على المساعدة',
-      timestamp: '10:35 ص',
-      isOwn: false
-    }
-  ];
-
   const handleSendMessage = () => {
     if (newMessage.trim()) {
-      console.log('إرسال رسالة:', newMessage);
+      const now = new Date();
+      const timestamp = now.toLocaleTimeString('ar-SA', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      });
+      
+      const newMsg = {
+        id: Date.now().toString(),
+        senderId: '1',
+        text: newMessage,
+        timestamp: timestamp,
+        isOwn: true
+      };
+      
+      setMessages(prev => [...prev, newMsg]);
       setNewMessage('');
+      console.log('إرسال رسالة:', newMessage);
     }
   };
 
