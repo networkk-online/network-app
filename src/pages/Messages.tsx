@@ -1,47 +1,58 @@
-import React, { useState } from 'react';
-import { Search, Phone, Video, MoreHorizontal, Send, Smile, Paperclip, MessageCircle } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { Search, Phone, Video, MoreHorizontal, Send, Smile, Paperclip, MessageCircle, Image } from 'lucide-react';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 const Messages = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>('1');
   const [newMessage, setNewMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<{[key: string]: boolean}>({});
+  const { toast } = useToast();
+
   const [messages, setMessages] = useState([
     {
       id: '1',
       senderId: '2',
       text: 'مرحبًا! كيف الحال؟',
       timestamp: '10:30 ص',
-      isOwn: false
+      isOwn: false,
+      type: 'text'
     },
     {
       id: '2',
       senderId: '1',
       text: 'أهلاً بك! الحمد لله بخير',
       timestamp: '10:31 ص',
-      isOwn: true
+      isOwn: true,
+      type: 'text'
     },
     {
       id: '3',
       senderId: '2',
       text: 'هل يمكنك مساعدتي في شيء؟',
       timestamp: '10:32 ص',
-      isOwn: false
+      isOwn: false,
+      type: 'text'
     },
     {
       id: '4',
       senderId: '1',
       text: 'بالطبع! ما الذي تحتاج إليه؟',
       timestamp: '10:33 ص',
-      isOwn: true
+      isOwn: true,
+      type: 'text'
     },
     {
       id: '5',
       senderId: '2',
       text: 'شكرًا لك على المساعدة',
       timestamp: '10:35 ص',
-      isOwn: false
+      isOwn: false,
+      type: 'text'
     }
   ]);
 
@@ -85,6 +96,63 @@ const Messages = () => {
     }
   ];
 
+  // محاكاة حالة الكتابة
+  useEffect(() => {
+    let typingTimeout: NodeJS.Timeout;
+    
+    if (newMessage.length > 0) {
+      setIsTyping(true);
+      
+      // محاكاة رد الطرف الآخر بالكتابة
+      if (selectedChat) {
+        setTypingUsers(prev => ({ ...prev, [selectedChat]: true }));
+        
+        typingTimeout = setTimeout(() => {
+          setTypingUsers(prev => ({ ...prev, [selectedChat]: false }));
+        }, 2000);
+      }
+    } else {
+      setIsTyping(false);
+    }
+
+    return () => {
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+      }
+    };
+  }, [newMessage, selectedChat]);
+
+  // محاكاة استقبال رسائل جديدة
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Math.random() > 0.95) { // احتمال 5% كل ثانية
+        const newIncomingMessage = {
+          id: Date.now().toString(),
+          senderId: '2',
+          text: 'رسالة جديدة وصلت الآن!',
+          timestamp: new Date().toLocaleTimeString('ar-SA', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+          }),
+          isOwn: false,
+          type: 'text'
+        };
+
+        setMessages(prev => [...prev, newIncomingMessage]);
+        
+        // إشعار بالرسالة الجديدة
+        toast({
+          title: "رسالة جديدة",
+          description: "وصلتك رسالة جديدة من أحمد محمد",
+          duration: 3000,
+        });
+      }
+    }, 30000); // كل 30 ثانية
+
+    return () => clearInterval(interval);
+  }, [toast]);
+
   const handleSendMessage = () => {
     if (newMessage.trim()) {
       const now = new Date();
@@ -99,12 +167,49 @@ const Messages = () => {
         senderId: '1',
         text: newMessage,
         timestamp: timestamp,
-        isOwn: true
+        isOwn: true,
+        type: 'text'
       };
       
       setMessages(prev => [...prev, newMsg]);
       setNewMessage('');
+      setIsTyping(false);
       console.log('إرسال رسالة:', newMessage);
+    }
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString('ar-SA', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true 
+        });
+        
+        const imageMessage = {
+          id: Date.now().toString(),
+          senderId: '1',
+          text: '',
+          imageUrl: e.target?.result as string,
+          timestamp: timestamp,
+          isOwn: true,
+          type: 'image'
+        };
+        
+        setMessages(prev => [...prev, imageMessage]);
+        console.log('إرسال صورة:', file.name);
+        
+        toast({
+          title: "تم إرسال الصورة",
+          description: "تم إرسال الصورة بنجاح",
+          duration: 2000,
+        });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -156,9 +261,11 @@ const Messages = () => {
                       <span className="text-xs text-gray-400">{conv.timestamp}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <p className="text-sm text-gray-400 truncate">{conv.lastMessage}</p>
+                      <p className="text-sm text-gray-400 truncate">
+                        {typingUsers[conv.id] ? 'يكتب الآن...' : conv.lastMessage}
+                      </p>
                       {conv.unread > 0 && (
-                        <span className="bg-green-500 text-black text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                        <span className="bg-green-500 text-black text-xs rounded-full px-2 py-1 min-w-[20px] text-center animate-pulse">
                           {conv.unread}
                         </span>
                       )}
@@ -190,7 +297,12 @@ const Messages = () => {
                   <div>
                     <h2 className="font-semibold text-white">{selectedConversation.name}</h2>
                     <p className="text-sm text-gray-400">
-                      {selectedConversation.online ? 'متصل الآن' : 'آخر ظهور منذ ساعة'}
+                      {typingUsers[selectedConversation.id] 
+                        ? 'يكتب الآن...' 
+                        : selectedConversation.online 
+                        ? 'متصل الآن' 
+                        : 'آخر ظهور منذ ساعة'
+                      }
                     </p>
                   </div>
                 </div>
@@ -221,7 +333,18 @@ const Messages = () => {
                           : 'bg-gray-800 text-white'
                       }`}
                     >
-                      <p className="text-sm">{message.text}</p>
+                      {message.type === 'image' ? (
+                        <div>
+                          <img 
+                            src={message.imageUrl} 
+                            alt="مشاركة صورة"
+                            className="max-w-full h-auto rounded-md mb-2"
+                          />
+                          {message.text && <p className="text-sm">{message.text}</p>}
+                        </div>
+                      ) : (
+                        <p className="text-sm">{message.text}</p>
+                      )}
                       <p className={`text-xs mt-1 ${
                         message.isOwn ? 'text-black/70' : 'text-gray-400'
                       }`}>
@@ -230,11 +353,36 @@ const Messages = () => {
                     </div>
                   </div>
                 ))}
+                
+                {/* مؤشر الكتابة */}
+                {typingUsers[selectedChat || ''] && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-800 text-white px-4 py-2 rounded-lg">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* صندوق كتابة الرسالة */}
               <div className="p-4 border-t border-gray-800">
                 <div className="flex items-center space-x-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label htmlFor="image-upload">
+                    <Button variant="ghost" size="sm" className="p-2 text-gray-400 hover:text-white cursor-pointer">
+                      <Image className="w-5 h-5" />
+                    </Button>
+                  </label>
                   <Button variant="ghost" size="sm" className="p-2 text-gray-400 hover:text-white">
                     <Paperclip className="w-5 h-5" />
                   </Button>
