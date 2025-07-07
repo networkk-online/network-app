@@ -1,10 +1,19 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Phone, Video, MoreHorizontal, Send, Smile, Paperclip, MessageCircle, Image } from 'lucide-react';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+
+interface Message {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: string;
+  isOwn: boolean;
+  type: 'text' | 'image';
+  imageUrl?: string;
+}
 
 const Messages = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>('1');
@@ -13,7 +22,7 @@ const Messages = () => {
   const [typingUsers, setTypingUsers] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
 
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       senderId: '2',
@@ -162,7 +171,7 @@ const Messages = () => {
         hour12: true 
       });
       
-      const newMsg = {
+      const newMsg: Message = {
         id: Date.now().toString(),
         senderId: '1',
         text: newMessage,
@@ -190,7 +199,7 @@ const Messages = () => {
           hour12: true 
         });
         
-        const imageMessage = {
+        const imageMessage: Message = {
           id: Date.now().toString(),
           senderId: '1',
           text: '',
