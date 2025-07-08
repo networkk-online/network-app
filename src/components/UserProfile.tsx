@@ -1,6 +1,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Settings, Grid, Bookmark } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { FormField, FormItem, FormLabel, FormControl, Form } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 
 interface UserProfileProps {
   username: string;
@@ -23,6 +28,20 @@ const UserProfile = ({
   bio, 
   isOwnProfile = true 
 }: UserProfileProps) => {
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const form = useForm({
+    defaultValues: {
+      displayName,
+      bio,
+      username
+    }
+  });
+
+  const onSubmit = (data: any) => {
+    console.log('Profile updated:', data);
+    setIsEditOpen(false);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Profile Header */}
@@ -43,9 +62,84 @@ const UserProfile = ({
             <div className="flex space-x-3">
               {isOwnProfile ? (
                 <>
-                  <Button variant="secondary" size="sm" className="bg-gray-800 hover:bg-gray-700">
-                    Edit Profile
-                  </Button>
+                  <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="secondary" size="sm" className="bg-gray-800 hover:bg-gray-700">
+                        Edit Profile
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-gray-900 border-gray-800">
+                      <DialogHeader>
+                        <DialogTitle className="text-white">Edit Profile</DialogTitle>
+                      </DialogHeader>
+                      <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="displayName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-gray-300">Display Name</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    className="bg-gray-800 border-gray-700 text-white"
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="username"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-gray-300">Username</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    className="bg-gray-800 border-gray-700 text-white"
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="bio"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-gray-300">Bio</FormLabel>
+                                <FormControl>
+                                  <textarea 
+                                    {...field}
+                                    className="w-full min-h-[100px] px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    placeholder="Tell us about yourself..."
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <div className="flex justify-end space-x-2 pt-4">
+                            <Button 
+                              type="button" 
+                              variant="secondary" 
+                              onClick={() => setIsEditOpen(false)}
+                              className="bg-gray-700 hover:bg-gray-600"
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              type="submit"
+                              className="bg-green-500 hover:bg-green-600 text-black font-semibold"
+                            >
+                              Save Changes
+                            </Button>
+                          </div>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
                   <Button variant="ghost" size="sm" className="p-2">
                     <Settings className="w-5 h-5" />
                   </Button>
