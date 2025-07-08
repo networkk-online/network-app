@@ -65,7 +65,6 @@ const Messages = () => {
     }
   ]);
 
-  // بيانات وهمية للمحادثات
   const conversations = [
     {
       id: '1',
@@ -105,14 +104,12 @@ const Messages = () => {
     }
   ];
 
-  // محاكاة حالة الكتابة
   useEffect(() => {
     let typingTimeout: NodeJS.Timeout;
     
     if (newMessage.length > 0) {
       setIsTyping(true);
       
-      // محاكاة رد الطرف الآخر بالكتابة
       if (selectedChat) {
         setTypingUsers(prev => ({ ...prev, [selectedChat]: true }));
         
@@ -131,11 +128,10 @@ const Messages = () => {
     };
   }, [newMessage, selectedChat]);
 
-  // محاكاة استقبال رسائل جديدة
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Math.random() > 0.95) { // احتمال 5% كل ثانية
-        const newIncomingMessage = {
+      if (Math.random() > 0.95) {
+        const newIncomingMessage: Message = {
           id: Date.now().toString(),
           senderId: '2',
           text: 'رسالة جديدة وصلت الآن!',
@@ -150,14 +146,13 @@ const Messages = () => {
 
         setMessages(prev => [...prev, newIncomingMessage]);
         
-        // إشعار بالرسالة الجديدة
         toast({
           title: "رسالة جديدة",
           description: "وصلتك رسالة جديدة من أحمد محمد",
           duration: 3000,
         });
       }
-    }, 30000); // كل 30 ثانية
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [toast]);
@@ -229,9 +224,7 @@ const Messages = () => {
       <Header />
       
       <main className="pt-16 flex h-screen">
-        {/* قائمة المحادثات */}
         <div className="w-80 border-r border-gray-800 flex flex-col">
-          {/* رأس قائمة المحادثات */}
           <div className="p-4 border-b border-gray-800">
             <h1 className="text-xl font-bold neon-text mb-3">الرسائل</h1>
             <div className="relative">
@@ -243,7 +236,6 @@ const Messages = () => {
             </div>
           </div>
 
-          {/* قائمة المحادثات */}
           <div className="flex-1 overflow-y-auto">
             {conversations.map((conv) => (
               <div
@@ -286,11 +278,9 @@ const Messages = () => {
           </div>
         </div>
 
-        {/* نافذة المحادثة */}
         <div className="flex-1 flex flex-col">
           {selectedConversation ? (
             <>
-              {/* رأس المحادثة */}
               <div className="p-4 border-b border-gray-800 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="relative">
@@ -328,7 +318,6 @@ const Messages = () => {
                 </div>
               </div>
 
-              {/* منطقة الرسائل */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message) => (
                   <div
@@ -363,7 +352,6 @@ const Messages = () => {
                   </div>
                 ))}
                 
-                {/* مؤشر الكتابة */}
                 {typingUsers[selectedChat || ''] && (
                   <div className="flex justify-start">
                     <div className="bg-gray-800 text-white px-4 py-2 rounded-lg">
@@ -377,7 +365,6 @@ const Messages = () => {
                 )}
               </div>
 
-              {/* صندوق كتابة الرسالة */}
               <div className="p-4 border-t border-gray-800">
                 <div className="flex items-center space-x-2">
                   <input

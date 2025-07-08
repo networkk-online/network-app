@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import PageCard from '@/components/PageCard';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Building2, Tv, Star } from 'lucide-react';
+import { Search, Users, Building2, Tv, Star, MessageSquare, Send } from 'lucide-react';
 
 const Pages = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'suggested' | 'following'>('suggested');
+  const [activeTab, setActiveTab] = useState<'suggested' | 'following' | 'media'>('suggested');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Mock data for suggested pages
@@ -87,10 +87,68 @@ const Pages = () => {
     }
   ];
 
-  const [pages, setPages] = useState(suggestedPages);
+  // إضافة وسائل إعلام متخصصة للتواصل مع الصحفيين
+  const mediaOutlets = [
+    {
+      id: '7',
+      name: 'العربية نت',
+      category: 'إعلام رقمي',
+      type: 'media' as const,
+      avatar: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=150&h=150&fit=crop',
+      cover: 'https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?w=400&h=200&fit=crop',
+      followers: 15000000,
+      description: 'منصة إعلامية رقمية - للتواصل مع الصحفيين',
+      isVerified: true,
+      isFollowing: false,
+      specialties: ['سياسة', 'اقتصاد', 'تكنولوجيا'],
+      contactInfo: 'للتواصل الإعلامي: media@alarabiya.net'
+    },
+    {
+      id: '8',
+      name: 'سكاي نيوز عربية',
+      category: 'قناة إخبارية',
+      type: 'media' as const,
+      avatar: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=150&h=150&fit=crop',
+      cover: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=200&fit=crop',
+      followers: 8500000,
+      description: 'قناة إخبارية - مقابلات مع الخبراء والمؤثرين',
+      isVerified: true,
+      isFollowing: true,
+      specialties: ['أخبار عاجلة', 'مقابلات حصرية', 'تحليل سياسي'],
+      contactInfo: 'للمقابلات الصحفية: interviews@skynewsarabia.com'
+    },
+    {
+      id: '9',
+      name: 'صحيفة الشرق الأوسط',
+      category: 'صحافة مطبوعة',
+      type: 'media' as const,
+      avatar: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=150&h=150&fit=crop',
+      cover: 'https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?w=400&h=200&fit=crop',
+      followers: 5200000,
+      description: 'صحيفة يومية - تقارير متعمقة ومقالات رأي',
+      isVerified: true,
+      isFollowing: false,
+      specialties: ['تقارير متعمقة', 'مقالات رأي', 'تحليلات اقتصادية'],
+      contactInfo: 'للمقالات والتقارير: editors@aawsat.com'
+    }
+  ];
+
+  const [pages, setPages] = useState([...suggestedPages, ...mediaOutlets]);
 
   const followingPages = pages.filter(page => page.isFollowing);
-  const displayPages = activeTab === 'following' ? followingPages : pages;
+  const mediaPages = pages.filter(page => page.type === 'media');
+  
+  let displayPages;
+  switch (activeTab) {
+    case 'following':
+      displayPages = followingPages;
+      break;
+    case 'media':
+      displayPages = mediaPages;
+      break;
+    default:
+      displayPages = pages;
+  }
 
   const filteredPages = displayPages.filter(page =>
     page.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -105,6 +163,18 @@ const Pages = () => {
           : page
       )
     );
+  };
+
+  const handleContactMedia = (pageId: string) => {
+    const page = pages.find(p => p.id === pageId);
+    if (page) {
+      navigate('/messages', { 
+        state: { 
+          contactPage: page,
+          message: `مرحباً، أود التواصل معكم بخصوص محتوى إعلامي في تخصصكم: ${page.category}` 
+        }
+      });
+    }
   };
 
   const getTypeIcon = (type: 'celebrity' | 'business' | 'media') => {
@@ -172,18 +242,74 @@ const Pages = () => {
                 <Users className="w-4 h-4" />
                 <span>متابَعة ({followingPages.length})</span>
               </button>
+              <button
+                onClick={() => setActiveTab('media')}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-all flex items-center space-x-2 ${
+                  activeTab === 'media' 
+                    ? 'bg-green-500 text-black' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Tv className="w-4 h-4" />
+                <span>وسائل الإعلام ({mediaPages.length})</span>
+              </button>
             </div>
           </div>
+
+          {/* Special Media Section Info */}
+          {activeTab === 'media' && (
+            <div className="bg-gradient-to-r from-blue-500/10 to-green-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
+              <div className="flex items-center space-x-3 mb-2">
+                <MessageSquare className="w-5 h-5 text-blue-400" />
+                <h3 className="font-semibold text-white">التواصل مع وسائل الإعلام</h3>
+              </div>
+              <p className="text-gray-300 text-sm">
+                يمكنك التواصل مباشرة مع الصحفيين وأصحاب النفوذ في وسائل الإعلام للمقابلات والتقارير الصحفية
+              </p>
+            </div>
+          )}
 
           {/* Pages Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPages.map((page) => (
-              <PageCard
-                key={page.id}
-                {...page}
-                onFollow={() => handleFollow(page.id)}
-                typeIcon={getTypeIcon(page.type)}
-              />
+              <div key={page.id} className="relative">
+                <PageCard
+                  {...page}
+                  onFollow={() => handleFollow(page.id)}
+                  typeIcon={getTypeIcon(page.type)}
+                />
+                
+                {/* زر التواصل الإعلامي للصفحات الإعلامية */}
+                {page.type === 'media' && (
+                  <div className="mt-3 space-y-2">
+                    <Button
+                      onClick={() => handleContactMedia(page.id)}
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                      size="sm"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      تواصل إعلامي
+                    </Button>
+                    
+                    {/* معلومات إضافية للصفحات الإعلامية */}
+                    {(page as any).specialties && (
+                      <div className="bg-gray-900 rounded-lg p-3 text-sm">
+                        <p className="text-gray-400 mb-1">التخصصات:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {(page as any).specialties.map((specialty: string, index: number) => (
+                            <span key={index} className="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">
+                              {specialty}
+                            </span>
+                          ))}
+                        </div>
+                        {(page as any).contactInfo && (
+                          <p className="text-gray-500 text-xs mt-2">{(page as any).contactInfo}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
 
@@ -192,7 +318,11 @@ const Pages = () => {
             <div className="text-center py-12">
               <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-white mb-2">
-                {activeTab === 'following' ? 'لا تتابع أي صفحة' : 'لم يتم العثور على صفحات'}
+                {activeTab === 'following' 
+                  ? 'لا تتابع أي صفحة' 
+                  : activeTab === 'media'
+                  ? 'لم يتم العثور على وسائل إعلام'
+                  : 'لم يتم العثور على صفحات'}
               </h3>
               <p className="text-gray-400">
                 {activeTab === 'following' 
