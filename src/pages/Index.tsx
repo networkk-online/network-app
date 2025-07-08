@@ -1,13 +1,10 @@
+
 import Header from '@/components/Header';
 import Post from '@/components/Post';
 import WalletCard from '@/components/WalletCard';
-import UserProfile from '@/components/UserProfile';
 import Stories from '@/components/Stories';
-import { useState } from 'react';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<'feed' | 'profile'>('feed');
-
   // Mock data for stories
   const stories = [
     {
@@ -89,66 +86,26 @@ const Index = () => {
     totalPosts: 127
   };
 
-  const profileData = {
-    username: 'your_username',
-    displayName: 'Your Name',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
-    followers: 1248,
-    following: 567,
-    posts: 127,
-    bio: 'Content Creator | Digital Artist\nEarning through creativity 💚\nJoin the Network revolution!'
-  };
-
   return (
     <div className="min-h-screen bg-black">
       <Header />
       
       <main className="pt-20 pb-8">
         <div className="max-w-4xl mx-auto px-4">
-          {/* Tab Navigation */}
-          <div className="flex justify-center mb-8">
-            <div className="flex bg-gray-900 rounded-lg p-1">
-              <button
-                onClick={() => setActiveTab('feed')}
-                className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                  activeTab === 'feed' 
-                    ? 'bg-green-500 text-black' 
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Feed
-              </button>
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                  activeTab === 'profile' 
-                    ? 'bg-green-500 text-black' 
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Profile
-              </button>
+          <div className="max-w-lg mx-auto">
+            {/* Stories */}
+            <Stories stories={stories} />
+            
+            {/* Wallet Card */}
+            <WalletCard {...userStats} />
+            
+            {/* Posts Feed */}
+            <div>
+              {posts.map((post) => (
+                <Post key={post.id} {...post} />
+              ))}
             </div>
           </div>
-
-          {activeTab === 'feed' ? (
-            <div className="max-w-lg mx-auto">
-              {/* Stories */}
-              <Stories stories={stories} />
-              
-              {/* Wallet Card */}
-              <WalletCard {...userStats} />
-              
-              {/* Posts Feed */}
-              <div>
-                {posts.map((post) => (
-                  <Post key={post.id} {...post} />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <UserProfile {...profileData} />
-          )}
         </div>
       </main>
     </div>
