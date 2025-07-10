@@ -96,3 +96,63 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(120 100% 50%);
 }
+
+/* Responsive utilities */
+@layer utilities {
+  .container-responsive {
+    @apply w-full max-w-sm mx-auto;
+  }
+  
+  @media (min-width: 640px) {
+    .container-responsive {
+      @apply max-w-md;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .container-responsive {
+      @apply max-w-lg;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .container-responsive {
+      @apply max-w-2xl;
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .container-responsive {
+      @apply max-w-4xl;
+    }
+  }
+}
+
+/* Mobile-first responsive breakpoints */
+@media (max-width: 640px) {
+  .mobile-padding {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  .mobile-text {
+    font-size: 0.875rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+/* Desktop adjustments */
+@media (min-width: 1025px) {
+  .desktop-layout {
+    display: grid;
+    grid-template-columns: 1fr 600px 1fr;
+    gap: 2rem;
+  }
+}

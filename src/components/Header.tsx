@@ -1,11 +1,13 @@
 
-import { Heart, Home, MessageCircle, PlusSquare, Search, User, Video, Building2, Users, LogIn, Film, Compass } from 'lucide-react';
+import { Heart, Home, MessageCircle, PlusSquare, Search, User, Video, Building2, Users, LogIn, Film, Compass, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useState } from 'react';
 
 const Header = () => {
   const navigate = useNavigate();
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Mock user data - in a real app this would come from context/store
   const userData = {
@@ -18,99 +20,69 @@ const Header = () => {
     bio: 'Content Creator | Digital Artist\nEarning through creativity 💚\nJoin the Network revolution!'
   };
 
+  const navigationItems = [
+    { icon: Home, label: 'الرئيسية', path: '/' },
+    { icon: Compass, label: 'استكشف', path: '/explore' },
+    { icon: Film, label: 'الريلز', path: '/shorts' },
+    { icon: MessageCircle, label: 'الرسائل', path: '/messages' },
+    { icon: Video, label: 'البث', path: '/broadcast' },
+    { icon: Users, label: 'الصفحات', path: '/pages' },
+    { icon: Building2, label: 'الأعمال', path: '/business' },
+  ];
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-gray-800">
-      <div className="max-w-4xl mx-auto px-4 py-3">
+      <div className="container-responsive px-3 sm:px-4 py-2 sm:py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 flex items-center justify-center">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/af5dfbd6-d4e4-4f84-be84-7086fe302cd2.png" 
                 alt="Network Logo" 
-                className="w-8 h-8 object-contain"
+                className="w-full h-full object-contain"
               />
             </div>
-            <h1 className="text-xl font-bold neon-text">Network</h1>
+            <h1 className="text-lg sm:text-xl font-bold neon-text">Network</h1>
           </div>
 
-          {/* Search Bar */}
-          <div className="hidden md:flex items-center bg-gray-900 rounded-lg px-3 py-2 w-64">
+          {/* Search Bar - Hidden on mobile, visible on tablet+ */}
+          <div className="hidden md:flex items-center bg-gray-900 rounded-lg px-3 py-2 w-48 lg:w-64">
             <Search className="w-4 h-4 text-gray-400 mr-2" />
             <input 
               type="text" 
-              placeholder="Search..." 
+              placeholder="بحث..." 
               className="bg-transparent text-white placeholder-gray-400 outline-none flex-1 text-sm"
             />
           </div>
 
-          {/* Navigation Icons */}
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900" onClick={() => navigate('/')}>
-              <Home className="w-6 h-6" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-900"
-              onClick={() => navigate('/explore')}
-            >
-              <Compass className="w-6 h-6" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-900"
-              onClick={() => navigate('/shorts')}
-            >
-              <Film className="w-6 h-6" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-900"
-              onClick={() => navigate('/messages')}
-            >
-              <MessageCircle className="w-6 h-6" />
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-2 xl:space-x-4">
+            {navigationItems.map((item, index) => (
+              <Button 
+                key={index}
+                variant="ghost" 
+                size="sm" 
+                className="p-2 hover:bg-gray-900" 
+                onClick={() => navigate(item.path)}
+                title={item.label}
+              >
+                <item.icon className="w-5 h-5 xl:w-6 xl:h-6" />
+              </Button>
+            ))}
+            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
+              <PlusSquare className="w-5 h-5 xl:w-6 xl:h-6" />
             </Button>
             <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
-              <PlusSquare className="w-6 h-6" />
+              <Heart className="w-5 h-5 xl:w-6 xl:h-6" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-900"
-              onClick={() => navigate('/broadcast')}
-            >
-              <Video className="w-6 h-6" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-900"
-              onClick={() => navigate('/pages')}
-            >
-              <Users className="w-6 h-6" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-900"
-              onClick={() => navigate('/business')}
-            >
-              <Building2 className="w-6 h-6" />
-            </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
-              <Heart className="w-6 h-6" />
-            </Button>
-            {/* Profile Avatar - navigates to profile page */}
             <Button 
               variant="ghost" 
               size="sm" 
               className="p-1 hover:bg-gray-900 rounded-full"
               onClick={() => navigate('/profile')}
             >
-              <Avatar className="w-8 h-8">
+              <Avatar className="w-7 h-7 xl:w-8 xl:h-8">
                 <AvatarImage src={userData.avatar} alt={userData.displayName} />
                 <AvatarFallback>{userData.displayName.charAt(0)}</AvatarFallback>
               </Avatar>
@@ -121,10 +93,63 @@ const Header = () => {
               className="p-2 hover:bg-gray-900"
               onClick={() => navigate('/login')}
             >
-              <LogIn className="w-6 h-6" />
+              <LogIn className="w-5 h-5 xl:w-6 xl:h-6" />
+            </Button>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="flex lg:hidden items-center space-x-2 sm:space-x-3">
+            {/* Key actions for mobile */}
+            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900" onClick={() => navigate('/')}>
+              <Home className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
+              <PlusSquare className="w-5 h-5" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-1 hover:bg-gray-900 rounded-full"
+              onClick={() => navigate('/profile')}
+            >
+              <Avatar className="w-6 h-6 sm:w-7 sm:h-7">
+                <AvatarImage src={userData.avatar} alt={userData.displayName} />
+                <AvatarFallback>{userData.displayName.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-900"
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+            >
+              <Menu className="w-5 h-5" />
             </Button>
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {showMobileMenu && (
+          <div className="lg:hidden mt-3 py-2 border-t border-gray-800">
+            <div className="grid grid-cols-4 gap-2">
+              {navigationItems.map((item, index) => (
+                <Button 
+                  key={index}
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex flex-col items-center p-2 hover:bg-gray-900 text-xs"
+                  onClick={() => {
+                    navigate(item.path);
+                    setShowMobileMenu(false);
+                  }}
+                >
+                  <item.icon className="w-5 h-5 mb-1" />
+                  <span className="text-[10px] text-gray-400">{item.label}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

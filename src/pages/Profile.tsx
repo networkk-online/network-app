@@ -1,4 +1,3 @@
-
 import Header from '@/components/Header';
 import UserProfile from '@/components/UserProfile';
 
@@ -58,26 +57,26 @@ const Profile = () => {
     <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="pt-20 pb-8">
-        <div className="max-w-4xl mx-auto px-4">
+      <main className="pt-16 sm:pt-20 pb-8">
+        <div className="container-responsive mobile-padding">
           <UserProfile {...userData} />
           
-          {/* Posts Grid */}
-          <div className="grid grid-cols-3 gap-1 mt-8">
+          {/* Posts Grid - Responsive */}
+          <div className="grid grid-cols-3 gap-0.5 sm:gap-1 mt-6 sm:mt-8">
             {userPosts.map((post) => (
               <div key={post.id} className="relative aspect-square group cursor-pointer">
                 <img 
                   src={post.image} 
                   alt="Post"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-sm"
                 />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <div className="flex items-center space-x-4 text-white">
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-sm">
+                  <div className="flex items-center space-x-3 sm:space-x-4 text-white text-sm sm:text-base">
                     <div className="flex items-center space-x-1">
-                      <span className="text-sm font-semibold">{post.likes}</span>
+                      <span className="font-semibold">{post.likes}</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <span className="text-sm font-semibold">{post.comments}</span>
+                      <span className="font-semibold">{post.comments}</span>
                     </div>
                   </div>
                 </div>

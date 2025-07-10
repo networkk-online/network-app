@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Play, Heart, MessageCircle, Bookmark, MoreHorizontal, User } from 'lucide-react';
 import Header from '@/components/Header';
@@ -110,8 +111,8 @@ const Explore = () => {
         {/* أيقونة التشغيل للريلز */}
         {content.type === 'reel' && (
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-              <Play className="w-8 h-8 text-white ml-1" fill="white" />
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+              <Play className="w-6 h-6 sm:w-8 sm:h-8 text-white ml-1" fill="white" />
             </div>
           </div>
         )}
@@ -132,12 +133,12 @@ const Explore = () => {
       </div>
       
       {/* معلومات المحتوى */}
-      <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+      <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 text-white">
         <div className="flex items-center space-x-2 mb-1">
           <User className="w-3 h-3 text-gray-300" />
           <span className="text-xs text-gray-300">{content.username}</span>
         </div>
-        <h3 className="text-sm font-medium mb-1 line-clamp-2 leading-tight">
+        <h3 className="text-xs sm:text-sm font-medium mb-1 line-clamp-2 leading-tight">
           {content.title}
         </h3>
         <p className="text-xs text-gray-300">
@@ -157,7 +158,7 @@ const Explore = () => {
           }}
         >
           <Heart 
-            className={`w-5 h-5 ${
+            className={`w-4 h-4 sm:w-5 sm:h-5 ${
               likedPosts.includes(content.id) 
                 ? 'fill-red-500 text-red-500' 
                 : 'text-white'
@@ -165,10 +166,10 @@ const Explore = () => {
           />
         </Button>
         <Button variant="ghost" size="sm" className="p-1 text-white hover:bg-white/20">
-          <MessageCircle className="w-5 h-5" />
+          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
         <Button variant="ghost" size="sm" className="p-1 text-white hover:bg-white/20">
-          <Bookmark className="w-5 h-5" />
+          <Bookmark className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
       </div>
     </div>
@@ -178,16 +179,16 @@ const Explore = () => {
     <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="pt-16">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      <main className="pt-16 sm:pt-20">
+        <div className="container-responsive mobile-padding py-4">
           {/* عنوان الصفحة */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold neon-text mb-2">استكشف</h1>
-            <p className="text-gray-400">اكتشف محتوى جديد وحسابات تتناسب مع اهتماماتك</p>
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold neon-text mb-2">استكشف</h1>
+            <p className="text-sm sm:text-base text-gray-400">اكتشف محتوى جديد وحسابات تتناسب مع اهتماماتك</p>
           </div>
 
-          {/* شبكة المحتوى المتنوع */}
-          <div className="grid grid-cols-3 gap-1 md:gap-2">
+          {/* شبكة المحتوى المتنوع - متجاوبة */}
+          <div className="grid grid-cols-3 gap-1 sm:gap-2">
             {exploreContent.map((content) => (
               <ExploreCard key={content.id} content={content} />
             ))}

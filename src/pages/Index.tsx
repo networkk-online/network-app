@@ -1,4 +1,3 @@
-
 import Header from '@/components/Header';
 import Post from '@/components/Post';
 import WalletCard from '@/components/WalletCard';
@@ -90,21 +89,19 @@ const Index = () => {
     <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="pt-20 pb-8">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="max-w-lg mx-auto">
-            {/* Stories */}
-            <Stories stories={stories} />
-            
-            {/* Wallet Card */}
-            <WalletCard {...userStats} />
-            
-            {/* Posts Feed */}
-            <div>
-              {posts.map((post) => (
-                <Post key={post.id} {...post} />
-              ))}
-            </div>
+      <main className="pt-16 sm:pt-20 pb-8">
+        <div className="container-responsive mobile-padding">
+          {/* Stories */}
+          <Stories stories={stories} />
+          
+          {/* Wallet Card */}
+          <WalletCard {...userStats} />
+          
+          {/* Posts Feed */}
+          <div className="space-y-4 sm:space-y-6">
+            {posts.map((post) => (
+              <Post key={post.id} {...post} />
+            ))}
           </div>
         </div>
       </main>
