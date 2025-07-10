@@ -97,7 +97,7 @@
   background: hsl(120 100% 50%);
 }
 
-/* Responsive utilities */
+/* Desktop layout improvements for large screens */
 @layer utilities {
   .container-responsive {
     @apply w-full max-w-sm mx-auto;
@@ -117,13 +117,36 @@
   
   @media (min-width: 1024px) {
     .container-responsive {
-      @apply max-w-2xl;
+      @apply max-w-xl;
     }
   }
   
   @media (min-width: 1280px) {
     .container-responsive {
-      @apply max-w-4xl;
+      @apply max-w-2xl;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .container-responsive {
+      @apply max-w-3xl;
+    }
+  }
+
+  /* Desktop centered layout for very large screens */
+  .desktop-centered {
+    @apply mx-auto;
+  }
+  
+  @media (min-width: 1280px) {
+    .desktop-centered {
+      max-width: 1200px;
+    }
+  }
+  
+  @media (min-width: 1536px) {
+    .desktop-centered {
+      max-width: 1400px;
     }
   }
 }
@@ -148,11 +171,25 @@
   }
 }
 
-/* Desktop adjustments */
+/* Desktop adjustments for large screens */
 @media (min-width: 1025px) {
   .desktop-layout {
     display: grid;
-    grid-template-columns: 1fr 600px 1fr;
+    grid-template-columns: 1fr minmax(auto, 800px) 1fr;
     gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .desktop-layout > * {
+    grid-column: 2;
+  }
+}
+
+/* Extra large screen optimizations */
+@media (min-width: 1536px) {
+  .desktop-layout {
+    max-width: 1600px;
+    grid-template-columns: 1fr minmax(auto, 900px) 1fr;
   }
 }

@@ -1,3 +1,4 @@
+
 import Header from '@/components/Header';
 import UserProfile from '@/components/UserProfile';
 
@@ -58,30 +59,32 @@ const Profile = () => {
       <Header />
       
       <main className="pt-16 sm:pt-20 pb-8">
-        <div className="container-responsive mobile-padding">
-          <UserProfile {...userData} />
-          
-          {/* Posts Grid - Responsive */}
-          <div className="grid grid-cols-3 gap-0.5 sm:gap-1 mt-6 sm:mt-8">
-            {userPosts.map((post) => (
-              <div key={post.id} className="relative aspect-square group cursor-pointer">
-                <img 
-                  src={post.image} 
-                  alt="Post"
-                  className="w-full h-full object-cover rounded-sm"
-                />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-sm">
-                  <div className="flex items-center space-x-3 sm:space-x-4 text-white text-sm sm:text-base">
-                    <div className="flex items-center space-x-1">
-                      <span className="font-semibold">{post.likes}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <span className="font-semibold">{post.comments}</span>
+        <div className="desktop-layout">
+          <div className="container-responsive mobile-padding">
+            <UserProfile {...userData} />
+            
+            {/* Posts Grid - Responsive */}
+            <div className="grid grid-cols-3 gap-0.5 sm:gap-1 lg:gap-2 mt-6 sm:mt-8">
+              {userPosts.map((post) => (
+                <div key={post.id} className="relative aspect-square group cursor-pointer">
+                  <img 
+                    src={post.image} 
+                    alt="Post"
+                    className="w-full h-full object-cover rounded-sm lg:rounded-md"
+                  />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-sm lg:rounded-md">
+                    <div className="flex items-center space-x-3 sm:space-x-4 text-white text-sm sm:text-base lg:text-lg">
+                      <div className="flex items-center space-x-1">
+                        <span className="font-semibold">{post.likes}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <span className="font-semibold">{post.comments}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </main>

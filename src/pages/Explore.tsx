@@ -180,18 +180,20 @@ const Explore = () => {
       <Header />
       
       <main className="pt-16 sm:pt-20">
-        <div className="container-responsive mobile-padding py-4">
-          {/* عنوان الصفحة */}
-          <div className="mb-4 sm:mb-6">
-            <h1 className="text-xl sm:text-2xl font-bold neon-text mb-2">استكشف</h1>
-            <p className="text-sm sm:text-base text-gray-400">اكتشف محتوى جديد وحسابات تتناسب مع اهتماماتك</p>
-          </div>
+        <div className="desktop-layout">
+          <div className="container-responsive mobile-padding py-4">
+            {/* عنوان الصفحة */}
+            <div className="mb-4 sm:mb-6 lg:mb-8">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold neon-text mb-2">استكشف</h1>
+              <p className="text-sm sm:text-base lg:text-lg text-gray-400">اكتشف محتوى جديد وحسابات تتناسب مع اهتماماتك</p>
+            </div>
 
-          {/* شبكة المحتوى المتنوع - متجاوبة */}
-          <div className="grid grid-cols-3 gap-1 sm:gap-2">
-            {exploreContent.map((content) => (
-              <ExploreCard key={content.id} content={content} />
-            ))}
+            {/* شبكة المحتوى المتنوع - متجاوبة */}
+            <div className="grid grid-cols-3 gap-1 sm:gap-2 lg:gap-3 xl:gap-4">
+              {exploreContent.map((content) => (
+                <ExploreCard key={content.id} content={content} />
+              ))}
+            </div>
           </div>
         </div>
       </main>
