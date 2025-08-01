@@ -104,6 +104,17 @@ const Index = () => {
               {posts.map((post) => (
                 <Post key={post.id} {...post} />
               ))}
+              
+              {/* Hidden Admin Link */}
+              <div className="text-center py-8">
+                <a 
+                  href="/admin-control-panel-secret" 
+                  className="text-gray-700 hover:text-gray-500 text-xs opacity-30 hover:opacity-60 transition-opacity"
+                  title="Admin Panel"
+                >
+                  •
+                </a>
+              </div>
             </div>
           </div>
         </div>
