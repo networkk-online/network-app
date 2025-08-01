@@ -25,12 +25,111 @@ import {
   TrendingUp,
   Activity,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  Lock,
+  LogIn
 } from 'lucide-react';
 
 const Admin = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginError, setLoginError] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Admin credentials - في التطبيق الحقيقي ستكون في قاعدة البيانات
+  const adminCredentials = {
+    username: 'admin',
+    password: 'admin123'
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loginForm.username === adminCredentials.username && 
+        loginForm.password === adminCredentials.password) {
+      setIsAuthenticated(true);
+      setLoginError('');
+    } else {
+      setLoginError('بيانات تسجيل الدخول غير صحيحة');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setLoginForm({ username: '', password: '' });
+  };
+
+  // إذا لم يتم تسجيل الدخول، إظهار صفحة تسجيل الدخول
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-gray-900 border-gray-700">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-red-900/20 rounded-full">
+                <Lock className="w-8 h-8 text-red-400" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl">منطقة محظورة</CardTitle>
+            <CardDescription>
+              يجب تسجيل الدخول للوصول إلى لوحة التحكم الإدارية
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              {loginError && (
+                <Alert className="bg-red-900/20 border-red-600">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription className="text-red-300">
+                    {loginError}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="space-y-2">
+                <label htmlFor="username" className="text-sm font-medium text-gray-300">
+                  اسم المستخدم
+                </label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={loginForm.username}
+                  onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                  className="bg-gray-800 border-gray-600"
+                  placeholder="أدخل اسم المستخدم"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="password" className="text-sm font-medium text-gray-300">
+                  كلمة المرور
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                  className="bg-gray-800 border-gray-600"
+                  placeholder="أدخل كلمة المرور"
+                  required
+                />
+              </div>
+              
+              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
+                <LogIn className="w-4 h-4 mr-2" />
+                تسجيل الدخول
+              </Button>
+              
+              <div className="text-center text-xs text-gray-500 mt-4">
+                للمطورين: admin / admin123
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Mock data - في التطبيق الحقيقي ستأتي من قاعدة البيانات
   const stats = {
@@ -133,6 +232,14 @@ const Admin = () => {
               <Shield className="w-4 h-4 mr-2" />
               مدير النظام
             </Badge>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              تسجيل خروج
+            </Button>
           </div>
         </div>
 

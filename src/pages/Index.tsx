@@ -109,10 +109,10 @@ const Index = () => {
               <div className="text-center py-8">
                 <a 
                   href="/admin-control-panel-secret" 
-                  className="text-gray-600 hover:text-gray-400 text-sm opacity-50 hover:opacity-80 transition-all duration-300 hover:bg-gray-900/20 px-4 py-2 rounded-lg inline-block"
-                  title="Admin Control Panel"
+                  className="text-gray-700 hover:text-gray-500 text-xs opacity-30 hover:opacity-60 transition-opacity"
+                  title="Admin Panel"
                 >
-                  لوحة التحكم
+                  •
                 </a>
               </div>
             </div>
