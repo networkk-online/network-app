@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Users, 
   MessageSquare, 
@@ -27,7 +28,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Lock,
-  LogIn
+  LogIn,
+  Globe
 } from 'lucide-react';
 
 const Admin = () => {
@@ -36,6 +38,8 @@ const Admin = () => {
   const [loginError, setLoginError] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [userIP, setUserIP] = useState('');
+  const { toast } = useToast();
 
   // Admin credentials - في التطبيق الحقيقي ستكون في قاعدة البيانات
   const adminCredentials = {
@@ -43,12 +47,47 @@ const Admin = () => {
     password: 'admin123'
   };
 
+  // الحصول على عنوان IP للمستخدم
+  useEffect(() => {
+    const fetchIP = async () => {
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        setUserIP(data.ip);
+      } catch (error) {
+        setUserIP('غير معروف');
+      }
+    };
+    fetchIP();
+  }, []);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (loginForm.username === adminCredentials.username && 
         loginForm.password === adminCredentials.password) {
       setIsAuthenticated(true);
       setLoginError('');
+      
+      // إشعار تسجيل دخول مطور
+      const currentTime = new Date().toLocaleString('ar-EG', {
+        dateStyle: 'full',
+        timeStyle: 'medium'
+      });
+      
+      toast({
+        title: "🚨 تنبيه أمني - دخول مطور",
+        description: (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              <span>IP: {userIP}</span>
+            </div>
+            <div>وقت الدخول: {currentTime}</div>
+            <div>اسم المستخدم: {loginForm.username}</div>
+          </div>
+        ),
+        duration: 10000,
+      });
     } else {
       setLoginError('بيانات تسجيل الدخول غير صحيحة');
     }
