@@ -17,6 +17,7 @@ import Profile from "./pages/Profile";
 import AITools from "./pages/AITools";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import FloatingAIButton from "./components/FloatingAIButton";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <FloatingAIButton />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/explore" element={<Explore />} />
