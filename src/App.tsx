@@ -17,6 +17,7 @@ import Profile from "./pages/Profile";
 import AITools from "./pages/AITools";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import QuickReply from "./pages/QuickReply";
 import FloatingAIButton from "./components/FloatingAIButton";
 import ThemeToggle from "./components/ThemeToggle";
 
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/ai-tools" element={<AITools />} />
           <Route path="/admin-control-panel-secret" element={<Admin />} />
+          <Route path="/quick-reply" element={<QuickReply />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

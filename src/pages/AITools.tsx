@@ -2,8 +2,9 @@ import Header from '@/components/Header';
 import { AIContentFilter } from '@/components/AIContentFilter';
 import { AIImageGenerator } from '@/components/AIImageGenerator';
 import { AIPostOptimizer } from '@/components/AIPostOptimizer';
+import InteractiveNotifications from '@/components/InteractiveNotifications';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Brain, Sparkles, Image, Target } from 'lucide-react';
+import { Brain, Sparkles, Image, Target, Bell } from 'lucide-react';
 
 const AITools = () => {
   return (
@@ -23,7 +24,7 @@ const AITools = () => {
           </div>
 
           <Tabs defaultValue="filter" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-900 mb-8">
+            <TabsList className="grid w-full grid-cols-4 bg-gray-900 mb-8">
               <TabsTrigger 
                 value="filter" 
                 className="data-[state=active]:bg-gray-700 flex items-center gap-2"
@@ -45,6 +46,13 @@ const AITools = () => {
                 <Target className="w-4 h-4" />
                 مُحسِن النشر
               </TabsTrigger>
+              <TabsTrigger 
+                value="notifications" 
+                className="data-[state=active]:bg-gray-700 flex items-center gap-2"
+              >
+                <Bell className="w-4 h-4" />
+                الإشعارات التفاعلية
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="filter" className="space-y-6">
@@ -57,6 +65,10 @@ const AITools = () => {
 
             <TabsContent value="optimizer" className="space-y-6">
               <AIPostOptimizer />
+            </TabsContent>
+
+            <TabsContent value="notifications" className="space-y-6">
+              <InteractiveNotifications />
             </TabsContent>
           </Tabs>
         </div>
