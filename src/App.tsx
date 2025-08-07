@@ -18,6 +18,7 @@ import AITools from "./pages/AITools";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import FloatingAIButton from "./components/FloatingAIButton";
+import ThemeToggle from "./components/ThemeToggle";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <FloatingAIButton />
+        <ThemeToggle />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/explore" element={<Explore />} />

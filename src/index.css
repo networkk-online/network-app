@@ -7,6 +7,7 @@
 
 @layer base {
   :root {
+    /* الوضع الداكن (افتراضي) */
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
 
@@ -45,6 +46,46 @@
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 20%;
     --sidebar-ring: 120 100% 50%;
+  }
+
+  /* الوضع الفاتح (للنهار) */
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 2%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 2%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 2%;
+
+    --primary: 120 100% 35%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 2%;
+
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 120 100% 35%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 85%;
+    --input: 0 0% 95%;
+    --ring: 120 100% 35%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 2%;
+    --sidebar-primary: 120 100% 35%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 95%;
+    --sidebar-accent-foreground: 0 0% 2%;
+    --sidebar-border: 0 0% 85%;
+    --sidebar-ring: 120 100% 35%;
   }
 }
 
