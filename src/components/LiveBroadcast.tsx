@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Video, VideoOff, Mic, MicOff, Users, MessageCircle, Heart, X } from 'lucide-react';
+import { Video, VideoOff, Mic, MicOff, Users, MessageCircle, Heart, X, Languages } from 'lucide-react';
+import { RealTimeTranslation } from './RealTimeTranslation';
 
 interface LiveBroadcastProps {
   onClose: () => void;
@@ -12,6 +13,7 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
   const [isLive, setIsLive] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
+  const [showTranslation, setShowTranslation] = useState(false);
   const [viewers, setViewers] = useState(0);
   const [comments, setComments] = useState<Array<{id: string, username: string, message: string}>>([
     { id: '1', username: 'alex_creator', message: 'Great stream! 🔥' },
@@ -66,26 +68,50 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
               </div>
             )}
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant={showTranslation ? "default" : "ghost"} 
+              size="sm" 
+              onClick={() => setShowTranslation(!showTranslation)}
+              className="gap-2"
+            >
+              <Languages className="w-4 h-4" />
+              ترجمة فورية
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Video area */}
-        <div className="flex-1 bg-gray-900 flex items-center justify-center relative">
-          {isCameraOn ? (
-            <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-32 h-32 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Video className="w-16 h-16 text-black" />
+        <div className="flex-1 bg-gray-900 flex relative">
+          {/* Main video */}
+          <div className="flex-1 flex items-center justify-center">
+            {isCameraOn ? (
+              <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-32 h-32 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <Video className="w-16 h-16 text-black" />
+                  </div>
+                  <p className="text-gray-400">Camera feed would appear here</p>
                 </div>
-                <p className="text-gray-400">Camera feed would appear here</p>
               </div>
-            </div>
-          ) : (
-            <div className="text-center">
-              <VideoOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-400">Camera is off</p>
+            ) : (
+              <div className="text-center">
+                <VideoOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-400">Camera is off</p>
+              </div>
+            )}
+          </div>
+
+          {/* Translation overlay */}
+          {showTranslation && (
+            <div className="absolute top-4 left-4 right-4 z-10 max-h-[50vh] overflow-y-auto">
+              <RealTimeTranslation 
+                isVisible={showTranslation}
+                onToggle={() => setShowTranslation(!showTranslation)}
+              />
             </div>
           )}
         </div>
