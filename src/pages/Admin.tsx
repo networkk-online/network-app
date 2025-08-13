@@ -8,6 +8,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { Calendar } from '@/components/ui/calendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
 import { 
   Users, 
   MessageSquare, 
@@ -29,7 +32,30 @@ import {
   CheckCircle,
   Lock,
   LogIn,
-  Globe
+  Globe,
+  FolderOpen,
+  Mail,
+  MessageCircle,
+  Images,
+  ClipboardList,
+  CalendarDays,
+  Languages,
+  Download,
+  Upload,
+  Trash,
+  PieChart,
+  LineChart,
+  BarChart,
+  Calendar as CalendarIcon,
+  Clock,
+  Send,
+  Archive,
+  Star,
+  Plus,
+  Maximize2,
+  Minimize2,
+  Menu,
+  X
 } from 'lucide-react';
 
 const Admin = () => {
@@ -39,6 +65,9 @@ const Admin = () => {
   const [showPasswords, setShowPasswords] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [userIP, setUserIP] = useState('');
+  const [isFullscreen, setIsFullscreen] = useState(true);
+  const [currentLanguage, setCurrentLanguage] = useState('ar');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { toast } = useToast();
 
   // Admin credentials - في التطبيق الحقيقي ستكون في قاعدة البيانات
@@ -257,16 +286,96 @@ const Admin = () => {
     console.log(`${action} followers for user ${userId}`);
   };
 
+  // Mock data for charts and modules
+  const chartData = [
+    { name: 'يناير', users: 4000, posts: 2400, revenue: 2400 },
+    { name: 'فبراير', users: 3000, posts: 1398, revenue: 2210 },
+    { name: 'مارس', users: 2000, posts: 9800, revenue: 2290 },
+    { name: 'أبريل', users: 2780, posts: 3908, revenue: 2000 },
+    { name: 'مايو', users: 1890, posts: 4800, revenue: 2181 },
+    { name: 'يونيو', users: 2390, posts: 3800, revenue: 2500 },
+  ];
+
+  const languages = [
+    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  ];
+
+  const files = [
+    { id: 1, name: 'تقرير_المبيعات.pdf', size: '2.4 MB', type: 'pdf', uploadDate: '2024-07-28' },
+    { id: 2, name: 'صورة_المنتج.jpg', size: '1.2 MB', type: 'image', uploadDate: '2024-07-27' },
+    { id: 3, name: 'بيانات_المستخدمين.xlsx', size: '850 KB', type: 'excel', uploadDate: '2024-07-26' },
+  ];
+
+  const emails = [
+    { id: 1, from: 'user@example.com', subject: 'استفسار عن الخدمة', date: '2024-07-28', read: false },
+    { id: 2, from: 'admin@company.com', subject: 'تقرير أسبوعي', date: '2024-07-27', read: true },
+    { id: 3, from: 'support@platform.com', subject: 'تحديث النظام', date: '2024-07-26', read: true },
+  ];
+
+  const messages = [
+    { id: 1, user: 'أحمد محمد', message: 'مرحبا، كيف يمكنني المساعدة؟', time: '10:30', read: false },
+    { id: 2, user: 'فاطمة علي', message: 'هل يمكن تحديث ملفي الشخصي؟', time: '10:15', read: true },
+    { id: 3, user: 'محمد حسن', message: 'شكرا لكم على الخدمة الممتازة', time: '09:45', read: true },
+  ];
+
+  const galleryImages = [
+    { id: 1, name: 'صورة_1.jpg', url: '/lovable-uploads/3228b102-769a-43ee-92c5-9f0c0b2b928e.png', size: '1.5 MB' },
+    { id: 2, name: 'صورة_2.jpg', url: '/lovable-uploads/af5dfbd6-d4e4-4f84-be84-7086fe302cd2.png', size: '2.1 MB' },
+  ];
+
+  const tasks = [
+    { id: 1, title: 'مراجعة تقارير المبيعات', status: 'pending', priority: 'high', dueDate: '2024-07-30' },
+    { id: 2, title: 'تحديث قاعدة البيانات', status: 'in-progress', priority: 'medium', dueDate: '2024-07-29' },
+    { id: 3, title: 'إرسال تقرير شهري', status: 'completed', priority: 'low', dueDate: '2024-07-28' },
+  ];
+
+  const events = [
+    { id: 1, title: 'اجتماع الفريق', date: '2024-07-30', time: '10:00' },
+    { id: 2, title: 'عرض تقديمي', date: '2024-07-31', time: '14:00' },
+    { id: 3, title: 'ورشة عمل', date: '2024-08-01', time: '16:00' },
+  ];
+
   return (
-    <div className="min-h-screen bg-black text-white p-4 sm:p-6">
-      <div className="container-responsive">
+    <div className={`${isFullscreen ? 'fixed inset-0' : 'min-h-screen'} bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white overflow-auto`}>
+      <div className={`${isFullscreen ? 'h-full' : ''} p-2`}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">لوحة التحكم الإدارية</h1>
-            <p className="text-gray-400">إدارة شاملة للمنصة والمستخدمين</p>
-          </div>
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className="text-gray-300 hover:text-white"
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">لوحة التحكم الشاملة</h1>
+              <p className="text-gray-400 text-sm">إدارة متكاملة للمنصة والمحتوى</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            {/* Language Selector */}
+            <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
+              <SelectTrigger className="w-32 bg-gray-800 border-gray-600">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-gray-600">
+                {languages.map((lang) => (
+                  <SelectItem key={lang.code} value={lang.code}>
+                    <span className="flex items-center space-x-2">
+                      <span>{lang.flag}</span>
+                      <span>{lang.name}</span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
             <Badge variant="outline" className="bg-green-900/20 text-green-400 border-green-600">
               <Shield className="w-4 h-4 mr-2" />
               مدير النظام
@@ -291,7 +400,7 @@ const Admin = () => {
         </Alert>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-300">إجمالي المستخدمين</CardTitle>
@@ -366,25 +475,351 @@ const Admin = () => {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="users" className="space-y-4">
-          <TabsList className="bg-gray-900 border-gray-700">
-            <TabsTrigger value="users" className="data-[state=active]:bg-gray-700">
-              <Users className="w-4 h-4 mr-2" />
-              إدارة المستخدمين
-            </TabsTrigger>
-            <TabsTrigger value="content" className="data-[state=active]:bg-gray-700">
-              <FileText className="w-4 h-4 mr-2" />
-              إدارة المحتوى
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-gray-700">
-              <BarChart3 className="w-4 h-4 mr-2" />
+        <Tabs defaultValue="analytics" className="space-y-4">
+          <TabsList className="bg-gray-900 border-gray-700 grid grid-cols-4 lg:grid-cols-8 w-full">
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-gray-700 text-xs">
+              <BarChart3 className="w-4 h-4 mr-1" />
               التحليلات
             </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-gray-700">
-              <Settings className="w-4 h-4 mr-2" />
-              الإعدادات
+            <TabsTrigger value="users" className="data-[state=active]:bg-gray-700 text-xs">
+              <Users className="w-4 h-4 mr-1" />
+              المستخدمين
+            </TabsTrigger>
+            <TabsTrigger value="files" className="data-[state=active]:bg-gray-700 text-xs">
+              <FolderOpen className="w-4 h-4 mr-1" />
+              الملفات
+            </TabsTrigger>
+            <TabsTrigger value="email" className="data-[state=active]:bg-gray-700 text-xs">
+              <Mail className="w-4 h-4 mr-1" />
+              البريد
+            </TabsTrigger>
+            <TabsTrigger value="messenger" className="data-[state=active]:bg-gray-700 text-xs">
+              <MessageCircle className="w-4 h-4 mr-1" />
+              المسنجر
+            </TabsTrigger>
+            <TabsTrigger value="gallery" className="data-[state=active]:bg-gray-700 text-xs">
+              <Images className="w-4 h-4 mr-1" />
+              المعرض
+            </TabsTrigger>
+            <TabsTrigger value="tasks" className="data-[state=active]:bg-gray-700 text-xs">
+              <ClipboardList className="w-4 h-4 mr-1" />
+              المهام
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="data-[state=active]:bg-gray-700 text-xs">
+              <CalendarDays className="w-4 h-4 mr-1" />
+              التقويم
             </TabsTrigger>
           </TabsList>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Charts */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <PieChart className="w-5 h-5 mr-2 text-blue-400" />
+                    إحصائيات المستخدمين
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span>مستخدمون نشطون</span>
+                      <span className="text-green-400">8,934</span>
+                    </div>
+                    <Progress value={75} className="h-2" />
+                    <div className="flex justify-between items-center">
+                      <span>مستخدمون جدد</span>
+                      <span className="text-blue-400">1,234</span>
+                    </div>
+                    <Progress value={60} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <LineChart className="w-5 h-5 mr-2 text-green-400" />
+                    نمو الإيرادات
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="text-3xl font-bold text-green-400">$45,678</div>
+                    <div className="text-sm text-gray-400">+12.5% من الشهر الماضي</div>
+                    <div className="h-32 bg-gray-800 rounded-lg flex items-end justify-around p-4">
+                      {chartData.map((data, index) => (
+                        <div
+                          key={index}
+                          className="bg-green-400 rounded-t"
+                          style={{ 
+                            height: `${(data.revenue / 3000) * 100}%`,
+                            width: '20px'
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* File Manager Tab */}
+          <TabsContent value="files" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-700">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center">
+                    <FolderOpen className="w-5 h-5 mr-2 text-yellow-400" />
+                    مدير الملفات
+                  </CardTitle>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm">
+                      <Upload className="w-4 h-4 mr-2" />
+                      رفع ملف
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Plus className="w-4 h-4 mr-2" />
+                      مجلد جديد
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {files.map((file) => (
+                    <div key={file.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <FileText className="w-5 h-5 text-blue-400" />
+                        <div>
+                          <div className="font-medium">{file.name}</div>
+                          <div className="text-sm text-gray-400">{file.size} • {file.uploadDate}</div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button variant="ghost" size="sm">
+                          <Download className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Email Manager Tab */}
+          <TabsContent value="email" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-700">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center">
+                    <Mail className="w-5 h-5 mr-2 text-blue-400" />
+                    مدير البريد الإلكتروني
+                  </CardTitle>
+                  <Button variant="outline" size="sm">
+                    <Send className="w-4 h-4 mr-2" />
+                    إرسال بريد
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {emails.map((email) => (
+                    <div key={email.id} className={`flex items-center justify-between p-3 rounded-lg ${email.read ? 'bg-gray-800' : 'bg-blue-900/20'}`}>
+                      <div className="flex items-center space-x-3">
+                        <Mail className={`w-5 h-5 ${email.read ? 'text-gray-400' : 'text-blue-400'}`} />
+                        <div>
+                          <div className="font-medium">{email.subject}</div>
+                          <div className="text-sm text-gray-400">من: {email.from} • {email.date}</div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Archive className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Messenger Tab */}
+          <TabsContent value="messenger" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <MessageCircle className="w-5 h-5 mr-2 text-green-400" />
+                  مسنجر إداري
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {messages.map((message) => (
+                    <div key={message.id} className={`flex items-center justify-between p-3 rounded-lg ${message.read ? 'bg-gray-800' : 'bg-green-900/20'}`}>
+                      <div className="flex items-center space-x-3">
+                        <MessageCircle className={`w-5 h-5 ${message.read ? 'text-gray-400' : 'text-green-400'}`} />
+                        <div>
+                          <div className="font-medium">{message.user}</div>
+                          <div className="text-sm text-gray-400">{message.message}</div>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-400">{message.time}</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Gallery Tab */}
+          <TabsContent value="gallery" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-700">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center">
+                    <Images className="w-5 h-5 mr-2 text-purple-400" />
+                    معرض الصور
+                  </CardTitle>
+                  <Button variant="outline" size="sm">
+                    <Upload className="w-4 h-4 mr-2" />
+                    رفع صورة
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {galleryImages.map((image) => (
+                    <div key={image.id} className="relative group">
+                      <img 
+                        src={image.url} 
+                        alt={image.name}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                        <div className="flex space-x-2">
+                          <Button variant="ghost" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Task Manager Tab */}
+          <TabsContent value="tasks" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-700">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center">
+                    <ClipboardList className="w-5 h-5 mr-2 text-orange-400" />
+                    مدير المهام
+                  </CardTitle>
+                  <Button variant="outline" size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    مهمة جديدة
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {tasks.map((task) => (
+                    <div key={task.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          task.status === 'completed' ? 'bg-green-400' :
+                          task.status === 'in-progress' ? 'bg-yellow-400' : 'bg-red-400'
+                        }`} />
+                        <div>
+                          <div className="font-medium">{task.title}</div>
+                          <div className="text-sm text-gray-400">
+                            استحقاق: {task.dueDate} • الأولوية: {task.priority}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge 
+                        variant="outline" 
+                        className={`${
+                          task.priority === 'high' ? 'border-red-500 text-red-400' :
+                          task.priority === 'medium' ? 'border-yellow-500 text-yellow-400' :
+                          'border-green-500 text-green-400'
+                        }`}
+                      >
+                        {task.priority}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Calendar Tab */}
+          <TabsContent value="calendar" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <CalendarDays className="w-5 h-5 mr-2 text-indigo-400" />
+                    التقويم الشهري
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    className="rounded-md border border-gray-700 bg-gray-800 pointer-events-auto"
+                  />
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Clock className="w-5 h-5 mr-2 text-indigo-400" />
+                    الأحداث القادمة
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {events.map((event) => (
+                      <div key={event.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <CalendarIcon className="w-5 h-5 text-indigo-400" />
+                          <div>
+                            <div className="font-medium">{event.title}</div>
+                            <div className="text-sm text-gray-400">{event.date} في {event.time}</div>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           {/* Users Management */}
           <TabsContent value="users" className="space-y-4">
