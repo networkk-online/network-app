@@ -476,7 +476,7 @@ const Admin = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="analytics" className="space-y-4">
-          <TabsList className="bg-gray-900 border-gray-700 grid grid-cols-4 lg:grid-cols-8 w-full">
+          <TabsList className="bg-gray-900 border-gray-700 grid grid-cols-4 lg:grid-cols-10 w-full">
             <TabsTrigger value="analytics" className="data-[state=active]:bg-gray-700 text-xs">
               <BarChart3 className="w-4 h-4 mr-1" />
               التحليلات
@@ -484,6 +484,10 @@ const Admin = () => {
             <TabsTrigger value="users" className="data-[state=active]:bg-gray-700 text-xs">
               <Users className="w-4 h-4 mr-1" />
               المستخدمين
+            </TabsTrigger>
+            <TabsTrigger value="content" className="data-[state=active]:bg-gray-700 text-xs">
+              <FileText className="w-4 h-4 mr-1" />
+              المحتوى
             </TabsTrigger>
             <TabsTrigger value="files" className="data-[state=active]:bg-gray-700 text-xs">
               <FolderOpen className="w-4 h-4 mr-1" />
@@ -508,6 +512,10 @@ const Admin = () => {
             <TabsTrigger value="calendar" className="data-[state=active]:bg-gray-700 text-xs">
               <CalendarDays className="w-4 h-4 mr-1" />
               التقويم
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="data-[state=active]:bg-gray-700 text-xs">
+              <Settings className="w-4 h-4 mr-1" />
+              الإعدادات
             </TabsTrigger>
           </TabsList>
 
@@ -565,6 +573,221 @@ const Admin = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Users Management Tab */}
+          <TabsContent value="users" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-700">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl">إدارة المستخدمين</CardTitle>
+                    <CardDescription>عرض وإدارة جميع مستخدمي المنصة</CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={showPasswords} 
+                        onCheckedChange={setShowPasswords}
+                        id="show-passwords"
+                      />
+                      <label htmlFor="show-passwords" className="text-sm text-gray-300 cursor-pointer">
+                        {showPasswords ? 'إخفاء كلمات المرور' : 'إظهار كلمات المرور'}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input 
+                      placeholder="البحث بالاسم أو البريد الإلكتروني..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 bg-gray-800 border-gray-600"
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-gray-700">
+                        <TableHead>المستخدم</TableHead>
+                        <TableHead>البريد الإلكتروني</TableHead>
+                        <TableHead>كلمة المرور</TableHead>
+                        <TableHead>المتابعون</TableHead>
+                        <TableHead>المتابَعون</TableHead>
+                        <TableHead>المنشورات</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>آخر تسجيل دخول</TableHead>
+                        <TableHead>الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.map((user) => (
+                        <TableRow key={user.id} className="border-gray-700">
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <div>
+                                <div className="font-medium">{user.name}</div>
+                                {user.verified && (
+                                  <Badge variant="outline" className="bg-blue-900/20 text-blue-400 border-blue-600 text-xs">
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    موثق
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-gray-300">{user.email}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <span className="font-mono text-sm">
+                                {showPasswords ? user.password : '••••••••'}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowPasswords(!showPasswords)}
+                              >
+                                {showPasswords ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-blue-400 font-medium">{user.followers.toLocaleString()}</span>
+                              <div className="flex space-x-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleFollowers(user.id, 'increase')}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <UserCheck className="w-3 h-3 text-green-400" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleFollowers(user.id, 'decrease')}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <UserX className="w-3 h-3 text-red-400" />
+                                </Button>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-gray-400">{user.following.toLocaleString()}</TableCell>
+                          <TableCell className="text-gray-400">{user.posts}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="outline" 
+                              className={`${
+                                user.status === 'active' 
+                                  ? 'bg-green-900/20 text-green-400 border-green-600' 
+                                  : 'bg-red-900/20 text-red-400 border-red-600'
+                              }`}
+                            >
+                              {user.status === 'active' ? 'نشط' : 'معلق'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-gray-400">{user.lastLogin}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button variant="ghost" size="sm">
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm">
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Content Management Tab */}
+          <TabsContent value="content" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-xl">إدارة المحتوى</CardTitle>
+                <CardDescription>مراجعة وإدارة المنشورات والمحتوى</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-gray-700">
+                        <TableHead>الكاتب</TableHead>
+                        <TableHead>المحتوى</TableHead>
+                        <TableHead>الإعجابات</TableHead>
+                        <TableHead>التعليقات</TableHead>
+                        <TableHead>المشاركات</TableHead>
+                        <TableHead>التقارير</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>التاريخ</TableHead>
+                        <TableHead>الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {posts.map((post) => (
+                        <TableRow key={post.id} className="border-gray-700">
+                          <TableCell className="font-medium">{post.author}</TableCell>
+                          <TableCell className="max-w-xs truncate">{post.content}</TableCell>
+                          <TableCell className="text-green-400">{post.likes}</TableCell>
+                          <TableCell className="text-blue-400">{post.comments}</TableCell>
+                          <TableCell className="text-purple-400">{post.shares}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="outline" 
+                              className={post.reports > 0 ? 'bg-red-900/20 text-red-400 border-red-600' : 'bg-gray-900/20 text-gray-400 border-gray-600'}
+                            >
+                              {post.reports}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="outline" 
+                              className={`${
+                                post.status === 'published' 
+                                  ? 'bg-green-900/20 text-green-400 border-green-600' 
+                                  : 'bg-yellow-900/20 text-yellow-400 border-yellow-600'
+                              }`}
+                            >
+                              {post.status === 'published' ? 'منشور' : 'قيد المراجعة'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-gray-400">{post.date}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button variant="ghost" size="sm">
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm">
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* File Manager Tab */}
@@ -1063,37 +1286,99 @@ const Admin = () => {
 
           {/* Settings */}
           <TabsContent value="settings" className="space-y-4">
-            <Card className="bg-gray-900 border-gray-700">
-              <CardHeader>
-                <CardTitle>إعدادات النظام</CardTitle>
-                <CardDescription>إدارة إعدادات المنصة العامة</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">تفعيل التسجيل الجديد</h4>
-                    <p className="text-sm text-gray-400">السماح للمستخدمين الجدد بإنشاء حسابات</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Settings className="w-5 h-5 mr-2 text-purple-400" />
+                    إعدادات النظام
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="text-base">السماح بتسجيل مستخدمين جدد</div>
+                      <div className="text-sm text-gray-400">تمكين أو تعطيل تسجيل حسابات جديدة</div>
+                    </div>
+                    <Switch defaultChecked />
                   </div>
-                  <Switch defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">المراجعة التلقائية للمحتوى</h4>
-                    <p className="text-sm text-gray-400">فحص المنشورات تلقائياً قبل النشر</p>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="text-base">مراجعة المحتوى تلقائياً</div>
+                      <div className="text-sm text-gray-400">فحص المنشورات قبل النشر</div>
+                    </div>
+                    <Switch defaultChecked />
                   </div>
-                  <Switch defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">إشعارات البريد الإلكتروني</h4>
-                    <p className="text-sm text-gray-400">إرسال إشعارات للمدراء عند التقارير</p>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="text-base">إشعارات البريد الإلكتروني</div>
+                      <div className="text-sm text-gray-400">إرسال إشعارات للمطورين</div>
+                    </div>
+                    <Switch />
                   </div>
-                  <Switch defaultChecked />
-                </div>
-              </CardContent>
-            </Card>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="text-base">الوضع الليلي الإجباري</div>
+                      <div className="text-sm text-gray-400">فرض المظهر الداكن لجميع المستخدمين</div>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="text-base">النسخ الاحتياطي التلقائي</div>
+                      <div className="text-sm text-gray-400">حفظ نسخة احتياطية يومياً</div>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Languages className="w-5 h-5 mr-2 text-indigo-400" />
+                    إعدادات اللغة
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">اللغة الافتراضية للمنصة</label>
+                    <Select defaultValue="ar">
+                      <SelectTrigger className="mt-2 bg-gray-800 border-gray-600">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        {languages.map((lang) => (
+                          <SelectItem key={lang.code} value={lang.code}>
+                            <span className="flex items-center space-x-2">
+                              <span>{lang.flag}</span>
+                              <span>{lang.name}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">اللغات المدعومة</label>
+                    {languages.map((lang) => (
+                      <div key={lang.code} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span>{lang.flag}</span>
+                          <span>{lang.name}</span>
+                        </div>
+                        <Switch defaultChecked={lang.code === 'ar' || lang.code === 'en'} />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
