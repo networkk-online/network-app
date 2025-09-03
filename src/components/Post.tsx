@@ -63,27 +63,44 @@ const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarn
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-0 hover:bg-transparent"
+              className="p-0 hover:bg-transparent group"
               onClick={handleLike}
             >
               <Heart 
-                className={`w-6 h-6 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white hover:text-gray-300'}`} 
+                className={`w-6 h-6 transition-all duration-300 ${
+                  isLiked 
+                    ? 'fill-red-500 text-red-500 animate-pulse scale-110' 
+                    : 'text-white hover:text-red-400 group-hover:scale-110'
+                }`} 
               />
             </Button>
-            <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent">
-              <MessageCircle className="w-6 h-6 hover:text-gray-300" />
+            <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent group">
+              <MessageCircle className="w-6 h-6 hover:text-blue-400 transition-all duration-200 group-hover:scale-110" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent">
-              <Send className="w-6 h-6 hover:text-gray-300" />
+            <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent group">
+              <Send className="w-6 h-6 hover:text-green-400 transition-all duration-200 group-hover:scale-110" />
             </Button>
           </div>
-          <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent">
-            <Bookmark className="w-6 h-6 hover:text-gray-300" />
+          <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent group">
+            <Bookmark className="w-6 h-6 hover:text-yellow-400 transition-all duration-200 group-hover:scale-110" />
           </Button>
         </div>
 
-        {/* Likes Count */}
-        <p className="font-semibold mb-2">{likeCount.toLocaleString()} likes</p>
+        {/* Enhanced Likes Count */}
+        <div className="flex items-center space-x-2 mb-2">
+          <div className="flex -space-x-1">
+            {/* Sample avatar stack for recent likes */}
+            <div className="w-5 h-5 rounded-full bg-gradient-to-r from-pink-400 to-red-400 border border-white"></div>
+            <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 border border-white"></div>
+            <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-400 to-teal-400 border border-white"></div>
+          </div>
+          <p className="font-semibold text-white">
+            <span className="bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
+              {likeCount.toLocaleString()}
+            </span>
+            <span className="text-gray-300 ml-1">إعجاب</span>
+          </p>
+        </div>
 
         {/* Caption */}
         <div className="mb-2">
