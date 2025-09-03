@@ -1,5 +1,5 @@
 
-import { Heart, Home, MessageCircle, PlusSquare, Search, User, Video, Building2, Users, LogIn, Film, Compass, Menu, Brain } from 'lucide-react';
+import { Heart, Home, MessageCircle, PlusSquare, Search, User, Video, Building2, Users, LogIn, Film, Compass, Menu, Brain, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -29,6 +29,7 @@ const Header = () => {
     { icon: Video, label: 'البث', path: '/broadcast' },
     { icon: Users, label: 'الصفحات', path: '/pages' },
     { icon: Building2, label: 'الأعمال', path: '/business' },
+    { icon: Wallet, label: 'سحب المال', path: '/withdraw' },
   ];
 
   return (
