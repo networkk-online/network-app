@@ -16,7 +16,7 @@ import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import AITools from "./pages/AITools";
 import Admin from "./pages/Admin";
-import AdminControl from "./pages/AdminControl";
+
 import NotFound from "./pages/NotFound";
 import QuickReply from "./pages/QuickReply";
 import Withdraw from "./pages/Withdraw";
@@ -46,7 +46,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/ai-tools" element={<AITools />} />
           <Route path="/admin-control-panel-secret" element={<Admin />} />
-          <Route path="/admin-control" element={<AdminControl />} />
+          
           <Route path="/quick-reply" element={<QuickReply />} />
           <Route path="/withdraw" element={<Withdraw />} />
           <Route path="*" element={<NotFound />} />

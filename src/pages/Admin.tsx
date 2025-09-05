@@ -55,7 +55,15 @@ import {
   Maximize2,
   Minimize2,
   Menu,
-  X
+  X,
+  Crown,
+  ShieldCheck,
+  UserCog,
+  Key,
+  Database,
+  Server,
+  Monitor,
+  Zap
 } from 'lucide-react';
 
 const Admin = () => {
@@ -476,7 +484,7 @@ const Admin = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="analytics" className="space-y-4">
-          <TabsList className="bg-gray-900 border-gray-700 grid grid-cols-4 lg:grid-cols-10 w-full">
+          <TabsList className="bg-gray-900 border-gray-700 grid grid-cols-4 lg:grid-cols-11 w-full">
             <TabsTrigger value="analytics" className="data-[state=active]:bg-gray-700 text-xs">
               <BarChart3 className="w-4 h-4 mr-1" />
               التحليلات
@@ -484,6 +492,10 @@ const Admin = () => {
             <TabsTrigger value="users" className="data-[state=active]:bg-gray-700 text-xs">
               <Users className="w-4 h-4 mr-1" />
               المستخدمين
+            </TabsTrigger>
+            <TabsTrigger value="permissions" className="data-[state=active]:bg-gray-700 text-xs">
+              <ShieldCheck className="w-4 h-4 mr-1" />
+              الصلاحيات
             </TabsTrigger>
             <TabsTrigger value="content" className="data-[state=active]:bg-gray-700 text-xs">
               <FileText className="w-4 h-4 mr-1" />
@@ -714,6 +726,258 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Permissions Management Tab */}
+          <TabsContent value="permissions" className="space-y-4">
+            <div className="grid gap-6">
+              {/* Super Admin Dashboard */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Crown className="w-5 h-5 mr-2 text-yellow-400" />
+                    لوحة المدير العام
+                  </CardTitle>
+                  <CardDescription>تحكم كامل في صلاحيات النظام</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card className="bg-yellow-900/20 border-yellow-600">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-yellow-300">المدراء العامون</p>
+                            <p className="text-2xl font-bold text-yellow-400">3</p>
+                          </div>
+                          <Crown className="w-8 h-8 text-yellow-400" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-blue-900/20 border-blue-600">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-blue-300">المشرفون</p>
+                            <p className="text-2xl font-bold text-blue-400">12</p>
+                          </div>
+                          <ShieldCheck className="w-8 h-8 text-blue-400" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-green-900/20 border-green-600">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-green-300">المحررون</p>
+                            <p className="text-2xl font-bold text-green-400">45</p>
+                          </div>
+                          <Edit className="w-8 h-8 text-green-400" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-purple-900/20 border-purple-600">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-purple-300">المراقبون</p>
+                            <p className="text-2xl font-bold text-purple-400">28</p>
+                          </div>
+                          <Eye className="w-8 h-8 text-purple-400" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Admins & Moderators Management */}
+                <Card className="bg-gray-900 border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <UserCog className="w-5 h-5 mr-2 text-blue-400" />
+                      إدارة المشرفين
+                    </CardTitle>
+                    <CardDescription>تعيين وإدارة صلاحيات المشرفين</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-3">
+                        {[
+                          { name: 'محمد أحمد', role: 'مشرف عام', permissions: 'كامل', status: 'نشط' },
+                          { name: 'فاطمة علي', role: 'مشرف محتوى', permissions: 'محدود', status: 'نشط' },
+                          { name: 'أحمد محمود', role: 'مراقب', permissions: 'عرض فقط', status: 'معطل' }
+                        ].map((admin, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                                <span className="text-white font-bold">{admin.name.charAt(0)}</span>
+                              </div>
+                              <div>
+                                <div className="font-medium">{admin.name}</div>
+                                <div className="text-sm text-gray-400">{admin.role}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="outline" className="bg-blue-900/20 text-blue-400 border-blue-600">
+                                {admin.permissions}
+                              </Badge>
+                              <Switch defaultChecked={admin.status === 'نشط'} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        إضافة مشرف جديد
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Role Management */}
+                <Card className="bg-gray-900 border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Key className="w-5 h-5 mr-2 text-green-400" />
+                      إدارة الأدوار
+                    </CardTitle>
+                    <CardDescription>تخصيص الأدوار والصلاحيات</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {[
+                        { role: 'مدير عام', permissions: ['كل الصلاحيات'], color: 'yellow' },
+                        { role: 'مشرف محتوى', permissions: ['إدارة المنشورات', 'حذف التعليقات'], color: 'blue' },
+                        { role: 'مراقب', permissions: ['عرض التقارير', 'تعديل المحتوى'], color: 'green' },
+                        { role: 'محرر', permissions: ['تحرير المحتوى'], color: 'purple' }
+                      ].map((role, index) => (
+                        <div key={index} className="p-4 bg-gray-800 rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className={`font-medium text-${role.color}-400`}>{role.role}</h4>
+                            <Button variant="ghost" size="sm">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="space-y-1">
+                            {role.permissions.map((permission, pIndex) => (
+                              <div key={pIndex} className="flex items-center space-x-2">
+                                <CheckCircle className={`w-3 h-3 text-${role.color}-400`} />
+                                <span className="text-sm text-gray-300">{permission}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <Button variant="outline" className="w-full">
+                        <Plus className="w-4 h-4 mr-2" />
+                        إنشاء دور جديد
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* System Permissions */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Database className="w-5 h-5 mr-2 text-red-400" />
+                    صلاحيات النظام
+                  </CardTitle>
+                  <CardDescription>تحكم في صلاحيات النظام الأساسية</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-blue-400">صلاحيات المحتوى</h4>
+                      <div className="space-y-3">
+                        {[
+                          'إنشاء المنشورات',
+                          'تعديل المنشورات',
+                          'حذف المنشورات',
+                          'إدارة التعليقات'
+                        ].map((permission, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-sm">{permission}</span>
+                            <Switch defaultChecked />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-green-400">صلاحيات المستخدمين</h4>
+                      <div className="space-y-3">
+                        {[
+                          'عرض بيانات المستخدمين',
+                          'تعديل الملفات الشخصية',
+                          'حظر المستخدمين',
+                          'حذف الحسابات'
+                        ].map((permission, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-sm">{permission}</span>
+                            <Switch defaultChecked={index < 2} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-yellow-400">صلاحيات النظام</h4>
+                      <div className="space-y-3">
+                        {[
+                          'إدارة الإعدادات',
+                          'عرض التقارير',
+                          'إدارة قاعدة البيانات',
+                          'النسخ الاحتياطي'
+                        ].map((permission, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-sm">{permission}</span>
+                            <Switch defaultChecked={index === 1} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Actions */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Zap className="w-5 h-5 mr-2 text-purple-400" />
+                    إجراءات سريعة
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Button variant="outline" className="bg-blue-900/20 border-blue-600 text-blue-400 hover:bg-blue-900/30">
+                      <UserCog className="w-4 h-4 mr-2" />
+                      ترقية مستخدم
+                    </Button>
+                    <Button variant="outline" className="bg-red-900/20 border-red-600 text-red-400 hover:bg-red-900/30">
+                      <UserX className="w-4 h-4 mr-2" />
+                      حظر مؤقت
+                    </Button>
+                    <Button variant="outline" className="bg-green-900/20 border-green-600 text-green-400 hover:bg-green-900/30">
+                      <Shield className="w-4 h-4 mr-2" />
+                      تفعيل الحماية
+                    </Button>
+                    <Button variant="outline" className="bg-yellow-900/20 border-yellow-600 text-yellow-400 hover:bg-yellow-900/30">
+                      <AlertTriangle className="w-4 h-4 mr-2" />
+                      وضع الطوارئ
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Content Management Tab */}
