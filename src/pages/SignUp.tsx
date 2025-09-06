@@ -33,11 +33,11 @@ const SignUp = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-12">
-          <div className="w-24 h-24 mx-auto mb-8 relative">
+          <div className="w-24 h-24 mx-auto mb-8 relative animate-pulse">
             <img 
               src="/lovable-uploads/3228b102-769a-43ee-92c5-9f0c0b2b928e.png" 
               alt="Network Logo" 
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain animate-[spin_3s_linear_infinite] hover:animate-[bounce_1s_ease-in-out_infinite]"
             />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Sign Up</h1>
