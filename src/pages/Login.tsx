@@ -28,8 +28,23 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-black flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-green-400/15 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-green-600/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        
+        {/* Floating particles */}
+        <div className="absolute top-10 left-10 w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
+        <div className="absolute top-20 right-20 w-1 h-1 bg-green-300 rounded-full animate-bounce delay-500"></div>
+        <div className="absolute bottom-20 left-20 w-3 h-3 bg-green-500 rounded-full animate-bounce delay-1000"></div>
+        <div className="absolute bottom-10 right-10 w-1 h-1 bg-green-400 rounded-full animate-bounce delay-1500"></div>
+        
+        {/* Grid overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.1)_1px,transparent_1px)] bg-[length:50px_50px] opacity-30"></div>
+      </div>
+      <div className="w-full max-w-md z-10 relative backdrop-blur-sm bg-black/20 rounded-2xl border border-green-500/20 p-8 shadow-2xl shadow-green-500/10">
         {/* Logo */}
         <div className="text-center mb-12">
           <div className="w-24 h-24 mx-auto mb-8 relative">
