@@ -42,6 +42,18 @@ const SignUp = () => {
         <div className="absolute bottom-20 left-20 w-3 h-3 bg-green-500 rounded-full animate-bounce delay-1000"></div>
         <div className="absolute bottom-10 right-10 w-1 h-1 bg-green-400 rounded-full animate-bounce delay-1500"></div>
         
+        {/* App-specific Emojis */}
+        <div className="absolute top-16 left-1/4 text-2xl animate-bounce delay-300">❤️</div>
+        <div className="absolute top-32 right-1/3 text-xl animate-bounce delay-700">💬</div>
+        <div className="absolute top-1/2 left-16 text-lg animate-bounce delay-1200">📱</div>
+        <div className="absolute bottom-32 right-16 text-2xl animate-bounce delay-1600">🔥</div>
+        <div className="absolute top-48 left-1/2 text-xl animate-bounce delay-2000">📸</div>
+        <div className="absolute bottom-48 left-1/4 text-lg animate-bounce delay-400">🌟</div>
+        <div className="absolute top-64 right-20 text-xl animate-bounce delay-800">👥</div>
+        <div className="absolute bottom-16 left-1/2 text-lg animate-bounce delay-1400">🚀</div>
+        <div className="absolute top-20 left-2/3 text-xl animate-bounce delay-600">💫</div>
+        <div className="absolute bottom-40 right-1/3 text-lg animate-bounce delay-1800">🎯</div>
+        
         {/* Grid overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.1)_1px,transparent_1px)] bg-[length:50px_50px] opacity-30"></div>
       </div>
