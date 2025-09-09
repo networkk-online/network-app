@@ -79,11 +79,11 @@ const PageCard = ({
               className="w-16 h-16 rounded-full border-4 border-gray-900 object-cover"
             />
             {isVerified && (
-              <div className="absolute -bottom-1 -right-1">
+              <div className="absolute -bottom-1 -right-1 animate-pulse">
                 <img 
-                  src="/lovable-uploads/9bbf677c-67d9-436f-a366-8e44bcb1d82c.png" 
+                  src="/lovable-uploads/20196b8b-fafa-4347-9c0f-d0c97279f466.png" 
                   alt="Verified badge" 
-                  className={`w-5 h-5 ${type === 'business' ? 'hue-rotate-[45deg]' : type === 'celebrity' ? '' : 'saturate-0'}`}
+                  className="w-6 h-6 drop-shadow-lg hover:scale-110 transition-transform duration-300"
                 />
               </div>
             )}
@@ -93,9 +93,9 @@ const PageCard = ({
               <h3 className="font-bold text-white text-lg">{name}</h3>
               {isVerified && (
                 <img 
-                  src="/lovable-uploads/9bbf677c-67d9-436f-a366-8e44bcb1d82c.png" 
+                  src="/lovable-uploads/20196b8b-fafa-4347-9c0f-d0c97279f466.png" 
                   alt="Verified" 
-                  className={`w-5 h-5 ${type === 'business' ? 'hue-rotate-[45deg]' : type === 'celebrity' ? '' : 'saturate-0'}`}
+                  className="w-6 h-6 drop-shadow-md hover:rotate-12 transition-all duration-300"
                 />
               )}
             </div>
@@ -119,11 +119,11 @@ const PageCard = ({
           {isVerified && (
             <div className="flex items-center space-x-1">
               <img 
-                src="/lovable-uploads/9bbf677c-67d9-436f-a366-8e44bcb1d82c.png" 
+                src="/lovable-uploads/20196b8b-fafa-4347-9c0f-d0c97279f466.png" 
                 alt="Verified" 
-                className={`w-4 h-4 ${type === 'business' ? 'hue-rotate-[45deg]' : type === 'celebrity' ? '' : 'saturate-0'}`}
+                className="w-5 h-5 drop-shadow-sm hover:rotate-6 transition-transform duration-200"
               />
-              <span className={`text-xs ${verificationColor} font-semibold`}>
+              <span className="text-xs text-yellow-400 font-bold">
                 {type === 'business' ? 'شركة موثقة' : type === 'celebrity' ? 'مشهور موثق' : 'شخصية مهمة'}
               </span>
             </div>
