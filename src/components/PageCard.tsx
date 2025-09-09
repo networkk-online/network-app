@@ -45,11 +45,11 @@ const PageCard = ({
   const getVerificationBadgeColor = (accountType: 'celebrity' | 'business' | 'media') => {
     switch (accountType) {
       case 'business':
-        return 'text-yellow-500'; // ذهبي للشركات
+        return 'text-yellow-400'; // ذهبي للشركات
       case 'celebrity':
         return 'text-blue-500'; // أزرق للمشاهير
       case 'media':
-        return 'text-gray-400'; // رصاصي للشخصيات المهمة
+        return 'text-gray-500'; // رصاصي للشخصيات المهمة
       default:
         return 'text-green-500';
     }
@@ -79,8 +79,8 @@ const PageCard = ({
               className="w-16 h-16 rounded-full border-4 border-gray-900 object-cover"
             />
             {isVerified && (
-              <div className={`absolute -bottom-1 -right-1 ${type === 'business' ? 'bg-yellow-500' : type === 'celebrity' ? 'bg-blue-500' : 'bg-gray-400'} rounded-full p-1`}>
-                <Check className="w-3 h-3 text-black" />
+              <div className={`absolute -bottom-1 -right-1 ${type === 'business' ? 'bg-yellow-400' : type === 'celebrity' ? 'bg-blue-500' : 'bg-gray-500'} rounded-full p-1 shadow-lg`}>
+                <Check className="w-3 h-3 text-white font-bold" />
               </div>
             )}
           </div>
@@ -88,7 +88,7 @@ const PageCard = ({
             <div className="flex items-center space-x-2 mb-1">
               <h3 className="font-bold text-white text-lg">{name}</h3>
               {isVerified && (
-                <Check className={`w-4 h-4 ${verificationColor}`} />
+                <Check className={`w-5 h-5 ${verificationColor} drop-shadow-md`} />
               )}
             </div>
             <Badge variant="secondary" className="text-xs">
@@ -110,8 +110,8 @@ const PageCard = ({
           </span>
           {isVerified && (
             <div className="flex items-center space-x-1">
-              <Check className={`w-3 h-3 ${verificationColor}`} />
-              <span className={`text-xs ${verificationColor} font-medium`}>
+              <Check className={`w-4 h-4 ${verificationColor} drop-shadow-md`} />
+              <span className={`text-xs ${verificationColor} font-semibold`}>
                 {type === 'business' ? 'شركة موثقة' : type === 'celebrity' ? 'مشهور موثق' : 'شخصية مهمة'}
               </span>
             </div>
