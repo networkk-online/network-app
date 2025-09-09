@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Plus, Shield } from 'lucide-react';
+import { Check, Plus } from 'lucide-react';
 
 interface PageCardProps {
   id: string;
@@ -80,7 +80,7 @@ const PageCard = ({
             />
             {isVerified && (
               <div className={`absolute -bottom-1 -right-1 ${type === 'business' ? 'bg-yellow-500' : type === 'celebrity' ? 'bg-blue-500' : 'bg-gray-400'} rounded-full p-1`}>
-                <Shield className="w-3 h-3 text-black" />
+                <Check className="w-3 h-3 text-black" />
               </div>
             )}
           </div>
@@ -88,7 +88,7 @@ const PageCard = ({
             <div className="flex items-center space-x-2 mb-1">
               <h3 className="font-bold text-white text-lg">{name}</h3>
               {isVerified && (
-                <Shield className={`w-4 h-4 ${verificationColor}`} />
+                <Check className={`w-4 h-4 ${verificationColor}`} />
               )}
             </div>
             <Badge variant="secondary" className="text-xs">
@@ -110,7 +110,7 @@ const PageCard = ({
           </span>
           {isVerified && (
             <div className="flex items-center space-x-1">
-              <Shield className={`w-3 h-3 ${verificationColor}`} />
+              <Check className={`w-3 h-3 ${verificationColor}`} />
               <span className={`text-xs ${verificationColor} font-medium`}>
                 {type === 'business' ? 'شركة موثقة' : type === 'celebrity' ? 'مشهور موثق' : 'شخصية مهمة'}
               </span>
