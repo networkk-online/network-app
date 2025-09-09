@@ -79,8 +79,12 @@ const PageCard = ({
               className="w-16 h-16 rounded-full border-4 border-gray-900 object-cover"
             />
             {isVerified && (
-              <div className={`absolute -bottom-1 -right-1 ${type === 'business' ? 'bg-yellow-400' : type === 'celebrity' ? 'bg-blue-500' : 'bg-gray-500'} rounded-full p-1 shadow-lg`}>
-                <Check className="w-3 h-3 text-white font-bold" />
+              <div className="absolute -bottom-1 -right-1">
+                <img 
+                  src="/lovable-uploads/9bbf677c-67d9-436f-a366-8e44bcb1d82c.png" 
+                  alt="Verified badge" 
+                  className={`w-5 h-5 ${type === 'business' ? 'hue-rotate-[45deg]' : type === 'celebrity' ? '' : 'saturate-0'}`}
+                />
               </div>
             )}
           </div>
@@ -88,7 +92,11 @@ const PageCard = ({
             <div className="flex items-center space-x-2 mb-1">
               <h3 className="font-bold text-white text-lg">{name}</h3>
               {isVerified && (
-                <Check className={`w-5 h-5 ${verificationColor} drop-shadow-md`} />
+                <img 
+                  src="/lovable-uploads/9bbf677c-67d9-436f-a366-8e44bcb1d82c.png" 
+                  alt="Verified" 
+                  className={`w-5 h-5 ${type === 'business' ? 'hue-rotate-[45deg]' : type === 'celebrity' ? '' : 'saturate-0'}`}
+                />
               )}
             </div>
             <Badge variant="secondary" className="text-xs">
@@ -110,7 +118,11 @@ const PageCard = ({
           </span>
           {isVerified && (
             <div className="flex items-center space-x-1">
-              <Check className={`w-4 h-4 ${verificationColor} drop-shadow-md`} />
+              <img 
+                src="/lovable-uploads/9bbf677c-67d9-436f-a366-8e44bcb1d82c.png" 
+                alt="Verified" 
+                className={`w-4 h-4 ${type === 'business' ? 'hue-rotate-[45deg]' : type === 'celebrity' ? '' : 'saturate-0'}`}
+              />
               <span className={`text-xs ${verificationColor} font-semibold`}>
                 {type === 'business' ? 'شركة موثقة' : type === 'celebrity' ? 'مشهور موثق' : 'شخصية مهمة'}
               </span>
