@@ -83,7 +83,7 @@ const PageCard = ({
                 <img 
                   src={type === 'celebrity' ? "/lovable-uploads/4688e176-6443-4ddf-9b37-c6363c50aa10.png" : "/lovable-uploads/20196b8b-fafa-4347-9c0f-d0c97279f466.png"} 
                   alt="Verified badge" 
-                  className={`w-6 h-6 drop-shadow-lg hover:scale-110 transition-transform duration-300 ${type === 'business' ? '' : type === 'celebrity' ? '' : 'saturate-0 brightness-75'}`}
+                  className={`w-6 h-6 drop-shadow-lg hover:scale-110 transition-transform duration-300 ${type === 'business' ? '' : type === 'celebrity' ? 'hue-rotate-[120deg] saturate-150 brightness-125' : 'saturate-0 brightness-75'}`}
                 />
               </div>
             )}
@@ -95,7 +95,7 @@ const PageCard = ({
                 <img 
                   src={type === 'celebrity' ? "/lovable-uploads/4688e176-6443-4ddf-9b37-c6363c50aa10.png" : "/lovable-uploads/20196b8b-fafa-4347-9c0f-d0c97279f466.png"} 
                   alt="Verified" 
-                  className={`w-6 h-6 drop-shadow-md hover:rotate-12 transition-all duration-300 ${type === 'business' ? '' : type === 'celebrity' ? '' : 'saturate-0 brightness-75'}`}
+                  className={`w-6 h-6 drop-shadow-md hover:rotate-12 transition-all duration-300 ${type === 'business' ? '' : type === 'celebrity' ? 'hue-rotate-[120deg] saturate-150 brightness-125' : 'saturate-0 brightness-75'}`}
                 />
               )}
             </div>
@@ -121,9 +121,9 @@ const PageCard = ({
               <img 
                 src={type === 'celebrity' ? "/lovable-uploads/4688e176-6443-4ddf-9b37-c6363c50aa10.png" : "/lovable-uploads/20196b8b-fafa-4347-9c0f-d0c97279f466.png"} 
                 alt="Verified" 
-                className={`w-5 h-5 drop-shadow-sm hover:rotate-6 transition-transform duration-200 ${type === 'business' ? '' : type === 'celebrity' ? '' : 'saturate-0 brightness-75'}`}
+                className={`w-5 h-5 drop-shadow-sm hover:rotate-6 transition-transform duration-200 ${type === 'business' ? '' : type === 'celebrity' ? 'hue-rotate-[120deg] saturate-150 brightness-125' : 'saturate-0 brightness-75'}`}
               />
-              <span className={`text-xs font-bold ${type === 'business' ? 'text-yellow-400' : type === 'celebrity' ? 'text-blue-500' : 'text-gray-400'}`}>
+              <span className={`text-xs font-bold ${type === 'business' ? 'text-yellow-400' : type === 'celebrity' ? 'text-green-400' : 'text-gray-400'}`}>
                 {type === 'business' ? 'شركة موثقة' : type === 'celebrity' ? 'مشهور موثق' : 'شخصية مهمة'}
               </span>
             </div>
