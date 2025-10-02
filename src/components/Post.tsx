@@ -1,26 +1,42 @@
 
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { VoiceRecorder } from './VoiceRecorder';
+import { VoiceMessage } from './VoiceMessage';
+import { useToast } from '@/hooks/use-toast';
 
 interface PostProps {
   id: string;
   username: string;
   userAvatar: string;
-  image: string;
+  image?: string;
   caption: string;
   likes: number;
   timeAgo: string;
   walletEarnings: number;
+  voiceUrl?: string;
+  voiceDuration?: number;
 }
 
-const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarnings }: PostProps) => {
+const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarnings, voiceUrl, voiceDuration }: PostProps) => {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [comment, setComment] = useState('');
+  const { toast } = useToast();
 
   const handleLike = () => {
     setIsLiked(!isLiked);
     setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+  };
+
+  const handleVoiceComment = (audioBlob: Blob, duration: number) => {
+    setShowVoiceRecorder(false);
+    toast({
+      title: "تم إضافة التعليق الصوتي",
+      description: `المدة: ${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`,
+    });
   };
 
   return (
@@ -47,14 +63,24 @@ const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarn
         </Button>
       </div>
 
-      {/* Post Image */}
-      <div className="relative">
-        <img 
-          src={image} 
-          alt="Post content"
-          className="w-full h-96 object-cover"
-        />
-      </div>
+      {/* Post Content */}
+      {voiceUrl ? (
+        <div className="p-6 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+          <VoiceMessage 
+            audioUrl={voiceUrl}
+            duration={voiceDuration || 0}
+            isOwn={false}
+          />
+        </div>
+      ) : image ? (
+        <div className="relative">
+          <img 
+            src={image} 
+            alt="Post content"
+            className="w-full h-96 object-cover"
+          />
+        </div>
+      ) : null}
 
       {/* Post Actions */}
       <div className="p-4">
@@ -114,19 +140,38 @@ const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarn
         </button>
 
         {/* Add Comment */}
-        <div className="flex items-center space-x-3 pt-3 border-t border-gray-800">
-          <input 
-            type="text" 
-            placeholder="Add a comment..."
-            className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none text-sm"
-          />
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-green-400 hover:text-green-300 text-sm font-semibold p-0"
-          >
-            Post
-          </Button>
+        <div className="pt-3 border-t border-gray-800">
+          {showVoiceRecorder ? (
+            <VoiceRecorder 
+              onRecordingComplete={handleVoiceComment}
+              maxDuration={60}
+            />
+          ) : (
+            <div className="flex items-center space-x-3">
+              <input 
+                type="text" 
+                placeholder="أضف تعليق..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none text-sm"
+              />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-gray-400 hover:text-green-400 p-0"
+                onClick={() => setShowVoiceRecorder(true)}
+              >
+                <Mic className="w-5 h-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-green-400 hover:text-green-300 text-sm font-semibold p-0"
+              >
+                نشر
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

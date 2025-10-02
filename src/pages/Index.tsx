@@ -62,11 +62,12 @@ const Index = () => {
       id: '2',
       username: 'sarah_artist',
       userAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face',
-      image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=600&h=600&fit=crop',
-      caption: 'New artwork completed! This piece took me 3 weeks to finish. Every brushstroke was worth it 🎨',
-      likes: 892,
-      timeAgo: '4h',
-      walletEarnings: 0.12
+      caption: '🎤 استمع لآخر أفكاري حول الفن المعاصر',
+      likes: 1892,
+      timeAgo: '3h',
+      walletEarnings: 0.22,
+      voiceUrl: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav',
+      voiceDuration: 45
     },
     {
       id: '3',
