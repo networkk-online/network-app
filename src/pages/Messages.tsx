@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Phone, Video, MoreHorizontal, Send, Smile, Paperclip, MessageCircle, Image } from 'lucide-react';
+import { Search, Phone, Video, MoreHorizontal, Send, Smile, Paperclip, MessageCircle, Image, Mic } from 'lucide-react';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { VoiceRecorder } from '@/components/VoiceRecorder';
+import { VoiceMessage } from '@/components/VoiceMessage';
 
 interface Message {
   id: string;
@@ -11,8 +13,10 @@ interface Message {
   text: string;
   timestamp: string;
   isOwn: boolean;
-  type: 'text' | 'image';
+  type: 'text' | 'image' | 'voice';
   imageUrl?: string;
+  voiceUrl?: string;
+  voiceDuration?: number;
 }
 
 const Messages = () => {
@@ -20,6 +24,7 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState<{[key: string]: boolean}>({});
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const { toast } = useToast();
 
   const [messages, setMessages] = useState<Message[]>([
@@ -217,6 +222,36 @@ const Messages = () => {
     }
   };
 
+  const handleVoiceRecording = (audioBlob: Blob, duration: number) => {
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const now = new Date();
+    const timestamp = now.toLocaleTimeString('ar-SA', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
+    
+    const voiceMessage: Message = {
+      id: Date.now().toString(),
+      senderId: '1',
+      text: '',
+      timestamp: timestamp,
+      isOwn: true,
+      type: 'voice',
+      voiceUrl: audioUrl,
+      voiceDuration: duration,
+    };
+    
+    setMessages(prev => [...prev, voiceMessage]);
+    setShowVoiceRecorder(false);
+    
+    toast({
+      title: "تم إرسال الرسالة الصوتية",
+      description: `المدة: ${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`,
+      duration: 2000,
+    });
+  };
+
   const selectedConversation = conversations.find(conv => conv.id === selectedChat);
 
   return (
@@ -340,6 +375,12 @@ const Messages = () => {
                           />
                           {message.text && <p className="text-sm">{message.text}</p>}
                         </div>
+                      ) : message.type === 'voice' && message.voiceUrl ? (
+                        <VoiceMessage 
+                          audioUrl={message.voiceUrl}
+                          duration={message.voiceDuration || 0}
+                          isOwn={message.isOwn}
+                        />
                       ) : (
                         <p className="text-sm">{message.text}</p>
                       )}
@@ -366,49 +407,61 @@ const Messages = () => {
               </div>
 
               <div className="p-4 border-t border-gray-800">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
+                {showVoiceRecorder ? (
+                  <VoiceRecorder 
+                    onRecordingComplete={handleVoiceRecording}
+                    maxDuration={60}
                   />
-                  <label htmlFor="image-upload">
-                    <Button variant="ghost" size="sm" className="p-2 text-gray-400 hover:text-white cursor-pointer">
-                      <Image className="w-5 h-5" />
-                    </Button>
-                  </label>
-                  <Button variant="ghost" size="sm" className="p-2 text-gray-400 hover:text-white">
-                    <Paperclip className="w-5 h-5" />
-                  </Button>
-                  <div className="flex-1 relative">
-                    <Input
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="اكتب رسالتك..."
-                      className="bg-gray-900 border-gray-700 text-white pr-12"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleSendMessage();
-                        }
-                      }}
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
                     />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-white"
+                    <label htmlFor="image-upload">
+                      <Button variant="ghost" size="sm" className="p-2 text-gray-400 hover:text-white cursor-pointer">
+                        <Image className="w-5 h-5" />
+                      </Button>
+                    </label>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="p-2 text-gray-400 hover:text-white"
+                      onClick={() => setShowVoiceRecorder(true)}
                     >
-                      <Smile className="w-4 h-4" />
+                      <Mic className="w-5 h-5" />
+                    </Button>
+                    <div className="flex-1 relative">
+                      <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="اكتب رسالتك..."
+                        className="bg-gray-900 border-gray-700 text-white pr-12"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSendMessage();
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-white"
+                      >
+                        <Smile className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <Button
+                      onClick={handleSendMessage}
+                      className="bg-green-500 hover:bg-green-600 text-black p-2"
+                    >
+                      <Send className="w-5 h-5" />
                     </Button>
                   </div>
-                  <Button
-                    onClick={handleSendMessage}
-                    className="bg-green-500 hover:bg-green-600 text-black p-2"
-                  >
-                    <Send className="w-5 h-5" />
-                  </Button>
-                </div>
+                )}
               </div>
             </>
           ) : (
