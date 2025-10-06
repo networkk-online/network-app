@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 import { 
   Users, 
   MessageSquare, 
@@ -67,21 +70,135 @@ import {
 } from 'lucide-react';
 
 const Admin = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-  const [loginError, setLoginError] = useState('');
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [showPasswords, setShowPasswords] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [userIP, setUserIP] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('ar');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [users, setUsers] = useState<any[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalPosts: 0,
+    totalMessages: 0,
+    activeUsers: 0,
+    reportsToday: 0,
+    revenue: 0
+  });
   const { toast } = useToast();
 
-  // Admin credentials - في التطبيق الحقيقي ستكون في قاعدة البيانات
-  const adminCredentials = {
-    username: 'admin',
-    password: 'admin123'
+  // التحقق من المصادقة والصلاحيات
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        setUser(user);
+
+        // التحقق من صلاحية الأدمن
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+
+        if (roleError) {
+          console.error('Error checking admin role:', roleError);
+          toast({
+            title: "خطأ",
+            description: "حدث خطأ أثناء التحقق من الصلاحيات",
+            variant: "destructive"
+          });
+          navigate('/');
+          return;
+        }
+
+        if (!roleData) {
+          toast({
+            title: "غير مصرح",
+            description: "ليس لديك صلاحية الوصول إلى لوحة التحكم",
+            variant: "destructive"
+          });
+          navigate('/');
+          return;
+        }
+
+        setIsAdmin(true);
+        fetchData();
+      } catch (error) {
+        console.error('Auth error:', error);
+        navigate('/login');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate, toast]);
+
+  // جلب البيانات من قاعدة البيانات
+  const fetchData = async () => {
+    try {
+      // جلب المستخدمين
+      const { data: usersData, error: usersError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (usersError) throw usersError;
+      setUsers(usersData || []);
+
+      // جلب المنشورات
+      const { data: postsData, error: postsError } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          profiles (username, full_name)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (postsError) throw postsError;
+      setPosts(postsData || []);
+
+      // حساب الإحصائيات
+      const { count: totalUsersCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: totalPostsCount } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true });
+
+      setStats({
+        totalUsers: totalUsersCount || 0,
+        totalPosts: totalPostsCount || 0,
+        totalMessages: 0,
+        activeUsers: 0,
+        reportsToday: 0,
+        revenue: 0
+      });
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء جلب البيانات",
+        variant: "destructive"
+      });
+    }
   };
 
   // الحصول على عنوان IP للمستخدم
@@ -98,195 +215,31 @@ const Admin = () => {
     fetchIP();
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loginForm.username === adminCredentials.username && 
-        loginForm.password === adminCredentials.password) {
-      setIsAuthenticated(true);
-      setLoginError('');
-      
-      // إشعار تسجيل دخول مطور
-      const currentTime = new Date().toLocaleString('ar-EG', {
-        dateStyle: 'full',
-        timeStyle: 'medium'
-      });
-      
-      toast({
-        title: "🚨 تنبيه أمني - دخول مطور",
-        description: (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              <span>IP: {userIP}</span>
-            </div>
-            <div>وقت الدخول: {currentTime}</div>
-            <div>اسم المستخدم: {loginForm.username}</div>
-          </div>
-        ),
-        duration: 10000,
-      });
-    } else {
-      setLoginError('بيانات تسجيل الدخول غير صحيحة');
-    }
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setLoginForm({ username: '', password: '' });
-  };
-
-  // إذا لم يتم تسجيل الدخول، إظهار صفحة تسجيل الدخول
-  if (!isAuthenticated) {
+  // عرض شاشة تحميل أثناء التحقق من الصلاحيات
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-gray-900 border-gray-700">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-red-900/20 rounded-full">
-                <Lock className="w-8 h-8 text-red-400" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl">منطقة محظورة</CardTitle>
-            <CardDescription>
-              يجب تسجيل الدخول للوصول إلى لوحة التحكم الإدارية
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              {loginError && (
-                <Alert className="bg-red-900/20 border-red-600">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription className="text-red-300">
-                    {loginError}
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              <div className="space-y-2">
-                <label htmlFor="username" className="text-sm font-medium text-gray-300">
-                  اسم المستخدم
-                </label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={loginForm.username}
-                  onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
-                  className="bg-gray-800 border-gray-600"
-                  placeholder="أدخل اسم المستخدم"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-gray-300">
-                  كلمة المرور
-                </label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={loginForm.password}
-                  onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-                  className="bg-gray-800 border-gray-600"
-                  placeholder="أدخل كلمة المرور"
-                  required
-                />
-              </div>
-              
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
-                <LogIn className="w-4 h-4 mr-2" />
-                تسجيل الدخول
-              </Button>
-              
-              <div className="text-center text-xs text-gray-500 mt-4">
-                للمطورين: admin / admin123
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>جاري التحقق من الصلاحيات...</p>
+        </div>
       </div>
     );
   }
 
-  // Mock data - في التطبيق الحقيقي ستأتي من قاعدة البيانات
-  const stats = {
-    totalUsers: 15420,
-    totalPosts: 89340,
-    totalMessages: 245678,
-    activeUsers: 8934,
-    reportsToday: 23,
-    revenue: 45678
-  };
-
-  const users = [
-    {
-      id: 1,
-      name: 'أحمد محمد',
-      email: 'ahmed@example.com',
-      password: 'password123',
-      followers: 1250,
-      following: 890,
-      posts: 45,
-      status: 'active',
-      joinDate: '2024-01-15',
-      lastLogin: '2024-07-28',
-      verified: true
-    },
-    {
-      id: 2,
-      name: 'فاطمة علي',
-      email: 'fatima@example.com',
-      password: 'mypassword456',
-      followers: 2340,
-      following: 1200,
-      posts: 78,
-      status: 'active',
-      joinDate: '2024-02-10',
-      lastLogin: '2024-07-27',
-      verified: false
-    },
-    {
-      id: 3,
-      name: 'محمد حسن',
-      email: 'mohamed@example.com',
-      password: 'securepass789',
-      followers: 890,
-      following: 567,
-      posts: 23,
-      status: 'suspended',
-      joinDate: '2024-03-05',
-      lastLogin: '2024-07-20',
-      verified: true
-    }
-  ];
-
-  const posts = [
-    {
-      id: 1,
-      author: 'أحمد محمد',
-      content: 'منشور رائع عن التقنية',
-      likes: 234,
-      comments: 45,
-      shares: 12,
-      reports: 0,
-      status: 'published',
-      date: '2024-07-28'
-    },
-    {
-      id: 2,
-      author: 'فاطمة علي',
-      content: 'تجربة مشاركة جديدة',
-      likes: 567,
-      comments: 89,
-      shares: 23,
-      reports: 2,
-      status: 'under_review',
-      date: '2024-07-27'
-    }
-  ];
+  // إذا لم يكن المستخدم أدمن
+  if (!isAdmin) {
+    return null;
+  }
 
   const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    (user.username?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
+    (user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || '')
   );
 
   const toggleFollowers = (userId: number, action: 'increase' | 'decrease') => {
@@ -643,79 +596,41 @@ const Admin = () => {
                           <TableCell>
                             <div className="flex items-center space-x-2">
                               <div>
-                                <div className="font-medium">{user.name}</div>
-                                {user.verified && (
-                                  <Badge variant="outline" className="bg-blue-900/20 text-blue-400 border-blue-600 text-xs">
-                                    <CheckCircle className="w-3 h-3 mr-1" />
-                                    موثق
-                                  </Badge>
-                                )}
+                                <div className="font-medium">{user.full_name || user.username || 'مستخدم'}</div>
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-gray-300">{user.email}</TableCell>
+                          <TableCell className="text-gray-300">{user.username || 'غير متوفر'}</TableCell>
                           <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <span className="font-mono text-sm">
-                                {showPasswords ? user.password : '••••••••'}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setShowPasswords(!showPasswords)}
-                              >
-                                {showPasswords ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                              </Button>
-                            </div>
+                            <span className="text-gray-400 text-sm">محمي</span>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <span className="text-blue-400 font-medium">{user.followers.toLocaleString()}</span>
-                              <div className="flex space-x-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => toggleFollowers(user.id, 'increase')}
-                                  className="h-6 w-6 p-0"
-                                >
-                                  <UserCheck className="w-3 h-3 text-green-400" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => toggleFollowers(user.id, 'decrease')}
-                                  className="h-6 w-6 p-0"
-                                >
-                                  <UserX className="w-3 h-3 text-red-400" />
-                                </Button>
-                              </div>
-                            </div>
+                            <span className="text-blue-400 font-medium">-</span>
                           </TableCell>
-                          <TableCell className="text-gray-400">{user.following.toLocaleString()}</TableCell>
-                          <TableCell className="text-gray-400">{user.posts}</TableCell>
+                          <TableCell className="text-gray-400">-</TableCell>
+                          <TableCell className="text-gray-400">-</TableCell>
                           <TableCell>
                             <Badge 
                               variant="outline" 
-                              className={`${
-                                user.status === 'active' 
-                                  ? 'bg-green-900/20 text-green-400 border-green-600' 
-                                  : 'bg-red-900/20 text-red-400 border-red-600'
-                              }`}
+                              className="bg-green-900/20 text-green-400 border-green-600"
                             >
-                              {user.status === 'active' ? 'نشط' : 'معلق'}
+                              نشط
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-gray-400">{user.lastLogin}</TableCell>
+                          <TableCell className="text-gray-400">
+                            {new Date(user.created_at).toLocaleDateString('ar-EG')}
+                          </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => toast({
+                                  title: "معلومات المستخدم",
+                                  description: `ID: ${user.id}`
+                                })}
+                              >
                                 <Eye className="w-4 h-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm">
-                                <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
                           </TableCell>
