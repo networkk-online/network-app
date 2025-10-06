@@ -1,31 +1,120 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const SignUp = () => {
+  const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSignUp = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/');
+      }
+    });
+  }, [navigate]);
+
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      toast({
+        title: 'خطأ',
+        description: 'كلمات المرور غير متطابقة',
+        variant: 'destructive',
+      });
       return;
     }
-    // Here you would implement actual sign up logic
-    console.log('Sign up attempt with:', { phoneNumber, email, password });
-    // For now, redirect to main page
-    navigate('/');
+
+    if (password.length < 6) {
+      toast({
+        title: 'خطأ',
+        description: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            username,
+            full_name: fullName,
+            phone_number: phoneNumber,
+          },
+        },
+      });
+
+      if (error) {
+        toast({
+          title: 'خطأ في التسجيل',
+          description: error.message === 'User already registered' 
+            ? 'هذا البريد الإلكتروني مسجل بالفعل'
+            : error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (data.user) {
+        toast({
+          title: 'تم إنشاء الحساب بنجاح',
+          description: 'مرحباً بك!',
+        });
+        navigate('/');
+      }
+    } catch (error) {
+      toast({
+        title: 'خطأ',
+        description: 'حدث خطأ أثناء إنشاء الحساب',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleSignUp = () => {
-    // Google sign up logic would go here
-    console.log('Google sign up clicked');
+  const handleGoogleSignUp = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) {
+        toast({
+          title: 'خطأ',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'خطأ',
+        description: 'حدث خطأ أثناء التسجيل بجوجل',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -67,60 +156,87 @@ const SignUp = () => {
               className="w-full h-full object-contain"
             />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Sign Up</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">إنشاء حساب</h1>
         </div>
 
         {/* Sign Up Form */}
         <form onSubmit={handleSignUp} className="space-y-6">
           <div>
             <Input
+              type="text"
+              placeholder="اسم المستخدم"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <Input
+              type="text"
+              placeholder="الاسم الكامل"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <Input
               type="tel"
-              placeholder="Phone number"
+              placeholder="رقم الهاتف"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
-              required
+              disabled={isLoading}
             />
           </div>
 
           <div>
             <Input
               type="email"
-              placeholder="Email address"
+              placeholder="البريد الإلكتروني"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
               required
+              disabled={isLoading}
             />
           </div>
 
           <div>
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="كلمة المرور"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
               required
+              disabled={isLoading}
             />
           </div>
 
           <div>
             <Input
               type="password"
-              placeholder="Confirm Password"
+              placeholder="تأكيد كلمة المرور"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
               required
+              disabled={isLoading}
             />
           </div>
 
           <Button
             type="submit"
             className="w-full h-14 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold text-lg rounded-xl shadow-lg shadow-green-500/25"
+            disabled={isLoading}
           >
-            Sign Up
+            {isLoading ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
           </Button>
 
           <div className="text-center">
@@ -132,6 +248,7 @@ const SignUp = () => {
             onClick={handleGoogleSignUp}
             variant="outline"
             className="w-full h-14 bg-transparent border-gray-700 text-white hover:bg-gray-900 rounded-xl"
+            disabled={isLoading}
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
@@ -157,12 +274,12 @@ const SignUp = () => {
 
         {/* Login Link */}
         <div className="text-center mt-8">
-          <span className="text-gray-400">Already have an account? </span>
+          <span className="text-gray-400">لديك حساب بالفعل؟ </span>
           <button
             onClick={() => navigate('/login')}
             className="text-green-500 hover:text-green-400 font-semibold"
           >
-            Log in
+            تسجيل الدخول
           </button>
         </div>
       </div>

@@ -1,30 +1,135 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/');
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && event === 'SIGNED_IN') {
+        navigate('/');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would implement actual login logic
-    console.log('Login attempt with:', { phoneNumber, password });
-    // For now, redirect to main page
-    navigate('/');
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast({
+          title: 'خطأ في تسجيل الدخول',
+          description: error.message === 'Invalid login credentials' 
+            ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+            : error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (data.session) {
+        toast({
+          title: 'تم تسجيل الدخول بنجاح',
+          description: 'مرحباً بك مجدداً!',
+        });
+        navigate('/');
+      }
+    } catch (error) {
+      toast({
+        title: 'خطأ',
+        description: 'حدث خطأ أثناء تسجيل الدخول',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleSignIn = () => {
-    // Google sign in logic would go here
-    console.log('Google sign in clicked');
+  const handleGoogleSignIn = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) {
+        toast({
+          title: 'خطأ',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'خطأ',
+        description: 'حدث خطأ أثناء تسجيل الدخول بجوجل',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleForgotPassword = () => {
-    // Forgot password logic would go here
-    console.log('Forgot password clicked');
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        title: 'أدخل بريدك الإلكتروني',
+        description: 'الرجاء إدخال بريدك الإلكتروني أولاً',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        toast({
+          title: 'خطأ',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'تم إرسال رابط إعادة التعيين',
+        description: 'تفقد بريدك الإلكتروني',
+      });
+    } catch (error) {
+      toast({
+        title: 'خطأ',
+        description: 'حدث خطأ أثناء إعادة تعيين كلمة المرور',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -73,23 +178,25 @@ const Login = () => {
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <Input
-              type="tel"
-              placeholder="Phone number"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              type="email"
+              placeholder="البريد الإلكتروني"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
               required
+              disabled={isLoading}
             />
           </div>
 
           <div>
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="كلمة المرور"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -106,8 +213,9 @@ const Login = () => {
           <Button
             type="submit"
             className="w-full h-14 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold text-lg rounded-xl shadow-lg shadow-green-500/25"
+            disabled={isLoading}
           >
-            Log In
+            {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
           </Button>
 
           <div className="text-center">
@@ -119,6 +227,7 @@ const Login = () => {
             onClick={handleGoogleSignIn}
             variant="outline"
             className="w-full h-14 bg-transparent border-gray-700 text-white hover:bg-gray-900 rounded-xl"
+            disabled={isLoading}
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
