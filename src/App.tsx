@@ -46,6 +46,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/ai-tools" element={<AITools />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin-control-panel-secret" element={<Admin />} />
           <Route path="/admin-setup" element={<AdminSetup />} />
           <Route path="/quick-reply" element={<QuickReply />} />
           <Route path="/withdraw" element={<Withdraw />} />
