@@ -107,15 +107,7 @@ const Index = () => {
               ))}
               
               <div className="text-center py-8">
-                <div 
-                  className="w-1 h-1 mx-auto bg-transparent cursor-pointer"
-                  onClick={() => window.location.href = "/admin-control-panel-secret"}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    outline: 'none'
-                  }}
-                ></div>
+                <p className="text-gray-500 text-sm">لا توجد المزيد من المنشورات</p>
               </div>
             </div>
           </div>
