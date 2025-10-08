@@ -1,8 +1,13 @@
 
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Shield } from 'lucide-react';
 import Header from '@/components/Header';
 import UserProfile from '@/components/UserProfile';
 
 const Profile = () => {
+  const navigate = useNavigate();
+  
   // Mock user data - in a real app this would come from context/store or API
   const userData = {
     username: 'your_username',
@@ -61,6 +66,17 @@ const Profile = () => {
       <main className="pt-16 sm:pt-20 pb-8">
         <div className="desktop-layout">
           <div className="container-responsive mobile-padding">
+            {/* زر الوصول للوحة التحكم */}
+            <div className="mb-4 flex justify-center">
+              <Button 
+                onClick={() => navigate('/admin-setup')}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                إعداد لوحة التحكم
+              </Button>
+            </div>
+            
             <UserProfile {...userData} />
             
             {/* Posts Grid - Responsive */}
