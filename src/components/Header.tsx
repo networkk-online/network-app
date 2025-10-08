@@ -1,19 +1,45 @@
 
-import { Heart, Home, MessageCircle, PlusSquare, Search, User, Video, Building2, Users, LogIn, Film, Compass, Menu, Brain, Wallet } from 'lucide-react';
+import { Heart, Home, MessageCircle, PlusSquare, Search, Video, Building2, Users, LogOut, Film, Compass, Menu, Brain, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 const Header = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "تم تسجيل الخروج",
+      description: "تم تسجيل خروجك بنجاح",
+    });
+    navigate('/login');
+  };
 
   // Mock user data - in a real app this would come from context/store
   const userData = {
-    username: 'your_username',
-    displayName: 'Your Name', 
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+    username: user?.user_metadata?.username || 'your_username',
+    displayName: user?.user_metadata?.full_name || 'Your Name', 
+    avatar: user?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
     followers: 1248,
     following: 567,
     posts: 127,
@@ -72,7 +98,13 @@ const Header = () => {
                 <item.icon className="w-5 h-5 xl:w-6 xl:h-6" />
               </Button>
             ))}
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-900"
+              onClick={() => navigate('/create-post')}
+              title="إنشاء منشور"
+            >
               <PlusSquare className="w-5 h-5 xl:w-6 xl:h-6" />
             </Button>
             <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
@@ -89,14 +121,27 @@ const Header = () => {
                 <AvatarFallback>{userData.displayName.charAt(0)}</AvatarFallback>
               </Avatar>
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-900"
-              onClick={() => navigate('/login')}
-            >
-              <LogIn className="w-5 h-5 xl:w-6 xl:h-6" />
-            </Button>
+            {user ? (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2 hover:bg-red-900"
+                onClick={handleLogout}
+                title="تسجيل الخروج"
+              >
+                <LogOut className="w-5 h-5 xl:w-6 xl:h-6 text-red-400" />
+              </Button>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2 hover:bg-gray-900"
+                onClick={() => navigate('/login')}
+                title="تسجيل الدخول"
+              >
+                <LogOut className="w-5 h-5 xl:w-6 xl:h-6" />
+              </Button>
+            )}
           </div>
 
           {/* Mobile Navigation */}
@@ -105,7 +150,12 @@ const Header = () => {
             <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900" onClick={() => navigate('/')}>
               <Home className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-900"
+              onClick={() => navigate('/create-post')}
+            >
               <PlusSquare className="w-5 h-5" />
             </Button>
             <Button 

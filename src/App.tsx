@@ -15,6 +15,7 @@ import SignUp from "./pages/SignUp";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import AITools from "./pages/AITools";
+import CreatePost from "./pages/CreatePost";
 import NotFound from "./pages/NotFound";
 import QuickReply from "./pages/QuickReply";
 import Withdraw from "./pages/Withdraw";
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/messages" element={<Messages />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/ai-tools" element={<AITools />} />
+          <Route path="/create-post" element={<CreatePost />} />
           <Route path="/quick-reply" element={<QuickReply />} />
           <Route path="/withdraw" element={<Withdraw />} />
           <Route path="*" element={<NotFound />} />
