@@ -99,6 +99,11 @@ const Admin = () => {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
+          toast({
+            title: "يجب تسجيل الدخول",
+            description: "انتقل لصفحة تسجيل الدخول أولاً",
+            variant: "destructive"
+          });
           navigate('/login');
           return;
         }
@@ -116,21 +121,18 @@ const Admin = () => {
         if (roleError) {
           console.error('Error checking admin role:', roleError);
           toast({
-            title: "خطأ",
-            description: "حدث خطأ أثناء التحقق من الصلاحيات",
+            title: "خطأ في الصلاحيات",
+            description: "تعذر التحقق من صلاحياتك. تواصل مع الدعم الفني.",
             variant: "destructive"
           });
-          navigate('/');
+          setIsLoading(false);
           return;
         }
 
         if (!roleData) {
-          toast({
-            title: "غير مصرح",
-            description: "ليس لديك صلاحية الوصول إلى لوحة التحكم",
-            variant: "destructive"
-          });
-          navigate('/');
+          // لا يوجد صلاحية أدمن
+          setIsAdmin(false);
+          setIsLoading(false);
           return;
         }
 
@@ -138,7 +140,11 @@ const Admin = () => {
         fetchData();
       } catch (error) {
         console.error('Auth error:', error);
-        navigate('/login');
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ غير متوقع",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
       }
@@ -223,18 +229,68 @@ const Admin = () => {
   // عرض شاشة تحميل أثناء التحقق من الصلاحيات
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>جاري التحقق من الصلاحيات...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white flex items-center justify-center">
+        <Card className="w-full max-w-md bg-gray-900 border-gray-700">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-lg">جاري التحقق من الصلاحيات...</p>
+              <p className="text-sm text-gray-400 mt-2">الرجاء الانتظار</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  // إذا لم يكن المستخدم أدمن
+  // إذا لم يكن المستخدم أدمن - عرض صفحة إرشادية
   if (!isAdmin) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-gray-900 border-gray-700">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center">
+              <Lock className="w-8 h-8 text-red-400" />
+            </div>
+            <CardTitle className="text-2xl text-white">الوصول مرفوض</CardTitle>
+            <CardDescription className="text-gray-400">
+              ليس لديك صلاحية الوصول إلى لوحة التحكم
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert className="bg-yellow-900/20 border-yellow-600">
+              <AlertTriangle className="h-4 w-4 text-yellow-400" />
+              <AlertDescription className="text-yellow-300 text-sm">
+                تحتاج إلى صلاحيات الأدمن للوصول إلى هذه الصفحة
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-3">
+              <Button 
+                onClick={() => navigate('/admin-setup')}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                إعداد صلاحيات الأدمن
+              </Button>
+
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/')}
+                className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+              >
+                العودة للصفحة الرئيسية
+              </Button>
+            </div>
+
+            <div className="text-center text-sm text-gray-400 pt-4 border-t border-gray-700">
+              <p>إذا كنت مديراً للمنصة:</p>
+              <p className="text-blue-400 mt-1">اضغط على "إعداد صلاحيات الأدمن" أعلاه</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const filteredUsers = users.filter(user => 
