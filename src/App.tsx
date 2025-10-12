@@ -19,6 +19,7 @@ import CreatePost from "./pages/CreatePost";
 import NotFound from "./pages/NotFound";
 import QuickReply from "./pages/QuickReply";
 import Withdraw from "./pages/Withdraw";
+import AdminDashboard from "./pages/AdminDashboard";
 import FloatingAIButton from "./components/FloatingAIButton";
 import ThemeToggle from "./components/ThemeToggle";
 
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/quick-reply" element={<QuickReply />} />
           <Route path="/withdraw" element={<Withdraw />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
