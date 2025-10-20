@@ -27,12 +27,7 @@ const AdminDashboard = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        toast({
-          title: "غير مصرح",
-          description: "يجب تسجيل الدخول أولاً",
-          variant: "destructive",
-        });
-        navigate('/login');
+        navigate('/admin/login');
         return;
       }
 
@@ -49,14 +44,15 @@ const AdminDashboard = () => {
           description: "ليس لديك صلاحيات للوصول إلى لوحة التحكم",
           variant: "destructive",
         });
-        navigate('/');
+        await supabase.auth.signOut();
+        navigate('/admin/login');
         return;
       }
 
       setIsAuthorized(true);
     } catch (error) {
       console.error('Authorization error:', error);
-      navigate('/');
+      navigate('/admin/login');
     } finally {
       setLoading(false);
     }

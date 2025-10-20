@@ -38,12 +38,7 @@ const ManageStaff = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        toast({
-          title: "غير مصرح",
-          description: "يجب تسجيل الدخول أولاً",
-          variant: "destructive",
-        });
-        navigate('/login');
+        navigate('/admin/login');
         return;
       }
 
@@ -59,7 +54,8 @@ const ManageStaff = () => {
           description: "هذه الصفحة للمديرين فقط",
           variant: "destructive",
         });
-        navigate('/');
+        await supabase.auth.signOut();
+        navigate('/admin/login');
         return;
       }
 
@@ -67,7 +63,7 @@ const ManageStaff = () => {
       loadStaffMembers();
     } catch (error) {
       console.error('Authorization error:', error);
-      navigate('/');
+      navigate('/admin/login');
     } finally {
       setLoading(false);
     }
