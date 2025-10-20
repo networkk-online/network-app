@@ -75,7 +75,7 @@ const Stories = ({ stories }: StoriesProps) => {
                   className={`w-16 h-16 rounded-full p-0.5 transition-all duration-300 ${
                     story.hasViewed 
                       ? 'bg-gray-500' 
-                      : 'bg-gradient-to-tr from-green-400 to-green-600'
+                      : 'bg-gradient-to-tr from-orange-400 to-orange-600'
                   } group-hover:scale-105`}
                   onClick={() => handleStoryClick(index)}
                 >
@@ -108,7 +108,7 @@ const Stories = ({ stories }: StoriesProps) => {
                 )}
                 
                 {story.isOwn && (
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-black">
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center border-2 border-black">
                     <Plus className="w-3 h-3 text-black" />
                   </div>
                 )}

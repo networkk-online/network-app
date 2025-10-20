@@ -28,6 +28,10 @@
 
     --accent: 120 100% 50%;
     --accent-foreground: 0 0% 0%;
+    
+    --story: 25 100% 55%;
+    --story-gradient-from: 30 100% 50%;
+    --story-gradient-to: 20 100% 45%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -70,6 +74,10 @@
 
     --accent: 120 100% 35%;
     --accent-foreground: 0 0% 98%;
+    
+    --story: 25 100% 50%;
+    --story-gradient-from: 30 100% 45%;
+    --story-gradient-to: 20 100% 40%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
