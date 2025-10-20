@@ -22,6 +22,7 @@ import Withdraw from "./pages/Withdraw";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import ManageStaff from "./pages/ManageStaff";
+import ManageUsers from "./pages/ManageUsers";
 import FloatingAIButton from "./components/FloatingAIButton";
 import ThemeToggle from "./components/ThemeToggle";
 
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/staff" element={<ManageStaff />} />
+          <Route path="/admin/users" element={<ManageUsers />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

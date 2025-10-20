@@ -186,9 +186,12 @@ const AdminDashboard = () => {
                   <p className="text-white font-medium">إدارة الموظفين</p>
                   <p className="text-gray-400 text-sm">إضافة وحذف المديرين والمشرفين</p>
                 </div>
-                <div className="p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors">
-                  <p className="text-white font-medium">عرض جميع المستخدمين</p>
-                  <p className="text-gray-400 text-sm">إدارة حسابات المستخدمين</p>
+                <div 
+                  onClick={() => navigate('/admin/users')}
+                  className="p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors"
+                >
+                  <p className="text-white font-medium">إدارة المستخدمين والأرباح</p>
+                  <p className="text-gray-400 text-sm">إيداع وسحب الأرباح وتعديل المتابعين</p>
                 </div>
                 <div className="p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors">
                   <p className="text-white font-medium">مراجعة المنشورات</p>

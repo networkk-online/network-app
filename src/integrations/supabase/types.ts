@@ -55,6 +55,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string
+          followers_count: number | null
           full_name: string | null
           id: string
           phone_number: string | null
@@ -65,6 +66,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          followers_count?: number | null
           full_name?: string | null
           id: string
           phone_number?: string | null
@@ -75,6 +77,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          followers_count?: number | null
           full_name?: string | null
           id?: string
           phone_number?: string | null
@@ -82,6 +85,92 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      transactions: {
+        Row: {
+          admin_id: string
+          amount: number
+          created_at: string | null
+          id: string
+          notes: string | null
+          status: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          admin_id: string
+          amount: number
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string
+          amount?: number
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_finances: {
+        Row: {
+          balance: number | null
+          created_at: string | null
+          id: string
+          total_earnings: number | null
+          total_withdrawn: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string | null
+          id?: string
+          total_earnings?: number | null
+          total_withdrawn?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string | null
+          id?: string
+          total_earnings?: number | null
+          total_withdrawn?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_finances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
