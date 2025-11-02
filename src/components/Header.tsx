@@ -1,4 +1,3 @@
-
 import { Heart, Home, MessageCircle, PlusSquare, Search, Video, Building2, Users, LogOut, Film, Compass, Menu, Brain, Wallet, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import logo from '@/assets/logo.png';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -86,7 +86,7 @@ const Header = () => {
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
               <img 
-                src="/lovable-uploads/af5dfbd6-d4e4-4f84-be84-7086fe302cd2.png" 
+                src={logo} 
                 alt="Network Logo" 
                 className="w-full h-full object-contain"
               />
