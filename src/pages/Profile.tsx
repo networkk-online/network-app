@@ -50,7 +50,16 @@ const Profile = () => {
 
       if (error) throw error;
 
-      setProfile(data);
+      // Get following count
+      const { count: followingCount } = await supabase
+        .from('follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('follower_id', userId);
+
+      setProfile({
+        ...data,
+        following_count: followingCount || 0
+      });
     } catch (error: any) {
       console.error('Error loading profile:', error);
       toast({
@@ -149,7 +158,7 @@ const Profile = () => {
     displayName: profile?.full_name || user?.user_metadata?.full_name || 'مستخدم',
     avatar: profile?.avatar_url || user?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
     followers: profile?.followers_count || 0,
-    following: 0,
+    following: profile?.following_count || 0,
     posts: userPosts.length,
     bio: profile?.bio || 'لا يوجد وصف',
     phone: profile?.phone_number || ''

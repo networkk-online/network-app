@@ -1,34 +1,164 @@
-
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { VoiceRecorder } from './VoiceRecorder';
 import { VoiceMessage } from './VoiceMessage';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface PostProps {
   id: string;
+  userId: string;
   username: string;
   userAvatar: string;
   image?: string;
   caption: string;
   likes: number;
+  commentsCount?: number;
   timeAgo: string;
   walletEarnings: number;
   voiceUrl?: string;
   voiceDuration?: number;
 }
 
-const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarnings, voiceUrl, voiceDuration }: PostProps) => {
+const Post = ({ id, userId, username, userAvatar, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration }: PostProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [comment, setComment] = useState('');
-  const { toast } = useToast();
+  const [comments, setComments] = useState<any[]>([]);
+  const [showComments, setShowComments] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+  useEffect(() => {
+    checkUser();
+    checkIfLiked();
+    loadComments();
+  }, [id]);
+
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setCurrentUser(user);
+  };
+
+  const checkIfLiked = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('post_id', id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    setIsLiked(!!data);
+  };
+
+  const loadComments = async () => {
+    const { data } = await supabase
+      .from('comments')
+      .select(`
+        *,
+        profiles (
+          username,
+          full_name,
+          avatar_url
+        )
+      `)
+      .eq('post_id', id)
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    setComments(data || []);
+  };
+
+  const handleLike = async () => {
+    if (!currentUser) {
+      toast({
+        title: "يجب تسجيل الدخول",
+        description: "سجل دخولك للإعجاب بالمنشورات",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+
+    try {
+      if (isLiked) {
+        await supabase
+          .from('likes')
+          .delete()
+          .eq('post_id', id)
+          .eq('user_id', currentUser.id);
+        
+        setIsLiked(false);
+        setLikeCount(prev => prev - 1);
+      } else {
+        await supabase
+          .from('likes')
+          .insert({
+            post_id: id,
+            user_id: currentUser.id
+          });
+        
+        setIsLiked(true);
+        setLikeCount(prev => prev + 1);
+      }
+    } catch (error: any) {
+      console.error('Error toggling like:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء الإعجاب",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleComment = async () => {
+    if (!currentUser) {
+      toast({
+        title: "يجب تسجيل الدخول",
+        description: "سجل دخولك للتعليق",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+
+    if (!comment.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await supabase
+        .from('comments')
+        .insert({
+          post_id: id,
+          user_id: currentUser.id,
+          content: comment.trim()
+        });
+
+      setComment('');
+      await loadComments();
+      
+      toast({
+        title: "تم التعليق",
+        description: "تم إضافة تعليقك بنجاح",
+      });
+    } catch (error: any) {
+      console.error('Error adding comment:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إضافة التعليق",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleVoiceComment = (audioBlob: Blob, duration: number) => {
@@ -100,7 +230,12 @@ const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarn
                 }`} 
               />
             </Button>
-            <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent group">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-0 hover:bg-transparent group"
+              onClick={() => setShowComments(!showComments)}
+            >
               <MessageCircle className="w-6 h-6 hover:text-blue-400 transition-all duration-200 group-hover:scale-110" />
             </Button>
             <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent group">
@@ -134,10 +269,29 @@ const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarn
           <span className="text-white">{caption}</span>
         </div>
 
-        {/* View Comments */}
-        <button className="text-gray-400 text-sm hover:text-gray-300 mb-3">
-          View all comments
-        </button>
+        {/* Comments Section */}
+        {commentsCount > 0 && (
+          <div className="mb-3">
+            <button 
+              onClick={() => setShowComments(!showComments)}
+              className="text-gray-400 text-sm hover:text-gray-300"
+            >
+              عرض جميع التعليقات ({commentsCount})
+            </button>
+            {showComments && comments.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {comments.map((c) => (
+                  <div key={c.id} className="text-sm">
+                    <span className="font-semibold neon-text mr-2">
+                      {c.profiles?.username || c.profiles?.full_name || 'مستخدم'}
+                    </span>
+                    <span className="text-white">{c.content}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Add Comment */}
         <div className="pt-3 border-t border-gray-800">
@@ -153,6 +307,12 @@ const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarn
                 placeholder="أضف تعليق..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !isSubmitting) {
+                    handleComment();
+                  }
+                }}
+                disabled={isSubmitting}
                 className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none text-sm"
               />
               <Button 
@@ -160,6 +320,7 @@ const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarn
                 size="icon" 
                 className="text-gray-400 hover:text-green-400 p-0"
                 onClick={() => setShowVoiceRecorder(true)}
+                disabled={isSubmitting}
               >
                 <Mic className="w-5 h-5" />
               </Button>
@@ -167,8 +328,10 @@ const Post = ({ username, userAvatar, image, caption, likes, timeAgo, walletEarn
                 variant="ghost" 
                 size="sm" 
                 className="text-green-400 hover:text-green-300 text-sm font-semibold p-0"
+                onClick={handleComment}
+                disabled={!comment.trim() || isSubmitting}
               >
-                نشر
+                {isSubmitting ? 'جاري النشر...' : 'نشر'}
               </Button>
             </div>
           )}

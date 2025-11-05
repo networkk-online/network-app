@@ -1,11 +1,13 @@
 import { Button } from '@/components/ui/button';
-import { Settings, Grid, Bookmark } from 'lucide-react';
+import { Settings, Grid, Bookmark, Camera } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { FormField, FormItem, FormLabel, FormControl, Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface UserProfileProps {
   username: string;
@@ -32,8 +34,12 @@ const UserProfile = ({
   isOwnProfile = true,
   onUpdate
 }: UserProfileProps) => {
+  const { toast } = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(avatar);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm({
     defaultValues: {
@@ -49,7 +55,82 @@ const UserProfile = ({
       bio,
       username
     });
-  }, [displayName, bio, username]);
+    setAvatarUrl(avatar);
+  }, [displayName, bio, username, avatar]);
+
+  const handleAvatarClick = () => {
+    if (isOwnProfile && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "خطأ",
+        description: "الرجاء اختيار صورة فقط",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "خطأ",
+        description: "حجم الصورة يجب أن يكون أقل من 2 ميجابايت",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      
+      toast({
+        title: "تم التحديث",
+        description: "تم تحديث صورة الملف الشخصي بنجاح",
+      });
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء رفع الصورة",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const onSubmit = async (data: any) => {
     if (!onUpdate) return;
@@ -70,12 +151,34 @@ const UserProfile = ({
       {/* Profile Header */}
       <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8 mb-8">
         {/* Avatar */}
-        <div className="flex-shrink-0">
-          <img 
-            src={avatar} 
-            alt={displayName}
-            className="w-32 h-32 rounded-full object-cover border-4 border-green-500 neon-glow"
+        <div className="flex-shrink-0 relative">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarUpload}
+            className="hidden"
           />
+          <div 
+            onClick={handleAvatarClick}
+            className={`relative ${isOwnProfile ? 'cursor-pointer group' : ''}`}
+          >
+            <img 
+              src={avatarUrl} 
+              alt={displayName}
+              className="w-32 h-32 rounded-full object-cover border-4 border-green-500 neon-glow"
+            />
+            {isOwnProfile && (
+              <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Camera className="w-8 h-8 text-white" />
+              </div>
+            )}
+            {uploading && (
+              <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
+                <div className="text-white text-sm">جاري الرفع...</div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Profile Info */}
