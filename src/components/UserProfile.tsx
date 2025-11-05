@@ -1,11 +1,11 @@
-
 import { Button } from '@/components/ui/button';
 import { Settings, Grid, Bookmark } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { FormField, FormItem, FormLabel, FormControl, Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Textarea } from '@/components/ui/textarea';
 
 interface UserProfileProps {
   username: string;
@@ -15,7 +15,9 @@ interface UserProfileProps {
   following: number;
   posts: number;
   bio: string;
+  phone?: string;
   isOwnProfile?: boolean;
+  onUpdate?: (data: any) => Promise<void>;
 }
 
 const UserProfile = ({ 
@@ -25,10 +27,14 @@ const UserProfile = ({
   followers, 
   following, 
   posts, 
-  bio, 
-  isOwnProfile = true 
+  bio,
+  phone,
+  isOwnProfile = true,
+  onUpdate
 }: UserProfileProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm({
     defaultValues: {
       displayName,
@@ -37,9 +43,26 @@ const UserProfile = ({
     }
   });
 
-  const onSubmit = (data: any) => {
-    console.log('Profile updated:', data);
-    setIsEditOpen(false);
+  useEffect(() => {
+    form.reset({
+      displayName,
+      bio,
+      username
+    });
+  }, [displayName, bio, username]);
+
+  const onSubmit = async (data: any) => {
+    if (!onUpdate) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onUpdate(data);
+      setIsEditOpen(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -65,12 +88,12 @@ const UserProfile = ({
                   <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                     <DialogTrigger asChild>
                       <Button variant="secondary" size="sm" className="bg-gray-800 hover:bg-gray-700">
-                        Edit Profile
+                        تعديل الملف الشخصي
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="bg-gray-900 border-gray-800">
                       <DialogHeader>
-                        <DialogTitle className="text-white">Edit Profile</DialogTitle>
+                        <DialogTitle className="text-white">تعديل الملف الشخصي</DialogTitle>
                       </DialogHeader>
                       <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -79,7 +102,7 @@ const UserProfile = ({
                             name="displayName"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-gray-300">Display Name</FormLabel>
+                                <FormLabel className="text-gray-300">الاسم الكامل</FormLabel>
                                 <FormControl>
                                   <Input 
                                     {...field} 
@@ -94,7 +117,7 @@ const UserProfile = ({
                             name="username"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-gray-300">Username</FormLabel>
+                                <FormLabel className="text-gray-300">اسم المستخدم</FormLabel>
                                 <FormControl>
                                   <Input 
                                     {...field} 
@@ -109,12 +132,12 @@ const UserProfile = ({
                             name="bio"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-gray-300">Bio</FormLabel>
+                                <FormLabel className="text-gray-300">الوصف</FormLabel>
                                 <FormControl>
-                                  <textarea 
+                                  <Textarea 
                                     {...field}
-                                    className="w-full min-h-[100px] px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    placeholder="Tell us about yourself..."
+                                    className="min-h-[100px] bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                                    placeholder="اكتب وصفاً عن نفسك..."
                                   />
                                 </FormControl>
                               </FormItem>
@@ -126,14 +149,16 @@ const UserProfile = ({
                               variant="secondary" 
                               onClick={() => setIsEditOpen(false)}
                               className="bg-gray-700 hover:bg-gray-600"
+                              disabled={isSubmitting}
                             >
-                              Cancel
+                              إلغاء
                             </Button>
                             <Button 
                               type="submit"
                               className="bg-green-500 hover:bg-green-600 text-black font-semibold"
+                              disabled={isSubmitting}
                             >
-                              Save Changes
+                              {isSubmitting ? 'جاري الحفظ...' : 'حفظ التغييرات'}
                             </Button>
                           </div>
                         </form>
@@ -161,15 +186,15 @@ const UserProfile = ({
           <div className="flex justify-center md:justify-start space-x-8 mb-4">
             <div className="text-center">
               <span className="font-bold text-white">{posts}</span>
-              <span className="text-gray-400 ml-1">posts</span>
+              <span className="text-gray-400 ml-1">منشور</span>
             </div>
             <div className="text-center">
               <span className="font-bold text-white">{followers.toLocaleString()}</span>
-              <span className="text-gray-400 ml-1">followers</span>
+              <span className="text-gray-400 ml-1">متابع</span>
             </div>
             <div className="text-center">
               <span className="font-bold text-white">{following}</span>
-              <span className="text-gray-400 ml-1">following</span>
+              <span className="text-gray-400 ml-1">يتابع</span>
             </div>
           </div>
 
@@ -186,11 +211,11 @@ const UserProfile = ({
         <div className="flex justify-center space-x-12">
           <button className="flex items-center space-x-1 py-4 border-t-2 border-green-500 text-green-400">
             <Grid className="w-4 h-4" />
-            <span className="text-xs font-semibold uppercase tracking-wide">Posts</span>
+            <span className="text-xs font-semibold uppercase tracking-wide">المنشورات</span>
           </button>
           <button className="flex items-center space-x-1 py-4 text-gray-400 hover:text-white">
             <Bookmark className="w-4 h-4" />
-            <span className="text-xs font-semibold uppercase tracking-wide">Saved</span>
+            <span className="text-xs font-semibold uppercase tracking-wide">المحفوظات</span>
           </button>
         </div>
       </div>
