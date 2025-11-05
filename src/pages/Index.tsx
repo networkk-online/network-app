@@ -1,10 +1,17 @@
 
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Post from '@/components/Post';
 import WalletCard from '@/components/WalletCard';
 import Stories from '@/components/Stories';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
+  const { toast } = useToast();
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   // Mock data for stories
   const stories = [
     {
@@ -46,45 +53,85 @@ const Index = () => {
     }
   ];
 
-  // Mock data for the posts
-  const posts = [
-    {
-      id: '1',
-      username: 'alex_creator',
-      userAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=600&fit=crop',
-      caption: 'Just captured this amazing sunset! Nature never fails to inspire my creativity. 🌅✨',
-      likes: 1247,
-      timeAgo: '2h',
-      walletEarnings: 0.15
-    },
-    {
-      id: '2',
-      username: 'sarah_artist',
-      userAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face',
-      caption: '🎤 استمع لآخر أفكاري حول الفن المعاصر',
-      likes: 1892,
-      timeAgo: '3h',
-      walletEarnings: 0.22,
-      voiceUrl: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav',
-      voiceDuration: 45
-    },
-    {
-      id: '3',
-      username: 'mike_photographer',
-      userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&h=600&fit=crop',
-      caption: 'Urban exploration at its finest. The city has so many hidden gems waiting to be discovered 🏙️',
-      likes: 2156,
-      timeAgo: '6h',
-      walletEarnings: 0.28
-    }
-  ];
-
   const userStats = {
     balance: 47.83,
     todayEarnings: 0.55,
-    totalPosts: 127
+    totalPosts: posts.length
+  };
+
+  useEffect(() => {
+    loadPosts();
+    
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('posts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'posts'
+        },
+        () => {
+          loadPosts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const loadPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          profiles (
+            username,
+            full_name,
+            avatar_url
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedPosts = data?.map((post: any) => ({
+        id: post.id,
+        username: post.profiles?.username || post.profiles?.full_name || 'مستخدم',
+        userAvatar: post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+        image: post.media_url,
+        caption: post.content,
+        likes: post.likes_count,
+        timeAgo: getTimeAgo(post.created_at),
+        walletEarnings: 0
+      })) || [];
+
+      setPosts(formattedPosts);
+    } catch (error: any) {
+      console.error('Error loading posts:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في تحميل المنشورات",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return 'الآن';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} د`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} س`;
+    return `${Math.floor(seconds / 86400)} ي`;
   };
 
   return (
@@ -102,13 +149,19 @@ const Index = () => {
             
             {/* Posts Feed */}
             <div className="space-y-4 sm:space-y-6 lg:space-y-8">
-              {posts.map((post) => (
-                <Post key={post.id} {...post} />
-              ))}
-              
-              <div className="text-center py-8">
-                <p className="text-gray-500 text-sm">لا توجد المزيد من المنشورات</p>
-              </div>
+              {loading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 text-sm">جاري التحميل...</p>
+                </div>
+              ) : posts.length > 0 ? (
+                posts.map((post) => (
+                  <Post key={post.id} {...post} />
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 text-sm">لا توجد منشورات بعد</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
