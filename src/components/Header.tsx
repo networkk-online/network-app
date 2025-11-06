@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import logo from '@/assets/logo.png';
+import { Notifications } from '@/components/Notifications';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -127,9 +128,7 @@ const Header = () => {
             >
               <PlusSquare className="w-5 h-5 xl:w-6 xl:h-6" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900">
-              <Heart className="w-5 h-5 xl:w-6 xl:h-6" />
-            </Button>
+            <Notifications />
             {isAdmin && (
               <Button 
                 variant="ghost" 
@@ -189,6 +188,7 @@ const Header = () => {
             >
               <PlusSquare className="w-5 h-5" />
             </Button>
+            <Notifications />
             <Button 
               variant="ghost" 
               size="sm" 

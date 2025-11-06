@@ -99,6 +99,64 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          actor_id: string
+          comment_id: string | null
+          content: string | null
+          created_at: string
+          id: string
+          is_read: boolean | null
+          post_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          actor_id: string
+          comment_id?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          post_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          actor_id?: string
+          comment_id?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          post_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           comments_count: number | null
