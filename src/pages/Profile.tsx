@@ -161,7 +161,8 @@ const Profile = () => {
     following: profile?.following_count || 0,
     posts: userPosts.length,
     bio: profile?.bio || 'لا يوجد وصف',
-    phone: profile?.phone_number || ''
+    phone: profile?.phone_number || '',
+    profileId: user?.id
   };
 
   return (

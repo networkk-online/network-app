@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface UserProfileProps {
   username: string;
@@ -19,6 +20,7 @@ interface UserProfileProps {
   bio: string;
   phone?: string;
   isOwnProfile?: boolean;
+  profileId?: string;
   onUpdate?: (data: any) => Promise<void>;
 }
 
@@ -32,13 +34,18 @@ const UserProfile = ({
   bio,
   phone,
   isOwnProfile = true,
+  profileId,
   onUpdate
 }: UserProfileProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(avatar);
   const [uploading, setUploading] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followersCount, setFollowersCount] = useState(followers);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm({
@@ -56,7 +63,95 @@ const UserProfile = ({
       username
     });
     setAvatarUrl(avatar);
-  }, [displayName, bio, username, avatar]);
+    setFollowersCount(followers);
+  }, [displayName, bio, username, avatar, followers]);
+
+  useEffect(() => {
+    if (!isOwnProfile && profileId) {
+      checkFollowStatus();
+    }
+  }, [isOwnProfile, profileId]);
+
+  const checkFollowStatus = async () => {
+    if (!profileId) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('follower_id', user.id)
+        .eq('following_id', profileId)
+        .maybeSingle();
+
+      if (!error && data) {
+        setIsFollowing(true);
+      }
+    } catch (error) {
+      console.error('Error checking follow status:', error);
+    }
+  };
+
+  const handleFollowToggle = async () => {
+    if (!profileId) return;
+    
+    setFollowLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "خطأ",
+          description: "يجب تسجيل الدخول",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (isFollowing) {
+        const { error } = await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', user.id)
+          .eq('following_id', profileId);
+
+        if (error) throw error;
+
+        setIsFollowing(false);
+        setFollowersCount(prev => prev - 1);
+        toast({
+          title: "تم إلغاء المتابعة",
+          description: `لم تعد تتابع ${username}`,
+        });
+      } else {
+        const { error } = await supabase
+          .from('follows')
+          .insert({
+            follower_id: user.id,
+            following_id: profileId
+          });
+
+        if (error) throw error;
+
+        setIsFollowing(true);
+        setFollowersCount(prev => prev + 1);
+        toast({
+          title: "تمت المتابعة",
+          description: `أصبحت تتابع ${username}`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error toggling follow:', error);
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء تحديث المتابعة",
+        variant: "destructive"
+      });
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   const handleAvatarClick = () => {
     if (isOwnProfile && fileInputRef.current) {
@@ -274,11 +369,18 @@ const UserProfile = ({
                 </>
               ) : (
                 <>
-                  <Button className="bg-green-500 hover:bg-green-600 text-black font-semibold">
-                    Follow
+                  <Button 
+                    onClick={handleFollowToggle}
+                    disabled={followLoading}
+                    className={isFollowing 
+                      ? "bg-gray-800 hover:bg-gray-700 text-white font-semibold"
+                      : "bg-green-500 hover:bg-green-600 text-black font-semibold"
+                    }
+                  >
+                    {followLoading ? '...' : (isFollowing ? 'إلغاء المتابعة' : 'متابعة')}
                   </Button>
                   <Button variant="secondary" size="sm" className="bg-gray-800 hover:bg-gray-700">
-                    Message
+                    رسالة
                   </Button>
                 </>
               )}
@@ -291,14 +393,20 @@ const UserProfile = ({
               <span className="font-bold text-white">{posts}</span>
               <span className="text-gray-400 ml-1">منشور</span>
             </div>
-            <div className="text-center">
-              <span className="font-bold text-white">{followers.toLocaleString()}</span>
+            <button 
+              onClick={() => navigate('/followers', { state: { profileId, username } })}
+              className="text-center hover:opacity-80 transition-opacity"
+            >
+              <span className="font-bold text-white">{followersCount.toLocaleString()}</span>
               <span className="text-gray-400 ml-1">متابع</span>
-            </div>
-            <div className="text-center">
+            </button>
+            <button 
+              onClick={() => navigate('/following', { state: { profileId, username } })}
+              className="text-center hover:opacity-80 transition-opacity"
+            >
               <span className="font-bold text-white">{following}</span>
               <span className="text-gray-400 ml-1">يتابع</span>
-            </div>
+            </button>
           </div>
 
           {/* Bio */}

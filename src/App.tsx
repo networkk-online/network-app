@@ -23,6 +23,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import ManageStaff from "./pages/ManageStaff";
 import ManageUsers from "./pages/ManageUsers";
+import Followers from "./pages/Followers";
+import Following from "./pages/Following";
 import FloatingAIButton from "./components/FloatingAIButton";
 import ThemeToggle from "./components/ThemeToggle";
 
@@ -55,6 +57,8 @@ const App = () => (
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/staff" element={<ManageStaff />} />
           <Route path="/admin/users" element={<ManageUsers />} />
+          <Route path="/followers" element={<Followers />} />
+          <Route path="/following" element={<Following />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
