@@ -232,6 +232,36 @@ export type Database = {
         }
         Relationships: []
       }
+      stories: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          user_id: string
+          views_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type: string
+          media_url: string
+          user_id: string
+          views_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          user_id?: string
+          views_count?: number | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           admin_id: string

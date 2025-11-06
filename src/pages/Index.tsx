@@ -1,57 +1,27 @@
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Post from '@/components/Post';
 import WalletCard from '@/components/WalletCard';
-import Stories from '@/components/Stories';
+import StoryCircle from '@/components/StoryCircle';
+import StoryViewer from '@/components/StoryViewer';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useStories } from '@/hooks/useStories';
 
 const Index = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Mock data for stories
-  const stories = [
-    {
-      id: 'own',
-      username: 'your_username',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
-      hasViewed: false,
-      isOwn: true
-    },
-    {
-      id: '1',
-      username: 'alex_creator',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      hasViewed: false
-    },
-    {
-      id: '2',
-      username: 'sarah_artist',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face',
-      hasViewed: true
-    },
-    {
-      id: '3',
-      username: 'mike_photographer',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      hasViewed: false
-    },
-    {
-      id: '4',
-      username: 'emma_design',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-      hasViewed: true
-    },
-    {
-      id: '5',
-      username: 'david_travel',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-      hasViewed: false
-    }
-  ];
+  const [userId, setUserId] = useState<string>('');
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [viewingStories, setViewingStories] = useState<any[]>([]);
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
+  
+  const { stories, loading: storiesLoading } = useStories(userId);
 
   const userStats = {
     balance: 47.83,
@@ -60,6 +30,7 @@ const Index = () => {
   };
 
   useEffect(() => {
+    getCurrentUser();
     loadPosts();
     
     // Subscribe to realtime changes
@@ -82,6 +53,31 @@ const Index = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setUserId(user.id);
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      setUserProfile(profile);
+    }
+  };
+
+  const handleStoryClick = (userStories: any[]) => {
+    setViewingStories(userStories);
+    setCurrentStoryIndex(0);
+    setShowStoryViewer(true);
+  };
+
+  const handleCreateStory = () => {
+    navigate('/create-story');
+  };
 
   const loadPosts = async () => {
     try {
@@ -144,7 +140,41 @@ const Index = () => {
         <div className="desktop-layout">
           <div className="container-responsive mobile-padding">
             {/* Stories */}
-            <Stories stories={stories} />
+            <div className="border-b border-gray-800 pb-4 mb-6">
+              <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
+                {/* Own story */}
+                {userProfile && (
+                  <StoryCircle
+                    username={userProfile.username || 'أنت'}
+                    avatar={userProfile.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
+                    hasStory={stories[userId]?.stories.length > 0}
+                    isOwn={true}
+                    onClick={() => {
+                      if (stories[userId]?.stories.length > 0) {
+                        handleStoryClick(stories[userId].stories);
+                      } else {
+                        handleCreateStory();
+                      }
+                    }}
+                  />
+                )}
+                
+                {/* Other users' stories */}
+                {Object.values(stories).map((userStory: any) => {
+                  if (userStory.user.id === userId) return null;
+                  
+                  return (
+                    <StoryCircle
+                      key={userStory.user.id}
+                      username={userStory.user.username}
+                      avatar={userStory.user.avatar_url}
+                      hasStory={true}
+                      onClick={() => handleStoryClick(userStory.stories)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
             
             {/* Wallet Card */}
             <WalletCard {...userStats} />
@@ -168,6 +198,17 @@ const Index = () => {
           </div>
         </div>
       </main>
+
+      {/* Story Viewer */}
+      {showStoryViewer && viewingStories.length > 0 && (
+        <StoryViewer
+          stories={viewingStories}
+          currentIndex={currentStoryIndex}
+          onClose={() => setShowStoryViewer(false)}
+          onNext={() => setCurrentStoryIndex(prev => Math.min(prev + 1, viewingStories.length - 1))}
+          onPrev={() => setCurrentStoryIndex(prev => Math.max(prev - 1, 0))}
+        />
+      )}
     </div>
   );
 };
