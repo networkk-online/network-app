@@ -4,7 +4,8 @@ import Header from '@/components/Header';
 import UserProfile from '@/components/UserProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, MessageCircle } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -173,6 +174,17 @@ const Profile = () => {
         <div className="desktop-layout">
           <div className="container-responsive mobile-padding">
             <UserProfile {...userData} onUpdate={handleProfileUpdate} />
+            
+            {/* Saved Posts Button */}
+            <div className="mt-6 sm:mt-8 flex justify-center">
+              <Button
+                onClick={() => navigate('/saved-posts')}
+                className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
+              >
+                <Bookmark className="w-5 h-5" />
+                <span>المنشورات المحفوظة</span>
+              </Button>
+            </div>
             
             {/* Posts Grid - Responsive */}
             <div className="grid grid-cols-3 gap-0.5 sm:gap-1 lg:gap-2 mt-6 sm:mt-8">

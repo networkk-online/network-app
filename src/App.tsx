@@ -26,6 +26,7 @@ import ManageUsers from "./pages/ManageUsers";
 import Followers from "./pages/Followers";
 import Following from "./pages/Following";
 import CreateStory from "./pages/CreateStory";
+import SavedPosts from "./pages/SavedPosts";
 import FloatingAIButton from "./components/FloatingAIButton";
 import ThemeToggle from "./components/ThemeToggle";
 
@@ -61,6 +62,7 @@ const App = () => (
           <Route path="/followers" element={<Followers />} />
           <Route path="/following" element={<Following />} />
           <Route path="/create-story" element={<CreateStory />} />
+          <Route path="/saved-posts" element={<SavedPosts />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

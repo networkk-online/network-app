@@ -6,6 +6,7 @@ import { VoiceMessage } from './VoiceMessage';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useSavedPosts } from '@/hooks/useSavedPosts';
 
 interface PostProps {
   id: string;
@@ -33,6 +34,7 @@ const Post = ({ id, userId, username, userAvatar, image, caption, likes, comment
   const [showComments, setShowComments] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isSaved, loading: saveLoading, toggleSave } = useSavedPosts(id);
 
   useEffect(() => {
     checkUser();
@@ -169,6 +171,32 @@ const Post = ({ id, userId, username, userAvatar, image, caption, likes, comment
     });
   };
 
+  const handleSave = async () => {
+    if (!currentUser) {
+      toast({
+        title: "يجب تسجيل الدخول",
+        description: "سجل دخولك لحفظ المنشورات",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+
+    const result = await toggleSave();
+    if (result?.success) {
+      toast({
+        title: result.action === 'saved' ? "تم الحفظ" : "تم إلغاء الحفظ",
+        description: result.action === 'saved' ? "تم حفظ المنشور بنجاح" : "تم إلغاء حفظ المنشور",
+      });
+    } else if (result?.error) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حفظ المنشور",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="bg-black border border-gray-800 rounded-lg mb-6 overflow-hidden">
       {/* Post Header */}
@@ -242,8 +270,20 @@ const Post = ({ id, userId, username, userAvatar, image, caption, likes, comment
               <Send className="w-6 h-6 hover:text-green-400 transition-all duration-200 group-hover:scale-110" />
             </Button>
           </div>
-          <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent group">
-            <Bookmark className="w-6 h-6 hover:text-yellow-400 transition-all duration-200 group-hover:scale-110" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="p-0 hover:bg-transparent group"
+            onClick={handleSave}
+            disabled={saveLoading}
+          >
+            <Bookmark 
+              className={`w-6 h-6 transition-all duration-200 group-hover:scale-110 ${
+                isSaved 
+                  ? 'fill-yellow-400 text-yellow-400' 
+                  : 'hover:text-yellow-400'
+              }`} 
+            />
           </Button>
         </div>
 
