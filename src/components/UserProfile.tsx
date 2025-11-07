@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Settings, Grid, Bookmark, Camera } from 'lucide-react';
+import { Settings, Grid, Bookmark, Camera, MessageCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { FormField, FormItem, FormLabel, FormControl, Form } from '@/components/ui/form';
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useMessages } from '@/hooks/useMessages';
 
 interface UserProfileProps {
   username: string;
@@ -39,6 +40,7 @@ const UserProfile = ({
 }: UserProfileProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { createConversation } = useMessages();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(avatar);
@@ -46,6 +48,7 @@ const UserProfile = ({
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(followers);
+  const [messageLoading, setMessageLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm({
@@ -241,6 +244,29 @@ const UserProfile = ({
     }
   };
 
+  const handleMessage = async () => {
+    if (!profileId) return;
+
+    setMessageLoading(true);
+    try {
+      const result = await createConversation(profileId);
+      
+      if (result?.success) {
+        navigate('/messages');
+      } else {
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء بدء المحادثة",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error);
+    } finally {
+      setMessageLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Profile Header */}
@@ -379,8 +405,15 @@ const UserProfile = ({
                   >
                     {followLoading ? '...' : (isFollowing ? 'إلغاء المتابعة' : 'متابعة')}
                   </Button>
-                  <Button variant="secondary" size="sm" className="bg-gray-800 hover:bg-gray-700">
-                    رسالة
+                  <Button 
+                    onClick={handleMessage}
+                    disabled={messageLoading}
+                    variant="secondary" 
+                    size="sm" 
+                    className="bg-gray-800 hover:bg-gray-700 flex items-center"
+                  >
+                    <MessageCircle className="w-4 h-4 ml-2" />
+                    {messageLoading ? 'جاري...' : 'رسالة'}
                   </Button>
                 </>
               )}
