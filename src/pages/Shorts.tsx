@@ -1,80 +1,92 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Share2, Plus, Play, Pause } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Plus, Volume2, VolumeX } from 'lucide-react';
 import Header from '@/components/Header';
-
-interface ShortVideo {
-  id: string;
-  username: string;
-  userAvatar: string;
-  videoUrl: string;
-  caption: string;
-  likes: number;
-  comments: number;
-  shares: number;
-  duration: string;
-}
+import { useReels } from '@/hooks/useReels';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Shorts = () => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [likedVideos, setLikedVideos] = useState<string[]>([]);
+  const [isMuted, setIsMuted] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const navigate = useNavigate();
+  
+  const { reels, loading, likedReels, toggleLike, incrementViews } = useReels(currentUserId);
 
-  // Mock data for short videos
-  const shortVideos: ShortVideo[] = [
-    {
-      id: '1',
-      username: 'creative_artist',
-      userAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150&h=150&fit=crop&crop=face',
-      videoUrl: 'https://example.com/video1.mp4',
-      caption: 'مقطع إبداعي قصير! #فن #إبداع',
-      likes: 2543,
-      comments: 87,
-      shares: 156,
-      duration: '0:15'
-    },
-    {
-      id: '2',
-      username: 'comedy_king',
-      userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      videoUrl: 'https://example.com/video2.mp4',
-      caption: 'كوميديا مضحكة 😂 #مضحك #ترفيه',
-      likes: 4821,
-      comments: 203,
-      shares: 342,
-      duration: '0:12'
-    },
-    {
-      id: '3',
-      username: 'dance_master',
-      userAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-      videoUrl: 'https://example.com/video3.mp4',
-      caption: 'رقصة جديدة وحماسية! 💃 #رقص #حماس',
-      likes: 3267,
-      comments: 142,
-      shares: 298,
-      duration: '0:20'
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id);
+    };
+    getCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    // Auto-play video when it changes
+    if (videoRef.current) {
+      videoRef.current.play();
+      // Increment views when video starts playing
+      if (reels[currentVideoIndex]) {
+        incrementViews(reels[currentVideoIndex].id);
+      }
     }
-  ];
+  }, [currentVideoIndex, reels]);
 
-  const currentVideo = shortVideos[currentVideoIndex];
-
-  const handleLike = (videoId: string) => {
-    setLikedVideos(prev => 
-      prev.includes(videoId) 
-        ? prev.filter(id => id !== videoId)
-        : [...prev, videoId]
-    );
-  };
+  const currentReel = reels[currentVideoIndex];
 
   const nextVideo = () => {
-    setCurrentVideoIndex((prev) => (prev + 1) % shortVideos.length);
+    setCurrentVideoIndex((prev) => (prev + 1) % reels.length);
   };
 
   const previousVideo = () => {
-    setCurrentVideoIndex((prev) => (prev - 1 + shortVideos.length) % shortVideos.length);
+    setCurrentVideoIndex((prev) => (prev - 1 + reels.length) % reels.length);
   };
+
+  const formatDuration = (seconds: number | null) => {
+    if (!seconds) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black">
+        <Header />
+        <main className="pt-20">
+          <div className="relative h-[calc(100vh-5rem)] flex justify-center items-center">
+            <Skeleton className="w-full max-w-md h-full rounded-lg" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!reels || reels.length === 0) {
+    return (
+      <div className="min-h-screen bg-black">
+        <Header />
+        <main className="pt-20">
+          <div className="relative h-[calc(100vh-5rem)] flex justify-center items-center">
+            <div className="text-center">
+              <p className="text-gray-400 mb-4">لا توجد ريلز متاحة</p>
+              <Button 
+                onClick={() => navigate('/create-reel')}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                إنشاء أول ريل
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black">
@@ -84,71 +96,87 @@ const Shorts = () => {
         <div className="relative h-[calc(100vh-5rem)] flex justify-center">
           {/* Video Container */}
           <div className="relative w-full max-w-md bg-gray-900 rounded-lg overflow-hidden">
-            {/* Video Placeholder */}
-            <div className="relative h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-32 h-32 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  {isPlaying ? (
-                    <Play className="w-16 h-16 text-black" />
-                  ) : (
-                    <Pause className="w-16 h-16 text-black" />
-                  )}
-                </div>
-                <p className="text-gray-400 mb-2">مقطع فيديو قصير</p>
-                <p className="text-green-400 font-semibold">{currentVideo.duration}</p>
-              </div>
-              
-              {/* Play/Pause Button */}
-              <Button
-                variant="ghost"
-                size="lg"
-                className="absolute inset-0 bg-transparent hover:bg-black/20"
-                onClick={() => setIsPlaying(!isPlaying)}
-              >
-                <span className="sr-only">تشغيل/إيقاف</span>
-              </Button>
-            </div>
+            {/* Video Player */}
+            <video
+              ref={videoRef}
+              src={currentReel.video_url}
+              className="w-full h-full object-cover"
+              loop
+              playsInline
+              muted={isMuted}
+              onClick={() => {
+                if (videoRef.current?.paused) {
+                  videoRef.current?.play();
+                } else {
+                  videoRef.current?.pause();
+                }
+              }}
+            />
 
             {/* User Info Overlay */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-              <div className="flex items-center space-x-3 mb-3">
+              <div className="flex items-center space-x-3 space-x-reverse mb-3">
                 <img 
-                  src={currentVideo.userAvatar} 
-                  alt={currentVideo.username}
-                  className="w-10 h-10 rounded-full border-2 border-green-500"
+                  src={currentReel.profiles?.avatar_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'} 
+                  alt={currentReel.profiles?.username || 'User'}
+                  className="w-10 h-10 rounded-full border-2 border-primary"
                 />
-                <div>
-                  <p className="font-semibold text-white">{currentVideo.username}</p>
-                  <p className="text-xs text-gray-300">{currentVideo.duration}</p>
+                <div className="flex-1">
+                  <p className="font-semibold text-white">
+                    {currentReel.profiles?.username || 'مستخدم'}
+                  </p>
+                  <p className="text-xs text-gray-300">
+                    {formatDuration(currentReel.duration)}
+                  </p>
                 </div>
-                <Button size="sm" className="bg-green-500 hover:bg-green-600 text-black font-semibold px-6">
+                <Button size="sm" className="bg-primary hover:bg-primary/90 font-semibold px-6">
                   متابعة
                 </Button>
               </div>
-              <p className="text-white text-sm mb-4">{currentVideo.caption}</p>
+              {currentReel.caption && (
+                <p className="text-white text-sm mb-4">{currentReel.caption}</p>
+              )}
             </div>
 
+            {/* Mute/Unmute Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMuted(!isMuted)}
+              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full"
+            >
+              {isMuted ? (
+                <VolumeX className="w-5 h-5" />
+              ) : (
+                <Volume2 className="w-5 h-5" />
+              )}
+            </Button>
+
             {/* Navigation Arrows */}
-            <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={previousVideo}
-                className="bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 p-0"
-              >
-                ↑
-              </Button>
-            </div>
-            <div className="absolute top-1/2 right-4 transform -translate-y-1/2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={nextVideo}
-                className="bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 p-0"
-              >
-                ↓
-              </Button>
-            </div>
+            {currentVideoIndex > 0 && (
+              <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={previousVideo}
+                  className="bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 p-0"
+                >
+                  ↑
+                </Button>
+              </div>
+            )}
+            {currentVideoIndex < reels.length - 1 && (
+              <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={nextVideo}
+                  className="bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 p-0"
+                >
+                  ↓
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Side Actions */}
@@ -156,17 +184,17 @@ const Shorts = () => {
             <Button
               variant="ghost"
               size="lg"
-              onClick={() => handleLike(currentVideo.id)}
+              onClick={() => toggleLike(currentReel.id)}
               className="flex flex-col items-center space-y-1 bg-black/50 hover:bg-black/70 rounded-full w-16 h-16 p-0"
             >
               <Heart 
                 className={`w-6 h-6 ${
-                  likedVideos.includes(currentVideo.id) 
+                  likedReels.includes(currentReel.id) 
                     ? 'fill-red-500 text-red-500' 
                     : 'text-white'
                 }`} 
               />
-              <span className="text-xs text-white">{currentVideo.likes}</span>
+              <span className="text-xs text-white">{currentReel.likes_count}</span>
             </Button>
 
             <Button
@@ -175,7 +203,7 @@ const Shorts = () => {
               className="flex flex-col items-center space-y-1 bg-black/50 hover:bg-black/70 rounded-full w-16 h-16 p-0"
             >
               <MessageCircle className="w-6 h-6 text-white" />
-              <span className="text-xs text-white">{currentVideo.comments}</span>
+              <span className="text-xs text-white">{currentReel.comments_count}</span>
             </Button>
 
             <Button
@@ -184,15 +212,18 @@ const Shorts = () => {
               className="flex flex-col items-center space-y-1 bg-black/50 hover:bg-black/70 rounded-full w-16 h-16 p-0"
             >
               <Share2 className="w-6 h-6 text-white" />
-              <span className="text-xs text-white">{currentVideo.shares}</span>
+              <span className="text-xs text-white">{currentReel.shares_count}</span>
             </Button>
           </div>
 
-          {/* Create Short Button */}
+          {/* Create Reel Button */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-            <Button className="bg-green-500 hover:bg-green-600 text-black font-semibold px-6 py-3 rounded-full shadow-lg shadow-green-500/25">
+            <Button 
+              onClick={() => navigate('/create-reel')}
+              className="bg-primary hover:bg-primary/90 font-semibold px-6 py-3 rounded-full shadow-lg"
+            >
               <Plus className="w-5 h-5 mr-2" />
-              إنشاء مقطع
+              إنشاء ريل
             </Button>
           </div>
         </div>
