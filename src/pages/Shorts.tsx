@@ -7,10 +7,13 @@ import Header from '@/components/Header';
 import { useReels } from '@/hooks/useReels';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CommentSection } from '@/components/CommentSection';
 
 const Shorts = () => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useNavigate();
@@ -200,6 +203,7 @@ const Shorts = () => {
             <Button
               variant="ghost"
               size="lg"
+              onClick={() => setShowComments(true)}
               className="flex flex-col items-center space-y-1 bg-black/50 hover:bg-black/70 rounded-full w-16 h-16 p-0"
             >
               <MessageCircle className="w-6 h-6 text-white" />
@@ -228,6 +232,15 @@ const Shorts = () => {
           </div>
         </div>
       </main>
+
+      <Dialog open={showComments} onOpenChange={setShowComments}>
+        <DialogContent className="max-w-2xl h-[600px] p-0">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle>التعليقات</DialogTitle>
+          </DialogHeader>
+          <CommentSection type="reel" itemId={currentReel.id} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

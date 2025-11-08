@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { StoryViewers } from './StoryViewers';
+import { useStoryViews } from '@/hooks/useStoryViews';
 
 interface Story {
   id: string;
@@ -10,6 +14,7 @@ interface Story {
   media_type: string;
   created_at: string;
   expires_at: string;
+  views_count: number;
   profiles?: {
     username: string;
     avatar_url: string;
@@ -27,10 +32,25 @@ interface StoryViewerProps {
 const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryViewerProps) => {
   const { toast } = useToast();
   const [progress, setProgress] = useState(0);
+  const [showViewers, setShowViewers] = useState(false);
+  const [isOwnStory, setIsOwnStory] = useState(false);
   const currentStory = stories[currentIndex];
+  const { recordView } = useStoryViews(currentStory?.id || '');
 
   useEffect(() => {
     if (!currentStory) return;
+
+    // Check if this is the current user's story
+    const checkOwnership = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsOwnStory(user?.id === currentStory.user_id);
+      
+      // Record view if not own story
+      if (user && user.id !== currentStory.user_id) {
+        recordView();
+      }
+    };
+    checkOwnership();
 
     // Reset progress
     setProgress(0);
@@ -96,9 +116,22 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
             <p className="text-gray-300 text-sm">{timeAgo(currentStory.created_at)}</p>
           </div>
         </div>
-        <button onClick={onClose} className="text-white p-2">
-          <X className="w-6 h-6" />
-        </button>
+        <div className="flex items-center gap-2">
+          {isOwnStory && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowViewers(true)}
+              className="text-white hover:bg-white/20"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              {currentStory.views_count}
+            </Button>
+          )}
+          <button onClick={onClose} className="text-white p-2">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
       {/* Navigation arrows */}
@@ -144,6 +177,16 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
         <div className="flex-1" onClick={onPrev} />
         <div className="flex-1" onClick={onNext} />
       </div>
+
+      {/* Viewers Dialog */}
+      <Dialog open={showViewers} onOpenChange={setShowViewers}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>المشاهدات</DialogTitle>
+          </DialogHeader>
+          <StoryViewers storyId={currentStory.id} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

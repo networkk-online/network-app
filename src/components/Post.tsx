@@ -7,6 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useSavedPosts } from '@/hooks/useSavedPosts';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CommentSection } from '@/components/CommentSection';
 
 interface PostProps {
   id: string;
@@ -32,6 +34,7 @@ const Post = ({ id, userId, username, userAvatar, image, caption, likes, comment
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<any[]>([]);
   const [showComments, setShowComments] = useState(false);
+  const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isSaved, loading: saveLoading, toggleSave } = useSavedPosts(id);
@@ -262,7 +265,7 @@ const Post = ({ id, userId, username, userAvatar, image, caption, likes, comment
               variant="ghost" 
               size="sm" 
               className="p-0 hover:bg-transparent group"
-              onClick={() => setShowComments(!showComments)}
+              onClick={() => setShowCommentsModal(true)}
             >
               <MessageCircle className="w-6 h-6 hover:text-blue-400 transition-all duration-200 group-hover:scale-110" />
             </Button>
@@ -377,6 +380,15 @@ const Post = ({ id, userId, username, userAvatar, image, caption, likes, comment
           )}
         </div>
       </div>
+
+      <Dialog open={showCommentsModal} onOpenChange={setShowCommentsModal}>
+        <DialogContent className="max-w-2xl h-[600px] p-0">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle>التعليقات</DialogTitle>
+          </DialogHeader>
+          <CommentSection type="post" itemId={id} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

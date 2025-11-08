@@ -3,15 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Video, X, Loader2 } from 'lucide-react';
+import { Upload, Video, X, Loader2, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
+import { VideoEditor } from '@/components/VideoEditor';
 
 const CreateReel = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [editedFile, setEditedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [caption, setCaption] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -44,8 +47,19 @@ const CreateReel = () => {
     setPreviewUrl(url);
   };
 
+  const handleApplyFilters = (filteredVideo: Blob) => {
+    const file = new File([filteredVideo], 'filtered-video.webm', { type: 'video/webm' });
+    setEditedFile(file);
+    setShowEditor(false);
+    toast({
+      title: 'تم',
+      description: 'تم تطبيق الفلاتر بنجاح',
+    });
+  };
+
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    const fileToUpload = editedFile || selectedFile;
+    if (!fileToUpload) return;
 
     setUploading(true);
 
@@ -63,12 +77,12 @@ const CreateReel = () => {
       }
 
       // Upload video to storage
-      const fileExt = selectedFile.name.split('.').pop();
+      const fileExt = fileToUpload.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('reels')
-        .upload(fileName, selectedFile);
+        .upload(fileName, fileToUpload);
 
       if (uploadError) throw uploadError;
 
@@ -165,21 +179,39 @@ const CreateReel = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="relative bg-black rounded-lg overflow-hidden">
-                <video
-                  src={previewUrl}
-                  controls
-                  className="w-full max-h-[500px] object-contain"
+              {!showEditor ? (
+                <>
+                  <div className="relative bg-black rounded-lg overflow-hidden">
+                    <video
+                      src={previewUrl}
+                      controls
+                      className="w-full max-h-[500px] object-contain"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={removeFile}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <Button
+                    onClick={() => setShowEditor(true)}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    تطبيق فلاتر وتأثيرات
+                  </Button>
+                </>
+              ) : (
+                <VideoEditor
+                  videoUrl={previewUrl}
+                  onApplyFilters={handleApplyFilters}
                 />
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={removeFile}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
