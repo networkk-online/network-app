@@ -7,11 +7,14 @@ export interface Comment {
   user_id: string;
   content: string;
   created_at: string;
+  parent_id: string | null;
+  replies_count: number;
   profiles?: {
     username: string | null;
     avatar_url: string | null;
     full_name: string | null;
   };
+  replies?: Comment[];
 }
 
 export const useComments = (type: 'post' | 'reel', itemId: string) => {
@@ -24,12 +27,12 @@ export const useComments = (type: 'post' | 'reel', itemId: string) => {
 
   const loadComments = async () => {
     try {
-      // First get comments
+      // Get all comments (including replies)
       const { data: commentsData, error: commentsError } = await supabase
         .from(tableName as any)
         .select('*')
         .eq(idField, itemId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
       if (commentsError) throw commentsError;
 
@@ -45,10 +48,33 @@ export const useComments = (type: 'post' | 'reel', itemId: string) => {
         
         const commentsWithProfiles = commentsData.map((comment: any) => ({
           ...comment,
-          profiles: profilesMap.get(comment.user_id) || null
+          profiles: profilesMap.get(comment.user_id) || null,
+          replies: []
         }));
 
-        setComments(commentsWithProfiles);
+        // Build nested structure
+        const topLevelComments: Comment[] = [];
+        const commentsMap = new Map<string, Comment>();
+
+        // First pass: create map of all comments
+        commentsWithProfiles.forEach((comment: Comment) => {
+          commentsMap.set(comment.id, comment);
+        });
+
+        // Second pass: build hierarchy
+        commentsWithProfiles.forEach((comment: Comment) => {
+          if (comment.parent_id) {
+            const parent = commentsMap.get(comment.parent_id);
+            if (parent) {
+              if (!parent.replies) parent.replies = [];
+              parent.replies.push(comment);
+            }
+          } else {
+            topLevelComments.push(comment);
+          }
+        });
+
+        setComments(topLevelComments);
       } else {
         setComments([]);
       }
@@ -63,7 +89,7 @@ export const useComments = (type: 'post' | 'reel', itemId: string) => {
     }
   };
 
-  const addComment = async (content: string) => {
+  const addComment = async (content: string, parentId?: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -78,6 +104,7 @@ export const useComments = (type: 'post' | 'reel', itemId: string) => {
       const commentData: any = {
         user_id: user.id,
         content,
+        parent_id: parentId || null,
       };
       commentData[idField] = itemId;
 
@@ -89,14 +116,14 @@ export const useComments = (type: 'post' | 'reel', itemId: string) => {
 
       toast({
         title: 'تم',
-        description: 'تم إضافة التعليق',
+        description: parentId ? 'تم إضافة الرد' : 'تم إضافة التعليق',
       });
 
       loadComments();
     } catch (error: any) {
       toast({
         title: 'خطأ',
-        description: 'فشل إضافة التعليق',
+        description: parentId ? 'فشل إضافة الرد' : 'فشل إضافة التعليق',
         variant: 'destructive',
       });
     }
