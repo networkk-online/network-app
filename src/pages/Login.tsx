@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import networkLogo from '@/assets/network-logo.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -164,9 +164,9 @@ const Login = () => {
       <div className="w-full max-w-md z-10 relative backdrop-blur-sm bg-black/20 rounded-2xl border border-green-500/20 p-8 shadow-2xl shadow-green-500/10">
         {/* Logo */}
         <div className="text-center mb-12">
-          <div className="w-24 h-24 mx-auto mb-8 relative">
+          <div className="w-32 h-32 mx-auto mb-8 relative">
             <img 
-              src="/lovable-uploads/3228b102-769a-43ee-92c5-9f0c0b2b928e.png" 
+              src={networkLogo} 
               alt="Network Logo" 
               className="w-full h-full object-contain"
             />
