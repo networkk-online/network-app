@@ -7,10 +7,20 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, DollarSign, Users, TrendingUp, Search } from 'lucide-react';
+import { Shield, DollarSign, Users, TrendingUp, Search, Lock, Key } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface UserProfile {
   id: string;
@@ -52,6 +62,12 @@ const ManageUsers = () => {
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
   const [newFollowersCount, setNewFollowersCount] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordDialog, setPasswordDialog] = useState<{ open: boolean; userId: string; username: string }>({
+    open: false,
+    userId: '',
+    username: '',
+  });
 
   useEffect(() => {
     checkAuthorization();
@@ -304,6 +320,58 @@ const ManageUsers = () => {
     }
   };
 
+  const handleUpdatePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast({
+        title: "خطأ",
+        description: "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-update-password`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: passwordDialog.userId,
+            password: newPassword,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'فشل تحديث كلمة المرور');
+      }
+
+      toast({
+        title: "نجح",
+        description: "تم تحديث كلمة المرور بنجاح",
+      });
+
+      setNewPassword('');
+      setPasswordDialog({ open: false, userId: '', username: '' });
+    } catch (error: any) {
+      console.error('Update password error:', error);
+      toast({
+        title: "خطأ",
+        description: error.message || "فشل تحديث كلمة المرور",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredUsers = users.filter(user =>
     user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -339,6 +407,7 @@ const ManageUsers = () => {
             <TabsList className="bg-gray-900">
               <TabsTrigger value="transactions">المعاملات المالية</TabsTrigger>
               <TabsTrigger value="followers">إدارة المتابعين</TabsTrigger>
+              <TabsTrigger value="passwords">كلمات السر</TabsTrigger>
               <TabsTrigger value="users">قائمة المستخدمين</TabsTrigger>
               <TabsTrigger value="history">السجل</TabsTrigger>
             </TabsList>
@@ -461,6 +530,43 @@ const ManageUsers = () => {
               </Card>
             </TabsContent>
 
+            <TabsContent value="passwords" className="space-y-6">
+              <Card className="bg-gray-900 border-gray-800">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Key className="w-5 h-5 text-yellow-500" />
+                    تغيير كلمات المرور
+                  </CardTitle>
+                  <CardDescription>تعديل كلمة مرور المستخدمين</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {filteredUsers.map(user => (
+                      <div key={user.id} className="p-4 bg-gray-800 rounded-lg flex justify-between items-center">
+                        <div>
+                          <p className="text-white font-medium">{user.full_name || user.username}</p>
+                          <p className="text-gray-400 text-sm">@{user.username}</p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPasswordDialog({ 
+                            open: true, 
+                            userId: user.id, 
+                            username: user.username || '' 
+                          })}
+                          className="bg-gray-700 hover:bg-gray-600 border-gray-600"
+                        >
+                          <Lock className="w-4 h-4 mr-2" />
+                          تغيير كلمة المرور
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="users" className="space-y-6">
               <Card className="bg-gray-900 border-gray-800">
                 <CardHeader>
@@ -553,6 +659,44 @@ const ManageUsers = () => {
           </Tabs>
         </div>
       </main>
+
+      <AlertDialog open={passwordDialog.open} onOpenChange={(open) => setPasswordDialog({ ...passwordDialog, open })}>
+        <AlertDialogContent className="bg-gray-900 border-gray-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">تغيير كلمة المرور</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              تغيير كلمة المرور للمستخدم @{passwordDialog.username}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label className="text-gray-400">كلمة المرور الجديدة</Label>
+            <Input
+              type="password"
+              placeholder="أدخل كلمة مرور جديدة (6 أحرف على الأقل)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="bg-gray-800 border-gray-700 text-white mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              className="bg-gray-800 text-white border-gray-700"
+              onClick={() => {
+                setNewPassword('');
+                setPasswordDialog({ open: false, userId: '', username: '' });
+              }}
+            >
+              إلغاء
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-yellow-600 hover:bg-yellow-700"
+              onClick={handleUpdatePassword}
+            >
+              تحديث كلمة المرور
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
