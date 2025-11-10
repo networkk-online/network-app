@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_interactions: {
+        Row: {
+          ad_id: string
+          created_at: string | null
+          id: string
+          interaction_type: string
+          user_id: string | null
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string | null
+          id?: string
+          interaction_type: string
+          user_id?: string | null
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string | null
+          id?: string
+          interaction_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_interactions_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "advertisements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      advertisements: {
+        Row: {
+          clicks_count: number | null
+          created_at: string | null
+          description: string | null
+          end_date: string
+          id: string
+          image_url: string
+          is_active: boolean | null
+          link_url: string | null
+          placement: string
+          start_date: string
+          title: string
+          updated_at: string | null
+          views_count: number | null
+        }
+        Insert: {
+          clicks_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          link_url?: string | null
+          placement: string
+          start_date?: string
+          title: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          clicks_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          placement?: string
+          start_date?: string
+          title?: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string

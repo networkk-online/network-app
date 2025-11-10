@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Users, FileText, Activity, Shield, Video, MessageCircle, Heart, Image } from 'lucide-react';
+import { Users, FileText, Activity, Shield, Video, MessageCircle, Heart, Image, Megaphone } from 'lucide-react';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -294,6 +294,13 @@ const AdminDashboard = () => {
                 >
                   <p className="text-white font-medium">إدارة المحتوى</p>
                   <p className="text-gray-400 text-sm">مراجعة وحذف المنشورات والريلز</p>
+                </div>
+                <div 
+                  onClick={() => navigate('/admin/ads')}
+                  className="p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors"
+                >
+                  <p className="text-white font-medium">إدارة الإعلانات</p>
+                  <p className="text-gray-400 text-sm">إنشاء وإدارة الإعلانات داخل التطبيق</p>
                 </div>
                 <div className="p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors">
                   <p className="text-white font-medium">التقارير والإحصائيات</p>

@@ -6,6 +6,7 @@ import Post from '@/components/Post';
 import WalletCard from '@/components/WalletCard';
 import StoryCircle from '@/components/StoryCircle';
 import StoryViewer from '@/components/StoryViewer';
+import Advertisement from '@/components/Advertisement';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useStories } from '@/hooks/useStories';
@@ -186,8 +187,11 @@ const Index = () => {
                   <p className="text-gray-500 text-sm">جاري التحميل...</p>
                 </div>
               ) : posts.length > 0 ? (
-                posts.map((post) => (
-                  <Post key={post.id} {...post} />
+                posts.map((post, index) => (
+                  <div key={post.id}>
+                    <Post {...post} />
+                    {(index + 1) % 3 === 0 && <Advertisement placement="feed" className="mt-4" />}
+                  </div>
                 ))
               ) : (
                 <div className="text-center py-8">

@@ -24,6 +24,7 @@ import AdminLogin from "./pages/AdminLogin";
 import ManageStaff from "./pages/ManageStaff";
 import ManageUsers from "./pages/ManageUsers";
 import ManageContent from "./pages/ManageContent";
+import ManageAds from "./pages/ManageAds";
 import Followers from "./pages/Followers";
 import Following from "./pages/Following";
 import CreateStory from "./pages/CreateStory";
@@ -62,6 +63,7 @@ const App = () => (
           <Route path="/admin/staff" element={<ManageStaff />} />
           <Route path="/admin/users" element={<ManageUsers />} />
           <Route path="/admin/content" element={<ManageContent />} />
+          <Route path="/admin/ads" element={<ManageAds />} />
           <Route path="/followers" element={<Followers />} />
           <Route path="/following" element={<Following />} />
           <Route path="/create-story" element={<CreateStory />} />
