@@ -128,7 +128,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
               {currentStory.views_count}
             </Button>
           )}
-          <button onClick={onClose} className="text-white p-2">
+          <button onClick={onClose} className="text-blue-500 hover:text-blue-400 p-2 transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>

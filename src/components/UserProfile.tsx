@@ -389,7 +389,12 @@ const UserProfile = ({
                       </Form>
                     </DialogContent>
                   </Dialog>
-                  <Button variant="ghost" size="sm" className="p-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="p-2"
+                    onClick={() => navigate('/settings')}
+                  >
                     <Settings className="w-5 h-5" />
                   </Button>
                 </>
