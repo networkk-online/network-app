@@ -250,6 +250,55 @@ export type Database = {
         }
         Relationships: []
       }
+      donation_replies: {
+        Row: {
+          created_at: string | null
+          creator_user_id: string
+          donation_id: string
+          donor_user_id: string
+          id: string
+          reply_message: string
+        }
+        Insert: {
+          created_at?: string | null
+          creator_user_id: string
+          donation_id: string
+          donor_user_id: string
+          id?: string
+          reply_message: string
+        }
+        Update: {
+          created_at?: string | null
+          creator_user_id?: string
+          donation_id?: string
+          donor_user_id?: string
+          id?: string
+          reply_message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donation_replies_creator_user_id_fkey"
+            columns: ["creator_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donation_replies_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "broadcast_donations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donation_replies_donor_user_id_fkey"
+            columns: ["donor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
