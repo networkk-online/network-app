@@ -64,6 +64,9 @@ const Profile = () => {
         ...data,
         following_count: followingCount || 0
       });
+
+      // Load wallet data
+      await loadWalletData(userId);
     } catch (error: any) {
       console.error('Error loading profile:', error);
       toast({
@@ -73,6 +76,42 @@ const Profile = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadWalletData = async (userId: string) => {
+    try {
+      // Get user finances
+      const { data: financeData, error: financeError } = await supabase
+        .from('user_finances')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (financeError) throw financeError;
+
+      if (financeData) {
+        setWalletBalance(Number(financeData.balance) || 0);
+      }
+
+      // Calculate today's earnings from transactions
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const { data: todayTransactions, error: transactionsError } = await supabase
+        .from('transactions')
+        .select('amount')
+        .eq('user_id', userId)
+        .eq('type', 'earning')
+        .eq('status', 'completed')
+        .gte('created_at', today.toISOString());
+
+      if (transactionsError) throw transactionsError;
+
+      const todayTotal = todayTransactions?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+      setTodayEarnings(todayTotal);
+    } catch (error) {
+      console.error('Error loading wallet data:', error);
     }
   };
 
