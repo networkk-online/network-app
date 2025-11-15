@@ -8,7 +8,10 @@ interface NotificationData {
   userAvatar: string;
   content: string;
   image?: string;
-  type: 'like' | 'comment' | 'follow' | 'mention' | 'message';
+  type: 'like' | 'comment' | 'follow' | 'mention' | 'message' | 'donation';
+  donationId?: string;
+  donationAmount?: number;
+  donationMessage?: string;
 }
 
 interface InteractiveNotification {
@@ -160,6 +163,22 @@ export const useInteractiveNotifications = () => {
             {
               action: 'emoji',
               title: '😊 رد بإيموجي',
+              type: 'button' as const
+            },
+            ...baseActions
+          ];
+        
+        case 'donation':
+          return [
+            {
+              action: 'thank',
+              title: '🙏 شكراً',
+              type: 'text' as const,
+              placeholder: 'اكتب رسالة شكر...'
+            },
+            {
+              action: 'quick-thanks',
+              title: '💖 شكراً جزيلاً',
               type: 'button' as const
             },
             ...baseActions

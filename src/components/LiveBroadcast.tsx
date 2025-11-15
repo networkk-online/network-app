@@ -4,14 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Video, VideoOff, Mic, MicOff, Users, MessageCircle, Heart, X, Languages, DollarSign, Gift } from 'lucide-react';
 import { RealTimeTranslation } from './RealTimeTranslation';
+import { DonationReplyDialog } from './DonationReplyDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useInteractiveNotifications } from '@/hooks/useInteractiveNotifications';
 interface LiveBroadcastProps {
   onClose: () => void;
 }
 
 const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
   const { toast } = useToast();
+  const { sendInteractiveNotification, permission, requestPermission } = useInteractiveNotifications();
   const [isLive, setIsLive] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
@@ -25,13 +28,20 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
   const [newComment, setNewComment] = useState('');
   const [donationAmount, setDonationAmount] = useState('');
   const [donationMessage, setDonationMessage] = useState('');
-  const [donations, setDonations] = useState<Array<{id: string, username: string, amount: number, message?: string}>>([]);
+  const [donations, setDonations] = useState<Array<{id: string, username: string, amount: number, message?: string, donor_user_id: string, creator_user_id: string}>>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [broadcastId] = useState(`broadcast-${Date.now()}`);
+  const [replyDialogOpen, setReplyDialogOpen] = useState(false);
+  const [selectedDonation, setSelectedDonation] = useState<any>(null);
   
   useEffect(() => {
     loadCurrentUser();
     loadDonations();
+    
+    // Request notification permission on mount
+    if (permission === 'default') {
+      requestPermission();
+    }
     
     // Subscribe to realtime donations
     const channel = supabase
@@ -48,16 +58,45 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
           // Load donor profile
           const { data: profile } = await supabase
             .from('profiles')
-            .select('username')
+            .select('username, avatar_url')
             .eq('id', payload.new.donor_user_id)
             .single();
             
-          setDonations(prev => [{
+          const newDonation = {
             id: payload.new.id,
             username: profile?.username || 'Anonymous',
             amount: Number(payload.new.amount),
-            message: payload.new.message
-          }, ...prev]);
+            message: payload.new.message,
+            donor_user_id: payload.new.donor_user_id,
+            creator_user_id: payload.new.creator_user_id
+          };
+          
+          setDonations(prev => [newDonation, ...prev]);
+          
+          // Send interactive notification
+          if (permission === 'granted') {
+            sendInteractiveNotification({
+              title: '🎉 دعم جديد!',
+              body: `${profile?.username || 'مستخدم'} أرسل لك ${Number(payload.new.amount).toFixed(2)}$ ${payload.new.message ? `: "${payload.new.message}"` : ''}`,
+              icon: profile?.avatar_url || '/favicon.ico',
+              data: {
+                postId: '',
+                userId: payload.new.donor_user_id,
+                userName: profile?.username || 'Anonymous',
+                userAvatar: profile?.avatar_url || '',
+                content: payload.new.message || '',
+                type: 'donation',
+                donationId: payload.new.id,
+                donationAmount: Number(payload.new.amount),
+                donationMessage: payload.new.message
+              },
+              actions: []
+            });
+            
+            // Play notification sound
+            const audio = new Audio('/notification.mp3');
+            audio.play().catch(() => console.log('Could not play sound'));
+          }
         }
       )
       .subscribe();
@@ -65,7 +104,7 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [broadcastId]);
+  }, [broadcastId, permission, requestPermission, sendInteractiveNotification]);
   
   const loadCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -80,6 +119,7 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
         amount,
         message,
         donor_user_id,
+        creator_user_id,
         profiles!broadcast_donations_donor_user_id_fkey(username)
       `)
       .eq('broadcast_id', broadcastId)
@@ -91,9 +131,23 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
         id: d.id,
         username: (d.profiles as any)?.username || 'Anonymous',
         amount: Number(d.amount),
-        message: d.message || undefined
+        message: d.message || undefined,
+        donor_user_id: d.donor_user_id,
+        creator_user_id: d.creator_user_id
       })));
     }
+  };
+  
+  const handleReplyToDonation = (donation: any) => {
+    setSelectedDonation({
+      id: donation.id,
+      donor_user_id: donation.donor_user_id,
+      creator_user_id: donation.creator_user_id,
+      amount: donation.amount,
+      donor_username: donation.username,
+      message: donation.message
+    });
+    setReplyDialogOpen(true);
   };
 
   const startBroadcast = () => {
@@ -377,14 +431,34 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
                     <span className="text-yellow-400 font-bold">${donation.amount.toFixed(2)}</span>
                   </div>
                   {donation.message && (
-                    <p className="text-xs text-gray-400">{donation.message}</p>
+                    <p className="text-xs text-gray-400 mb-2">{donation.message}</p>
                   )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleReplyToDonation(donation)}
+                    className="w-full text-xs h-7 border-yellow-500/30 hover:bg-yellow-500/10"
+                  >
+                    <MessageCircle className="w-3 h-3 ml-1" />
+                    رد برسالة شكر
+                  </Button>
                 </div>
               ))
             )}
           </div>
         </div>
       </div>
+      
+      {selectedDonation && (
+        <DonationReplyDialog
+          isOpen={replyDialogOpen}
+          onClose={() => {
+            setReplyDialogOpen(false);
+            setSelectedDonation(null);
+          }}
+          donation={selectedDonation}
+        />
+      )}
     </div>
   );
 };
