@@ -26,6 +26,7 @@ import ManageUsers from "./pages/ManageUsers";
 import ManageContent from "./pages/ManageContent";
 import ManageAds from "./pages/ManageAds";
 import Settings from "./pages/Settings";
+import Search from "./pages/Search";
 import Followers from "./pages/Followers";
 import Following from "./pages/Following";
 import CreateStory from "./pages/CreateStory";
@@ -66,6 +67,7 @@ const App = () => (
           <Route path="/admin/content" element={<ManageContent />} />
           <Route path="/admin/ads" element={<ManageAds />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/search" element={<Search />} />
           <Route path="/followers" element={<Followers />} />
           <Route path="/following" element={<Following />} />
           <Route path="/create-story" element={<CreateStory />} />
