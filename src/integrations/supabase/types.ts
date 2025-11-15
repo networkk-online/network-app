@@ -94,6 +94,57 @@ export type Database = {
         }
         Relationships: []
       }
+      broadcast_donations: {
+        Row: {
+          amount: number
+          broadcast_id: string
+          created_at: string | null
+          creator_earning: number
+          creator_user_id: string
+          donor_user_id: string
+          id: string
+          message: string | null
+          platform_fee: number
+        }
+        Insert: {
+          amount: number
+          broadcast_id: string
+          created_at?: string | null
+          creator_earning?: number
+          creator_user_id: string
+          donor_user_id: string
+          id?: string
+          message?: string | null
+          platform_fee?: number
+        }
+        Update: {
+          amount?: number
+          broadcast_id?: string
+          created_at?: string | null
+          creator_earning?: number
+          creator_user_id?: string
+          donor_user_id?: string
+          id?: string
+          message?: string | null
+          platform_fee?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_donations_creator_user_id_fkey"
+            columns: ["creator_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_donations_donor_user_id_fkey"
+            columns: ["donor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           content: string
