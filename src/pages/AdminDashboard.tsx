@@ -109,9 +109,9 @@ const AdminDashboard = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-2">
               <Shield className="w-8 h-8 text-green-500" />
-              لوحة تحكم الموظفين
+              لوحة التحكم الرئيسية
             </h1>
-            <p className="text-gray-400">إدارة ومراقبة التطبيق</p>
+            <p className="text-gray-400">إدارة شاملة ومراقبة كاملة للتطبيق والمستخدمين</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -301,6 +301,16 @@ const AdminDashboard = () => {
                 >
                   <p className="text-white font-medium">إدارة الإعلانات</p>
                   <p className="text-gray-400 text-sm">إنشاء وإدارة الإعلانات داخل التطبيق</p>
+                </div>
+                <div 
+                  onClick={() => navigate('/admin/settings')}
+                  className="p-3 bg-gradient-to-r from-primary/20 to-purple-900/20 border border-primary/50 rounded-lg hover:bg-primary/10 cursor-pointer transition-colors"
+                >
+                  <p className="text-white font-medium flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    الإعدادات المتقدمة
+                  </p>
+                  <p className="text-gray-400 text-sm">التحكم الكامل بقاعدة البيانات والنظام</p>
                 </div>
                 <div className="p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors">
                   <p className="text-white font-medium">التقارير والإحصائيات</p>

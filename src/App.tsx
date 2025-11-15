@@ -25,6 +25,7 @@ import ManageStaff from "./pages/ManageStaff";
 import ManageUsers from "./pages/ManageUsers";
 import ManageContent from "./pages/ManageContent";
 import ManageAds from "./pages/ManageAds";
+import AdminSettings from "./pages/AdminSettings";
 import Settings from "./pages/Settings";
 import Search from "./pages/Search";
 import Followers from "./pages/Followers";
@@ -66,6 +67,7 @@ const App = () => (
           <Route path="/admin/users" element={<ManageUsers />} />
           <Route path="/admin/content" element={<ManageContent />} />
           <Route path="/admin/ads" element={<ManageAds />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/search" element={<Search />} />
           <Route path="/followers" element={<Followers />} />
