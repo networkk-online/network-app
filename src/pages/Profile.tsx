@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import UserProfile from '@/components/UserProfile';
+import WalletCard from '@/components/WalletCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, MessageCircle, Bookmark } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Profile = () => {
@@ -14,6 +15,8 @@ const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [userPosts, setUserPosts] = useState<any[]>([]);
+  const [walletBalance, setWalletBalance] = useState(2847.50);
+  const [todayEarnings, setTodayEarnings] = useState(150.30);
 
   useEffect(() => {
     checkUser();
@@ -175,15 +178,31 @@ const Profile = () => {
           <div className="container-responsive mobile-padding">
             <UserProfile {...userData} onUpdate={handleProfileUpdate} />
             
-            {/* Saved Posts Button */}
-            <div className="mt-6 sm:mt-8 flex justify-center">
-              <Button
-                onClick={() => navigate('/saved-posts')}
-                className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
-              >
-                <Bookmark className="w-5 h-5" />
-                <span>المنشورات المحفوظة</span>
-              </Button>
+            {/* Wallet Section */}
+            <div className="mt-6 sm:mt-8">
+              <WalletCard 
+                balance={walletBalance}
+                todayEarnings={todayEarnings}
+                totalPosts={userPosts.length}
+              />
+              
+              {/* Wallet Actions */}
+              <div className="flex gap-4 justify-center mt-4">
+                <Button
+                  onClick={() => navigate('/withdraw')}
+                  className="flex items-center space-x-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                >
+                  <Wallet className="w-5 h-5" />
+                  <span>سحب الأرباح</span>
+                </Button>
+                <Button
+                  onClick={() => navigate('/saved-posts')}
+                  className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
+                >
+                  <Bookmark className="w-5 h-5" />
+                  <span>المنشورات المحفوظة</span>
+                </Button>
+              </div>
             </div>
             
             {/* Posts Grid - Responsive */}
