@@ -28,10 +28,19 @@ const AdminDashboard = () => {
 
   const checkAuthorization = async () => {
     try {
+      // Check if authenticated via PIN first
+      const pinAuthenticated = sessionStorage.getItem('admin_authenticated');
+      if (pinAuthenticated === 'true') {
+        setIsAuthorized(true);
+        setLoading(false);
+        return;
+      }
+
+      // Otherwise, check database authentication
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        navigate('/admin/login');
+        navigate('/admin-login');
         return;
       }
 
@@ -49,14 +58,14 @@ const AdminDashboard = () => {
           variant: "destructive",
         });
         await supabase.auth.signOut();
-        navigate('/admin/login');
+        navigate('/admin-login');
         return;
       }
 
       setIsAuthorized(true);
     } catch (error) {
       console.error('Authorization error:', error);
-      navigate('/admin/login');
+      navigate('/admin-login');
     } finally {
       setLoading(false);
     }
