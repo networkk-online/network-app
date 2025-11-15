@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Post from '@/components/Post';
-import WalletCard from '@/components/WalletCard';
 import StoryCircle from '@/components/StoryCircle';
 import StoryViewer from '@/components/StoryViewer';
 import Advertisement from '@/components/Advertisement';
@@ -23,12 +22,6 @@ const Index = () => {
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   
   const { stories, loading: storiesLoading } = useStories(userId);
-
-  const userStats = {
-    balance: 47.83,
-    todayEarnings: 0.55,
-    totalPosts: posts.length
-  };
 
   useEffect(() => {
     getCurrentUser();
@@ -176,9 +169,6 @@ const Index = () => {
                 })}
               </div>
             </div>
-            
-            {/* Wallet Card */}
-            <WalletCard {...userStats} />
             
             {/* Posts Feed */}
             <div className="space-y-4 sm:space-y-6 lg:space-y-8">
