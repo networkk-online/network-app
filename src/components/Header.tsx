@@ -15,12 +15,14 @@ const Header = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       if (user) {
         checkAdminStatus(user.id);
+        loadProfile(user.id);
       }
     });
 
@@ -28,13 +30,27 @@ const Header = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminStatus(session.user.id);
+        loadProfile(session.user.id);
       } else {
         setIsAdmin(false);
+        setProfile(null);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const loadProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (data) {
+      setProfile(data);
+    }
+  };
 
   const checkAdminStatus = async (userId: string) => {
     const { data } = await supabase
@@ -60,7 +76,7 @@ const Header = () => {
   const userData = {
     username: user?.user_metadata?.username || 'your_username',
     displayName: user?.user_metadata?.full_name || 'Your Name', 
-    avatar: user?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+    avatar: profile?.avatar_url || user?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
     followers: 1248,
     following: 567,
     posts: 127,
@@ -96,10 +112,14 @@ const Header = () => {
           </div>
 
           {/* Search Bar - Hidden on mobile, visible on tablet+ */}
-          <div className="hidden md:flex items-center bg-gray-900 rounded-lg px-3 py-2 w-48 lg:w-64">
+          <div 
+            className="hidden md:flex items-center bg-gray-900 rounded-lg px-3 py-2 w-48 lg:w-64 cursor-pointer hover:bg-gray-800 transition-colors"
+            onClick={() => navigate('/search')}
+          >
             <Search className="w-4 h-4 text-gray-400 mr-2" />
             <input 
-              type="text" 
+              type="text"
+              readOnly
               placeholder="بحث..." 
               className="bg-transparent text-white placeholder-gray-400 outline-none flex-1 text-sm"
             />
