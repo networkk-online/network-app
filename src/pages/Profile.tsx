@@ -224,13 +224,17 @@ const Profile = () => {
     if (!user) return;
 
     try {
+      const updateData: any = {};
+      
+      if (data.username) updateData.username = data.username;
+      if (data.displayName) updateData.full_name = data.displayName;
+      if (data.bio) updateData.bio = data.bio;
+      if (data.avatar_url) updateData.avatar_url = data.avatar_url;
+      if (data.cover_url !== undefined) updateData.cover_url = data.cover_url;
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          username: data.username,
-          full_name: data.displayName,
-          bio: data.bio
-        })
+        .update(updateData)
         .eq('id', user.id);
 
       if (error) throw error;
@@ -283,7 +287,14 @@ const Profile = () => {
       <main className="pt-16 sm:pt-20 pb-8">
         <div className="desktop-layout">
           <div className="container-responsive mobile-padding">
-            <UserProfile {...userData} onUpdate={handleProfileUpdate} />
+            <UserProfile 
+              {...userData} 
+              onUpdate={handleProfileUpdate}
+              coverImage={profile?.cover_url}
+              joinedDate={profile?.created_at ? new Date(profile.created_at).toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long' }) : undefined}
+              location="Iraq"
+              isVerified={false}
+            />
             
             {/* Tabs Navigation */}
             <div className="mt-6 sm:mt-8 flex gap-2 border-b border-gray-800">
