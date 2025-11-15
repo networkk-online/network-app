@@ -17,6 +17,7 @@ const Profile = () => {
   const [userPosts, setUserPosts] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(2847.50);
   const [todayEarnings, setTodayEarnings] = useState(150.30);
+  const [activeTab, setActiveTab] = useState<'posts' | 'wallet'>('posts');
 
   useEffect(() => {
     checkUser();
@@ -217,75 +218,110 @@ const Profile = () => {
           <div className="container-responsive mobile-padding">
             <UserProfile {...userData} onUpdate={handleProfileUpdate} />
             
-            {/* Wallet Section */}
-            <div className="mt-6 sm:mt-8">
-              <WalletCard 
-                balance={walletBalance}
-                todayEarnings={todayEarnings}
-                totalPosts={userPosts.length}
-              />
-              
-              {/* Wallet Actions */}
-              <div className="flex gap-4 justify-center mt-4">
-                <Button
-                  onClick={() => navigate('/withdraw')}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
-                >
-                  <Wallet className="w-5 h-5" />
-                  <span>سحب الأرباح</span>
-                </Button>
-                <Button
-                  onClick={() => navigate('/saved-posts')}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
-                >
-                  <Bookmark className="w-5 h-5" />
-                  <span>المنشورات المحفوظة</span>
-                </Button>
-              </div>
+            {/* Tabs Navigation */}
+            <div className="mt-6 sm:mt-8 flex gap-2 border-b border-gray-800">
+              <button
+                onClick={() => setActiveTab('posts')}
+                className={`flex-1 py-3 text-center font-semibold transition-colors relative ${
+                  activeTab === 'posts'
+                    ? 'text-primary'
+                    : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                المنشورات
+                {activeTab === 'posts' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab('wallet')}
+                className={`flex-1 py-3 text-center font-semibold transition-colors relative flex items-center justify-center gap-2 ${
+                  activeTab === 'wallet'
+                    ? 'text-primary'
+                    : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                <Wallet className="w-4 h-4" />
+                أموالي
+                {activeTab === 'wallet' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                )}
+              </button>
             </div>
+
+            {/* Wallet Tab Content */}
+            {activeTab === 'wallet' && (
+              <div className="mt-6 sm:mt-8">
+                <WalletCard 
+                  balance={walletBalance}
+                  todayEarnings={todayEarnings}
+                  totalPosts={userPosts.length}
+                />
+                
+                {/* Wallet Actions */}
+                <div className="flex gap-4 justify-center mt-4">
+                  <Button
+                    onClick={() => navigate('/withdraw')}
+                    className="flex items-center space-x-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                  >
+                    <Wallet className="w-5 h-5" />
+                    <span>سحب الأرباح</span>
+                  </Button>
+                  <Button
+                    onClick={() => navigate('/saved-posts')}
+                    className="flex items-center space-x-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
+                  >
+                    <Bookmark className="w-5 h-5" />
+                    <span>المنشورات المحفوظة</span>
+                  </Button>
+                </div>
+              </div>
+            )}
             
             {/* Posts Grid - Responsive */}
-            <div className="grid grid-cols-3 gap-0.5 sm:gap-1 lg:gap-2 mt-6 sm:mt-8">
-              {userPosts.length > 0 ? (
-                userPosts.map((post) => (
-                  <div 
-                    key={post.id} 
-                    className="relative aspect-square group cursor-pointer"
-                    onClick={() => navigate('/')}
-                  >
-                    {post.media_url ? (
-                      <img 
-                        src={post.media_url} 
-                        alt="Post"
-                        className="w-full h-full object-cover rounded-sm lg:rounded-md"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-800 rounded-sm lg:rounded-md flex items-center justify-center p-4">
-                        <p className="text-gray-400 text-sm text-center line-clamp-6">
-                          {post.content}
-                        </p>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-sm lg:rounded-md">
-                      <div className="flex items-center space-x-3 sm:space-x-4 text-white text-sm sm:text-base lg:text-lg">
-                        <div className="flex items-center space-x-1">
-                          <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
-                          <span className="font-semibold">{post.likes_count || 0}</span>
+            {activeTab === 'posts' && (
+              <div className="grid grid-cols-3 gap-0.5 sm:gap-1 lg:gap-2 mt-6 sm:mt-8">
+                {userPosts.length > 0 ? (
+                  userPosts.map((post) => (
+                    <div 
+                      key={post.id} 
+                      className="relative aspect-square group cursor-pointer"
+                      onClick={() => navigate('/')}
+                    >
+                      {post.media_url ? (
+                        <img 
+                          src={post.media_url} 
+                          alt="Post"
+                          className="w-full h-full object-cover rounded-sm lg:rounded-md"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-800 rounded-sm lg:rounded-md flex items-center justify-center p-4">
+                          <p className="text-gray-400 text-sm text-center line-clamp-6">
+                            {post.content}
+                          </p>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
-                          <span className="font-semibold">{post.comments_count || 0}</span>
+                      )}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-sm lg:rounded-md">
+                        <div className="flex items-center space-x-3 sm:space-x-4 text-white text-sm sm:text-base lg:text-lg">
+                          <div className="flex items-center space-x-1">
+                            <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
+                            <span className="font-semibold">{post.likes_count || 0}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
+                            <span className="font-semibold">{post.comments_count || 0}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center py-8">
+                    <p className="text-gray-600 text-xs opacity-50">لا توجد منشورات بعد</p>
                   </div>
-                ))
-              ) : (
-                <div className="col-span-3 text-center py-8">
-                  <p className="text-gray-600 text-xs opacity-50">لا توجد منشورات بعد</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </main>
