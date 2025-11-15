@@ -223,8 +223,8 @@ const Profile = () => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-3 text-center py-12">
-                  <p className="text-gray-500">لا توجد منشورات بعد</p>
+                <div className="col-span-3 text-center py-8">
+                  <p className="text-gray-600 text-xs opacity-50">لا توجد منشورات بعد</p>
                 </div>
               )}
             </div>
