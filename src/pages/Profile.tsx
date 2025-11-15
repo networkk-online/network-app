@@ -15,8 +15,8 @@ const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [userPosts, setUserPosts] = useState<any[]>([]);
-  const [walletBalance, setWalletBalance] = useState(2847.50);
-  const [todayEarnings, setTodayEarnings] = useState(150.30);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [todayEarnings, setTodayEarnings] = useState(0);
   const [activeTab, setActiveTab] = useState<'posts' | 'wallet'>('posts');
 
   useEffect(() => {
@@ -82,18 +82,39 @@ const Profile = () => {
 
   const loadWalletData = async (userId: string) => {
     try {
-      // Get user finances
-      const { data: financeData, error: financeError } = await supabase
+      // Get or create user finances
+      let { data: financeData, error: financeError } = await supabase
         .from('user_finances')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (financeError) throw financeError;
+      // If no finance record exists, create one with zero balance
+      if (!financeData && !financeError) {
+        const { data: newFinance, error: insertError } = await supabase
+          .from('user_finances')
+          .insert({
+            user_id: userId,
+            balance: 0,
+            total_earnings: 0,
+            total_withdrawn: 0
+          })
+          .select()
+          .single();
 
-      if (financeData) {
-        setWalletBalance(Number(financeData.balance) || 0);
+        if (insertError) {
+          console.error('Error creating finance record:', insertError);
+        } else {
+          financeData = newFinance;
+        }
       }
+
+      if (financeError && financeError.code !== 'PGRST116') {
+        throw financeError;
+      }
+
+      // Set wallet balance from database or 0
+      setWalletBalance(financeData ? Number(financeData.balance) || 0 : 0);
 
       // Calculate today's earnings from transactions
       const today = new Date();
@@ -107,12 +128,58 @@ const Profile = () => {
         .eq('status', 'completed')
         .gte('created_at', today.toISOString());
 
-      if (transactionsError) throw transactionsError;
+      if (transactionsError && transactionsError.code !== 'PGRST116') {
+        throw transactionsError;
+      }
 
       const todayTotal = todayTransactions?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
       setTodayEarnings(todayTotal);
+
+      // Subscribe to realtime updates for finances
+      const financeChannel = supabase
+        .channel('user-finances-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'user_finances',
+            filter: `user_id=eq.${userId}`
+          },
+          (payload) => {
+            if (payload.new && typeof payload.new === 'object' && 'balance' in payload.new) {
+              setWalletBalance(Number(payload.new.balance) || 0);
+            }
+          }
+        )
+        .subscribe();
+
+      // Subscribe to realtime updates for transactions
+      const transactionsChannel = supabase
+        .channel('user-transactions-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'transactions',
+            filter: `user_id=eq.${userId}`
+          },
+          () => {
+            // Reload wallet data when new transaction is added
+            loadWalletData(userId);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(financeChannel);
+        supabase.removeChannel(transactionsChannel);
+      };
     } catch (error) {
       console.error('Error loading wallet data:', error);
+      setWalletBalance(0);
+      setTodayEarnings(0);
     }
   };
 
