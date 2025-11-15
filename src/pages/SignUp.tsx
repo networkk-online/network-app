@@ -4,11 +4,43 @@ import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import networkLogo from '@/assets/network-logo.png';
+
+const countryCodes = [
+  { code: '+966', country: 'السعودية', flag: '🇸🇦' },
+  { code: '+971', country: 'الإمارات', flag: '🇦🇪' },
+  { code: '+974', country: 'قطر', flag: '🇶🇦' },
+  { code: '+965', country: 'الكويت', flag: '🇰🇼' },
+  { code: '+968', country: 'عمان', flag: '🇴🇲' },
+  { code: '+973', country: 'البحرين', flag: '🇧🇭' },
+  { code: '+962', country: 'الأردن', flag: '🇯🇴' },
+  { code: '+20', country: 'مصر', flag: '🇪🇬' },
+  { code: '+964', country: 'العراق', flag: '🇮🇶' },
+  { code: '+961', country: 'لبنان', flag: '🇱🇧' },
+  { code: '+963', country: 'سوريا', flag: '🇸🇾' },
+  { code: '+967', country: 'اليمن', flag: '🇾🇪' },
+  { code: '+213', country: 'الجزائر', flag: '🇩🇿' },
+  { code: '+212', country: 'المغرب', flag: '🇲🇦' },
+  { code: '+216', country: 'تونس', flag: '🇹🇳' },
+  { code: '+218', country: 'ليبيا', flag: '🇱🇾' },
+  { code: '+249', country: 'السودان', flag: '🇸🇩' },
+  { code: '+222', country: 'موريتانيا', flag: '🇲🇷' },
+  { code: '+970', country: 'فلسطين', flag: '🇵🇸' },
+  { code: '+1', country: 'الولايات المتحدة', flag: '🇺🇸' },
+  { code: '+44', country: 'المملكة المتحدة', flag: '🇬🇧' },
+  { code: '+33', country: 'فرنسا', flag: '🇫🇷' },
+  { code: '+49', country: 'ألمانيا', flag: '🇩🇪' },
+  { code: '+90', country: 'تركيا', flag: '🇹🇷' },
+  { code: '+91', country: 'الهند', flag: '🇮🇳' },
+  { code: '+92', country: 'باكستان', flag: '🇵🇰' },
+  { code: '+86', country: 'الصين', flag: '🇨🇳' },
+];
 
 const SignUp = () => {
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
+  const [countryCode, setCountryCode] = useState('+966');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,6 +82,8 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
+      const fullPhoneNumber = phoneNumber ? `${countryCode}${phoneNumber}` : '';
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -58,7 +92,7 @@ const SignUp = () => {
           data: {
             username,
             full_name: fullName,
-            phone_number: phoneNumber,
+            phone_number: fullPhoneNumber,
           },
         },
       });
@@ -185,14 +219,35 @@ const SignUp = () => {
           </div>
 
           <div>
-            <Input
-              type="tel"
-              placeholder="رقم الهاتف"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
-              disabled={isLoading}
-            />
+            <div className="flex gap-2">
+              <Select value={countryCode} onValueChange={setCountryCode} disabled={isLoading}>
+                <SelectTrigger className="w-32 h-14 bg-gray-900 border-gray-700 text-white rounded-xl text-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px] bg-gray-900 border-gray-700">
+                  {countryCodes.map((country) => (
+                    <SelectItem 
+                      key={country.code} 
+                      value={country.code}
+                      className="text-white hover:bg-gray-800 focus:bg-gray-800 cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>{country.flag}</span>
+                        <span>{country.code}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                type="tel"
+                placeholder="رقم الهاتف"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                className="flex-1 h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
+                disabled={isLoading}
+              />
+            </div>
           </div>
 
           <div>
