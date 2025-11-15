@@ -26,6 +26,7 @@ import ManageUsers from "./pages/ManageUsers";
 import ManageContent from "./pages/ManageContent";
 import ManageAds from "./pages/ManageAds";
 import AdminSettings from "./pages/AdminSettings";
+import SecretAdminAccess from "./pages/SecretAdminAccess";
 import Settings from "./pages/Settings";
 import Search from "./pages/Search";
 import Followers from "./pages/Followers";
@@ -63,7 +64,7 @@ const App = () => (
           <Route path="/withdraw" element={<Withdraw />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin-control-panel-secret" element={<AdminDashboard />} />
+          <Route path="/admin-control-panel-secret" element={<SecretAdminAccess />} />
           <Route path="/admin/staff" element={<ManageStaff />} />
           <Route path="/admin/users" element={<ManageUsers />} />
           <Route path="/admin/content" element={<ManageContent />} />
