@@ -426,18 +426,18 @@ const UserProfile = ({
               )}
             </div>
 
-            <div className="flex gap-2 items-center pt-4">
-              {isOwnProfile ? (
-                <>
-                  <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        className="rounded-full px-6"
-                      >
-                        تعديل الملف الشخصي
-                      </Button>
-                    </DialogTrigger>
+          <div className="flex gap-2 items-center pt-4">
+            {isOwnProfile ? (
+              <>
+                <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="rounded-full px-6"
+                    >
+                      تعديل الملف الشخصي
+                    </Button>
+                  </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                       <DialogTitle>تعديل الملف الشخصي</DialogTitle>
@@ -549,33 +549,37 @@ const UserProfile = ({
                 </Dialog>
                 <CloseFriendsDialog />
               </>
-              ) : profileId && (
-                <>
-                  <FollowButton 
-                    userId={profileId}
-                    variant="default"
-                    size="default"
-                    showIcon={false}
-                    className="rounded-full px-6"
-                  />
-                  <CloseFriendsButton
-                    userId={profileId}
-                    variant="outline"
-                    size="default"
-                    showIcon={true}
-                    className="rounded-full px-6"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={handleMessage}
-                    disabled={messageLoading}
-                    className="rounded-full px-6"
-                  >
-                    {messageLoading ? "جاري..." : "مراسلة"}
-                  </Button>
-                </>
-              )}
-            </div>
+            ) : (
+              <>
+                {profileId && (
+                  <>
+                    <FollowButton 
+                      userId={profileId}
+                      variant="default"
+                      size="default"
+                      showIcon={false}
+                      className="rounded-full px-6"
+                    />
+                    <CloseFriendsButton
+                      userId={profileId}
+                      variant="outline"
+                      size="default"
+                      showIcon={true}
+                      className="rounded-full px-6"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={handleMessage}
+                      disabled={messageLoading}
+                      className="rounded-full px-6"
+                    >
+                      {messageLoading ? "جاري..." : "مراسلة"}
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
           </div>
 
           <div className="mt-4 space-y-3">
