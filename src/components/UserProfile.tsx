@@ -424,8 +424,8 @@ const UserProfile = ({
               )}
             </div>
 
-            {isOwnProfile && (
-              <div className="flex gap-2 items-center pt-4">
+            <div className="flex gap-2 items-center pt-4">
+              {isOwnProfile ? (
                 <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                   <DialogTrigger asChild>
                     <Button 
@@ -544,37 +544,34 @@ const UserProfile = ({
                     </Form>
                   </DialogContent>
                 </Dialog>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-3 flex-wrap justify-between">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold">{displayName}</h1>
-                {isVerified && (
-                  <div className="bg-blue-500 rounded-full p-1">
-                    <BadgeCheck className="h-5 w-5 text-white" fill="currentColor" />
-                  </div>
-                )}
-              </div>
-              {!isOwnProfile && profileId && (
-                <div className="flex gap-2">
+              ) : profileId && (
+                <>
                   <FollowButton 
                     userId={profileId}
                     variant="default"
-                    size="sm"
+                    size="default"
                     showIcon={false}
+                    className="rounded-full px-6"
                   />
                   <Button
                     variant="outline"
                     onClick={handleMessage}
                     disabled={messageLoading}
-                    size="sm"
-                    className="rounded-full"
+                    className="rounded-full px-6"
                   >
                     {messageLoading ? "جاري..." : "مراسلة"}
                   </Button>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold">{displayName}</h1>
+              {isVerified && (
+                <div className="bg-blue-500 rounded-full p-1">
+                  <BadgeCheck className="h-5 w-5 text-white" fill="currentColor" />
                 </div>
               )}
             </div>
