@@ -60,6 +60,7 @@ const App = () => (
           <Route path="/signup" element={<SignUp />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:userId" element={<Profile />} />
           <Route path="/ai-tools" element={<AITools />} />
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/quick-reply" element={<QuickReply />} />

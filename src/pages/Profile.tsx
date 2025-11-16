@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import UserProfile from '@/components/UserProfile';
 import WalletCard from '@/components/WalletCard';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { userId: urlUserId } = useParams();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -18,34 +19,43 @@ const Profile = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [activeTab, setActiveTab] = useState<'posts' | 'wallet'>('posts');
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   useEffect(() => {
     checkUser();
-  }, []);
+  }, [urlUserId]);
 
   const checkUser = async () => {
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       
       if (!authUser) {
-        toast({
-          title: "يجب تسجيل الدخول",
-          description: "سجل دخولك لعرض ملفك الشخصي",
-          variant: "destructive"
-        });
-        navigate('/login');
-        return;
+        if (!urlUserId) {
+          toast({
+            title: "يجب تسجيل الدخول",
+            description: "سجل دخولك لعرض ملفك الشخصي",
+            variant: "destructive"
+          });
+          navigate('/login');
+          return;
+        }
       }
 
       setUser(authUser);
-      await loadProfile(authUser.id);
-      await loadPosts(authUser.id);
+      const targetUserId = urlUserId || authUser?.id;
+      const isOwn = authUser?.id === targetUserId;
+      setIsOwnProfile(isOwn);
+      
+      if (targetUserId) {
+        await loadProfile(targetUserId, isOwn);
+        await loadPosts(targetUserId);
+      }
     } catch (error) {
       console.error('Error checking user:', error);
     }
   };
 
-  const loadProfile = async (userId: string) => {
+  const loadProfile = async (userId: string, isOwn: boolean) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -66,8 +76,10 @@ const Profile = () => {
         following_count: followingCount || 0
       });
 
-      // Load wallet data
-      await loadWalletData(userId);
+      // Load wallet data only for own profile
+      if (isOwn) {
+        await loadWalletData(userId);
+      }
     } catch (error: any) {
       console.error('Error loading profile:', error);
       toast({
@@ -248,7 +260,7 @@ const Profile = () => {
         description: "تم تحديث ملفك الشخصي بنجاح",
       });
 
-      await loadProfile(user.id);
+      await loadProfile(user.id, true);
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({
@@ -318,24 +330,26 @@ const Profile = () => {
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
                 )}
               </button>
-              <button
-                onClick={() => setActiveTab('wallet')}
-                className={`flex-1 py-3 text-center font-semibold transition-colors relative flex items-center justify-center gap-2 ${
-                  activeTab === 'wallet'
-                    ? 'text-primary'
-                    : 'text-gray-500 hover:text-gray-300'
-                }`}
-              >
-                <Wallet className="w-4 h-4" />
-                أموالي
-                {activeTab === 'wallet' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                )}
-              </button>
+              {isOwnProfile && (
+                <button
+                  onClick={() => setActiveTab('wallet')}
+                  className={`flex-1 py-3 text-center font-semibold transition-colors relative flex items-center justify-center gap-2 ${
+                    activeTab === 'wallet'
+                      ? 'text-primary'
+                      : 'text-gray-500 hover:text-gray-300'
+                  }`}
+                >
+                  <Wallet className="w-4 h-4" />
+                  أموالي
+                  {activeTab === 'wallet' && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                  )}
+                </button>
+              )}
             </div>
 
             {/* Wallet Tab Content */}
-            {activeTab === 'wallet' && (
+            {activeTab === 'wallet' && isOwnProfile && (
               <div className="mt-6 sm:mt-8">
                 <WalletCard 
                   balance={walletBalance}
