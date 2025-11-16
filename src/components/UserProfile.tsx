@@ -584,13 +584,6 @@ const UserProfile = ({
                     </Form>
                   </DialogContent>
                 </Dialog>
-                <Button 
-                  variant="default" 
-                  className="rounded-full px-6 gap-2"
-                >
-                  <BadgeCheck className="h-4 w-4" />
-                  وثّق حسابك
-                </Button>
               </>
             ) : (
               <>
@@ -617,12 +610,22 @@ const UserProfile = ({
 
         {/* Profile Info */}
         <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold">{displayName}</h1>
             {isVerified && (
               <div className="bg-blue-500 rounded-full p-1">
                 <BadgeCheck className="h-5 w-5 text-white" fill="currentColor" />
               </div>
+            )}
+            {isOwnProfile && (
+              <Button 
+                variant="secondary" 
+                size="sm"
+                className="rounded-full px-4 gap-1.5 h-8"
+              >
+                <BadgeCheck className="h-3.5 w-3.5" />
+                <span className="text-xs">وثّق حسابك</span>
+              </Button>
             )}
           </div>
           <p className="text-muted-foreground">@{username}</p>
