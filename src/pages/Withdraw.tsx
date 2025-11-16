@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { ArrowLeft, Wallet, CreditCard, Building2, DollarSign, Bitcoin, AlertCircle, CheckCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Wallet, CreditCard, Building2, DollarSign, Bitcoin, AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,9 +24,10 @@ const Withdraw = () => {
   });
 
   // Mock wallet data
-  const walletBalance = 2847.50;
+  const totalEarnings = 2847.50;
+  const platformFee = totalEarnings * 0.20; // 20% رسوم الخدمة
+  const walletBalance = totalEarnings - platformFee; // الرصيد بعد خصم الرسوم
   const btcPrice = 43000;
-  const availableBalance = 2500.00; // After fees
   const minimumWithdraw = 50.00;
 
   const withdrawMethods = [
@@ -79,7 +82,7 @@ const Withdraw = () => {
       return;
     }
 
-    if (withdrawAmount > availableBalance) {
+    if (withdrawAmount > walletBalance) {
       toast({
         title: "خطأ", 
         description: "المبلغ أكبر من الرصيد المتاح",
@@ -205,36 +208,72 @@ const Withdraw = () => {
       <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Wallet Summary */}
         <div className="lg:col-span-1">
-          <Card className="bg-gradient-to-br from-gray-900 to-black border-2 border-green-500/50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-green-400">
-                <Wallet className="w-5 h-5" />
-                <span>ملخص المحفظة</span>
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Wallet className="w-5 h-5 text-primary" />
+                ملخص المحفظة
               </CardTitle>
+              <CardDescription>
+                عرض تفصيلي لرصيدك وأرباحك
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="text-center p-4 bg-gray-800/50 rounded-lg">
-                <p className="text-sm text-gray-400">الرصيد الكلي</p>
-                <p className="text-2xl font-bold text-green-400">${walletBalance.toFixed(2)}</p>
-                <p className="text-xs text-orange-400 flex items-center justify-center space-x-1 mt-1">
+              {/* Total Earnings */}
+              <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">إجمالي الأرباح</span>
+                  <Info className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  ${totalEarnings.toFixed(2)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                   <Bitcoin className="w-3 h-3" />
-                  <span>{(walletBalance / btcPrice).toFixed(6)} BTC</span>
+                  {(totalEarnings / btcPrice).toFixed(6)} BTC
                 </p>
               </div>
-              
-              <div className="text-center p-4 bg-blue-900/20 rounded-lg border border-blue-500/30">
-                <p className="text-sm text-gray-400">متاح للسحب</p>
-                <p className="text-xl font-bold text-blue-400">${availableBalance.toFixed(2)}</p>
+
+              <Separator />
+
+              {/* Platform Fee */}
+              <Alert className="border-amber-500/50 bg-amber-500/10">
+                <AlertCircle className="h-4 w-4 text-amber-500" />
+                <AlertDescription className="text-sm text-amber-600 dark:text-amber-400">
+                  <strong>رسوم الخدمة: 20%</strong>
+                  <br />
+                  يتم خصم 20% من كل عملية سحب كرسوم للمنصة
+                </AlertDescription>
+              </Alert>
+
+              {/* Fee Breakdown */}
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-muted-foreground">رسوم المنصة (20%)</span>
+                  <span className="text-destructive font-medium">
+                    -${platformFee.toFixed(2)}
+                  </span>
+                </div>
+                <Separator />
+                <div className="flex justify-between items-center py-2">
+                  <span className="font-medium text-foreground">الرصيد المتاح للسحب</span>
+                  <span className="text-lg font-bold text-primary">
+                    ${walletBalance.toFixed(2)}
+                  </span>
+                </div>
               </div>
 
-              <div className="space-y-2 text-sm">
+              <Separator />
+
+              {/* Additional Info */}
+              <div className="space-y-2 text-xs text-muted-foreground">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">الحد الأدنى للسحب</span>
-                  <span className="text-white">${minimumWithdraw}</span>
+                  <span>الحد الأدنى للسحب</span>
+                  <span className="text-foreground font-medium">${minimumWithdraw}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">رسوم محتجزة</span>
-                  <span className="text-yellow-400">${(walletBalance - availableBalance).toFixed(2)}</span>
+                  <span>العملة</span>
+                  <span className="text-foreground font-medium">USD</span>
                 </div>
               </div>
             </CardContent>
