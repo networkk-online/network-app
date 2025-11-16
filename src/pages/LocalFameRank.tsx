@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Crown, MapPin, School, Briefcase, Users } from "lucide-react";
 import { toast } from "sonner";
+import { FollowButton } from "@/components/FollowButton";
+import Header from "@/components/Header";
 
 interface RankedUser {
   id: string;
@@ -170,14 +172,20 @@ const LocalFameRank = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="pt-20 pb-8">
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">🏆 ترتيب المشاهير المحليين</h1>
         <p className="text-muted-foreground">يتم التحديث كل ساعة • آخر تحديث: {new Date().toLocaleTimeString("ar-SA")}</p>
@@ -328,6 +336,8 @@ const LocalFameRank = () => {
           </Card>
         </TabsContent>
       </Tabs>
+        </div>
+      </main>
     </div>
   );
 };
