@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { FollowButton } from '@/components/FollowButton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Follower {
   id: string;
@@ -140,27 +142,30 @@ const Followers = () => {
           ) : (
             <div className="space-y-4">
               {followers.map((follower) => (
-                <div key={follower.id} className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <img 
-                      src={follower.profiles.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
-                      alt={follower.profiles.username || ''}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div>
-                      <p className="font-semibold">{follower.profiles.username}</p>
-                      <p className="text-sm text-gray-400">{follower.profiles.full_name}</p>
+                <div key={follower.id} className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg hover:bg-gray-900/70 transition-colors">
+                  <div className="flex items-center gap-3 flex-1">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage 
+                        src={follower.profiles.avatar_url || undefined}
+                        alt={follower.profiles.username || ''}
+                      />
+                      <AvatarFallback>
+                        {follower.profiles.username?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-semibold text-white">{follower.profiles.username}</p>
+                      {follower.profiles.full_name && (
+                        <p className="text-sm text-gray-400">{follower.profiles.full_name}</p>
+                      )}
                     </div>
                   </div>
                   {currentUserId !== follower.follower_id && (
-                    <Button
-                      onClick={() => handleFollowToggle(follower.follower_id)}
-                      variant="secondary"
+                    <FollowButton 
+                      userId={follower.follower_id} 
                       size="sm"
-                      className="bg-gray-800 hover:bg-gray-700"
-                    >
-                      متابعة
-                    </Button>
+                      variant="secondary"
+                    />
                   )}
                 </div>
               ))}
