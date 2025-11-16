@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Wallet, CreditCard, Building2, DollarSign, Bitcoin, AlertCircle, CheckCircle, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -22,13 +23,78 @@ const Withdraw = () => {
     routingNumber: '',
     walletAddress: ''
   });
+  const [loading, setLoading] = useState(true);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [totalEarnings, setTotalEarnings] = useState(0);
+  const [totalWithdrawn, setTotalWithdrawn] = useState(0);
 
-  // Mock wallet data
-  const totalEarnings = 2847.50;
-  const platformFee = totalEarnings * 0.20; // 20% رسوم الخدمة
-  const walletBalance = totalEarnings - platformFee; // الرصيد بعد خصم الرسوم
   const btcPrice = 43000;
   const minimumWithdraw = 50.00;
+
+  useEffect(() => {
+    loadWalletData();
+  }, []);
+
+  const loadWalletData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "يجب تسجيل الدخول",
+          description: "سجل دخولك لعرض محفظتك",
+          variant: "destructive"
+        });
+        navigate('/login');
+        return;
+      }
+
+      // Get user finances
+      let { data: financeData, error: financeError } = await supabase
+        .from('user_finances')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      // If no finance record exists, create one
+      if (!financeData && !financeError) {
+        const { data: newFinance, error: insertError } = await supabase
+          .from('user_finances')
+          .insert({
+            user_id: user.id,
+            balance: 0,
+            total_earnings: 0,
+            total_withdrawn: 0
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Error creating finance record:', insertError);
+        } else {
+          financeData = newFinance;
+        }
+      }
+
+      if (financeError && financeError.code !== 'PGRST116') {
+        throw financeError;
+      }
+
+      setWalletBalance(financeData ? Number(financeData.balance) || 0 : 0);
+      setTotalEarnings(financeData ? Number(financeData.total_earnings) || 0 : 0);
+      setTotalWithdrawn(financeData ? Number(financeData.total_withdrawn) || 0 : 0);
+
+    } catch (error: any) {
+      console.error('Error loading wallet:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في تحميل بيانات المحفظة",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const withdrawMethods = [
     {
@@ -186,6 +252,31 @@ const Withdraw = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white p-4">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="text-white hover:bg-gray-800"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+              سحب الأموال
+            </h1>
+          </div>
+        </div>
+        <div className="max-w-4xl mx-auto text-center py-20">
+          <div className="text-gray-400 text-lg">جاري التحميل...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white p-4">
       {/* Header */}
@@ -236,30 +327,21 @@ const Withdraw = () => {
 
               <Separator />
 
-              {/* Platform Fee */}
-              <Alert className="border-amber-500/50 bg-amber-500/10">
-                <AlertCircle className="h-4 w-4 text-amber-500" />
-                <AlertDescription className="text-sm text-amber-600 dark:text-amber-400">
-                  <strong>رسوم الخدمة: 20%</strong>
-                  <br />
-                  يتم خصم 20% من كل عملية سحب كرسوم للمنصة
-                </AlertDescription>
-              </Alert>
-
-              {/* Fee Breakdown */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-muted-foreground">رسوم المنصة (20%)</span>
-                  <span className="text-destructive font-medium">
-                    -${platformFee.toFixed(2)}
-                  </span>
-                </div>
-                <Separator />
-                <div className="flex justify-between items-center py-2">
+              {/* Wallet Balance */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center py-3 bg-gray-800/50 rounded-lg px-4">
                   <span className="font-medium text-foreground">الرصيد المتاح للسحب</span>
-                  <span className="text-lg font-bold text-primary">
+                  <span className="text-2xl font-bold text-primary">
                     ${walletBalance.toFixed(2)}
                   </span>
+                </div>
+                <div className="flex justify-between items-center py-2 px-4 text-sm text-muted-foreground">
+                  <span>إجمالي الأرباح</span>
+                  <span>${totalEarnings.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 px-4 text-sm text-muted-foreground">
+                  <span>إجمالي المسحوب</span>
+                  <span>${totalWithdrawn.toFixed(2)}</span>
                 </div>
               </div>
 
