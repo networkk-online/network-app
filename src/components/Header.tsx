@@ -1,4 +1,4 @@
-import { Heart, Home, MessageCircle, PlusSquare, Search, Video, Building2, Users, LogOut, Film, Compass, Menu, Brain, Wallet, Shield } from 'lucide-react';
+import { Heart, Home, MessageCircle, PlusSquare, Search, Video, Building2, Users, LogOut, Film, Compass, Menu, Brain, Wallet, Shield, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -86,6 +86,7 @@ const Header = () => {
   const navigationItems = [
     { icon: Home, label: 'الرئيسية', path: '/' },
     { icon: Compass, label: 'استكشف', path: '/explore' },
+    { icon: Crown, label: 'ترتيب المشاهير', path: '/local-fame-rank' },
     { icon: Brain, label: 'أدوات AI', path: '/ai-tools' },
     { icon: Film, label: 'الريلز', path: '/shorts' },
     { icon: MessageCircle, label: 'الرسائل', path: '/messages' },

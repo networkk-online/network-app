@@ -34,6 +34,7 @@ import Following from "./pages/Following";
 import CreateStory from "./pages/CreateStory";
 import CreateReel from "./pages/CreateReel";
 import SavedPosts from "./pages/SavedPosts";
+import LocalFameRank from "./pages/LocalFameRank";
 import FloatingAIButton from "./components/FloatingAIButton";
 import ThemeToggle from "./components/ThemeToggle";
 
@@ -77,6 +78,7 @@ const App = () => (
           <Route path="/create-story" element={<CreateStory />} />
           <Route path="/create-reel" element={<CreateReel />} />
           <Route path="/saved-posts" element={<SavedPosts />} />
+          <Route path="/local-fame-rank" element={<LocalFameRank />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
