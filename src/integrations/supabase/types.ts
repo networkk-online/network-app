@@ -497,11 +497,16 @@ export type Database = {
           bio: string | null
           cover_url: string | null
           created_at: string
+          fame_score: number | null
           followers_count: number | null
           following_count: number | null
           full_name: string | null
+          gender: string | null
           id: string
+          location: string | null
           phone_number: string | null
+          profession: string | null
+          school: string | null
           updated_at: string
           username: string | null
         }
@@ -510,11 +515,16 @@ export type Database = {
           bio?: string | null
           cover_url?: string | null
           created_at?: string
+          fame_score?: number | null
           followers_count?: number | null
           following_count?: number | null
           full_name?: string | null
+          gender?: string | null
           id: string
+          location?: string | null
           phone_number?: string | null
+          profession?: string | null
+          school?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -523,11 +533,16 @@ export type Database = {
           bio?: string | null
           cover_url?: string | null
           created_at?: string
+          fame_score?: number | null
           followers_count?: number | null
           following_count?: number | null
           full_name?: string | null
+          gender?: string | null
           id?: string
+          location?: string | null
           phone_number?: string | null
+          profession?: string | null
+          school?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -884,6 +899,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_fame_score: { Args: { user_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -891,6 +907,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_all_fame_scores: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

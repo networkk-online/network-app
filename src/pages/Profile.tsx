@@ -231,6 +231,10 @@ const Profile = () => {
       if (data.bio) updateData.bio = data.bio;
       if (data.avatar_url) updateData.avatar_url = data.avatar_url;
       if (data.cover_url !== undefined) updateData.cover_url = data.cover_url;
+      if (data.location !== undefined) updateData.location = data.location;
+      if (data.school !== undefined) updateData.school = data.school;
+      if (data.profession !== undefined) updateData.profession = data.profession;
+      if (data.gender !== undefined) updateData.gender = data.gender;
 
       const { error } = await supabase
         .from('profiles')
@@ -292,7 +296,10 @@ const Profile = () => {
               onUpdate={handleProfileUpdate}
               coverImage={profile?.cover_url}
               joinedDate={profile?.created_at ? new Date(profile.created_at).toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long' }) : undefined}
-              location="Iraq"
+              location={profile?.location}
+              school={profile?.school}
+              profession={profile?.profession}
+              gender={profile?.gender}
               isVerified={false}
             />
             

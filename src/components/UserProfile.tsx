@@ -6,6 +6,7 @@ import { FormField, FormItem, FormLabel, FormControl, Form } from '@/components/
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +28,9 @@ interface UserProfileProps {
   joinedDate?: string;
   birthDate?: string;
   location?: string;
+  school?: string;
+  profession?: string;
+  gender?: string;
   isVerified?: boolean;
 }
 
@@ -46,6 +50,9 @@ const UserProfile = ({
   joinedDate,
   birthDate,
   location,
+  school,
+  profession,
+  gender,
   isVerified = false
 }: UserProfileProps) => {
   const { toast } = useToast();
@@ -67,7 +74,11 @@ const UserProfile = ({
     defaultValues: {
       displayName,
       bio,
-      username
+      username,
+      location: location || '',
+      school: school || '',
+      profession: profession || '',
+      gender: gender || ''
     }
   });
 
@@ -75,12 +86,16 @@ const UserProfile = ({
     form.reset({
       displayName,
       bio,
-      username
+      username,
+      location: location || '',
+      school: school || '',
+      profession: profession || '',
+      gender: gender || ''
     });
     setAvatarUrl(avatar);
     setCoverUrl(coverImage);
     setFollowersCount(followers);
-  }, [displayName, bio, username, avatar, coverImage, followers]);
+  }, [displayName, bio, username, avatar, coverImage, followers, location, school, profession, gender]);
 
   useEffect(() => {
     if (!isOwnProfile && profileId) {
@@ -502,6 +517,63 @@ const UserProfile = ({
                               <FormControl>
                                 <Textarea {...field} />
                               </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="location"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>المنطقة / المدينة</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="مثال: الرياض، جدة، دبي..." />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="school"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>المدرسة / الجامعة</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="اختياري" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="profession"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>المهنة</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="مثال: طالب، مهندس، طبيب..." />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="gender"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>الجنس</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="اختر الجنس" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="male">ذكر</SelectItem>
+                                  <SelectItem value="female">أنثى</SelectItem>
+                                  <SelectItem value="other">آخر</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </FormItem>
                           )}
                         />
