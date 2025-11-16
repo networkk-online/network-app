@@ -426,9 +426,8 @@ const UserProfile = ({
               )}
             </div>
 
-          <div className="flex gap-2 items-center pt-4">
-            {isOwnProfile ? (
-              <>
+            {isOwnProfile && (
+              <div className="pt-4">
                 <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                   <DialogTrigger asChild>
                     <Button 
@@ -547,47 +546,43 @@ const UserProfile = ({
                     </Form>
                   </DialogContent>
                 </Dialog>
-                <CloseFriendsDialog />
-              </>
-            ) : (
-              <>
-                {profileId && (
-                  <>
-                    <FollowButton 
-                      userId={profileId}
-                      variant="default"
-                      size="default"
-                      showIcon={false}
-                      className="rounded-full px-6"
-                    />
-                    <CloseFriendsButton
-                      userId={profileId}
-                      variant="outline"
-                      size="default"
-                      showIcon={true}
-                      className="rounded-full px-6"
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={handleMessage}
-                      disabled={messageLoading}
-                      className="rounded-full px-6"
-                    >
-                      {messageLoading ? "جاري..." : "مراسلة"}
-                    </Button>
-                  </>
-                )}
-              </>
+              </div>
             )}
-          </div>
           </div>
 
           <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold">{displayName}</h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold">{displayName}</h1>
               {isVerified && (
                 <div className="bg-blue-500 rounded-full p-1">
                   <BadgeCheck className="h-5 w-5 text-white" fill="currentColor" />
+                </div>
+              )}
+              {!isOwnProfile && profileId && (
+                <div className="flex gap-2 items-center">
+                  <FollowButton 
+                    userId={profileId}
+                    variant="default"
+                    size="sm"
+                    showIcon={false}
+                    className="rounded-lg px-4 py-1.5 h-8 text-sm font-medium"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleMessage}
+                    disabled={messageLoading}
+                    className="rounded-lg px-4 py-1.5 h-8 text-sm font-medium"
+                  >
+                    {messageLoading ? "جاري..." : "مراسلة"}
+                  </Button>
+                  <CloseFriendsButton
+                    userId={profileId}
+                    variant="ghost"
+                    size="sm"
+                    showIcon={true}
+                    className="rounded-lg px-2 h-8"
+                  />
                 </div>
               )}
             </div>
@@ -626,6 +621,11 @@ const UserProfile = ({
                     <span className="text-xs">إعادة طلب التوثيق</span>
                   </Button>
                 ) : null}
+              </div>
+            )}
+            {isOwnProfile && (
+              <div className="mt-2">
+                <CloseFriendsDialog />
               </div>
             )}
             <p className="text-muted-foreground">@{username}</p>
