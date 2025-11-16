@@ -312,7 +312,8 @@ const Profile = () => {
               school={profile?.school}
               profession={profile?.profession}
               gender={profile?.gender}
-              isVerified={false}
+              isVerified={profile?.is_verified || false}
+              isOwnProfile={isOwnProfile}
             />
             
             {/* Tabs Navigation */}
