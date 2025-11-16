@@ -21,7 +21,13 @@ const Withdraw = () => {
     email: '',
     accountNumber: '',
     routingNumber: '',
-    walletAddress: ''
+    walletAddress: '',
+    phoneNumber: '',
+    cardNumber: '',
+    cardHolder: '',
+    expiryDate: '',
+    qiCardNumber: '',
+    zainCashNumber: ''
   });
   const [loading, setLoading] = useState(true);
   const [walletBalance, setWalletBalance] = useState(0);
@@ -98,6 +104,42 @@ const Withdraw = () => {
 
   const withdrawMethods = [
     {
+      id: 'zaincash',
+      name: 'زين كاش',
+      icon: Wallet,
+      fee: '1000 IQD',
+      processingTime: 'فوري - 30 دقيقة',
+      minAmount: 10,
+      currency: 'USD'
+    },
+    {
+      id: 'qicard',
+      name: 'كي كارد',
+      icon: CreditCard,
+      fee: '500 IQD',
+      processingTime: 'فوري - 1 ساعة',
+      minAmount: 10,
+      currency: 'USD'
+    },
+    {
+      id: 'visa',
+      name: 'فيزا كارد',
+      icon: CreditCard,
+      fee: '3%',
+      processingTime: '1-3 أيام عمل',
+      minAmount: 25,
+      currency: 'USD'
+    },
+    {
+      id: 'mastercard',
+      name: 'ماستر كارد',
+      icon: CreditCard,
+      fee: '3%',
+      processingTime: '1-3 أيام عمل',
+      minAmount: 25,
+      currency: 'USD'
+    },
+    {
       id: 'paypal',
       name: 'PayPal',
       icon: CreditCard,
@@ -169,7 +211,13 @@ const Withdraw = () => {
       email: '',
       accountNumber: '',
       routingNumber: '',
-      walletAddress: ''
+      walletAddress: '',
+      phoneNumber: '',
+      cardNumber: '',
+      cardHolder: '',
+      expiryDate: '',
+      qiCardNumber: '',
+      zainCashNumber: ''
     });
   };
 
@@ -178,6 +226,13 @@ const Withdraw = () => {
     if (!methodData) return 0;
 
     switch (method) {
+      case 'zaincash':
+        return 1000 / 1500; // تحويل 1000 دينار إلى دولار تقريبي
+      case 'qicard':
+        return 500 / 1500; // تحويل 500 دينار إلى دولار تقريبي
+      case 'visa':
+      case 'mastercard':
+        return amount * 0.03;
       case 'paypal':
         return (amount * 0.029) + 0.30;
       case 'bank':
@@ -191,6 +246,84 @@ const Withdraw = () => {
 
   const renderMethodDetails = () => {
     switch (selectedMethod) {
+      case 'zaincash':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="zainCashNumber" className="text-white">رقم زين كاش</Label>
+              <Input
+                id="zainCashNumber"
+                type="tel"
+                value={accountDetails.zainCashNumber}
+                onChange={(e) => setAccountDetails({...accountDetails, zainCashNumber: e.target.value})}
+                placeholder="07XXXXXXXXX"
+                className="bg-gray-800 border-gray-600 text-white"
+                dir="ltr"
+              />
+            </div>
+          </div>
+        );
+      case 'qicard':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="qiCardNumber" className="text-white">رقم كي كارد</Label>
+              <Input
+                id="qiCardNumber"
+                type="tel"
+                value={accountDetails.qiCardNumber}
+                onChange={(e) => setAccountDetails({...accountDetails, qiCardNumber: e.target.value})}
+                placeholder="07XXXXXXXXX"
+                className="bg-gray-800 border-gray-600 text-white"
+                dir="ltr"
+              />
+            </div>
+          </div>
+        );
+      case 'visa':
+      case 'mastercard':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="cardNumber" className="text-white">رقم البطاقة</Label>
+              <Input
+                id="cardNumber"
+                type="text"
+                value={accountDetails.cardNumber}
+                onChange={(e) => setAccountDetails({...accountDetails, cardNumber: e.target.value})}
+                placeholder="1234 5678 9012 3456"
+                className="bg-gray-800 border-gray-600 text-white font-mono"
+                dir="ltr"
+                maxLength={19}
+              />
+            </div>
+            <div>
+              <Label htmlFor="cardHolder" className="text-white">اسم حامل البطاقة</Label>
+              <Input
+                id="cardHolder"
+                type="text"
+                value={accountDetails.cardHolder}
+                onChange={(e) => setAccountDetails({...accountDetails, cardHolder: e.target.value})}
+                placeholder="CARDHOLDER NAME"
+                className="bg-gray-800 border-gray-600 text-white uppercase"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <Label htmlFor="expiryDate" className="text-white">تاريخ الانتهاء</Label>
+              <Input
+                id="expiryDate"
+                type="text"
+                value={accountDetails.expiryDate}
+                onChange={(e) => setAccountDetails({...accountDetails, expiryDate: e.target.value})}
+                placeholder="MM/YY"
+                className="bg-gray-800 border-gray-600 text-white font-mono"
+                dir="ltr"
+                maxLength={5}
+              />
+            </div>
+          </div>
+        );
       case 'paypal':
         return (
           <div className="space-y-4">
