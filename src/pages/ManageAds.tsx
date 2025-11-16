@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AdminHeader from "@/components/AdminHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -197,17 +198,14 @@ export default function ManageAds() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/admin")}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">إدارة الإعلانات</h1>
-              <p className="text-muted-foreground">إنشاء وإدارة الإعلانات داخل التطبيق</p>
-            </div>
+    <div className="min-h-screen bg-gray-950">
+      <AdminHeader />
+      
+      <main className="pt-20 pb-8">
+        <div className="container-responsive mobile-padding">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">إدارة الإعلانات</h1>
+            <p className="text-gray-400">إنشاء وإدارة الإعلانات داخل التطبيق</p>
           </div>
           
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
@@ -380,7 +378,7 @@ export default function ManageAds() {
         {/* Ads List */}
         <div className="grid gap-4">
           {ads.map((ad) => (
-            <Card key={ad.id}>
+            <Card key={ad.id} className="bg-gray-900 border-gray-800">
               <CardContent className="p-6">
                 <div className="flex gap-4">
                   <img
@@ -450,14 +448,15 @@ export default function ManageAds() {
           ))}
 
           {ads.length === 0 && (
-            <Card>
+            <Card className="bg-gray-900 border-gray-800">
               <CardContent className="p-12 text-center">
-                <p className="text-muted-foreground">لا توجد إعلانات حالياً</p>
+                <p className="text-gray-400">لا توجد إعلانات حالياً</p>
               </CardContent>
             </Card>
           )}
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
