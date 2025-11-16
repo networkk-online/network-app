@@ -35,6 +35,7 @@ import CreateStory from "./pages/CreateStory";
 import CreateReel from "./pages/CreateReel";
 import SavedPosts from "./pages/SavedPosts";
 import LocalFameRank from "./pages/LocalFameRank";
+import VerificationRequests from "./pages/VerificationRequests";
 import FloatingAIButton from "./components/FloatingAIButton";
 import ThemeToggle from "./components/ThemeToggle";
 
@@ -71,6 +72,7 @@ const App = () => (
           <Route path="/admin/content" element={<ManageContent />} />
           <Route path="/admin/ads" element={<ManageAds />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/verification" element={<VerificationRequests />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/search" element={<Search />} />
           <Route path="/followers" element={<Followers />} />
