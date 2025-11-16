@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import AdminHeader from '@/components/AdminHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -175,8 +176,12 @@ export default function VerificationRequests() {
   };
 
   if (loading) {
-    return (
-      <div className="container mx-auto py-8 px-4">
+  return (
+    <div className="min-h-screen bg-gray-950">
+      <AdminHeader />
+      
+      <main className="pt-20 pb-8">
+        <div className="container-responsive mobile-padding">
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">جاري التحميل...</p>
