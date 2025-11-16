@@ -64,7 +64,7 @@ const App = () => (
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/quick-reply" element={<QuickReply />} />
           <Route path="/withdraw" element={<Withdraw />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin-control-panel-secret" element={<SecretAdminAccess />} />
           <Route path="/admin/staff" element={<ManageStaff />} />
