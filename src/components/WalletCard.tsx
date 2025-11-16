@@ -1,6 +1,8 @@
 
-import { Wallet, TrendingUp, Bitcoin } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Wallet, TrendingUp, Bitcoin, Info } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 interface WalletCardProps {
   balance: number;
