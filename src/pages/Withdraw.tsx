@@ -33,12 +33,17 @@ const Withdraw = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [totalWithdrawn, setTotalWithdrawn] = useState(0);
+  const [savedMethods, setSavedMethods] = useState<any[]>([]);
+  const [saveThisMethod, setSaveThisMethod] = useState(false);
+  const [methodName, setMethodName] = useState('');
+  const [selectedSavedMethod, setSelectedSavedMethod] = useState<string | null>(null);
 
   const btcPrice = 43000;
   const minimumWithdraw = 50.00;
 
   useEffect(() => {
     loadWalletData();
+    loadSavedMethods();
   }, []);
 
   const loadWalletData = async () => {
@@ -99,6 +104,137 @@ const Withdraw = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSavedMethods = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('payment_methods')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSavedMethods(data || []);
+    } catch (error: any) {
+      console.error('Error loading payment methods:', error);
+    }
+  };
+
+  const savePaymentMethod = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      if (!methodName.trim()) {
+        toast({
+          title: "خطأ",
+          description: "الرجاء إدخال اسم لطريقة الدفع",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const methodDetails: any = {};
+      
+      switch (selectedMethod) {
+        case 'zaincash':
+          methodDetails.phoneNumber = accountDetails.zainCashNumber;
+          break;
+        case 'qicard':
+          methodDetails.phoneNumber = accountDetails.qiCardNumber;
+          break;
+        case 'visa':
+        case 'mastercard':
+          methodDetails.cardNumber = accountDetails.cardNumber;
+          methodDetails.cardHolder = accountDetails.cardHolder;
+          methodDetails.expiryDate = accountDetails.expiryDate;
+          break;
+        case 'paypal':
+          methodDetails.email = accountDetails.email;
+          break;
+        case 'bank':
+          methodDetails.accountNumber = accountDetails.accountNumber;
+          methodDetails.routingNumber = accountDetails.routingNumber;
+          break;
+        case 'bitcoin':
+          methodDetails.walletAddress = accountDetails.walletAddress;
+          break;
+      }
+
+      const { error } = await supabase
+        .from('payment_methods')
+        .insert({
+          user_id: user.id,
+          method_type: selectedMethod,
+          method_name: methodName,
+          method_details: methodDetails,
+          is_default: savedMethods.length === 0
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "تم الحفظ",
+        description: "تم حفظ طريقة الدفع بنجاح"
+      });
+
+      await loadSavedMethods();
+      setSaveThisMethod(false);
+      setMethodName('');
+    } catch (error: any) {
+      console.error('Error saving payment method:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في حفظ طريقة الدفع",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const loadSavedMethodDetails = (methodId: string) => {
+    const method = savedMethods.find(m => m.id === methodId);
+    if (!method) return;
+
+    setSelectedMethod(method.method_type);
+    setSelectedSavedMethod(methodId);
+
+    const details = method.method_details;
+    
+    switch (method.method_type) {
+      case 'zaincash':
+        setAccountDetails({...accountDetails, zainCashNumber: details.phoneNumber || ''});
+        break;
+      case 'qicard':
+        setAccountDetails({...accountDetails, qiCardNumber: details.phoneNumber || ''});
+        break;
+      case 'visa':
+      case 'mastercard':
+        setAccountDetails({
+          ...accountDetails,
+          cardNumber: details.cardNumber || '',
+          cardHolder: details.cardHolder || '',
+          expiryDate: details.expiryDate || ''
+        });
+        break;
+      case 'paypal':
+        setAccountDetails({...accountDetails, email: details.email || ''});
+        break;
+      case 'bank':
+        setAccountDetails({
+          ...accountDetails,
+          accountNumber: details.accountNumber || '',
+          routingNumber: details.routingNumber || ''
+        });
+        break;
+      case 'bitcoin':
+        setAccountDetails({...accountDetails, walletAddress: details.walletAddress || ''});
+        break;
     }
   };
 
@@ -528,6 +664,50 @@ const Withdraw = () => {
               <CardTitle className="text-white">طلب سحب جديد</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Saved Payment Methods */}
+              {savedMethods.length > 0 && (
+                <div>
+                  <Label className="text-white mb-3 block">طرق الدفع المحفوظة</Label>
+                  <div className="space-y-2">
+                    {savedMethods.map((method) => {
+                      const Icon = withdrawMethods.find(m => m.id === method.method_type)?.icon || Wallet;
+                      return (
+                        <button
+                          key={method.id}
+                          onClick={() => loadSavedMethodDetails(method.id)}
+                          className={`w-full p-4 rounded-lg border-2 transition-all duration-200 text-right ${
+                            selectedSavedMethod === method.id
+                              ? 'border-green-500 bg-green-900/20'
+                              : 'border-gray-600 bg-gray-800/50 hover:border-gray-500'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Icon className={`w-6 h-6 ${
+                                selectedSavedMethod === method.id ? 'text-green-400' : 'text-gray-400'
+                              }`} />
+                              <div>
+                                <p className="text-white font-medium">{method.method_name}</p>
+                                <p className="text-xs text-gray-400">
+                                  {withdrawMethods.find(m => m.id === method.method_type)?.name}
+                                </p>
+                              </div>
+                            </div>
+                            {method.is_default && (
+                              <Badge variant="outline" className="text-xs">
+                                الافتراضي
+                              </Badge>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <Separator className="my-4" />
+                  <p className="text-center text-sm text-gray-400">أو اختر طريقة دفع جديدة</p>
+                </div>
+              )}
+
               {/* Withdraw Methods */}
               <div>
                 <Label className="text-white mb-3 block">اختر طريقة السحب</Label>
@@ -595,9 +775,46 @@ const Withdraw = () => {
                   {/* Account Details */}
                   {renderMethodDetails()}
 
+                  {/* Save Method Option */}
+                  {!selectedSavedMethod && (
+                    <div className="space-y-3 p-4 bg-gray-800/30 rounded-lg border border-gray-700">
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <input
+                          type="checkbox"
+                          id="saveMethod"
+                          checked={saveThisMethod}
+                          onChange={(e) => setSaveThisMethod(e.target.checked)}
+                          className="w-4 h-4 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500"
+                        />
+                        <Label htmlFor="saveMethod" className="text-white cursor-pointer">
+                          حفظ هذه الطريقة للاستخدام المستقبلي
+                        </Label>
+                      </div>
+                      
+                      {saveThisMethod && (
+                        <div>
+                          <Label htmlFor="methodName" className="text-white">اسم الطريقة</Label>
+                          <Input
+                            id="methodName"
+                            type="text"
+                            value={methodName}
+                            onChange={(e) => setMethodName(e.target.value)}
+                            placeholder="مثال: حسابي الشخصي"
+                            className="bg-gray-800 border-gray-600 text-white"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Submit Button */}
                   <Button
-                    onClick={handleWithdraw}
+                    onClick={async () => {
+                      if (saveThisMethod && !selectedSavedMethod) {
+                        await savePaymentMethod();
+                      }
+                      handleWithdraw();
+                    }}
                     className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-medium py-3"
                     disabled={!selectedMethod || !amount}
                   >
