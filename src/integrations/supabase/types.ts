@@ -503,6 +503,7 @@ export type Database = {
           full_name: string | null
           gender: string | null
           id: string
+          is_verified: boolean | null
           location: string | null
           phone_number: string | null
           profession: string | null
@@ -521,6 +522,7 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           id: string
+          is_verified?: boolean | null
           location?: string | null
           phone_number?: string | null
           profession?: string | null
@@ -539,6 +541,7 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           id?: string
+          is_verified?: boolean | null
           location?: string | null
           phone_number?: string | null
           profession?: string | null
@@ -890,6 +893,42 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      verification_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          reason: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []

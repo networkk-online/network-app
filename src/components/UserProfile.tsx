@@ -66,6 +66,8 @@ const UserProfile = ({
   const [followLoading, setFollowLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(followers);
   const [messageLoading, setMessageLoading] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
+  const [verificationLoading, setVerificationLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [coverUrl, setCoverUrl] = useState(coverImage);
@@ -101,7 +103,77 @@ const UserProfile = ({
     if (!isOwnProfile && profileId) {
       checkFollowStatus();
     }
+    if (isOwnProfile) {
+      checkVerificationStatus();
+    }
   }, [isOwnProfile, profileId]);
+
+  const checkVerificationStatus = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Check if user already verified
+      if (isVerified) {
+        setVerificationStatus('approved');
+        return;
+      }
+
+      // Check for pending or rejected request
+      const { data, error } = await supabase
+        .from('verification_requests')
+        .select('status')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        setVerificationStatus(data.status as any);
+      }
+    } catch (error) {
+      console.error('Error checking verification status:', error);
+    }
+  };
+
+  const handleVerificationRequest = async () => {
+    setVerificationLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "خطأ",
+          description: "يجب تسجيل الدخول",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('verification_requests')
+        .insert({
+          user_id: user.id,
+          status: 'pending',
+        });
+
+      if (error) throw error;
+
+      setVerificationStatus('pending');
+      toast({
+        title: "تم إرسال الطلب",
+        description: "سيتم مراجعة طلبك من قبل الإدارة قريباً",
+      });
+    } catch (error: any) {
+      console.error('Error requesting verification:', error);
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء إرسال الطلب",
+        variant: "destructive"
+      });
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
 
   const checkFollowStatus = async () => {
     if (!profileId) return;
@@ -617,17 +689,44 @@ const UserProfile = ({
                 <BadgeCheck className="h-5 w-5 text-white" fill="currentColor" />
               </div>
             )}
-            {isOwnProfile && (
-              <Button 
-                variant="secondary" 
-                size="sm"
-                className="rounded-full px-4 gap-1.5 h-8"
-              >
-                <BadgeCheck className="h-3.5 w-3.5" />
-                <span className="text-xs">وثّق حسابك</span>
-              </Button>
-            )}
           </div>
+          {isOwnProfile && !isVerified && (
+            <div className="mt-2">
+              {verificationStatus === 'none' ? (
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  onClick={handleVerificationRequest}
+                  disabled={verificationLoading}
+                  className="rounded-full px-4 gap-1.5 h-8"
+                >
+                  <BadgeCheck className="h-3.5 w-3.5" />
+                  <span className="text-xs">{verificationLoading ? "جاري الإرسال..." : "وثّق حسابك"}</span>
+                </Button>
+              ) : verificationStatus === 'pending' ? (
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  disabled
+                  className="rounded-full px-4 gap-1.5 h-8"
+                >
+                  <BadgeCheck className="h-3.5 w-3.5" />
+                  <span className="text-xs">طلب التوثيق قيد المراجعة</span>
+                </Button>
+              ) : verificationStatus === 'rejected' ? (
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  onClick={handleVerificationRequest}
+                  disabled={verificationLoading}
+                  className="rounded-full px-4 gap-1.5 h-8"
+                >
+                  <BadgeCheck className="h-3.5 w-3.5" />
+                  <span className="text-xs">إعادة طلب التوثيق</span>
+                </Button>
+              ) : null}
+            </div>
+          )}
           <p className="text-muted-foreground">@{username}</p>
           {bio && <p className="text-sm">{bio}</p>}
           
