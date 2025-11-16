@@ -454,7 +454,6 @@ export default function ManageAds() {
               </CardContent>
             </Card>
           )}
-          </div>
         </div>
       </main>
     </div>

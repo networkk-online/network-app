@@ -176,17 +176,19 @@ export default function VerificationRequests() {
   };
 
   if (loading) {
-  return (
-    <div className="min-h-screen bg-gray-950">
-      <AdminHeader />
-      
-      <main className="pt-20 pb-8">
-        <div className="container-responsive mobile-padding">
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">جاري التحميل...</p>
-          </CardContent>
-        </Card>
+    return (
+      <div className="min-h-screen bg-gray-950">
+        <AdminHeader />
+        
+        <main className="pt-20 pb-8">
+          <div className="container-responsive mobile-padding">
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-muted-foreground">جاري التحميل...</p>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
       </div>
     );
   }
