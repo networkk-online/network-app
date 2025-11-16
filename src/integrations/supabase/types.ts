@@ -145,6 +145,27 @@ export type Database = {
           },
         ]
       }
+      close_friends: {
+        Row: {
+          created_at: string | null
+          friend_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          friend_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          friend_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -490,6 +511,7 @@ export type Database = {
       }
       posts: {
         Row: {
+          close_friends_only: boolean | null
           comments_count: number | null
           content: string
           created_at: string | null
@@ -501,6 +523,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          close_friends_only?: boolean | null
           comments_count?: number | null
           content: string
           created_at?: string | null
@@ -512,6 +535,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          close_friends_only?: boolean | null
           comments_count?: number | null
           content?: string
           created_at?: string | null
@@ -678,6 +702,7 @@ export type Database = {
       reels: {
         Row: {
           caption: string | null
+          close_friends_only: boolean | null
           comments_count: number | null
           created_at: string
           duration: number | null
@@ -692,6 +717,7 @@ export type Database = {
         }
         Insert: {
           caption?: string | null
+          close_friends_only?: boolean | null
           comments_count?: number | null
           created_at?: string
           duration?: number | null
@@ -706,6 +732,7 @@ export type Database = {
         }
         Update: {
           caption?: string | null
+          close_friends_only?: boolean | null
           comments_count?: number | null
           created_at?: string
           duration?: number | null
@@ -759,6 +786,7 @@ export type Database = {
       }
       stories: {
         Row: {
+          close_friends_only: boolean | null
           created_at: string
           expires_at: string
           id: string
@@ -768,6 +796,7 @@ export type Database = {
           views_count: number | null
         }
         Insert: {
+          close_friends_only?: boolean | null
           created_at?: string
           expires_at?: string
           id?: string
@@ -777,6 +806,7 @@ export type Database = {
           views_count?: number | null
         }
         Update: {
+          close_friends_only?: boolean | null
           created_at?: string
           expires_at?: string
           id?: string

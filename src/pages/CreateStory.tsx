@@ -4,7 +4,9 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Image as ImageIcon, Video, X } from 'lucide-react';
+import { ArrowRight, Image as ImageIcon, Video, X, Star } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const CreateStory = () => {
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ const CreateStory = () => {
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+  const [closeFriendsOnly, setCloseFriendsOnly] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -97,7 +100,8 @@ const CreateStory = () => {
         .insert({
           user_id: user.id,
           media_url: publicUrl,
-          media_type: mediaType
+          media_type: mediaType,
+          close_friends_only: closeFriendsOnly
         });
 
       if (insertError) throw insertError;
@@ -196,6 +200,26 @@ const CreateStory = () => {
                   <Video className="w-10 h-10" />
                   <span>فيديو</span>
                 </Button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700 mb-4">
+                <div className="flex items-center gap-3">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  <div>
+                    <Label htmlFor="close-friends-story" className="text-white font-medium">
+                      مشاركة مع الأصدقاء المقربين فقط
+                    </Label>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      ستظهر القصة لأصدقائك المقربين فقط
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="close-friends-story"
+                  checked={closeFriendsOnly}
+                  onCheckedChange={setCloseFriendsOnly}
+                  disabled={uploading}
+                />
               </div>
             </div>
           ) : (

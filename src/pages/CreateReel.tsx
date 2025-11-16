@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Video, X, Loader2, Wand2 } from 'lucide-react';
+import { Upload, Video, X, Loader2, Wand2, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import { VideoEditor } from '@/components/VideoEditor';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const CreateReel = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -15,6 +17,7 @@ const CreateReel = () => {
   const [caption, setCaption] = useState('');
   const [uploading, setUploading] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
+  const [closeFriendsOnly, setCloseFriendsOnly] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -109,7 +112,8 @@ const CreateReel = () => {
           user_id: user.id,
           video_url: publicUrl,
           caption: caption || null,
-          duration: duration
+          duration: duration,
+          close_friends_only: closeFriendsOnly
         });
 
       if (dbError) throw dbError;
@@ -228,6 +232,26 @@ const CreateReel = () => {
                 <p className="text-xs text-muted-foreground mt-1">
                   {caption.length}/500
                 </p>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-3">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  <div>
+                    <Label htmlFor="close-friends-reel" className="text-white font-medium">
+                      مشاركة مع الأصدقاء المقربين فقط
+                    </Label>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      سيظهر الريل لأصدقائك المقربين فقط
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="close-friends-reel"
+                  checked={closeFriendsOnly}
+                  onCheckedChange={setCloseFriendsOnly}
+                  disabled={uploading}
+                />
               </div>
 
               <Button

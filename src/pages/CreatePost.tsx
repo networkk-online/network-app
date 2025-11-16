@@ -6,8 +6,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Image, Upload, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Image, Upload, X, Loader2, Star } from 'lucide-react';
 import Header from '@/components/Header';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const CreatePost = () => {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ const CreatePost = () => {
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('file');
+  const [closeFriendsOnly, setCloseFriendsOnly] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +135,8 @@ const CreatePost = () => {
         .insert({
           user_id: user.id,
           content: content.trim(),
-          media_url: finalMediaUrl
+          media_url: finalMediaUrl,
+          close_friends_only: closeFriendsOnly
         });
 
       if (error) throw error;
@@ -275,6 +279,26 @@ const CreatePost = () => {
                         disabled={isLoading}
                       />
                     )}
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                    <div className="flex items-center gap-3">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                      <div>
+                        <Label htmlFor="close-friends" className="text-white font-medium">
+                          مشاركة مع الأصدقاء المقربين فقط
+                        </Label>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          سيظهر المنشور لأصدقائك المقربين فقط
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      id="close-friends"
+                      checked={closeFriendsOnly}
+                      onCheckedChange={setCloseFriendsOnly}
+                      disabled={isLoading}
+                    />
                   </div>
 
                   <div className="flex space-x-3">

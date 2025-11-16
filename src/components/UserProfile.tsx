@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useMessages } from '@/hooks/useMessages';
 import { FollowButton } from '@/components/FollowButton';
+import { CloseFriendsButton } from '@/components/CloseFriendsButton';
+import { CloseFriendsDialog } from '@/components/CloseFriendsDialog';
 
 interface UserProfileProps {
   username: string;
@@ -426,15 +428,16 @@ const UserProfile = ({
 
             <div className="flex gap-2 items-center pt-4">
               {isOwnProfile ? (
-                <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="rounded-full px-6"
-                    >
-                      تعديل الملف الشخصي
-                    </Button>
-                  </DialogTrigger>
+                <>
+                  <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="rounded-full px-6"
+                      >
+                        تعديل الملف الشخصي
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                       <DialogTitle>تعديل الملف الشخصي</DialogTitle>
@@ -544,6 +547,8 @@ const UserProfile = ({
                     </Form>
                   </DialogContent>
                 </Dialog>
+                <CloseFriendsDialog />
+              </>
               ) : profileId && (
                 <>
                   <FollowButton 
@@ -551,6 +556,13 @@ const UserProfile = ({
                     variant="default"
                     size="default"
                     showIcon={false}
+                    className="rounded-full px-6"
+                  />
+                  <CloseFriendsButton
+                    userId={profileId}
+                    variant="outline"
+                    size="default"
+                    showIcon={true}
                     className="rounded-full px-6"
                   />
                   <Button
