@@ -293,7 +293,7 @@ const Profile = () => {
     posts: userPosts.length,
     bio: profile?.bio || 'لا يوجد وصف',
     phone: profile?.phone_number || '',
-    profileId: user?.id
+    profileId: urlUserId || user?.id
   };
 
   return (
