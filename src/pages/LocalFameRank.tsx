@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Crown, MapPin, School, Briefcase, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -184,158 +183,140 @@ const LocalFameRank = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="pt-20 pb-8">
+      <main className="pt-20 pb-24">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">🏆 ترتيب المشاهير المحليين</h1>
-        <p className="text-muted-foreground">يتم التحديث كل ساعة • آخر تحديث: {new Date().toLocaleTimeString("ar-SA")}</p>
-      </div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-foreground mb-2">🏆 ترتيب المشاهير المحليين</h1>
+            <p className="text-muted-foreground">يتم التحديث كل ساعة • آخر تحديث: {new Date().toLocaleTimeString("ar-SA")}</p>
+          </div>
 
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid grid-cols-2 lg:grid-cols-6 w-full mb-6">
-          <TabsTrigger value="all">الكل</TabsTrigger>
-          <TabsTrigger value="location" disabled={!currentUser?.location}>
-            <MapPin className="w-4 h-4 ml-1" />
-            منطقتك
-          </TabsTrigger>
-          <TabsTrigger value="school" disabled={!currentUser?.school}>
-            <School className="w-4 h-4 ml-1" />
-            مدرستك
-          </TabsTrigger>
-          <TabsTrigger value="profession" disabled={!currentUser?.profession}>
-            <Briefcase className="w-4 h-4 ml-1" />
-            مهنتك
-          </TabsTrigger>
-          <TabsTrigger value="male">أولاد</TabsTrigger>
-          <TabsTrigger value="female">بنات</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-yellow-500" />
-                أشهر المستخدمين
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {allRankings.map((user, index) => (
-                <RankingCard key={user.id} user={user} index={index} />
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="location">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-primary" />
-                أشهر الأشخاص في {currentUser?.location}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {locationRankings.length > 0 ? (
-                locationRankings.map((user, index) => (
+          <div className="space-y-6">
+            {/* أشهر المستخدمين */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-yellow-500" />
+                  أشهر المستخدمين
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {allRankings.map((user, index) => (
                   <RankingCard key={user.id} user={user} index={index} />
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  لا توجد نتائج من منطقتك حالياً
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                ))}
+              </CardContent>
+            </Card>
 
-        <TabsContent value="school">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <School className="w-5 h-5 text-primary" />
-                أشهر الأشخاص في {currentUser?.school}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {schoolRankings.length > 0 ? (
-                schoolRankings.map((user, index) => (
-                  <RankingCard key={user.id} user={user} index={index} />
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  لا توجد نتائج من مدرستك حالياً
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            {/* أشهر الأشخاص في منطقتك */}
+            {currentUser?.location && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    أشهر الأشخاص في {currentUser?.location}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {locationRankings.length > 0 ? (
+                    locationRankings.map((user, index) => (
+                      <RankingCard key={user.id} user={user} index={index} />
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">
+                      لا توجد نتائج من منطقتك حالياً
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-        <TabsContent value="profession">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-primary" />
-                أشهر الأشخاص في {currentUser?.profession}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {professionRankings.length > 0 ? (
-                professionRankings.map((user, index) => (
-                  <RankingCard key={user.id} user={user} index={index} />
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  لا توجد نتائج من مهنتك حالياً
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            {/* أشهر الأشخاص في مدرستك */}
+            {currentUser?.school && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <School className="w-5 h-5 text-primary" />
+                    أشهر الأشخاص في {currentUser?.school}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {schoolRankings.length > 0 ? (
+                    schoolRankings.map((user, index) => (
+                      <RankingCard key={user.id} user={user} index={index} />
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">
+                      لا توجد نتائج من مدرستك حالياً
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-        <TabsContent value="male">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-blue-500" />
-                أشهر الأولاد
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {maleRankings.length > 0 ? (
-                maleRankings.map((user, index) => (
-                  <RankingCard key={user.id} user={user} index={index} />
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  لا توجد نتائج حالياً
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            {/* أشهر الأشخاص في مهنتك */}
+            {currentUser?.profession && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-primary" />
+                    أشهر الأشخاص في {currentUser?.profession}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {professionRankings.length > 0 ? (
+                    professionRankings.map((user, index) => (
+                      <RankingCard key={user.id} user={user} index={index} />
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">
+                      لا توجد نتائج من مهنتك حالياً
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-        <TabsContent value="female">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-pink-500" />
-                أشهر البنات
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {femaleRankings.length > 0 ? (
-                femaleRankings.map((user, index) => (
-                  <RankingCard key={user.id} user={user} index={index} />
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  لا توجد نتائج حالياً
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            {/* أشهر الأولاد */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-blue-500" />
+                  أشهر الأولاد
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {maleRankings.length > 0 ? (
+                  maleRankings.map((user, index) => (
+                    <RankingCard key={user.id} user={user} index={index} />
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    لا توجد نتائج حالياً
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* أشهر البنات */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-pink-500" />
+                  أشهر البنات
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {femaleRankings.length > 0 ? (
+                  femaleRankings.map((user, index) => (
+                    <RankingCard key={user.id} user={user} index={index} />
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    لا توجد نتائج حالياً
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>
