@@ -38,7 +38,6 @@ import SavedContent from "./pages/SavedContent";
 import LocalFameRank from "./pages/LocalFameRank";
 import VerificationRequests from "./pages/VerificationRequests";
 import FloatingAIButton from "./components/FloatingAIButton";
-import ThemeToggle from "./components/ThemeToggle";
 import BottomNav from "./components/BottomNav";
 
 const queryClient = new QueryClient();
@@ -50,7 +49,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <FloatingAIButton />
-        <ThemeToggle />
         <BottomNav />
         <Routes>
           <Route path="/" element={<Index />} />
