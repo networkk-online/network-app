@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Eye, MessageCircle } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Input } from './ui/input';
 import { StoryViewers } from './StoryViewers';
 import { useStoryViews } from '@/hooks/useStoryViews';
 import { StoryQuestion } from './StoryQuestion';
 import { StoryPoll } from './StoryPoll';
+import { useNavigate } from 'react-router-dom';
 
 interface Story {
   id: string;
@@ -39,9 +41,12 @@ interface StoryViewerProps {
 
 const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryViewerProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
   const [showViewers, setShowViewers] = useState(false);
   const [isOwnStory, setIsOwnStory] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [isSendingReply, setIsSendingReply] = useState(false);
   const currentStory = stories[currentIndex];
   const { recordView } = useStoryViews(currentStory?.id || '');
 
@@ -93,6 +98,61 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
     if (seconds < 60) return 'الآن';
     if (seconds < 3600) return `${Math.floor(seconds / 60)}د`;
     return `${Math.floor(seconds / 3600)}س`;
+  };
+
+  const handleSendReply = async () => {
+    if (!replyText.trim() || isSendingReply || !currentStory) return;
+
+    try {
+      setIsSendingReply(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "خطأ",
+          description: "يجب تسجيل الدخول للرد على القصة",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check if story allows replies
+      if (!currentStory.allow_story_replies) {
+        toast({
+          title: "غير مسموح",
+          description: "صاحب القصة لا يسمح بالردود",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Insert story reply
+      const { error } = await supabase
+        .from('story_replies')
+        .insert({
+          story_id: currentStory.id,
+          sender_id: user.id,
+          receiver_id: currentStory.user_id,
+          content: replyText,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "تم الإرسال",
+        description: "تم إرسال ردك على القصة",
+      });
+
+      setReplyText('');
+    } catch (error) {
+      console.error('Error sending story reply:', error);
+      toast({
+        title: "خطأ",
+        description: "فشل إرسال الرد",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingReply(false);
+    }
   };
 
   return (
@@ -204,6 +264,34 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
           pollVotes={currentStory.poll_votes || {}}
           isOwner={isOwnStory}
         />
+      )}
+
+      {/* Reply Input - Only show if not own story and replies are allowed */}
+      {!isOwnStory && currentStory.allow_story_replies && (
+        <div className="absolute bottom-4 left-4 right-4 z-10">
+          <div className="flex items-center gap-2 bg-black/50 backdrop-blur-sm rounded-full p-2">
+            <Input
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="أرسل رسالة..."
+              className="flex-1 bg-transparent border-0 text-white placeholder:text-gray-400 focus-visible:ring-0"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendReply();
+                }
+              }}
+            />
+            <Button
+              size="icon"
+              onClick={handleSendReply}
+              disabled={!replyText.trim() || isSendingReply}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Viewers Dialog */}
