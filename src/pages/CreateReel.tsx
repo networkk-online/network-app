@@ -9,6 +9,9 @@ import Header from '@/components/Header';
 import { VideoEditor } from '@/components/VideoEditor';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { LocationPicker } from '@/components/LocationPicker';
+import { MusicPicker } from '@/components/MusicPicker';
+import { MentionPicker } from '@/components/MentionPicker';
 
 const CreateReel = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -18,6 +21,9 @@ const CreateReel = () => {
   const [uploading, setUploading] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
   const [closeFriendsOnly, setCloseFriendsOnly] = useState(false);
+  const [location, setLocation] = useState<{ name: string; lat?: number; lng?: number } | null>(null);
+  const [music, setMusic] = useState<{ title: string; artist?: string; url?: string } | null>(null);
+  const [mentions, setMentions] = useState<string[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
 

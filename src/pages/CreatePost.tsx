@@ -10,6 +10,9 @@ import { ArrowLeft, Image, Upload, X, Loader2, Star } from 'lucide-react';
 import Header from '@/components/Header';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { LocationPicker } from '@/components/LocationPicker';
+import { MusicPicker } from '@/components/MusicPicker';
+import { MentionPicker } from '@/components/MentionPicker';
 
 const CreatePost = () => {
   const navigate = useNavigate();
@@ -21,6 +24,9 @@ const CreatePost = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('file');
   const [closeFriendsOnly, setCloseFriendsOnly] = useState(false);
+  const [location, setLocation] = useState<{ name: string; lat?: number; lng?: number } | null>(null);
+  const [music, setMusic] = useState<{ title: string; artist?: string; url?: string } | null>(null);
+  const [mentions, setMentions] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,7 +142,14 @@ const CreatePost = () => {
           user_id: user.id,
           content: content.trim(),
           media_url: finalMediaUrl,
-          close_friends_only: closeFriendsOnly
+          close_friends_only: closeFriendsOnly,
+          location: location?.name || null,
+          location_lat: location?.lat || null,
+          location_lng: location?.lng || null,
+          music_title: music?.title || null,
+          music_artist: music?.artist || null,
+          music_url: music?.url || null,
+          mentions: mentions.length > 0 ? mentions : null
         });
 
       if (error) throw error;
@@ -300,6 +313,23 @@ const CreatePost = () => {
                       disabled={isLoading}
                     />
                   </div>
+
+                  <LocationPicker
+                    onLocationSelect={setLocation}
+                    onRemove={() => setLocation(null)}
+                    currentLocation={location?.name}
+                  />
+
+                  <MusicPicker
+                    onMusicSelect={setMusic}
+                    onRemove={() => setMusic(null)}
+                    currentMusic={music ? { title: music.title, artist: music.artist } : undefined}
+                  />
+
+                  <MentionPicker
+                    onMentionsChange={setMentions}
+                    currentMentions={mentions}
+                  />
 
                   <div className="flex space-x-3">
                     <Button
