@@ -22,11 +22,6 @@ const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, onClic
             />
           </div>
         </div>
-        {isOwn && (
-          <div className="absolute bottom-0 right-0 bg-green-500 rounded-full p-1 border-2 border-black">
-            <Plus className="w-3 h-3 text-white" />
-          </div>
-        )}
       </div>
       <span className="text-xs text-gray-300 max-w-[70px] truncate">
         {isOwn ? 'قصتك' : username}
