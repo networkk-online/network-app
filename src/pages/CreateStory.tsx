@@ -7,6 +7,9 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowRight, Image as ImageIcon, Video, X, Star } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { LocationPicker } from '@/components/LocationPicker';
+import { MusicPicker } from '@/components/MusicPicker';
+import { StoryInteractive } from '@/components/StoryInteractive';
 
 const CreateStory = () => {
   const navigate = useNavigate();
@@ -17,6 +20,9 @@ const CreateStory = () => {
   const [uploading, setUploading] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const [closeFriendsOnly, setCloseFriendsOnly] = useState(false);
+  const [location, setLocation] = useState<{ name: string; lat?: number; lng?: number } | null>(null);
+  const [music, setMusic] = useState<{ title: string; artist?: string; url?: string } | null>(null);
+  const [interactiveData, setInteractiveData] = useState<any>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
