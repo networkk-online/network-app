@@ -14,6 +14,8 @@ import { useMessages } from '@/hooks/useMessages';
 import { FollowButton } from '@/components/FollowButton';
 import { CloseFriendsButton } from '@/components/CloseFriendsButton';
 import { CloseFriendsDialog } from '@/components/CloseFriendsDialog';
+import { BlockButton } from '@/components/BlockButton';
+import { ReportDialog } from '@/components/ReportDialog';
 
 interface UserProfileProps {
   username: string;
@@ -559,7 +561,7 @@ const UserProfile = ({
                 </div>
               )}
               {!isOwnProfile && profileId && (
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-2 items-center flex-wrap">
                   <FollowButton 
                     userId={profileId}
                     variant="default"
@@ -582,6 +584,15 @@ const UserProfile = ({
                     size="sm"
                     showIcon={true}
                     className="rounded-lg px-2 h-8"
+                  />
+                  <BlockButton
+                    userId={profileId}
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-lg px-2 h-8"
+                  />
+                  <ReportDialog
+                    reportedUserId={profileId}
                   />
                 </div>
               )}
