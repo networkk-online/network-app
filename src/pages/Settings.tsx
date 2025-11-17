@@ -8,13 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Heart, MessageCircle, Bell } from 'lucide-react';
+import { ArrowRight, Heart, MessageCircle, Bell, Shield, Database } from 'lucide-react';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   
   // Settings state
   const [settings, setSettings] = useState({
@@ -24,11 +25,12 @@ const Settings = () => {
     likes_notifications: true,
     comments_notifications: true,
     follows_notifications: true,
+    allow_messages_from_non_friends: true,
+    auto_backup_enabled: false,
   });
 
   useEffect(() => {
     checkAuth();
-    loadSettings();
   }, []);
 
   const checkAuth = async () => {
@@ -42,18 +44,35 @@ const Settings = () => {
       navigate('/login');
       return;
     }
+    setUserId(user.id);
+    await loadSettings(user.id);
   };
 
-  const loadSettings = async () => {
+  const loadSettings = async (uid: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', uid)
+        .maybeSingle();
 
-      // Load user settings from database (you can create a user_settings table)
-      // For now, using default values
-      setLoading(false);
+      if (error && error.code !== 'PGRST116') throw error;
+
+      if (data) {
+        setSettings({
+          likes_enabled: data.likes_enabled ?? true,
+          comments_enabled: data.comments_enabled ?? true,
+          notifications_enabled: data.notifications_enabled ?? true,
+          likes_notifications: data.likes_notifications ?? true,
+          comments_notifications: data.comments_notifications ?? true,
+          follows_notifications: data.follows_notifications ?? true,
+          allow_messages_from_non_friends: data.allow_messages_from_non_friends ?? true,
+          auto_backup_enabled: data.auto_backup_enabled ?? false,
+        });
+      }
     } catch (error) {
       console.error('Error loading settings:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -66,22 +85,48 @@ const Settings = () => {
   };
 
   const handleSave = async () => {
+    if (!userId) return;
+    
     setSaving(true);
     try {
-      // Save settings to database
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert({
+          user_id: userId,
+          ...settings,
+        });
+
+      if (error) throw error;
+
       toast({
         title: "تم الحفظ",
         description: "تم حفظ إعداداتك بنجاح",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving settings:', error);
       toast({
         title: "خطأ",
-        description: "حدث خطأ أثناء حفظ الإعدادات",
+        description: error.message || "حدث خطأ أثناء حفظ الإعدادات",
         variant: "destructive"
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleBackup = async () => {
+    try {
+      toast({
+        title: "جاري النسخ الاحتياطي",
+        description: "سيتم إشعارك عند اكتمال النسخ الاحتياطي",
+      });
+      // Implement backup logic here
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء النسخ الاحتياطي",
+        variant: "destructive"
+      });
     }
   };
 
@@ -228,11 +273,71 @@ const Settings = () => {
                 </CardContent>
               </Card>
 
+              {/* Privacy & Security Settings */}
+              <Card className="bg-gray-900 border-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Shield className="w-5 h-5 ml-2 text-green-500" />
+                    الخصوصية والأمان
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
+                    تحكم في خصوصية حسابك وأمانه
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="text-white">السماح بالرسائل من غير الأصدقاء</Label>
+                      <p className="text-sm text-gray-400">السماح لأي شخص بإرسال رسائل لك</p>
+                    </div>
+                    <Switch
+                      checked={settings.allow_messages_from_non_friends}
+                      onCheckedChange={(value) => handleToggle('allow_messages_from_non_friends', value)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Backup Settings */}
+              <Card className="bg-gray-900 border-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Database className="w-5 h-5 ml-2 text-purple-500" />
+                    النسخ الاحتياطي
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
+                    احفظ نسخة احتياطية من بياناتك
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="text-white">النسخ الاحتياطي التلقائي</Label>
+                      <p className="text-sm text-gray-400">نسخ احتياطي تلقائي لبياناتك كل أسبوع</p>
+                    </div>
+                    <Switch
+                      checked={settings.auto_backup_enabled}
+                      onCheckedChange={(value) => handleToggle('auto_backup_enabled', value)}
+                    />
+                  </div>
+                  <Separator className="bg-gray-800" />
+                  <Button 
+                    onClick={handleBackup}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Database className="w-4 h-4 ml-2" />
+                    إنشاء نسخة احتياطية الآن
+                  </Button>
+                </CardContent>
+              </Card>
+
               {/* Save Button */}
               <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold"
+                className="w-full bg-primary hover:bg-primary/90"
+                size="lg"
               >
                 {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
               </Button>

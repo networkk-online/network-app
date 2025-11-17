@@ -29,7 +29,7 @@ export const CloseFriendsButton = ({
       disabled={loading}
       variant={isCloseFriend ? 'default' : variant}
       size={size}
-      className={`gap-2 ${className}`}
+      className={`gap-2 ${isCloseFriend ? 'bg-sky-500 hover:bg-sky-600 text-white' : 'border-sky-500 text-sky-500 hover:bg-sky-500/10'} ${className}`}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />

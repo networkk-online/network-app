@@ -82,7 +82,8 @@ const UserProfile = ({
       location: location || '',
       school: school || '',
       profession: profession || '',
-      gender: gender || ''
+      gender: gender || '',
+      birthDate: birthDate || ''
     }
   });
 
@@ -94,11 +95,12 @@ const UserProfile = ({
       location: location || '',
       school: school || '',
       profession: profession || '',
-      gender: gender || ''
+      gender: gender || '',
+      birthDate: birthDate || ''
     });
     setAvatarUrl(avatar);
     setCoverUrl(coverImage);
-  }, [displayName, bio, username, avatar, coverImage, location, school, profession, gender]);
+  }, [displayName, bio, username, avatar, coverImage, location, school, profession, gender, birthDate]);
 
   useEffect(() => {
     if (isOwnProfile) {
@@ -534,6 +536,18 @@ const UserProfile = ({
                                   <SelectItem value="female">أنثى</SelectItem>
                                 </SelectContent>
                               </Select>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="birthDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>تاريخ الميلاد</FormLabel>
+                              <FormControl>
+                                <Input {...field} type="date" />
+                              </FormControl>
                             </FormItem>
                           )}
                         />
