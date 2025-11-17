@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { StoryViewers } from './StoryViewers';
 import { useStoryViews } from '@/hooks/useStoryViews';
+import { StoryQuestion } from './StoryQuestion';
+import { StoryPoll } from './StoryPoll';
 
 interface Story {
   id: string;
@@ -15,6 +17,12 @@ interface Story {
   created_at: string;
   expires_at: string;
   views_count: number;
+  story_type?: string;
+  question_text?: string;
+  poll_question?: string;
+  poll_options?: any;
+  poll_votes?: any;
+  allow_story_replies?: boolean;
   profiles?: {
     username: string;
     avatar_url: string;
@@ -177,6 +185,26 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
         <div className="flex-1" onClick={onPrev} />
         <div className="flex-1" onClick={onNext} />
       </div>
+
+      {/* Interactive Elements */}
+      {currentStory.story_type === 'question' && currentStory.question_text && (
+        <StoryQuestion
+          storyId={currentStory.id}
+          questionText={currentStory.question_text}
+          isOwner={isOwnStory}
+          storyOwnerId={currentStory.user_id}
+        />
+      )}
+
+      {currentStory.story_type === 'poll' && currentStory.poll_question && currentStory.poll_options && (
+        <StoryPoll
+          storyId={currentStory.id}
+          pollQuestion={currentStory.poll_question}
+          pollOptions={currentStory.poll_options}
+          pollVotes={currentStory.poll_votes || {}}
+          isOwner={isOwnStory}
+        />
+      )}
 
       {/* Viewers Dialog */}
       <Dialog open={showViewers} onOpenChange={setShowViewers}>

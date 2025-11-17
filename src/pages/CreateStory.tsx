@@ -107,7 +107,19 @@ const CreateStory = () => {
           user_id: user.id,
           media_url: publicUrl,
           media_type: mediaType,
-          close_friends_only: closeFriendsOnly
+          close_friends_only: closeFriendsOnly,
+          location: location?.name || null,
+          location_lat: location?.lat || null,
+          location_lng: location?.lng || null,
+          music_title: music?.title || null,
+          music_artist: music?.artist || null,
+          music_url: music?.url || null,
+          story_type: interactiveData?.type || 'media',
+          question_text: interactiveData?.question_text || null,
+          poll_question: interactiveData?.poll_question || null,
+          poll_options: interactiveData?.poll_options || null,
+          poll_votes: {},
+          allow_story_replies: true
         });
 
       if (insertError) throw insertError;
@@ -225,6 +237,24 @@ const CreateStory = () => {
                   checked={closeFriendsOnly}
                   onCheckedChange={setCloseFriendsOnly}
                   disabled={uploading}
+                />
+              </div>
+
+              <div className="space-y-3 mb-4">
+                <LocationPicker
+                  onLocationSelect={setLocation}
+                  onRemove={() => setLocation(null)}
+                  currentLocation={location?.name}
+                />
+
+                <MusicPicker
+                  onMusicSelect={setMusic}
+                  onRemove={() => setMusic(null)}
+                  currentMusic={music ? { title: music.title, artist: music.artist } : undefined}
+                />
+
+                <StoryInteractive
+                  onInteractiveChange={setInteractiveData}
                 />
               </div>
             </div>

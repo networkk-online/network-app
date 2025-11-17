@@ -112,17 +112,24 @@ const CreateReel = () => {
       const duration = Math.round(video.duration);
 
       // Create reel record
-      const { error: dbError } = await supabase
+      const { error } = await supabase
         .from('reels')
         .insert({
           user_id: user.id,
           video_url: publicUrl,
           caption: caption || null,
           duration: duration,
-          close_friends_only: closeFriendsOnly
+          close_friends_only: closeFriendsOnly,
+          location: location?.name || null,
+          location_lat: location?.lat || null,
+          location_lng: location?.lng || null,
+          music_title: music?.title || null,
+          music_artist: music?.artist || null,
+          music_url: music?.url || null,
+          mentions: mentions.length > 0 ? mentions : null
         });
 
-      if (dbError) throw dbError;
+      if (error) throw error;
 
       toast({
         title: 'نجح',
@@ -257,6 +264,25 @@ const CreateReel = () => {
                   checked={closeFriendsOnly}
                   onCheckedChange={setCloseFriendsOnly}
                   disabled={uploading}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <LocationPicker
+                  onLocationSelect={setLocation}
+                  onRemove={() => setLocation(null)}
+                  currentLocation={location?.name}
+                />
+
+                <MusicPicker
+                  onMusicSelect={setMusic}
+                  onRemove={() => setMusic(null)}
+                  currentMusic={music ? { title: music.title, artist: music.artist } : undefined}
+                />
+
+                <MentionPicker
+                  onMentionsChange={setMentions}
+                  currentMentions={mentions}
                 />
               </div>
 
