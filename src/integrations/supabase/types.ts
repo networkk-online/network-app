@@ -573,6 +573,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          birth_date: string | null
           cover_url: string | null
           created_at: string
           fame_score: number | null
@@ -592,6 +593,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          birth_date?: string | null
           cover_url?: string | null
           created_at?: string
           fame_score?: number | null
@@ -611,6 +613,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          birth_date?: string | null
           cover_url?: string | null
           created_at?: string
           fame_score?: number | null
@@ -1163,6 +1166,51 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          allow_messages_from_non_friends: boolean | null
+          auto_backup_enabled: boolean | null
+          comments_enabled: boolean | null
+          comments_notifications: boolean | null
+          created_at: string
+          follows_notifications: boolean | null
+          id: string
+          likes_enabled: boolean | null
+          likes_notifications: boolean | null
+          notifications_enabled: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allow_messages_from_non_friends?: boolean | null
+          auto_backup_enabled?: boolean | null
+          comments_enabled?: boolean | null
+          comments_notifications?: boolean | null
+          created_at?: string
+          follows_notifications?: boolean | null
+          id?: string
+          likes_enabled?: boolean | null
+          likes_notifications?: boolean | null
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allow_messages_from_non_friends?: boolean | null
+          auto_backup_enabled?: boolean | null
+          comments_enabled?: boolean | null
+          comments_notifications?: boolean | null
+          created_at?: string
+          follows_notifications?: boolean | null
+          id?: string
+          likes_enabled?: boolean | null
+          likes_notifications?: boolean | null
+          notifications_enabled?: boolean | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
