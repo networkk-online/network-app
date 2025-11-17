@@ -2,11 +2,18 @@ import { useState, useRef, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Image as ImageIcon, Video, X } from 'lucide-react';
+import { Send, Image as ImageIcon, Video, X, Clock, Eye, MoreVertical, Trash2, Archive } from 'lucide-react';
 import { Message } from '@/hooks/useMessages';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ChatWindowProps {
   messages: Message[];
@@ -16,7 +23,7 @@ interface ChatWindowProps {
     full_name: string;
     avatar_url: string;
   };
-  onSendMessage: (content: string | null, mediaFile?: File) => Promise<any>;
+  onSendMessage: (content: string | null, mediaFile?: File, settings?: any) => Promise<any>;
 }
 
 export const ChatWindow = ({
@@ -72,6 +79,12 @@ export const ChatWindow = ({
     }
   };
 
+  const [messageSettings, setMessageSettings] = useState({
+    temporary: false,
+    viewOnce: false,
+    viewTwice: false
+  });
+
   const handleSend = async () => {
     if (!messageText.trim() && !selectedFile) return;
 
@@ -79,12 +92,14 @@ export const ChatWindow = ({
     try {
       const result = await onSendMessage(
         messageText.trim() || null,
-        selectedFile || undefined
+        selectedFile || undefined,
+        messageSettings
       );
 
       if (result?.success) {
         setMessageText('');
         handleRemoveFile();
+        setMessageSettings({ temporary: false, viewOnce: false, viewTwice: false });
       } else {
         toast({
           title: 'خطأ',

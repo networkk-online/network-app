@@ -32,6 +32,16 @@ export const VideoEditor = ({ videoUrl, onApplyFilters }: VideoEditorProps) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  const addWatermark = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText('Network', canvas.width - 20, canvas.height - 20);
+    ctx.restore();
+  };
+
   const applyFiltersToCanvas = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -45,6 +55,9 @@ export const VideoEditor = ({ videoUrl, onApplyFilters }: VideoEditorProps) => {
 
     ctx.filter = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturation}%) sepia(${filters.sepia}%) blur(${filters.blur}px)`;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Add watermark
+    addWatermark(ctx, canvas);
   };
 
   useEffect(() => {
