@@ -1,4 +1,4 @@
-import { Home, PlusSquare, Search, Film, User, Bell } from 'lucide-react';
+import { Home, PlusSquare, Search, Film, User, Bell, Trophy } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -124,6 +124,7 @@ const BottomNav = () => {
   const navItems = [
     { icon: Home, label: 'الرئيسية', path: '/', badge: unreadMessages },
     { icon: Film, label: 'الريلز', path: '/shorts', badge: 0 },
+    { icon: Trophy, label: 'المشاهير', path: '/local-fame-rank', badge: 0 },
     { icon: PlusSquare, label: 'إنشاء', path: '/create-post', badge: 0 },
   ];
 
