@@ -192,11 +192,13 @@ const LocalFameRank = () => {
 
           <div className="space-y-6">
             {/* أشهر المستخدمين */}
-            <Card>
+            <Card className="border-yellow-500/20 bg-gradient-to-br from-yellow-500/5 to-transparent">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Crown className="w-5 h-5 text-yellow-500" />
-                  أشهر المستخدمين
+                  <span className="bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent">
+                    أشهر المستخدمين
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -208,11 +210,13 @@ const LocalFameRank = () => {
 
             {/* أشهر الأشخاص في منطقتك */}
             {currentUser?.location && (
-              <Card>
+              <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-transparent">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    أشهر الأشخاص في {currentUser?.location}
+                    <MapPin className="w-5 h-5 text-blue-500" />
+                    <span className="bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
+                      أشهر الأشخاص في {currentUser?.location}
+                    </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -231,11 +235,13 @@ const LocalFameRank = () => {
 
             {/* أشهر الأشخاص في مدرستك */}
             {currentUser?.school && (
-              <Card>
+              <Card className="border-green-500/20 bg-gradient-to-br from-green-500/5 to-transparent">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <School className="w-5 h-5 text-primary" />
-                    أشهر الأشخاص في {currentUser?.school}
+                    <School className="w-5 h-5 text-green-500" />
+                    <span className="bg-gradient-to-r from-green-500 to-green-600 bg-clip-text text-transparent">
+                      أشهر الأشخاص في {currentUser?.school}
+                    </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -254,11 +260,13 @@ const LocalFameRank = () => {
 
             {/* أشهر الأشخاص في مهنتك */}
             {currentUser?.profession && (
-              <Card>
+              <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="w-5 h-5 text-primary" />
-                    أشهر الأشخاص في {currentUser?.profession}
+                    <Briefcase className="w-5 h-5 text-purple-500" />
+                    <span className="bg-gradient-to-r from-purple-500 to-purple-600 bg-clip-text text-transparent">
+                      أشهر الأشخاص في {currentUser?.profession}
+                    </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -276,11 +284,13 @@ const LocalFameRank = () => {
             )}
 
             {/* أشهر الأولاد */}
-            <Card>
+            <Card className="border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-transparent">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Crown className="w-5 h-5 text-blue-500" />
-                  أشهر الأولاد
+                  <Crown className="w-5 h-5 text-cyan-500" />
+                  <span className="bg-gradient-to-r from-cyan-500 to-cyan-600 bg-clip-text text-transparent">
+                    أشهر الأولاد
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -297,11 +307,13 @@ const LocalFameRank = () => {
             </Card>
 
             {/* أشهر البنات */}
-            <Card>
+            <Card className="border-pink-500/20 bg-gradient-to-br from-pink-500/5 to-transparent">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Crown className="w-5 h-5 text-pink-500" />
-                  أشهر البنات
+                  <span className="bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent">
+                    أشهر البنات
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>

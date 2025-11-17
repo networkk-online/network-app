@@ -9,6 +9,7 @@ import Advertisement from '@/components/Advertisement';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useStories } from '@/hooks/useStories';
+import LocalFameRankSection from '@/components/LocalFameRankSection';
 
 const Index = () => {
   const { toast } = useToast();
@@ -188,6 +189,11 @@ const Index = () => {
                   <p className="text-gray-500 text-sm">لا توجد منشورات بعد</p>
                 </div>
               )}
+            </div>
+
+            {/* Local Fame Rank Section */}
+            <div className="mt-6">
+              <LocalFameRankSection />
             </div>
           </div>
         </div>
