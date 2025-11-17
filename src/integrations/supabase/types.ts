@@ -276,18 +276,30 @@ export type Database = {
       }
       conversations: {
         Row: {
+          archived_by: string[] | null
           created_at: string
           id: string
+          is_archived: boolean | null
+          is_pinned: boolean | null
+          pinned_by: string[] | null
           updated_at: string
         }
         Insert: {
+          archived_by?: string[] | null
           created_at?: string
           id?: string
+          is_archived?: boolean | null
+          is_pinned?: boolean | null
+          pinned_by?: string[] | null
           updated_at?: string
         }
         Update: {
+          archived_by?: string[] | null
           created_at?: string
           id?: string
+          is_archived?: boolean | null
+          is_pinned?: boolean | null
+          pinned_by?: string[] | null
           updated_at?: string
         }
         Relationships: []
@@ -396,31 +408,52 @@ export type Database = {
           content: string | null
           conversation_id: string
           created_at: string
+          deleted_for_everyone: boolean | null
+          deleted_for_receiver: boolean | null
+          deleted_for_sender: boolean | null
           id: string
           is_read: boolean | null
+          is_temporary: boolean | null
           media_type: string | null
           media_url: string | null
           sender_id: string
+          view_count: number | null
+          view_once: boolean | null
+          view_twice: boolean | null
         }
         Insert: {
           content?: string | null
           conversation_id: string
           created_at?: string
+          deleted_for_everyone?: boolean | null
+          deleted_for_receiver?: boolean | null
+          deleted_for_sender?: boolean | null
           id?: string
           is_read?: boolean | null
+          is_temporary?: boolean | null
           media_type?: string | null
           media_url?: string | null
           sender_id: string
+          view_count?: number | null
+          view_once?: boolean | null
+          view_twice?: boolean | null
         }
         Update: {
           content?: string | null
           conversation_id?: string
           created_at?: string
+          deleted_for_everyone?: boolean | null
+          deleted_for_receiver?: boolean | null
+          deleted_for_sender?: boolean | null
           id?: string
           is_read?: boolean | null
+          is_temporary?: boolean | null
           media_type?: string | null
           media_url?: string | null
           sender_id?: string
+          view_count?: number | null
+          view_once?: boolean | null
+          view_twice?: boolean | null
         }
         Relationships: [
           {
@@ -538,7 +571,14 @@ export type Database = {
           created_at: string | null
           id: string
           likes_count: number | null
+          location: string | null
+          location_lat: number | null
+          location_lng: number | null
           media_url: string | null
+          mentions: string[] | null
+          music_artist: string | null
+          music_title: string | null
+          music_url: string | null
           shares_count: number | null
           updated_at: string | null
           user_id: string
@@ -550,7 +590,14 @@ export type Database = {
           created_at?: string | null
           id?: string
           likes_count?: number | null
+          location?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
           media_url?: string | null
+          mentions?: string[] | null
+          music_artist?: string | null
+          music_title?: string | null
+          music_url?: string | null
           shares_count?: number | null
           updated_at?: string | null
           user_id: string
@@ -562,7 +609,14 @@ export type Database = {
           created_at?: string | null
           id?: string
           likes_count?: number | null
+          location?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
           media_url?: string | null
+          mentions?: string[] | null
+          music_artist?: string | null
+          music_title?: string | null
+          music_url?: string | null
           shares_count?: number | null
           updated_at?: string | null
           user_id?: string
@@ -574,6 +628,11 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           birth_date: string | null
+          business_category: string | null
+          business_description: string | null
+          business_email: string | null
+          business_hours: Json | null
+          business_website: string | null
           cover_url: string | null
           created_at: string
           fame_score: number | null
@@ -582,8 +641,10 @@ export type Database = {
           full_name: string | null
           gender: string | null
           id: string
+          is_business_account: boolean | null
           is_verified: boolean | null
           location: string | null
+          phone_country_code: string | null
           phone_number: string | null
           profession: string | null
           school: string | null
@@ -594,6 +655,11 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           birth_date?: string | null
+          business_category?: string | null
+          business_description?: string | null
+          business_email?: string | null
+          business_hours?: Json | null
+          business_website?: string | null
           cover_url?: string | null
           created_at?: string
           fame_score?: number | null
@@ -602,8 +668,10 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           id: string
+          is_business_account?: boolean | null
           is_verified?: boolean | null
           location?: string | null
+          phone_country_code?: string | null
           phone_number?: string | null
           profession?: string | null
           school?: string | null
@@ -614,6 +682,11 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           birth_date?: string | null
+          business_category?: string | null
+          business_description?: string | null
+          business_email?: string | null
+          business_hours?: Json | null
+          business_website?: string | null
           cover_url?: string | null
           created_at?: string
           fame_score?: number | null
@@ -622,8 +695,10 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           id?: string
+          is_business_account?: boolean | null
           is_verified?: boolean | null
           location?: string | null
+          phone_country_code?: string | null
           phone_number?: string | null
           profession?: string | null
           school?: string | null
@@ -631,6 +706,87 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      public_stories: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean | null
+          media_type: string
+          media_url: string
+          start_date: string
+          title: string
+          usage_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          media_type: string
+          media_url: string
+          start_date?: string
+          title: string
+          usage_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          media_type?: string
+          media_url?: string
+          start_date?: string
+          title?: string
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
+      public_story_usage: {
+        Row: {
+          created_at: string
+          id: string
+          public_story_id: string
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          public_story_id: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          public_story_id?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_story_usage_public_story_id_fkey"
+            columns: ["public_story_id"]
+            isOneToOne: false
+            referencedRelation: "public_stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_story_usage_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reel_comments: {
         Row: {
@@ -732,6 +888,13 @@ export type Database = {
           duration: number | null
           id: string
           likes_count: number | null
+          location: string | null
+          location_lat: number | null
+          location_lng: number | null
+          mentions: string[] | null
+          music_artist: string | null
+          music_title: string | null
+          music_url: string | null
           shares_count: number | null
           thumbnail_url: string | null
           updated_at: string
@@ -747,6 +910,13 @@ export type Database = {
           duration?: number | null
           id?: string
           likes_count?: number | null
+          location?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          mentions?: string[] | null
+          music_artist?: string | null
+          music_title?: string | null
+          music_url?: string | null
           shares_count?: number | null
           thumbnail_url?: string | null
           updated_at?: string
@@ -762,6 +932,13 @@ export type Database = {
           duration?: number | null
           id?: string
           likes_count?: number | null
+          location?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          mentions?: string[] | null
+          music_artist?: string | null
+          music_title?: string | null
+          music_url?: string | null
           shares_count?: number | null
           thumbnail_url?: string | null
           updated_at?: string
@@ -996,36 +1173,180 @@ export type Database = {
       }
       stories: {
         Row: {
+          allow_story_replies: boolean | null
           close_friends_only: boolean | null
           created_at: string
           expires_at: string
           id: string
+          location: string | null
+          location_lat: number | null
+          location_lng: number | null
           media_type: string
           media_url: string
+          music_artist: string | null
+          music_title: string | null
+          music_url: string | null
+          poll_options: Json | null
+          poll_question: string | null
+          poll_votes: Json | null
+          question_text: string | null
+          sticker_data: Json | null
+          story_type: string | null
           user_id: string
           views_count: number | null
         }
         Insert: {
+          allow_story_replies?: boolean | null
           close_friends_only?: boolean | null
           created_at?: string
           expires_at?: string
           id?: string
+          location?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
           media_type: string
           media_url: string
+          music_artist?: string | null
+          music_title?: string | null
+          music_url?: string | null
+          poll_options?: Json | null
+          poll_question?: string | null
+          poll_votes?: Json | null
+          question_text?: string | null
+          sticker_data?: Json | null
+          story_type?: string | null
           user_id: string
           views_count?: number | null
         }
         Update: {
+          allow_story_replies?: boolean | null
           close_friends_only?: boolean | null
           created_at?: string
           expires_at?: string
           id?: string
+          location?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
           media_type?: string
           media_url?: string
+          music_artist?: string | null
+          music_title?: string | null
+          music_url?: string | null
+          poll_options?: Json | null
+          poll_question?: string | null
+          poll_votes?: Json | null
+          question_text?: string | null
+          sticker_data?: Json | null
+          story_type?: string | null
           user_id?: string
           views_count?: number | null
         }
         Relationships: []
+      }
+      story_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_comments_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_question_responses: {
+        Row: {
+          created_at: string
+          id: string
+          response_text: string
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          response_text: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          response_text?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_question_responses_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_replies: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          media_type: string | null
+          media_url: string | null
+          receiver_id: string
+          sender_id: string
+          story_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          receiver_id: string
+          sender_id: string
+          story_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          receiver_id?: string
+          sender_id?: string
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_replies_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       story_views: {
         Row: {
