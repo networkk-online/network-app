@@ -18,7 +18,7 @@ const Profile = () => {
   const [userPosts, setUserPosts] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [todayEarnings, setTodayEarnings] = useState(0);
-  const [activeTab, setActiveTab] = useState<'posts' | 'wallet'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'saved' | 'stats' | 'wallet'>('posts');
   const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   useEffect(() => {
@@ -317,10 +317,10 @@ const Profile = () => {
             />
             
             {/* Tabs Navigation */}
-            <div className="mt-6 sm:mt-8 flex gap-2 border-b border-gray-800">
+            <div className="mt-6 sm:mt-8 flex gap-2 border-b border-gray-800 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('posts')}
-                className={`flex-1 py-3 text-center font-semibold transition-colors relative ${
+                className={`flex-1 min-w-[80px] py-3 text-center font-semibold transition-colors relative whitespace-nowrap ${
                   activeTab === 'posts'
                     ? 'text-primary'
                     : 'text-gray-500 hover:text-gray-300'
@@ -332,22 +332,100 @@ const Profile = () => {
                 )}
               </button>
               {isOwnProfile && (
-                <button
-                  onClick={() => setActiveTab('wallet')}
-                  className={`flex-1 py-3 text-center font-semibold transition-colors relative flex items-center justify-center gap-2 ${
-                    activeTab === 'wallet'
-                      ? 'text-primary'
-                      : 'text-gray-500 hover:text-gray-300'
-                  }`}
-                >
-                  <Wallet className="w-4 h-4" />
-                  أموالي
-                  {activeTab === 'wallet' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                  )}
-                </button>
+                <>
+                  <button
+                    onClick={() => setActiveTab('saved')}
+                    className={`flex-1 min-w-[80px] py-3 text-center font-semibold transition-colors relative whitespace-nowrap ${
+                      activeTab === 'saved'
+                        ? 'text-primary'
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    المحفوظات
+                    {activeTab === 'saved' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('stats')}
+                    className={`flex-1 min-w-[80px] py-3 text-center font-semibold transition-colors relative whitespace-nowrap ${
+                      activeTab === 'stats'
+                        ? 'text-primary'
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    الإحصائيات
+                    {activeTab === 'stats' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('wallet')}
+                    className={`flex-1 min-w-[80px] py-3 text-center font-semibold transition-colors relative flex items-center justify-center gap-2 whitespace-nowrap ${
+                      activeTab === 'wallet'
+                        ? 'text-primary'
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    <Wallet className="w-4 h-4" />
+                    أموالي
+                    {activeTab === 'wallet' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                    )}
+                  </button>
+                </>
               )}
             </div>
+
+            {/* Saved Content Tab */}
+            {activeTab === 'saved' && isOwnProfile && (
+              <div className="mt-6 sm:mt-8">
+                <div className="text-center">
+                  <Button
+                    onClick={() => navigate('/saved-content')}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    <Bookmark className="w-4 h-4 ml-2" />
+                    عرض جميع المحفوظات
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Statistics Tab */}
+            {activeTab === 'stats' && isOwnProfile && (
+              <div className="mt-6 sm:mt-8 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-900 p-4 rounded-lg">
+                    <p className="text-gray-400 text-sm">إجمالي المنشورات</p>
+                    <p className="text-2xl font-bold text-white">{userPosts.length}</p>
+                  </div>
+                  <div className="bg-gray-900 p-4 rounded-lg">
+                    <p className="text-gray-400 text-sm">إجمالي الإعجابات</p>
+                    <p className="text-2xl font-bold text-white">
+                      {userPosts.reduce((sum, post) => sum + (post.likes_count || 0), 0)}
+                    </p>
+                  </div>
+                  <div className="bg-gray-900 p-4 rounded-lg">
+                    <p className="text-gray-400 text-sm">إجمالي التعليقات</p>
+                    <p className="text-2xl font-bold text-white">
+                      {userPosts.reduce((sum, post) => sum + (post.comments_count || 0), 0)}
+                    </p>
+                  </div>
+                  <div className="bg-gray-900 p-4 rounded-lg">
+                    <p className="text-gray-400 text-sm">معدل التفاعل</p>
+                    <p className="text-2xl font-bold text-white">
+                      {userPosts.length > 0
+                        ? Math.round(
+                            (userPosts.reduce((sum, post) => sum + (post.likes_count || 0) + (post.comments_count || 0), 0) /
+                              userPosts.length)
+                          )
+                        : 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Wallet Tab Content */}
             {activeTab === 'wallet' && isOwnProfile && (
