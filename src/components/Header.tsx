@@ -84,16 +84,11 @@ const Header = () => {
   };
 
   const navigationItems = [
-    { icon: Home, label: 'الرئيسية', path: '/' },
-    { icon: Compass, label: 'استكشف', path: '/explore' },
-    { icon: Crown, label: 'ترتيب المشاهير', path: '/local-fame-rank' },
     { icon: Brain, label: 'أدوات AI', path: '/ai-tools' },
-    { icon: Film, label: 'الريلز', path: '/shorts' },
     { icon: MessageCircle, label: 'الرسائل', path: '/messages' },
     { icon: Video, label: 'البث', path: '/broadcast' },
     { icon: Users, label: 'الصفحات', path: '/pages' },
     { icon: Building2, label: 'الأعمال', path: '/business' },
-    { icon: Wallet, label: 'سحب المال', path: '/withdraw' },
   ];
 
   return (
