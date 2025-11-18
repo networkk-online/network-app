@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { Camera, MapPin, Calendar, BadgeCheck } from 'lucide-react';
+import { Camera, MapPin, Calendar, BadgeCheck, MoreHorizontal, Share2, Copy, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { FormField, FormItem, FormLabel, FormControl, Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -70,6 +71,7 @@ const UserProfile = ({
   const [messageLoading, setMessageLoading] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
   const [verificationLoading, setVerificationLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [coverUrl, setCoverUrl] = useState(coverImage);
