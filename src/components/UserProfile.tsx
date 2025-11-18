@@ -362,6 +362,41 @@ const UserProfile = ({
     }
   };
 
+  const handleCopyProfile = async () => {
+    const profileUrl = `${window.location.origin}/profile/${username}`;
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      toast({
+        title: "تم النسخ",
+        description: "تم نسخ رابط الملف الشخصي",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل نسخ الرابط",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleShareProfile = async () => {
+    const profileUrl = `${window.location.origin}/profile/${username}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${displayName} على Network`,
+          url: profileUrl
+        });
+      } catch (error) {
+        console.log('Error sharing:', error);
+      }
+    } else {
+      handleCopyProfile();
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="bg-card rounded-lg overflow-hidden shadow-lg">
@@ -594,22 +629,47 @@ const UserProfile = ({
                   >
                     {messageLoading ? "جاري..." : "مراسلة"}
                   </Button>
-                  <CloseFriendsButton
-                    userId={profileId}
-                    variant="ghost"
-                    size="sm"
-                    showIcon={true}
-                    className="rounded-lg px-2 h-8"
-                  />
-                  <BlockButton
-                    userId={profileId}
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-lg px-2 h-8"
-                  />
-                  <ReportDialog
-                    reportedUserId={profileId}
-                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-lg px-2 h-8"
+                      >
+                        <MoreHorizontal className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={handleCopyProfile}>
+                        {copied ? (
+                          <>
+                            <Check className="ml-2 h-4 w-4" />
+                            <span>تم النسخ</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="ml-2 h-4 w-4" />
+                            <span>نسخ رابط الملف الشخصي</span>
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <BlockButton
+                          userId={profileId}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start"
+                        />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <div className="w-full">
+                          <ReportDialog
+                            reportedUserId={profileId}
+                          />
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )}
             </div>
