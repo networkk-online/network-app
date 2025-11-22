@@ -1,4 +1,4 @@
-import { Home, PlusSquare, Search, Film, User, Bell, Trophy, Compass } from 'lucide-react';
+import { Home, PlusSquare, Search, Film, User, Bell, Trophy, Compass, Users, FileText, Smartphone } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -122,11 +122,13 @@ const BottomNav = () => {
   const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
-    { icon: Home, label: 'الرئيسية', path: '/', badge: unreadMessages },
     { icon: Compass, label: 'استكشف', path: '/explore', badge: 0 },
-    { icon: Trophy, label: 'المشاهير', path: '/local-fame-rank', badge: 0 },
-    { icon: PlusSquare, label: 'إنشاء', path: '/create-post', badge: 0 },
     { icon: Search, label: 'بحث', path: '/search', badge: 0 },
+    { icon: Film, label: 'ريلز', path: '/shorts', badge: 0 },
+    { icon: Users, label: 'مجتمع', path: '/pages', badge: 0 },
+    { icon: FileText, label: 'صفحات', path: '/pages', badge: 0 },
+    { icon: Smartphone, label: 'تطبيق', path: '/', badge: 0 },
+    { icon: Bell, label: 'إشعارات', path: '/', badge: unreadNotifications },
   ];
 
   return (
