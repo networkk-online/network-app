@@ -1,4 +1,4 @@
-import { Heart, Home, MessageCircle, PlusSquare, Search, Video, Building2, Users, LogOut, Film, Compass, Menu, Brain, Wallet, Shield, Crown } from 'lucide-react';
+import { Heart, Home, MessageCircle, PlusSquare, Search, Video, Building2, Users, LogOut, Film, Compass, Menu, Brain, Wallet, Shield, Crown, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -84,11 +84,9 @@ const Header = () => {
   };
 
   const navigationItems = [
-    { icon: Brain, label: 'أدوات AI', path: '/ai-tools' },
     { icon: MessageCircle, label: 'الرسائل', path: '/messages' },
     { icon: Video, label: 'البث', path: '/broadcast' },
-    { icon: Users, label: 'الصفحات', path: '/pages' },
-    { icon: Building2, label: 'الأعمال', path: '/business' },
+    { icon: Settings, label: 'الإعدادات', path: '/settings' },
   ];
 
   return (
@@ -135,15 +133,6 @@ const Header = () => {
                 <item.icon className="w-5 h-5 xl:w-6 xl:h-6" />
               </Button>
             ))}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-900"
-              onClick={() => navigate('/create-post')}
-              title="إنشاء منشور"
-            >
-              <PlusSquare className="w-5 h-5 xl:w-6 xl:h-6" />
-            </Button>
             <Notifications />
             {isAdmin && (
               <Button 
@@ -195,14 +184,6 @@ const Header = () => {
             {/* Key actions for mobile */}
             <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900" onClick={() => navigate('/')}>
               <Home className="w-5 h-5" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-900"
-              onClick={() => navigate('/create-post')}
-            >
-              <PlusSquare className="w-5 h-5" />
             </Button>
             <Notifications />
             <Button 
