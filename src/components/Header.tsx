@@ -133,7 +133,6 @@ const Header = () => {
                 <item.icon className="w-5 h-5 xl:w-6 xl:h-6" />
               </Button>
             ))}
-            <Notifications />
             {isAdmin && (
               <Button 
                 variant="ghost" 
@@ -185,8 +184,7 @@ const Header = () => {
             <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900" onClick={() => navigate('/')}>
               <Home className="w-5 h-5" />
             </Button>
-            <Notifications />
-            <Button 
+            <Button
               variant="ghost" 
               size="sm" 
               className="p-1 hover:bg-gray-900 rounded-full"
