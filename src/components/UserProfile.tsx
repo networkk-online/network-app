@@ -400,6 +400,7 @@ const UserProfile = ({
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="bg-card rounded-lg overflow-hidden shadow-lg">
+        {/* Cover Image with Username Overlay */}
         <div 
           className={`relative h-48 sm:h-64 bg-gradient-to-br from-primary/20 to-accent/20 ${isOwnProfile ? 'cursor-pointer group' : ''}`}
           onClick={handleCoverClick}
@@ -411,6 +412,37 @@ const UserProfile = ({
               className="w-full h-full object-cover"
             />
           )}
+          
+          {/* Username Overlay on Cover */}
+          <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
+            <h3 className="text-white text-xl sm:text-2xl font-bold drop-shadow-lg">
+              {username}
+            </h3>
+          </div>
+
+          {/* Three Dots Menu */}
+          {!isOwnProfile && (
+            <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="bg-black/50 hover:bg-black/70 text-white rounded-full">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={handleCopyProfile}>
+                    {copied ? <Check className="ml-2 h-4 w-4" /> : <Copy className="ml-2 h-4 w-4" />}
+                    نسخ رابط الملف الشخصي
+                  </DropdownMenuItem>
+                  <BlockButton userId={profileId!} />
+                  <ReportDialog 
+                    reportedUserId={profileId}
+                  />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+
           {isOwnProfile && (
             <>
               <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -428,8 +460,10 @@ const UserProfile = ({
         </div>
 
         <div className="px-4 sm:px-6 pb-6">
-          <div className="flex justify-between items-start -mt-16 mb-4">
-            <div className="relative">
+          {/* Avatar and Stats Section */}
+          <div className="flex items-start gap-4 -mt-16 mb-6">
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
               {isOwnProfile ? (
                 <>
                   <div 
@@ -439,7 +473,7 @@ const UserProfile = ({
                     <img 
                       src={avatarUrl || '/placeholder.svg'} 
                       alt={displayName} 
-                      className="w-32 h-32 rounded-full border-4 border-background object-cover transition-opacity group-hover:opacity-75 shadow-lg"
+                      className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background object-cover transition-opacity group-hover:opacity-75 shadow-lg"
                     />
                     {uploading && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
@@ -462,300 +496,259 @@ const UserProfile = ({
                 <img 
                   src={avatarUrl || '/placeholder.svg'} 
                   alt={displayName} 
-                  className="w-32 h-32 rounded-full border-4 border-background object-cover shadow-lg"
+                  className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background object-cover shadow-lg"
                 />
               )}
             </div>
 
-            {isOwnProfile && (
-              <div className="pt-4">
-                <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="rounded-full px-6"
-                    >
-                      تعديل الملف الشخصي
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>تعديل الملف الشخصي</DialogTitle>
-                    </DialogHeader>
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="displayName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>الاسم الكامل</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="username"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>اسم المستخدم</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="bio"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>السيرة الذاتية</FormLabel>
-                              <FormControl>
-                                <Textarea {...field} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="location"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>المنطقة / المدينة</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="مثال: الرياض، جدة، دبي..." />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="school"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>المدرسة / الجامعة</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="اختياري" />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="profession"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>المهنة</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="اختياري" />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="gender"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>الجنس</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="اختر الجنس" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="male">ذكر</SelectItem>
-                                  <SelectItem value="female">أنثى</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="birthDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>تاريخ الميلاد</FormLabel>
-                              <FormControl>
-                                <Input {...field} type="date" />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <Button 
-                          type="submit" 
-                          className="w-full"
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? "جاري الحفظ..." : "حفظ التغييرات"}
-                        </Button>
-                      </form>
-                    </Form>
-                  </DialogContent>
-                </Dialog>
+            {/* Stats */}
+            <div className="flex flex-col justify-center pt-12 sm:pt-14 gap-2 flex-1">
+              <div className="flex gap-6 sm:gap-8">
+                <div className="text-center">
+                  <p className="text-xl sm:text-2xl font-bold text-foreground">{posts}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">منشورات</p>
+                </div>
+                <button onClick={() => navigate('/followers')} className="text-center hover:opacity-80 transition-opacity">
+                  <p className="text-xl sm:text-2xl font-bold text-foreground">{followers}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">متابع</p>
+                </button>
+                <button onClick={() => navigate('/following')} className="text-center hover:opacity-80 transition-opacity">
+                  <p className="text-xl sm:text-2xl font-bold text-foreground">{following}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">متابعون</p>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Display Name with Verification Badge */}
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{displayName}</h2>
+            {isVerified && (
+              <div className="relative">
+                <BadgeCheck className="h-6 w-6 sm:h-7 sm:w-7 text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
               </div>
             )}
           </div>
 
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold">{displayName}</h1>
-              {isVerified && (
-                <div className="bg-blue-500 rounded-full p-1">
-                  <BadgeCheck className="h-5 w-5 text-white" fill="currentColor" />
-                </div>
-              )}
-              {!isOwnProfile && profileId && (
-                <div className="flex gap-2 items-center flex-wrap">
-                  <FollowButton 
-                    userId={profileId}
-                    variant="default"
-                    size="sm"
-                    showIcon={false}
-                    className="rounded-lg px-4 py-1.5 h-8 text-sm font-medium"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleMessage}
-                    disabled={messageLoading}
-                    className="rounded-lg px-4 py-1.5 h-8 text-sm font-medium"
+          {/* Action Buttons */}
+          {isOwnProfile ? (
+            <div className="flex gap-3 mb-4">
+              <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 rounded-lg font-semibold"
                   >
-                    {messageLoading ? "جاري..." : "مراسلة"}
+                    تعديل الملف الشخصي
                   </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-lg px-2 h-8"
-                      >
-                        <MoreHorizontal className="h-5 w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={handleCopyProfile}>
-                        {copied ? (
-                          <>
-                            <Check className="ml-2 h-4 w-4" />
-                            <span>تم النسخ</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="ml-2 h-4 w-4" />
-                            <span>نسخ رابط الملف الشخصي</span>
-                          </>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>تعديل الملف الشخصي</DialogTitle>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="displayName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>الاسم الكامل</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                          </FormItem>
                         )}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <BlockButton
-                          userId={profileId}
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start"
-                        />
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <div className="w-full">
-                          <ReportDialog
-                            reportedUserId={profileId}
-                          />
-                        </div>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                      />
+                      <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>اسم المستخدم</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="bio"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>السيرة الذاتية</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="location"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>المنطقة / المدينة</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="مثال: الرياض، جدة، دبي..." />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="school"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>المدرسة / الجامعة</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="اختياري" />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="profession"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>المهنة</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="اختياري" />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="gender"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>الجنس</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="اختر الجنس" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="male">ذكر</SelectItem>
+                                <SelectItem value="female">أنثى</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="birthDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>تاريخ الميلاد</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="date" />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <Button 
+                        type="submit" 
+                        className="w-full"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? "جاري الحفظ..." : "حفظ التغييرات"}
+                      </Button>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+
+              {verificationStatus === 'none' && (
+                <Button
+                  onClick={handleVerificationRequest}
+                  disabled={verificationLoading}
+                  variant="outline"
+                  className="flex-1 rounded-lg font-semibold"
+                >
+                  {verificationLoading ? "جاري..." : "طلب التوثيق"}
+                </Button>
               )}
             </div>
-            {isOwnProfile && !isVerified && (
-              <div className="mt-2">
-                {verificationStatus === 'none' ? (
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={handleVerificationRequest}
-                    disabled={verificationLoading}
-                    className="rounded-full px-4 gap-1.5 h-8"
-                  >
-                    <BadgeCheck className="h-3.5 w-3.5" />
-                    <span className="text-xs">{verificationLoading ? "جاري الإرسال..." : "وثّق حسابك"}</span>
-                  </Button>
-                ) : verificationStatus === 'pending' ? (
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    disabled
-                    className="rounded-full px-4 gap-1.5 h-8"
-                  >
-                    <BadgeCheck className="h-3.5 w-3.5" />
-                    <span className="text-xs">طلب التوثيق قيد المراجعة</span>
-                  </Button>
-                ) : verificationStatus === 'rejected' ? (
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={handleVerificationRequest}
-                    disabled={verificationLoading}
-                    className="rounded-full px-4 gap-1.5 h-8"
-                  >
-                    <BadgeCheck className="h-3.5 w-3.5" />
-                    <span className="text-xs">إعادة طلب التوثيق</span>
-                  </Button>
-                ) : null}
-              </div>
-            )}
-            {isOwnProfile && (
-              <div className="mt-2">
-                <CloseFriendsDialog />
-              </div>
-            )}
-            <p className="text-muted-foreground">@{username}</p>
-            {bio && <p className="text-sm">{bio}</p>}
-            
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-              {birthDate && (
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>{birthDate}</span>
-                </div>
-              )}
-              {location && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  <span>{location}</span>
-                </div>
-              )}
-              {joinedDate && (
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>انضم في {joinedDate}</span>
-                </div>
-              )}
+          ) : (
+            <div className="flex gap-3 mb-4">
+              <FollowButton 
+                userId={profileId!}
+                variant="default"
+                size="lg"
+                showIcon={false}
+                className="flex-1 rounded-lg font-semibold text-base h-11 bg-green-500 hover:bg-green-600 text-white"
+              />
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleMessage}
+                disabled={messageLoading}
+                className="flex-1 rounded-lg font-semibold text-base h-11"
+              >
+                {messageLoading ? "جاري..." : "مراسلة"}
+              </Button>
             </div>
-            
-            <div className="flex gap-6 text-sm">
-              <div>
-                <span className="font-bold">{posts}</span>
-                <span className="text-muted-foreground"> منشورات</span>
-              </div>
-              <div>
-                <span className="font-bold">{following}</span>
-                <span className="text-muted-foreground"> متابَع</span>
-              </div>
-              <div>
-                <span className="font-bold">{followers}</span>
-                <span className="text-muted-foreground"> متابعون</span>
-              </div>
-            </div>
+          )}
+
+          {/* Bio Section */}
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-foreground mb-2">الوصف</h3>
+            <p className="text-muted-foreground whitespace-pre-wrap text-2xl font-bold leading-relaxed">{bio}</p>
           </div>
+
+          {/* Additional Info */}
+          <div className="space-y-2 text-sm text-muted-foreground">
+            {location && (
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                <span>{location}</span>
+              </div>
+            )}
+            {joinedDate && (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span>انضم {joinedDate}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Close Friends and Settings for Own Profile */}
+          {isOwnProfile && (
+            <div className="mt-4 flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/settings')}
+                className="rounded-lg"
+              >
+                الإعدادات
+              </Button>
+            </div>
+          )}
+
+          {/* Followed By Section for Other's Profile */}
+          {!isOwnProfile && (
+            <div className="mt-4">
+              <p className="text-sm text-muted-foreground">
+                Followed by username1, username2 and 13 others
+              </p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Close Friends Button for Other User Profiles */}
+      {!isOwnProfile && profileId && (
+        <div className="mt-4">
+          <CloseFriendsButton userId={profileId} />
+        </div>
+      )}
     </div>
   );
 };
