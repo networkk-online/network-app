@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Plus } from 'lucide-react';
 import Header from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
 import { useMessages } from '@/hooks/useMessages';
 import { ConversationList } from '@/components/ConversationList';
 import { ChatWindow } from '@/components/ChatWindow';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { NewMessageDialog } from '@/components/NewMessageDialog';
 
 const Messages = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [showNewMessageDialog, setShowNewMessageDialog] = useState(false);
   
   const {
     conversations,
@@ -69,8 +72,16 @@ const Messages = () => {
       <main className="pt-16 flex h-screen">
         {/* Conversations Sidebar */}
         <div className="w-full md:w-80 border-r border-gray-800 flex flex-col">
-          <div className="p-4 border-b border-gray-800">
+          <div className="p-4 border-b border-gray-800 flex items-center justify-between">
             <h1 className="text-xl font-bold neon-text">الرسائل</h1>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => setShowNewMessageDialog(true)}
+              className="h-9 w-9 rounded-full hover:bg-gray-800"
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
           </div>
 
           <div className="flex-1 overflow-y-auto">
@@ -105,6 +116,14 @@ const Messages = () => {
           )}
         </div>
       </main>
+
+      <NewMessageDialog
+        open={showNewMessageDialog}
+        onOpenChange={setShowNewMessageDialog}
+        onConversationCreated={(conversationId) => {
+          setSelectedConversationId(conversationId);
+        }}
+      />
     </div>
   );
 };
