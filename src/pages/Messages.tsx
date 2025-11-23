@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MessageCircle, Plus } from 'lucide-react';
+import { MessageCircle, Plus, Search, Phone, Video, Flag } from 'lucide-react';
 import Header from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
 import { useMessages } from '@/hooks/useMessages';
@@ -8,7 +8,9 @@ import { ConversationList } from '@/components/ConversationList';
 import { ChatWindow } from '@/components/ChatWindow';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { NewMessageDialog } from '@/components/NewMessageDialog';
+import { Badge } from '@/components/ui/badge';
 
 const Messages = () => {
   const navigate = useNavigate();
@@ -17,6 +19,8 @@ const Messages = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [showNewMessageDialog, setShowNewMessageDialog] = useState(false);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'primary' | 'requests' | 'general'>('all');
   
   const {
     conversations,
@@ -102,6 +106,18 @@ const Messages = () => {
   const selectedConversation = conversations.find(c => c.id === selectedConversationId);
   const otherUser = selectedConversation?.participants?.[0];
 
+  // Filter conversations based on search and active filter
+  const filteredConversations = conversations.filter(conv => {
+    const otherUser = conv.participants?.[0];
+    const matchesSearch = !searchQuery || 
+      otherUser?.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      otherUser?.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesSearch;
+  });
+
+  const primaryCount = conversations.filter(c => (c.unread_count || 0) > 0).length;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black">
@@ -121,22 +137,72 @@ const Messages = () => {
       
       <main className="pt-16 flex h-screen">
         {/* Conversations Sidebar */}
-        <div className="w-full md:w-80 border-r border-gray-800 flex flex-col">
-          <div className="p-4 border-b border-gray-800 flex items-center justify-between">
-            <h1 className="text-xl font-bold neon-text">الرسائل</h1>
+        <div className="w-full md:w-96 border-r border-border flex flex-col bg-background">
+          {/* Header */}
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-xl font-bold text-foreground">الرسائل</h1>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setShowNewMessageDialog(true)}
+                className="h-9 w-9 rounded-full hover:bg-accent"
+              >
+                <Plus className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="البحث في الرسائل على الاسم او اليوزر"
+                className="pr-10 bg-accent border-0 text-foreground placeholder:text-muted-foreground rounded-lg"
+              />
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="p-4 border-b border-border flex items-center gap-2 overflow-x-auto">
             <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setShowNewMessageDialog(true)}
-              className="h-9 w-9 rounded-full hover:bg-gray-800"
+              variant={activeFilter === 'primary' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('primary')}
+              className="rounded-full shrink-0"
             >
-              <Plus className="h-5 w-5" />
+              <span className="flex items-center gap-2">
+                Primary
+                {primaryCount > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                    {primaryCount}
+                  </Badge>
+                )}
+              </span>
+            </Button>
+            <Button
+              variant={activeFilter === 'requests' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('requests')}
+              className="rounded-full shrink-0"
+            >
+              Requests
+            </Button>
+            <Button
+              variant={activeFilter === 'general' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('general')}
+              className="rounded-full shrink-0"
+            >
+              General
             </Button>
           </div>
 
+          {/* Conversations List */}
           <div className="flex-1 overflow-y-auto">
             <ConversationList
-              conversations={conversations}
+              conversations={filteredConversations}
               selectedConversationId={selectedConversationId || undefined}
               onSelectConversation={handleSelectConversation}
               currentUserId={currentUser?.id}
@@ -145,22 +211,51 @@ const Messages = () => {
         </div>
 
         {/* Chat Window */}
-        <div className="hidden md:flex flex-1 flex-col">
+        <div className="hidden md:flex flex-1 flex-col bg-background">
           {selectedConversationId && otherUser ? (
-            <ChatWindow
-              messages={messages}
-              currentUserId={currentUser?.id}
-              otherUser={otherUser}
-              onSendMessage={handleSendMessage}
-            />
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="w-12 h-12 text-gray-400" />
+            <>
+              {/* Chat Header with Icons */}
+              <div className="p-4 border-b border-border flex items-center justify-between bg-background">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary to-primary/70">
+                    <img
+                      src={otherUser.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
+                      alt={otherUser.username}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">{otherUser.username || otherUser.full_name}</p>
+                    <p className="text-xs text-muted-foreground">{otherUser.username}</p>
+                  </div>
                 </div>
-                <h2 className="text-xl font-semibold text-white mb-2">اختر محادثة</h2>
-                <p className="text-gray-400">ابدأ محادثة جديدة أو اختر من المحادثات الموجودة</p>
+                <div className="flex items-center gap-2">
+                  <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full">
+                    <Phone className="h-5 w-5" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full">
+                    <Video className="h-5 w-5" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full">
+                    <Flag className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+              <ChatWindow
+                messages={messages}
+                currentUserId={currentUser?.id}
+                otherUser={otherUser}
+                onSendMessage={handleSendMessage}
+              />
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center bg-background">
+              <div className="text-center">
+                <div className="w-24 h-24 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-12 h-12 text-muted-foreground" />
+                </div>
+                <h2 className="text-xl font-semibold text-foreground mb-2">اختر محادثة</h2>
+                <p className="text-muted-foreground">ابدأ محادثة جديدة أو اختر من المحادثات الموجودة</p>
               </div>
             </div>
           )}

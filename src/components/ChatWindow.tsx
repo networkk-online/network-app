@@ -115,66 +115,48 @@ export const ChatWindow = ({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Chat Header */}
-      {otherUser && (
-        <div className="p-4 border-b border-gray-800 flex items-center space-x-3">
-          <Avatar className="w-10 h-10">
-            <AvatarImage
-              src={otherUser.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
-              alt={otherUser.username}
-            />
-            <AvatarFallback className="bg-gradient-to-br from-primary to-primary-glow">
-              {(otherUser.username || 'U')[0].toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-semibold text-white">{otherUser.username || otherUser.full_name}</p>
-            <p className="text-xs text-gray-400">نشط الآن</p>
-          </div>
-        </div>
-      )}
+    <div className="flex flex-col h-full bg-background">
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.map((message) => {
           const isOwn = message.sender_id === currentUserId;
 
           return (
             <div
               key={message.id}
-              className={`flex ${isOwn ? 'justify-start' : 'justify-end'}`}
+              className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'}`}>
+              <div className={`max-w-[70%]`}>
                 {message.media_url && (
                   <div className="mb-2">
                     {message.media_type === 'image' ? (
                       <img
                         src={message.media_url}
                         alt="Shared media"
-                        className="rounded-lg max-h-64 object-cover"
+                        className="rounded-2xl max-h-64 object-cover"
                       />
                     ) : (
                       <video
                         src={message.media_url}
                         controls
-                        className="rounded-lg max-h-64"
+                        className="rounded-2xl max-h-64"
                       />
                     )}
                   </div>
                 )}
                 {message.content && (
                   <div
-                    className={`rounded-2xl px-4 py-2 ${
+                    className={`rounded-3xl px-4 py-2.5 ${
                       isOwn
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-800 text-white'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-accent text-foreground border border-border'
                     }`}
                   >
                     <p className="text-sm break-words">{message.content}</p>
                   </div>
                 )}
-                <p className="text-xs text-gray-400 mt-1 px-2">
+                <p className="text-xs text-muted-foreground mt-1 px-2">
                   {formatDistanceToNow(new Date(message.created_at), {
                     addSuffix: true,
                     locale: ar
@@ -189,32 +171,32 @@ export const ChatWindow = ({
 
       {/* File Preview */}
       {previewUrl && selectedFile && (
-        <div className="px-4 py-2 border-t border-gray-800">
+        <div className="px-4 py-2 border-t border-border bg-background">
           <div className="relative inline-block">
             {selectedFile.type.startsWith('image/') ? (
               <img
                 src={previewUrl}
                 alt="Preview"
-                className="h-20 rounded-lg"
+                className="h-20 rounded-2xl"
               />
             ) : (
-              <div className="h-20 w-32 bg-gray-800 rounded-lg flex items-center justify-center">
-                <Video className="w-8 h-8 text-gray-400" />
+              <div className="h-20 w-32 bg-accent rounded-2xl flex items-center justify-center border border-border">
+                <Video className="w-8 h-8 text-muted-foreground" />
               </div>
             )}
             <button
               onClick={handleRemoveFile}
-              className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
+              className="absolute -top-2 -right-2 bg-destructive rounded-full p-1"
             >
-              <X className="w-4 h-4 text-white" />
+              <X className="w-4 h-4 text-destructive-foreground" />
             </button>
           </div>
         </div>
       )}
 
       {/* Input Area */}
-      <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center space-x-2">
+      <div className="p-4 border-t border-border bg-background">
+        <div className="flex items-center gap-3">
           <input
             ref={fileInputRef}
             type="file"
@@ -227,7 +209,7 @@ export const ChatWindow = ({
             size="icon"
             onClick={() => fileInputRef.current?.click()}
             disabled={sending}
-            className="text-primary hover:text-primary-glow"
+            className="text-primary hover:text-primary/80 h-10 w-10"
           >
             <ImageIcon className="w-5 h-5" />
           </Button>
@@ -241,12 +223,13 @@ export const ChatWindow = ({
             }}
             placeholder="اكتب رسالة..."
             disabled={sending}
-            className="flex-1 bg-gray-800 border-gray-700 text-white"
+            className="flex-1 bg-accent border-0 text-foreground placeholder:text-muted-foreground rounded-3xl"
           />
           <Button
             onClick={handleSend}
             disabled={(!messageText.trim() && !selectedFile) || sending}
-            className="bg-gradient-to-r from-primary to-primary-glow"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full h-10 w-10 p-0"
+            size="icon"
           >
             <Send className="w-5 h-5" />
           </Button>
