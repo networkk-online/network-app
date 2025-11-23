@@ -84,22 +84,27 @@ export const useMessages = (conversationId?: string) => {
 
       if (convError) throw convError;
 
-      // Get participants for each conversation
+      // Get conversation details with participants
       const conversationsWithDetails = await Promise.all(
         (convData || []).map(async (conv) => {
-          // Get other participants
-          const { data: parts } = await supabase
+          // Get ALL participants for this conversation (not filtered by user)
+          const { data: allParts } = await supabase
             .from('conversation_participants')
-            .select(`
-              user_id,
-              profiles:user_id (
-                username,
-                full_name,
-                avatar_url
-              )
-            `)
-            .eq('conversation_id', conv.id)
-            .neq('user_id', currentUser.id);
+            .select('user_id')
+            .eq('conversation_id', conv.id);
+
+          const participantIds = allParts?.map(p => p.user_id) || [];
+          const otherUserIds = participantIds.filter(id => id !== currentUser.id);
+
+          // Get profiles for other users
+          let participants: any[] = [];
+          if (otherUserIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('id, username, full_name, avatar_url')
+              .in('id', otherUserIds);
+            participants = profiles || [];
+          }
 
           // Get last message
           const { data: lastMsg } = await supabase
@@ -127,7 +132,7 @@ export const useMessages = (conversationId?: string) => {
 
           return {
             ...conv,
-            participants: parts?.map(p => p.profiles) || [],
+            participants,
             last_message: lastMsg,
             unread_count: unreadCount || 0
           };
