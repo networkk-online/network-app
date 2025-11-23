@@ -502,7 +502,7 @@ const UserProfile = ({
             </div>
 
             {/* Stats */}
-            <div className="flex flex-col justify-center pt-12 sm:pt-14 gap-2 flex-1">
+            <div className="flex flex-col justify-center pt-20 sm:pt-24 gap-2 flex-1">
               <div className="flex gap-8 sm:gap-12">
                 <div className="text-center flex flex-col gap-1">
                   <p className="text-xl sm:text-2xl font-bold text-foreground">{posts}</p>
