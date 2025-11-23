@@ -505,16 +505,16 @@ const UserProfile = ({
             <div className="flex flex-col justify-center pt-12 sm:pt-14 gap-2 flex-1">
               <div className="flex gap-8 sm:gap-12">
                 <div className="text-center flex flex-col gap-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground">منشورات</p>
                   <p className="text-xl sm:text-2xl font-bold text-foreground">{posts}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">منشورات</p>
                 </div>
                 <button onClick={() => navigate('/followers')} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground">متابع</p>
                   <p className="text-xl sm:text-2xl font-bold text-foreground">{followers}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">متابع</p>
                 </button>
                 <button onClick={() => navigate('/following')} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground">متابعون</p>
                   <p className="text-xl sm:text-2xl font-bold text-foreground">{following}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">متابعون</p>
                 </button>
               </div>
             </div>
