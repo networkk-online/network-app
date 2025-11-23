@@ -37,7 +37,6 @@ import SavedPosts from "./pages/SavedPosts";
 import SavedContent from "./pages/SavedContent";
 import LocalFameRank from "./pages/LocalFameRank";
 import VerificationRequests from "./pages/VerificationRequests";
-import FloatingAIButton from "./components/FloatingAIButton";
 import BottomNav from "./components/BottomNav";
 
 const queryClient = new QueryClient();
@@ -48,7 +47,6 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <FloatingAIButton />
         <BottomNav />
         <Routes>
           <Route path="/" element={<Index />} />
