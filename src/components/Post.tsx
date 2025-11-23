@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSavedPosts } from '@/hooks/useSavedPosts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CommentSection } from '@/components/CommentSection';
+import { useMessages } from '@/hooks/useMessages';
 
 interface PostProps {
   id: string;
@@ -28,6 +29,7 @@ interface PostProps {
 const Post = ({ id, userId, username, userAvatar, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration }: PostProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { createConversation } = useMessages();
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
@@ -37,6 +39,7 @@ const Post = ({ id, userId, username, userAvatar, image, caption, likes, comment
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
   const { isSaved, loading: saveLoading, toggleSave } = useSavedPosts(id);
 
   useEffect(() => {
@@ -200,11 +203,62 @@ const Post = ({ id, userId, username, userAvatar, image, caption, likes, comment
     }
   };
 
+  const handleSendMessage = async () => {
+    if (!currentUser) {
+      toast({
+        title: "يجب تسجيل الدخول",
+        description: "سجل دخولك للمراسلة",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+
+    if (currentUser.id === userId) {
+      toast({
+        title: "لا يمكن مراسلة نفسك",
+        description: "لا يمكنك إرسال رسالة لنفسك",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSendingMessage(true);
+    try {
+      const result = await createConversation(userId);
+      if (result?.success && result.conversationId) {
+        navigate('/messages');
+        toast({
+          title: "تم فتح المحادثة",
+          description: "يمكنك الآن المراسلة",
+        });
+      } else {
+        toast({
+          title: "خطأ",
+          description: "حدث خطأ أثناء فتح المحادثة",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء فتح المحادثة",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
   return (
     <div className="bg-black border border-gray-800 rounded-lg mb-6 overflow-hidden">
       {/* Post Header */}
       <div className="flex items-center justify-between p-4">
-        <div className="flex items-center space-x-3">
+        <div 
+          className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => navigate(`/profile/${userId}`)}
+        >
           <img 
             src={userAvatar} 
             alt={username}
@@ -269,8 +323,14 @@ const Post = ({ id, userId, username, userAvatar, image, caption, likes, comment
             >
               <MessageCircle className="w-6 h-6 hover:text-blue-400 transition-all duration-200 group-hover:scale-110" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-0 hover:bg-transparent group">
-              <Send className="w-6 h-6 hover:text-green-400 transition-all duration-200 group-hover:scale-110" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-0 hover:bg-transparent group"
+              onClick={handleSendMessage}
+              disabled={sendingMessage}
+            >
+              <Send className={`w-6 h-6 hover:text-green-400 transition-all duration-200 group-hover:scale-110 ${sendingMessage ? 'opacity-50' : ''}`} />
             </Button>
           </div>
           <Button 
