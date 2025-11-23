@@ -126,7 +126,6 @@ const BottomNav = () => {
     { icon: Compass, label: 'استكشف', path: '/explore', badge: 0 },
     { icon: Trophy, label: 'المشاهير', path: '/local-fame-rank', badge: 0 },
     { icon: PlusSquare, label: 'إنشاء', path: '/create-post', badge: 0 },
-    { icon: Search, label: 'بحث', path: '/search', badge: 0 },
   ];
 
   return (
