@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageCircle, Plus } from 'lucide-react';
 import Header from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
@@ -12,21 +12,31 @@ import { NewMessageDialog } from '@/components/NewMessageDialog';
 
 const Messages = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [showNewMessageDialog, setShowNewMessageDialog] = useState(false);
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   
   const {
     conversations,
     messages,
     loading,
     currentUser,
-    sendMessage
+    sendMessage,
+    createConversation
   } = useMessages(selectedConversationId || undefined);
 
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    const userId = searchParams.get('userId');
+    if (userId && !isCreatingConversation && conversations.length > 0) {
+      startConversationWithUser(userId);
+    }
+  }, [searchParams, conversations, isCreatingConversation]);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -47,6 +57,46 @@ const Messages = () => {
   const handleSendMessage = async (content: string | null, mediaFile?: File) => {
     if (!selectedConversationId) return { success: false };
     return await sendMessage(selectedConversationId, content, mediaFile);
+  };
+
+  const startConversationWithUser = async (userId: string) => {
+    try {
+      setIsCreatingConversation(true);
+      
+      // Check if conversation already exists
+      const existingConversation = conversations.find(conv => 
+        conv.participants?.some(p => p.id === userId)
+      );
+
+      if (existingConversation) {
+        setSelectedConversationId(existingConversation.id);
+        navigate('/messages', { replace: true });
+      } else {
+        // Create new conversation
+        const result = await createConversation(userId);
+        if (result.success && result.conversationId) {
+          setSelectedConversationId(result.conversationId);
+          navigate('/messages', { replace: true });
+        } else if (result.error) {
+          toast({
+            title: "خطأ",
+            description: result.error,
+            variant: "destructive"
+          });
+          navigate('/messages', { replace: true });
+        }
+      }
+    } catch (error: any) {
+      console.error('Error starting conversation:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء بدء المحادثة",
+        variant: "destructive"
+      });
+      navigate('/messages', { replace: true });
+    } finally {
+      setIsCreatingConversation(false);
+    }
   };
 
   const selectedConversation = conversations.find(c => c.id === selectedConversationId);
