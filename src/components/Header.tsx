@@ -144,17 +144,6 @@ const Header = () => {
                 <Shield className="w-5 h-5 xl:w-6 xl:h-6 text-green-400" />
               </Button>
             )}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-1 hover:bg-gray-900 rounded-full"
-              onClick={() => navigate('/profile')}
-            >
-              <Avatar className="w-7 h-7 xl:w-8 xl:h-8">
-                <AvatarImage src={userData.avatar} alt={userData.displayName} />
-                <AvatarFallback>{userData.displayName.charAt(0)}</AvatarFallback>
-              </Avatar>
-            </Button>
             {user ? (
               <Button 
                 variant="ghost" 
@@ -182,17 +171,6 @@ const Header = () => {
           <div className="flex lg:hidden items-center space-x-2 sm:space-x-3">
             {/* Key actions for mobile */}
             <Button
-              variant="ghost" 
-              size="sm" 
-              className="p-1 hover:bg-gray-900 rounded-full"
-              onClick={() => navigate('/profile')}
-            >
-              <Avatar className="w-6 h-6 sm:w-7 sm:h-7">
-                <AvatarImage src={userData.avatar} alt={userData.displayName} />
-                <AvatarFallback>{userData.displayName.charAt(0)}</AvatarFallback>
-              </Avatar>
-            </Button>
-            <Button 
               variant="ghost" 
               size="sm" 
               className="p-2 hover:bg-gray-900"
