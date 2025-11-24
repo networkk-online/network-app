@@ -124,6 +124,7 @@ const BottomNav = () => {
   const navItems = [
     { icon: Home, label: 'الرئيسية', path: '/' },
     { icon: Compass, label: 'استكشف', path: '/explore' },
+    { icon: Film, label: 'ريلز', path: '/shorts' },
     { icon: Trophy, label: 'المشاهير', path: '/local-fame-rank' },
     { icon: PlusSquare, label: 'إنشاء', path: '/create-post' },
   ];
