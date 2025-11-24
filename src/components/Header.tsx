@@ -1,4 +1,4 @@
-import { Heart, Home, MessageCircle, PlusSquare, Search, Video, Building2, Users, LogOut, Film, Compass, Menu, Brain, Wallet, Shield, Crown, Settings } from 'lucide-react';
+import { Heart, Home, MessageCircle, PlusSquare, Search, Video, Building2, Users, LogOut, Film, Compass, Menu, Brain, Wallet, Shield, Crown, Settings, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -7,7 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import logo from '@/assets/logo.png';
-import { Notifications } from '@/components/Notifications';
 import { Badge } from '@/components/ui/badge';
 
 const Header = () => {
@@ -196,7 +195,22 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-2 xl:space-x-4">
-            <Notifications />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-900 relative"
+              onClick={() => navigate('/notifications')}
+              title="الإشعارات"
+            >
+              <Bell className="w-5 h-5 xl:w-6 xl:h-6" />
+              {unreadNotifications > 0 && (
+                <Badge 
+                  className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 bg-red-500 text-white text-xs border-0 rounded-full"
+                >
+                  {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                </Badge>
+              )}
+            </Button>
             {navigationItems.map((item, index) => (
               <Button 
                 key={index}
@@ -253,8 +267,22 @@ const Header = () => {
           {/* Mobile Navigation */}
           <div className="flex lg:hidden items-center space-x-2 sm:space-x-3">
             {/* Key actions for mobile */}
-            <Notifications />
             <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-900 relative"
+              onClick={() => navigate('/notifications')}
+            >
+              <Bell className="w-5 h-5" />
+              {unreadNotifications > 0 && (
+                <Badge 
+                  className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 bg-red-500 text-white text-xs border-0 rounded-full"
+                >
+                  {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                </Badge>
+              )}
+            </Button>
+            <Button
               variant="ghost" 
               size="sm" 
               className="p-2 hover:bg-gray-900 relative"

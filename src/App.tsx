@@ -37,6 +37,7 @@ import SavedPosts from "./pages/SavedPosts";
 import SavedContent from "./pages/SavedContent";
 import LocalFameRank from "./pages/LocalFameRank";
 import VerificationRequests from "./pages/VerificationRequests";
+import NotificationsPage from "./pages/NotificationsPage";
 import BottomNav from "./components/BottomNav";
 
 const queryClient = new QueryClient();
@@ -82,6 +83,7 @@ const App = () => (
           <Route path="/saved-posts" element={<SavedPosts />} />
           <Route path="/saved-content" element={<SavedContent />} />
           <Route path="/local-fame-rank" element={<LocalFameRank />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
