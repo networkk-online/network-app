@@ -181,9 +181,6 @@ const Header = () => {
           {/* Mobile Navigation */}
           <div className="flex lg:hidden items-center space-x-2 sm:space-x-3">
             {/* Key actions for mobile */}
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-900" onClick={() => navigate('/')}>
-              <Home className="w-5 h-5" />
-            </Button>
             <Button
               variant="ghost" 
               size="sm" 
