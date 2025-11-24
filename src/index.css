@@ -242,3 +242,13 @@
     grid-template-columns: 1fr minmax(auto, 900px) 1fr;
   }
 }
+
+/* Utility classes */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
