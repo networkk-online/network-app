@@ -122,10 +122,10 @@ const BottomNav = () => {
   const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
-    { icon: Home, label: 'الرئيسية', path: '/', badge: unreadMessages },
-    { icon: Compass, label: 'استكشف', path: '/explore', badge: 0 },
-    { icon: Trophy, label: 'المشاهير', path: '/local-fame-rank', badge: 0 },
-    { icon: PlusSquare, label: 'إنشاء', path: '/create-post', badge: 0 },
+    { icon: Home, label: 'الرئيسية', path: '/' },
+    { icon: Compass, label: 'استكشف', path: '/explore' },
+    { icon: Trophy, label: 'المشاهير', path: '/local-fame-rank' },
+    { icon: PlusSquare, label: 'إنشاء', path: '/create-post' },
   ];
 
   return (
@@ -149,38 +149,9 @@ const BottomNav = () => {
                 }`}
                 strokeWidth={active ? 2.5 : 2}
               />
-              {item.badge > 0 && (
-                <Badge 
-                  className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 bg-red-500 text-white text-xs border-0 rounded-full"
-                >
-                  {item.badge > 99 ? '99+' : item.badge}
-                </Badge>
-              )}
             </button>
           );
         })}
-        
-        {/* Notifications Button */}
-        <button
-          onClick={() => navigate('/')} 
-          className="flex flex-col items-center justify-center min-w-[60px] group relative"
-        >
-          <Bell 
-            className={`w-7 h-7 transition-colors ${
-              isActive('/notifications') 
-                ? 'text-primary' 
-                : 'text-white group-hover:text-primary'
-            }`}
-            strokeWidth={isActive('/notifications') ? 2.5 : 2}
-          />
-          {unreadNotifications > 0 && (
-            <Badge 
-              className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 bg-red-500 text-white text-xs border-0 rounded-full"
-            >
-              {unreadNotifications > 99 ? '99+' : unreadNotifications}
-            </Badge>
-          )}
-        </button>
         
         {/* Profile Avatar */}
         <button

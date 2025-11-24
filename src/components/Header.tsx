@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import logo from '@/assets/logo.png';
 import { Notifications } from '@/components/Notifications';
+import { Badge } from '@/components/ui/badge';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -16,6 +17,8 @@ const Header = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -23,6 +26,7 @@ const Header = () => {
       if (user) {
         checkAdminStatus(user.id);
         loadProfile(user.id);
+        loadUnreadCounts(user.id);
       }
     });
 
@@ -31,14 +35,53 @@ const Header = () => {
       if (session?.user) {
         checkAdminStatus(session.user.id);
         loadProfile(session.user.id);
+        loadUnreadCounts(session.user.id);
       } else {
         setIsAdmin(false);
         setProfile(null);
+        setUnreadNotifications(0);
+        setUnreadMessages(0);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const notificationsChannel = supabase
+      .channel('notifications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => loadUnreadCounts(user.id)
+      )
+      .subscribe();
+
+    const messagesChannel = supabase
+      .channel('messages-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        () => loadUnreadCounts(user.id)
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(notificationsChannel);
+      supabase.removeChannel(messagesChannel);
+    };
+  }, [user]);
 
   const loadProfile = async (userId: string) => {
     const { data } = await supabase
@@ -63,6 +106,38 @@ const Header = () => {
     setIsAdmin(!!data);
   };
 
+  const loadUnreadCounts = async (userId: string) => {
+    // Get unread notifications count
+    const { count: notifCount } = await supabase
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('is_read', false);
+
+    setUnreadNotifications(notifCount || 0);
+
+    // Get unread messages count
+    const { data: conversations } = await supabase
+      .from('conversation_participants')
+      .select('conversation_id, last_read_at')
+      .eq('user_id', userId);
+
+    if (conversations) {
+      let totalUnread = 0;
+      for (const conv of conversations) {
+        const { count } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('conversation_id', conv.conversation_id)
+          .neq('sender_id', userId)
+          .gt('created_at', conv.last_read_at || '1970-01-01');
+        
+        totalUnread += count || 0;
+      }
+      setUnreadMessages(totalUnread);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast({
@@ -84,7 +159,7 @@ const Header = () => {
   };
 
   const navigationItems = [
-    { icon: MessageCircle, label: 'الرسائل', path: '/messages' },
+    { icon: MessageCircle, label: 'الرسائل', path: '/messages', showBadge: true },
     { icon: Video, label: 'البث', path: '/broadcast' },
     { icon: Settings, label: 'الإعدادات', path: '/settings' },
   ];
@@ -121,16 +196,24 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-2 xl:space-x-4">
+            <Notifications />
             {navigationItems.map((item, index) => (
               <Button 
                 key={index}
                 variant="ghost" 
                 size="sm" 
-                className="p-2 hover:bg-gray-900" 
+                className="p-2 hover:bg-gray-900 relative" 
                 onClick={() => navigate(item.path)}
                 title={item.label}
               >
                 <item.icon className="w-5 h-5 xl:w-6 xl:h-6" />
+                {item.showBadge && unreadMessages > 0 && (
+                  <Badge 
+                    className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 bg-red-500 text-white text-xs border-0 rounded-full"
+                  >
+                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                  </Badge>
+                )}
               </Button>
             ))}
             {isAdmin && (
@@ -170,6 +253,22 @@ const Header = () => {
           {/* Mobile Navigation */}
           <div className="flex lg:hidden items-center space-x-2 sm:space-x-3">
             {/* Key actions for mobile */}
+            <Notifications />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-900 relative"
+              onClick={() => navigate('/messages')}
+            >
+              <MessageCircle className="w-5 h-5" />
+              {unreadMessages > 0 && (
+                <Badge 
+                  className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 bg-red-500 text-white text-xs border-0 rounded-full"
+                >
+                  {unreadMessages > 99 ? '99+' : unreadMessages}
+                </Badge>
+              )}
+            </Button>
             <Button
               variant="ghost" 
               size="sm" 
