@@ -269,39 +269,8 @@ const Header = () => {
                 </Badge>
               )}
             </Button>
-            <Button
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-900"
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
           </div>
         </div>
-
-        {/* Mobile Menu Dropdown */}
-        {showMobileMenu && (
-          <div className="lg:hidden mt-3 py-2 border-t border-gray-800">
-            <div className="grid grid-cols-4 gap-2">
-              {navigationItems.map((item, index) => (
-                <Button 
-                  key={index}
-                  variant="ghost" 
-                  size="sm" 
-                  className="flex flex-col items-center p-2 hover:bg-gray-900 text-xs"
-                  onClick={() => {
-                    navigate(item.path);
-                    setShowMobileMenu(false);
-                  }}
-                >
-                  <item.icon className="w-5 h-5 mb-1" />
-                  <span className="text-[10px] text-gray-400">{item.label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );
