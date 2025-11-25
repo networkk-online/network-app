@@ -514,9 +514,16 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
               <button 
                 className="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors"
                 onClick={() => {
+                  const currentStory = stories[currentIndex];
+                  const storyUrl = `${window.location.origin}/story/${currentStory.id}`;
+                  const shareText = `شاهد قصتي على Network!\n${storyUrl}`;
+                  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+                  
+                  window.open(whatsappUrl, '_blank');
+                  
                   toast({
-                    title: "واتساب",
-                    description: "مشاركة عبر واتساب",
+                    title: "تم فتح واتساب",
+                    description: "يمكنك الآن مشاركة قصتك",
                   });
                 }}
               >
