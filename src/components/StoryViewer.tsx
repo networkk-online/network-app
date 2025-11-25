@@ -210,11 +210,29 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
                     <Button
                       variant="ghost"
                       className="justify-center text-red-500 hover:bg-white/10 hover:text-red-400 rounded-none py-3"
-                      onClick={() => {
-                        toast({
-                          title: "حذف القصة",
-                          description: "سيتم حذف القصة",
-                        });
+                      onClick={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from('stories')
+                            .delete()
+                            .eq('id', currentStory.id);
+                          
+                          if (error) throw error;
+                          
+                          toast({
+                            title: "تم الحذف",
+                            description: "تم حذف القصة بنجاح",
+                          });
+                          
+                          onClose();
+                        } catch (error) {
+                          console.error('Error deleting story:', error);
+                          toast({
+                            title: "خطأ",
+                            description: "فشل حذف القصة",
+                            variant: "destructive",
+                          });
+                        }
                       }}
                     >
                       حذف القصة
@@ -238,12 +256,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
                     <Button
                       variant="ghost"
                       className="justify-center text-white hover:bg-white/10 rounded-none py-3"
-                      onClick={() => {
-                        toast({
-                          title: "هايلايت",
-                          description: "إضافة إلى الهايلايت",
-                        });
-                      }}
+                      onClick={() => setShowAddToHighlight(true)}
                     >
                       إضافة إلى الهايلايت
                     </Button>
@@ -251,11 +264,27 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
                     <Button
                       variant="ghost"
                       className="justify-center text-white hover:bg-white/10 rounded-none py-3"
-                      onClick={() => {
-                        toast({
-                          title: "حفظ",
-                          description: "تم حفظ القصة",
-                        });
+                      onClick={async () => {
+                        try {
+                          const link = document.createElement('a');
+                          link.href = currentStory.media_url;
+                          link.download = `story_${currentStory.id}.${currentStory.media_type === 'video' ? 'mp4' : 'jpg'}`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          
+                          toast({
+                            title: "تم الحفظ",
+                            description: "تم حفظ القصة على جهازك",
+                          });
+                        } catch (error) {
+                          console.error('Error saving story:', error);
+                          toast({
+                            title: "خطأ",
+                            description: "فشل حفظ القصة",
+                            variant: "destructive",
+                          });
+                        }
                       }}
                     >
                       حفظ...
@@ -329,14 +358,32 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
                     <Button
                       variant="ghost"
                       className="justify-center text-white hover:bg-white/10 rounded-none py-3"
-                      onClick={() => {
-                        toast({
-                          title: "إيقاف التعليقات",
-                          description: "تم إيقاف التعليقات على القصة",
-                        });
+                      onClick={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from('stories')
+                            .update({ allow_story_replies: !currentStory.allow_story_replies })
+                            .eq('id', currentStory.id);
+                          
+                          if (error) throw error;
+                          
+                          toast({
+                            title: currentStory.allow_story_replies ? "تم إيقاف التعليقات" : "تم تفعيل التعليقات",
+                            description: currentStory.allow_story_replies ? "لن يتمكن أحد من الرد على هذه القصة" : "يمكن للآخرين الرد على هذه القصة",
+                          });
+                          
+                          window.location.reload();
+                        } catch (error) {
+                          console.error('Error toggling replies:', error);
+                          toast({
+                            title: "خطأ",
+                            description: "فشل تحديث إعدادات التعليقات",
+                            variant: "destructive",
+                          });
+                        }
                       }}
                     >
-                      إيقاف التعليقات
+                      {currentStory.allow_story_replies ? 'إيقاف التعليقات' : 'تفعيل التعليقات'}
                     </Button>
 
                     <div className="border-t border-gray-800 my-1" />

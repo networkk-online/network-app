@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { X, Type, Smile, Music, Wand2, Sparkles, Paintbrush, Download, MoreHorizontal, Users, Send, Trash2 } from 'lucide-react';
+import { X, Type, Smile, Music, Wand2, Sparkles, Paintbrush, Download, MoreHorizontal, Users, Send, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,101 +13,176 @@ const CreateStory = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>('');
-  const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [mediaTypes, setMediaTypes] = useState<('image' | 'video')[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [caption, setCaption] = useState('');
   const [showPublishOptions, setShowPublishOptions] = useState(false);
   const [showStickers, setShowStickers] = useState(false);
   const [stickers, setStickers] = useState<Array<{ id: string; emoji: string; x: number; y: number; scale: number }>>([]);
   const [selectedSticker, setSelectedSticker] = useState<string | null>(null);
+  
+  const currentFile = selectedFiles[currentFileIndex];
+  const currentPreview = previews[currentFileIndex];
+  const currentMediaType = mediaTypes[currentFileIndex];
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
 
-    const isVideo = file.type.startsWith('video/');
-    const isImage = file.type.startsWith('image/');
+    const validFiles: File[] = [];
+    const validPreviews: string[] = [];
+    const validTypes: ('image' | 'video')[] = [];
 
-    if (!isVideo && !isImage) {
+    files.forEach(file => {
+      const isVideo = file.type.startsWith('video/');
+      const isImage = file.type.startsWith('image/');
+
+      if (!isVideo && !isImage) {
+        toast({
+          title: 'خطأ',
+          description: `تم تجاهل ${file.name}: يجب أن يكون صورة أو فيديو`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast({
+          title: 'خطأ',
+          description: `تم تجاهل ${file.name}: حجم الملف كبير جداً. الحد الأقصى ${isVideo ? '50' : '5'}MB`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      validFiles.push(file);
+      validPreviews.push(URL.createObjectURL(file));
+      validTypes.push(isVideo ? 'video' : 'image');
+    });
+
+    if (validFiles.length > 0) {
+      setSelectedFiles(validFiles);
+      setPreviews(validPreviews);
+      setMediaTypes(validTypes);
+      setCurrentFileIndex(0);
+      
       toast({
-        title: 'خطأ',
-        description: 'يرجى اختيار صورة أو فيديو',
-        variant: 'destructive',
+        title: 'تم الإضافة',
+        description: `تم إضافة ${validFiles.length} قصة`,
       });
-      return;
     }
-
-    const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast({
-        title: 'خطأ',
-        description: `حجم الملف كبير جداً. الحد الأقصى ${isVideo ? '50' : '5'}MB`,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setSelectedFile(file);
-    setMediaType(isVideo ? 'video' : 'image');
-    const url = URL.createObjectURL(file);
-    setPreview(url);
   };
 
   const handleUpload = async (isCloseFriends: boolean = false) => {
-    if (!selectedFile) return;
+    if (selectedFiles.length === 0) return;
 
     try {
       setIsUploading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      let successCount = 0;
+      
+      // Upload all files
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const mediaType = mediaTypes[i];
+        
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}_${i}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('stories')
-        .upload(fileName, selectedFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        const { error: uploadError } = await supabase.storage
+          .from('stories')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-      if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Error uploading file:', uploadError);
+          continue;
+        }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('stories')
-        .getPublicUrl(fileName);
+        const { data: { publicUrl } } = supabase.storage
+          .from('stories')
+          .getPublicUrl(fileName);
 
-      const { error: insertError } = await supabase
-        .from('stories')
-        .insert({
-          user_id: user.id,
-          media_url: publicUrl,
-          media_type: mediaType,
-          close_friends_only: isCloseFriends,
-          allow_story_replies: true,
-        });
+        const { error: insertError } = await supabase
+          .from('stories')
+          .insert({
+            user_id: user.id,
+            media_url: publicUrl,
+            media_type: mediaType,
+            close_friends_only: isCloseFriends,
+            allow_story_replies: true,
+          });
 
-      if (insertError) throw insertError;
+        if (insertError) {
+          console.error('Error inserting story:', insertError);
+          continue;
+        }
+        
+        successCount++;
+      }
 
       toast({
         title: 'تم النشر',
-        description: 'تم نشر قصتك بنجاح',
+        description: `تم نشر ${successCount} من ${selectedFiles.length} قصة بنجاح`,
       });
 
       navigate('/');
     } catch (error: any) {
-      console.error('Error uploading story:', error);
+      console.error('Error uploading stories:', error);
       toast({
         title: 'خطأ',
-        description: 'فشل نشر القصة',
+        description: 'فشل نشر القصص',
         variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
       setShowPublishOptions(false);
     }
+  };
+
+  const handleNextFile = () => {
+    if (currentFileIndex < selectedFiles.length - 1) {
+      setCurrentFileIndex(prev => prev + 1);
+    }
+  };
+
+  const handlePrevFile = () => {
+    if (currentFileIndex > 0) {
+      setCurrentFileIndex(prev => prev - 1);
+    }
+  };
+
+  const removeCurrentFile = () => {
+    const newFiles = selectedFiles.filter((_, i) => i !== currentFileIndex);
+    const newPreviews = previews.filter((_, i) => i !== currentFileIndex);
+    const newTypes = mediaTypes.filter((_, i) => i !== currentFileIndex);
+    
+    if (newFiles.length === 0) {
+      setSelectedFiles([]);
+      setPreviews([]);
+      setMediaTypes([]);
+      setCurrentFileIndex(0);
+    } else {
+      setSelectedFiles(newFiles);
+      setPreviews(newPreviews);
+      setMediaTypes(newTypes);
+      if (currentFileIndex >= newFiles.length) {
+        setCurrentFileIndex(newFiles.length - 1);
+      }
+    }
+    
+    toast({
+      title: 'تم الحذف',
+      description: 'تم حذف القصة',
+    });
   };
 
   const handleStickerSelect = (emoji: string) => {
@@ -140,29 +215,45 @@ const CreateStory = () => {
         >
           <X className="w-7 h-7" />
         </button>
-        {selectedFile && (
-          <div className="flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-full">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-white text-sm font-medium">
-              {mediaType === 'image' ? '10' : '60'}
-            </span>
+        {selectedFiles.length > 0 && (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-full">
+              <span className="text-white text-sm font-medium">
+                {currentFileIndex + 1} / {selectedFiles.length}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-full">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-white text-sm font-medium">
+                {currentMediaType === 'image' ? '10' : '60'}
+              </span>
+            </div>
           </div>
         )}
-        {selectedFile && (
-          <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
-            <Type className="w-6 h-6" />
-          </button>
+        {selectedFiles.length > 0 && (
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={removeCurrentFile}
+              className="text-white hover:bg-red-500/20 p-2 rounded-full transition-colors"
+            >
+              <Trash2 className="w-6 h-6" />
+            </button>
+            <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+              <Type className="w-6 h-6" />
+            </button>
+          </div>
         )}
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center relative">
-        {!preview ? (
+        {selectedFiles.length === 0 ? (
           <div className="text-center">
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*,video/*"
+              multiple
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -170,14 +261,35 @@ const CreateStory = () => {
               onClick={() => fileInputRef.current?.click()}
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full px-8 py-6 text-lg"
             >
-              اختر صورة أو فيديو
+              اختر صور أو فيديوهات
             </Button>
+            <p className="text-gray-400 mt-4 text-sm">يمكنك اختيار عدة ملفات في نفس الوقت</p>
           </div>
         ) : (
           <div className="relative w-full h-full flex items-center justify-center">
-            {mediaType === 'video' ? (
+            {/* Navigation Arrows */}
+            {currentFileIndex > 0 && (
+              <button
+                onClick={handlePrevFile}
+                className="absolute left-4 z-10 bg-black/50 hover:bg-black/70 p-3 rounded-full text-white transition-colors"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            )}
+            
+            {currentFileIndex < selectedFiles.length - 1 && (
+              <button
+                onClick={handleNextFile}
+                className="absolute right-4 z-10 bg-black/50 hover:bg-black/70 p-3 rounded-full text-white transition-colors"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+            
+            {currentMediaType === 'video' ? (
               <video
-                src={preview}
+                key={currentFileIndex}
+                src={currentPreview}
                 className="max-h-full max-w-full object-contain"
                 controls
                 autoPlay
@@ -185,7 +297,8 @@ const CreateStory = () => {
               />
             ) : (
               <img
-                src={preview}
+                key={currentFileIndex}
+                src={currentPreview}
                 alt="Preview"
                 className="max-h-full max-w-full object-contain"
               />
@@ -216,7 +329,7 @@ const CreateStory = () => {
       </div>
 
       {/* Tools Sidebar */}
-      {selectedFile && (
+      {selectedFiles.length > 0 && (
         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-5 z-10">
           <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
             <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
@@ -280,7 +393,7 @@ const CreateStory = () => {
       )}
 
       {/* Bottom Controls */}
-      {selectedFile && (
+      {selectedFiles.length > 0 && (
         <div className="absolute bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-black via-black/80 to-transparent z-10">
           <div className="max-w-2xl mx-auto space-y-3">
             <Input
