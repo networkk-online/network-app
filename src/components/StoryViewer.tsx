@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from './ui/button';
@@ -10,6 +10,9 @@ import { useStoryViews } from '@/hooks/useStoryViews';
 import { StoryQuestion } from './StoryQuestion';
 import { StoryPoll } from './StoryPoll';
 import { useNavigate } from 'react-router-dom';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { ReportDialog } from './ReportDialog';
+import { useFollow } from '@/hooks/useFollow';
 
 interface Story {
   id: string;
@@ -47,8 +50,10 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
   const [isOwnStory, setIsOwnStory] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [isSendingReply, setIsSendingReply] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const currentStory = stories[currentIndex];
   const { recordView } = useStoryViews(currentStory?.id || '');
+  const { isFollowing, toggleFollow } = useFollow(currentStory?.user_id || '');
 
   useEffect(() => {
     if (!currentStory) return;
@@ -173,7 +178,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
 
       {/* Header */}
       <div className="absolute top-4 left-0 right-0 flex items-center justify-between px-4 z-10">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 space-x-reverse">
           <img 
             src={currentStory.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
             alt={currentStory.profiles?.username || ''}
@@ -184,7 +189,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
             <p className="text-gray-300 text-sm">{timeAgo(currentStory.created_at)}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {isOwnStory && (
             <Button
               variant="ghost"
@@ -192,11 +197,60 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
               onClick={() => setShowViewers(true)}
               className="text-white hover:bg-white/20"
             >
-              <Eye className="h-4 w-4 mr-2" />
+              <Eye className="h-4 w-4 ml-2" />
               {currentStory.views_count}
             </Button>
           )}
-          <button onClick={onClose} className="text-blue-500 hover:text-blue-400 p-2 transition-colors">
+          {!isOwnStory && (
+            <Popover open={showMenu} onOpenChange={setShowMenu}>
+              <PopoverTrigger asChild>
+                <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+                  <MoreVertical className="w-6 h-6" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-0 bg-gray-800/95 backdrop-blur-sm border-gray-700" align="end">
+                <div className="flex flex-col">
+                  <ReportDialog reportedUserId={currentStory.user_id} />
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-white hover:bg-white/10 rounded-none"
+                    onClick={() => {
+                      navigate(`/profile/${currentStory.user_id}`);
+                      setShowMenu(false);
+                    }}
+                  >
+                    حول هذا الحساب
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-white hover:bg-white/10 rounded-none"
+                    onClick={() => {
+                      toast({
+                        title: "تم كتم المستخدم",
+                        description: "لن ترى المزيد من قصص هذا المستخدم",
+                      });
+                      setShowMenu(false);
+                    }}
+                  >
+                    كتم
+                  </Button>
+                  {isFollowing && (
+                    <Button
+                      variant="ghost"
+                      className="justify-start text-white hover:bg-white/10 rounded-none"
+                      onClick={() => {
+                        toggleFollow();
+                        setShowMenu(false);
+                      }}
+                    >
+                      إلغاء المتابعة
+                    </Button>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+          <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
