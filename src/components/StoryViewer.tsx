@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { ReportDialog } from './ReportDialog';
 import { useFollow } from '@/hooks/useFollow';
 import { ScrollArea } from './ui/scroll-area';
+import { AddToHighlightDialog } from './AddToHighlightDialog';
 
 interface Story {
   id: string;
@@ -48,6 +49,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
   const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
   const [showViewers, setShowViewers] = useState(false);
+  const [showAddToHighlight, setShowAddToHighlight] = useState(false);
   const [isOwnStory, setIsOwnStory] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [isSendingReply, setIsSendingReply] = useState(false);
@@ -533,12 +535,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
 
               <button 
                 className="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors"
-                onClick={() => {
-                  toast({
-                    title: "هايلايت",
-                    description: "إضافة إلى الهايلايت",
-                  });
-                }}
+                onClick={() => setShowAddToHighlight(true)}
               >
                 <Star className="w-6 h-6 text-white" />
                 <span className="text-xs text-white">Highlight</span>
@@ -593,6 +590,16 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
           <StoryViewers storyId={currentStory.id} />
         </DialogContent>
       </Dialog>
+
+      {/* Add to Highlight Dialog */}
+      {isOwnStory && (
+        <AddToHighlightDialog
+          open={showAddToHighlight}
+          onOpenChange={setShowAddToHighlight}
+          storyId={currentStory.id}
+          userId={currentStory.user_id}
+        />
+      )}
     </div>
   );
 };
