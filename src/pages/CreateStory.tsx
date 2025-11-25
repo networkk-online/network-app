@@ -1,294 +1,306 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Image as ImageIcon, Video, X, Star } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { LocationPicker } from '@/components/LocationPicker';
-import { MusicPicker } from '@/components/MusicPicker';
-import { StoryInteractive } from '@/components/StoryInteractive';
+import { Button } from '@/components/ui/button';
+import { X, Type, Smile, Music, Wand2, Sparkles, Paintbrush, Download, MoreHorizontal, Users, Send } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const CreateStory = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string>('');
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
-  const [closeFriendsOnly, setCloseFriendsOnly] = useState(false);
-  const [location, setLocation] = useState<{ name: string; lat?: number; lng?: number } | null>(null);
-  const [music, setMusic] = useState<{ title: string; artist?: string; url?: string } | null>(null);
-  const [interactiveData, setInteractiveData] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [caption, setCaption] = useState('');
+  const [showPublishOptions, setShowPublishOptions] = useState(false);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check file type
-    if (file.type.startsWith('image/')) {
-      setMediaType('image');
-    } else if (file.type.startsWith('video/')) {
-      setMediaType('video');
-      
-      // Check video size (max 50MB)
-      if (file.size > 50 * 1024 * 1024) {
-        toast({
-          title: "خطأ",
-          description: "حجم الفيديو يجب أن يكون أقل من 50 ميجابايت",
-          variant: "destructive"
-        });
-        return;
-      }
-    } else {
+    const isVideo = file.type.startsWith('video/');
+    const isImage = file.type.startsWith('image/');
+
+    if (!isVideo && !isImage) {
       toast({
-        title: "خطأ",
-        description: "يرجى اختيار صورة أو فيديو",
-        variant: "destructive"
+        title: 'خطأ',
+        description: 'يرجى اختيار صورة أو فيديو',
+        variant: 'destructive',
       });
       return;
     }
 
-    // Check image size
-    if (file.type.startsWith('image/') && file.size > 5 * 1024 * 1024) {
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
       toast({
-        title: "خطأ",
-        description: "حجم الصورة يجب أن يكون أقل من 5 ميجابايت",
-        variant: "destructive"
+        title: 'خطأ',
+        description: `حجم الملف كبير جداً. الحد الأقصى ${isVideo ? '50' : '5'}MB`,
+        variant: 'destructive',
       });
       return;
     }
 
     setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setMediaType(isVideo ? 'video' : 'image');
+    const url = URL.createObjectURL(file);
+    setPreview(url);
   };
 
-  const handleUpload = async () => {
+  const handleUpload = async (isCloseFriends: boolean = false) => {
     if (!selectedFile) return;
 
-    setUploading(true);
     try {
+      setIsUploading(true);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "خطأ",
-          description: "يجب تسجيل الدخول",
-          variant: "destructive"
-        });
-        navigate('/login');
-        return;
-      }
+      if (!user) throw new Error('User not authenticated');
 
-      // Upload to storage
       const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('stories')
-        .upload(fileName, selectedFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(fileName, selectedFile);
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('stories')
         .getPublicUrl(fileName);
 
-      // Create story record
       const { error: insertError } = await supabase
         .from('stories')
         .insert({
           user_id: user.id,
           media_url: publicUrl,
           media_type: mediaType,
-          close_friends_only: closeFriendsOnly,
-          location: location?.name || null,
-          location_lat: location?.lat || null,
-          location_lng: location?.lng || null,
-          music_title: music?.title || null,
-          music_artist: music?.artist || null,
-          music_url: music?.url || null,
-          story_type: interactiveData?.type || 'media',
-          question_text: interactiveData?.question_text || null,
-          poll_question: interactiveData?.poll_question || null,
-          poll_options: interactiveData?.poll_options || null,
-          poll_votes: {},
-          allow_story_replies: true
+          close_friends_only: isCloseFriends,
+          allow_story_replies: true,
         });
 
       if (insertError) throw insertError;
 
       toast({
-        title: "تم النشر",
-        description: "تم نشر قصتك بنجاح",
+        title: 'تم النشر',
+        description: 'تم نشر قصتك بنجاح',
       });
 
       navigate('/');
     } catch (error: any) {
       console.error('Error uploading story:', error);
       toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء رفع القصة",
-        variant: "destructive"
+        title: 'خطأ',
+        description: 'فشل نشر القصة',
+        variant: 'destructive',
       });
     } finally {
-      setUploading(false);
+      setIsUploading(false);
+      setShowPublishOptions(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-black">
-      <Header />
-      
-      <main className="pt-20 pb-8">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <button onClick={() => navigate('/')} className="p-2 hover:bg-gray-800 rounded-full">
-                <ArrowRight className="w-6 h-6" />
-              </button>
-              <h1 className="text-xl font-semibold">إضافة قصة جديدة</h1>
-            </div>
-            {selectedFile && (
-              <Button 
-                onClick={handleUpload}
-                disabled={uploading}
-                className="bg-green-500 hover:bg-green-600 text-black font-semibold"
-              >
-                {uploading ? 'جاري النشر...' : 'نشر القصة'}
-              </Button>
+    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 z-20 bg-gradient-to-b from-black/70 to-transparent">
+        <button
+          onClick={() => navigate('/')}
+          className="text-white hover:bg-white/20 p-2 rounded-full transition-colors"
+        >
+          <X className="w-7 h-7" />
+        </button>
+        {selectedFile && (
+          <div className="flex items-center gap-2 bg-black/50 px-3 py-1.5 rounded-full">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-white text-sm font-medium">
+              {mediaType === 'image' ? '10' : '60'}
+            </span>
+          </div>
+        )}
+        {selectedFile && (
+          <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+            <Type className="w-6 h-6" />
+          </button>
+        )}
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center relative">
+        {!preview ? (
+          <div className="text-center">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full px-8 py-6 text-lg"
+            >
+              اختر صورة أو فيديو
+            </Button>
+          </div>
+        ) : (
+          <div className="relative w-full h-full flex items-center justify-center">
+            {mediaType === 'video' ? (
+              <video
+                src={preview}
+                className="max-h-full max-w-full object-contain"
+                controls
+                autoPlay
+                loop
+              />
+            ) : (
+              <img
+                src={preview}
+                alt="Preview"
+                className="max-h-full max-w-full object-contain"
+              />
             )}
           </div>
+        )}
+      </div>
 
-          {!selectedFile ? (
-            <div className="space-y-4">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full p-12 border-2 border-dashed border-gray-700 rounded-lg hover:border-green-500 transition-colors"
-              >
-                <div className="flex flex-col items-center space-y-4">
-                  <ImageIcon className="w-16 h-16 text-gray-500" />
-                  <div className="text-center">
-                    <p className="text-lg font-semibold mb-2">اختر صورة أو فيديو</p>
-                    <p className="text-sm text-gray-400">الصور: حتى 5 ميجابايت</p>
-                    <p className="text-sm text-gray-400">الفيديوهات: حتى 50 ميجابايت</p>
-                  </div>
-                </div>
-              </button>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  onClick={() => {
-                    if (fileInputRef.current) {
-                      fileInputRef.current.accept = 'image/*';
-                      fileInputRef.current.click();
-                    }
-                  }}
-                  variant="secondary"
-                  className="h-32 flex flex-col items-center justify-center space-y-2"
-                >
-                  <ImageIcon className="w-10 h-10" />
-                  <span>صورة</span>
-                </Button>
-                
-                <Button
-                  onClick={() => {
-                    if (fileInputRef.current) {
-                      fileInputRef.current.accept = 'video/*';
-                      fileInputRef.current.click();
-                    }
-                  }}
-                  variant="secondary"
-                  className="h-32 flex flex-col items-center justify-center space-y-2"
-                >
-                  <Video className="w-10 h-10" />
-                  <span>فيديو</span>
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700 mb-4">
-                <div className="flex items-center gap-3">
-                  <Star className="h-5 w-5 text-yellow-500" />
-                  <div>
-                    <Label htmlFor="close-friends-story" className="text-white font-medium">
-                      مشاركة مع الأصدقاء المقربين فقط
-                    </Label>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      ستظهر القصة لأصدقائك المقربين فقط
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  id="close-friends-story"
-                  checked={closeFriendsOnly}
-                  onCheckedChange={setCloseFriendsOnly}
-                  disabled={uploading}
-                />
-              </div>
-
-              <div className="space-y-3 mb-4">
-                <LocationPicker
-                  onLocationSelect={setLocation}
-                  onRemove={() => setLocation(null)}
-                  currentLocation={location?.name}
-                />
-
-                <MusicPicker
-                  onMusicSelect={setMusic}
-                  onRemove={() => setMusic(null)}
-                  currentMusic={music ? { title: music.title, artist: music.artist } : undefined}
-                />
-
-                <StoryInteractive
-                  onInteractiveChange={setInteractiveData}
-                />
-              </div>
+      {/* Tools Sidebar */}
+      {selectedFile && (
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-5 z-10">
+          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+            <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
+              <Type className="w-5 h-5" />
             </div>
-          ) : (
-            <div className="relative">
-              <button
-                onClick={() => {
-                  setSelectedFile(null);
-                  setPreviewUrl('');
-                }}
-                className="absolute top-4 right-4 z-10 bg-black/70 p-2 rounded-full hover:bg-black"
-              >
-                <X className="w-6 h-6 text-white" />
-              </button>
-              
-              <div className="rounded-lg overflow-hidden bg-gray-900">
-                {mediaType === 'video' ? (
-                  <video 
-                    src={previewUrl}
-                    controls
-                    className="w-full max-h-[70vh] object-contain"
-                  />
-                ) : (
-                  <img 
-                    src={previewUrl}
-                    alt="Preview"
-                    className="w-full max-h-[70vh] object-contain"
-                  />
-                )}
-              </div>
+            <span className="text-xs font-medium">Text</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+            <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
+              <Smile className="w-5 h-5" />
             </div>
-          )}
+            <span className="text-xs font-medium">Stickers</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+            <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
+              <Music className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-medium">Audio</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+            <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
+              <Wand2 className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-medium">Restyle</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+            <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-medium">Effects</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+            <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
+              <Paintbrush className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-medium">Draw</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+            <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
+              <Download className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-medium">Download</span>
+          </button>
+
+          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+            <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
+              <MoreHorizontal className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-medium">More</span>
+          </button>
         </div>
-      </main>
+      )}
+
+      {/* Bottom Controls */}
+      {selectedFile && (
+        <div className="absolute bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-black via-black/80 to-transparent z-10">
+          <div className="max-w-2xl mx-auto space-y-3">
+            <Input
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="أضف تعليقاً..."
+              className="bg-transparent border-white/20 text-white placeholder:text-gray-400 focus:border-white/40"
+            />
+
+            <div className="flex items-center gap-3 justify-between">
+              <button
+                onClick={() => setShowPublishOptions(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full text-white transition-colors border border-white/10"
+              >
+                <Users className="w-5 h-5" />
+                <span className="text-sm font-medium">الأصدقاء المقربين</span>
+              </button>
+
+              <button
+                onClick={() => handleUpload(false)}
+                disabled={isUploading}
+                className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-full text-white font-medium transition-all disabled:opacity-50"
+              >
+                <Send className="w-5 h-5" />
+                قصتك
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Publish Options Dialog */}
+      <Dialog open={showPublishOptions} onOpenChange={setShowPublishOptions}>
+        <DialogContent className="bg-gray-900/95 backdrop-blur-sm border-gray-700 text-white max-w-md">
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-2 p-2">
+              <button
+                onClick={() => handleUpload(false)}
+                disabled={isUploading}
+                className="w-full p-4 text-right hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                    <Send className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">قصتك</p>
+                    <p className="text-xs text-gray-400">مشاركة مع كل متابعيك</p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => handleUpload(true)}
+                disabled={isUploading}
+                className="w-full p-4 text-right hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">الأصدقاء المقربين</p>
+                    <p className="text-xs text-gray-400">مشاركة مع أصدقائك المقربين فقط</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

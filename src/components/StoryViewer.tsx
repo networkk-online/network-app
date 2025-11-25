@@ -74,7 +74,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
     setProgress(0);
     
     // Auto progress
-    const duration = currentStory.media_type === 'video' ? 15000 : 5000; // 15s for video, 5s for image
+    const duration = currentStory.media_type === 'video' ? 60000 : 10000; // 60s for video, 10s for image
     const interval = 50;
     const increment = (interval / duration) * 100;
 
@@ -191,15 +191,109 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
         </div>
         <div className="flex items-center gap-3">
           {isOwnStory && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowViewers(true)}
-              className="text-white hover:bg-white/20"
-            >
-              <Eye className="h-4 w-4 ml-2" />
-              {currentStory.views_count}
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+                  <MoreVertical className="w-6 h-6" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-0 bg-gray-900/95 backdrop-blur-sm border-gray-700" align="end">
+                <div className="flex flex-col">
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-red-500 hover:bg-white/10 hover:text-red-400 rounded-none"
+                    onClick={() => {
+                      toast({
+                        title: "حذف القصة",
+                        description: "سيتم حذف القصة قريباً",
+                      });
+                    }}
+                  >
+                    حذف القصة
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-white hover:bg-white/10 rounded-none"
+                    onClick={() => {
+                      toast({
+                        title: "أرشفة",
+                        description: "تم نقل القصة إلى الأرشيف",
+                      });
+                    }}
+                  >
+                    أرشفة
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-white hover:bg-white/10 rounded-none"
+                    onClick={() => {
+                      toast({
+                        title: "هايلايت",
+                        description: "إضافة إلى الهايلايت",
+                      });
+                    }}
+                  >
+                    إضافة إلى الهايلايت
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-white hover:bg-white/10 rounded-none"
+                    onClick={() => {
+                      toast({
+                        title: "حفظ",
+                        description: "تم حفظ القصة",
+                      });
+                    }}
+                  >
+                    حفظ
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-white hover:bg-white/10 rounded-none"
+                    onClick={() => {
+                      toast({
+                        title: "إرسال",
+                        description: "إرسال القصة إلى الأصدقاء",
+                      });
+                    }}
+                  >
+                    إرسال
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-white hover:bg-white/10 rounded-none"
+                    onClick={() => setShowViewers(true)}
+                  >
+                    <Eye className="h-4 w-4 ml-2" />
+                    المشاهدات ({currentStory.views_count})
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-white hover:bg-white/10 rounded-none"
+                    onClick={() => {
+                      toast({
+                        title: "إعدادات القصة",
+                        description: "فتح إعدادات القصة",
+                      });
+                    }}
+                  >
+                    إعدادات القصة
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-white hover:bg-white/10 rounded-none"
+                    onClick={() => {
+                      toast({
+                        title: "إيقاف التعليقات",
+                        description: "تم إيقاف التعليقات على القصة",
+                      });
+                    }}
+                  >
+                    إيقاف التعليقات
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           )}
           {!isOwnStory && (
             <Popover open={showMenu} onOpenChange={setShowMenu}>
@@ -350,10 +444,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
 
       {/* Viewers Dialog */}
       <Dialog open={showViewers} onOpenChange={setShowViewers}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>المشاهدات</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-md p-0">
           <StoryViewers storyId={currentStory.id} />
         </DialogContent>
       </Dialog>
