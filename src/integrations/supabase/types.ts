@@ -374,6 +374,69 @@ export type Database = {
         }
         Relationships: []
       }
+      highlight_stories: {
+        Row: {
+          added_at: string
+          highlight_id: string
+          id: string
+          story_id: string
+        }
+        Insert: {
+          added_at?: string
+          highlight_id: string
+          id?: string
+          story_id: string
+        }
+        Update: {
+          added_at?: string
+          highlight_id?: string
+          id?: string
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "highlight_stories_highlight_id_fkey"
+            columns: ["highlight_id"]
+            isOneToOne: false
+            referencedRelation: "highlights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "highlight_stories_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      highlights: {
+        Row: {
+          cover_image: string | null
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_image?: string | null
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_image?: string | null
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       likes: {
         Row: {
           created_at: string

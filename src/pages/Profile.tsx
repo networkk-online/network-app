@@ -5,8 +5,12 @@ import UserProfile from '@/components/UserProfile';
 import WalletCard from '@/components/WalletCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, MessageCircle, Bookmark, Wallet } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Wallet, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { HighlightCircle } from '@/components/HighlightCircle';
+import { CreateHighlightDialog } from '@/components/CreateHighlightDialog';
+import { HighlightViewer } from '@/components/HighlightViewer';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -20,6 +24,10 @@ const Profile = () => {
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [activeTab, setActiveTab] = useState<'posts' | 'saved' | 'stats' | 'wallet'>('posts');
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [highlights, setHighlights] = useState<any[]>([]);
+  const [showCreateHighlight, setShowCreateHighlight] = useState(false);
+  const [selectedHighlightId, setSelectedHighlightId] = useState<string | null>(null);
+  const [showHighlightViewer, setShowHighlightViewer] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -49,6 +57,7 @@ const Profile = () => {
       if (targetUserId) {
         await loadProfile(targetUserId, isOwn);
         await loadPosts(targetUserId);
+        await loadHighlights(targetUserId);
       }
     } catch (error) {
       console.error('Error checking user:', error);
@@ -232,6 +241,26 @@ const Profile = () => {
     }
   };
 
+  const loadHighlights = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('highlights')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setHighlights(data || []);
+    } catch (error) {
+      console.error('Error loading highlights:', error);
+    }
+  };
+
+  const handleHighlightClick = (highlightId: string) => {
+    setSelectedHighlightId(highlightId);
+    setShowHighlightViewer(true);
+  };
+
   const handleProfileUpdate = async (data: any) => {
     if (!user) return;
 
@@ -316,6 +345,37 @@ const Profile = () => {
               isVerified={profile?.is_verified || false}
               isOwnProfile={isOwnProfile}
             />
+            
+            {/* Highlights Section */}
+            {(highlights.length > 0 || isOwnProfile) && (
+              <div className="mt-6 px-4">
+                <ScrollArea className="w-full whitespace-nowrap">
+                  <div className="flex gap-4 pb-2">
+                    {isOwnProfile && (
+                      <div 
+                        className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0"
+                        onClick={() => setShowCreateHighlight(true)}
+                      >
+                        <div className="w-16 h-16 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center hover:border-primary transition-colors">
+                          <Plus className="w-6 h-6 text-gray-600" />
+                        </div>
+                        <span className="text-xs text-center text-gray-400">جديد</span>
+                      </div>
+                    )}
+                    
+                    {highlights.map((highlight) => (
+                      <div key={highlight.id} className="flex-shrink-0">
+                        <HighlightCircle
+                          title={highlight.title}
+                          coverImage={highlight.cover_image}
+                          onClick={() => handleHighlightClick(highlight.id)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
             
             {/* Tabs Navigation */}
             <div className="mt-6 sm:mt-8 flex gap-2 border-b border-gray-800 overflow-x-auto">
@@ -504,6 +564,27 @@ const Profile = () => {
           </div>
         </div>
       </main>
+
+      {/* Create Highlight Dialog */}
+      {isOwnProfile && (
+        <CreateHighlightDialog
+          open={showCreateHighlight}
+          onOpenChange={setShowCreateHighlight}
+          userId={user?.id}
+          onSuccess={() => {
+            loadHighlights(user?.id);
+          }}
+        />
+      )}
+
+      {/* Highlight Viewer */}
+      {selectedHighlightId && (
+        <HighlightViewer
+          open={showHighlightViewer}
+          onOpenChange={setShowHighlightViewer}
+          highlightId={selectedHighlightId}
+        />
+      )}
     </div>
   );
 };
