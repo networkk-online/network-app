@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { X, Type, Smile, Music, Wand2, Sparkles, Paintbrush, Download, MoreHorizontal, Users, Send } from 'lucide-react';
+import { X, Type, Smile, Music, Wand2, Sparkles, Paintbrush, Download, MoreHorizontal, Users, Send, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { StickersLibrary } from '@/components/StickersLibrary';
 
 const CreateStory = () => {
   const navigate = useNavigate();
@@ -18,6 +19,9 @@ const CreateStory = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [caption, setCaption] = useState('');
   const [showPublishOptions, setShowPublishOptions] = useState(false);
+  const [showStickers, setShowStickers] = useState(false);
+  const [stickers, setStickers] = useState<Array<{ id: string; emoji: string; x: number; y: number; scale: number }>>([]);
+  const [selectedSticker, setSelectedSticker] = useState<string | null>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -103,6 +107,26 @@ const CreateStory = () => {
     }
   };
 
+  const handleStickerSelect = (emoji: string) => {
+    const newSticker = {
+      id: Date.now().toString(),
+      emoji,
+      x: 50,
+      y: 50,
+      scale: 1
+    };
+    setStickers([...stickers, newSticker]);
+    setShowStickers(false);
+    toast({
+      title: 'تم الإضافة',
+      description: 'تم إضافة الملصق إلى قصتك',
+    });
+  };
+
+  const removeSticker = (id: string) => {
+    setStickers(stickers.filter(s => s.id !== id));
+  };
+
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Header */}
@@ -163,6 +187,27 @@ const CreateStory = () => {
                 className="max-h-full max-w-full object-contain"
               />
             )}
+
+            {/* Stickers Overlay */}
+            {stickers.map((sticker) => (
+              <div
+                key={sticker.id}
+                className="absolute group cursor-move"
+                style={{
+                  left: `${sticker.x}%`,
+                  top: `${sticker.y}%`,
+                  transform: `translate(-50%, -50%) scale(${sticker.scale})`,
+                }}
+              >
+                <span className="text-6xl select-none">{sticker.emoji}</span>
+                <button
+                  onClick={() => removeSticker(sticker.id)}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -177,7 +222,10 @@ const CreateStory = () => {
             <span className="text-xs font-medium">Text</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+          <button 
+            onClick={() => setShowStickers(true)}
+            className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95"
+          >
             <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
               <Smile className="w-5 h-5" />
             </div>
@@ -260,6 +308,13 @@ const CreateStory = () => {
           </div>
         </div>
       )}
+
+      {/* Stickers Library Dialog */}
+      <Dialog open={showStickers} onOpenChange={setShowStickers}>
+        <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-xl p-0">
+          <StickersLibrary onStickerSelect={handleStickerSelect} />
+        </DialogContent>
+      </Dialog>
 
       {/* Publish Options Dialog */}
       <Dialog open={showPublishOptions} onOpenChange={setShowPublishOptions}>
