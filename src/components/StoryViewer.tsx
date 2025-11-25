@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical, Star, AtSign, MoreHorizontal } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from './ui/button';
@@ -494,6 +494,88 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
             >
               <Send className="w-4 h-4" />
             </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Action Bar - Only show for own stories */}
+      {isOwnStory && (
+        <div className="absolute bottom-4 left-0 right-0 z-10 px-4">
+          <div className="bg-black/80 backdrop-blur-sm rounded-2xl p-3">
+            <div className="flex items-center justify-around">
+              <button 
+                className="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors"
+                onClick={() => setShowViewers(true)}
+              >
+                <Eye className="w-6 h-6 text-white" />
+                <span className="text-xs text-white">Activity</span>
+              </button>
+
+              <button 
+                className="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors"
+                onClick={() => {
+                  toast({
+                    title: "واتساب",
+                    description: "مشاركة عبر واتساب",
+                  });
+                }}
+              >
+                <MessageCircle className="w-6 h-6 text-white" />
+                <span className="text-xs text-white">WhatsApp</span>
+              </button>
+
+              <button 
+                className="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors"
+                onClick={() => {
+                  toast({
+                    title: "هايلايت",
+                    description: "إضافة إلى الهايلايت",
+                  });
+                }}
+              >
+                <Star className="w-6 h-6 text-white" />
+                <span className="text-xs text-white">Highlight</span>
+              </button>
+
+              <button 
+                className="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors"
+                onClick={() => {
+                  toast({
+                    title: "إشارة",
+                    description: "الإشارة إلى شخص",
+                  });
+                }}
+              >
+                <AtSign className="w-6 h-6 text-white" />
+                <span className="text-xs text-white">Mention</span>
+              </button>
+
+              <button 
+                className="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors"
+                onClick={() => {
+                  toast({
+                    title: "إرسال",
+                    description: "إرسال القصة",
+                  });
+                }}
+              >
+                <Send className="w-6 h-6 text-white" />
+                <span className="text-xs text-white">Send</span>
+              </button>
+
+              <button 
+                className="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors"
+                onClick={() => {
+                  toast({
+                    title: "المزيد",
+                    description: "خيارات إضافية",
+                  });
+                }}
+              >
+                <MoreHorizontal className="w-6 h-6 text-white" />
+                <span className="text-xs text-white">More</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
