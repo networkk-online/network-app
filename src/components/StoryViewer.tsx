@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { ReportDialog } from './ReportDialog';
 import { useFollow } from '@/hooks/useFollow';
+import { ScrollArea } from './ui/scroll-area';
 
 interface Story {
   id: string;
@@ -197,101 +198,156 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
                   <MoreVertical className="w-6 h-6" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-0 bg-gray-900/95 backdrop-blur-sm border-gray-700" align="end">
-                <div className="flex flex-col">
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-red-500 hover:bg-white/10 hover:text-red-400 rounded-none"
-                    onClick={() => {
-                      toast({
-                        title: "حذف القصة",
-                        description: "سيتم حذف القصة قريباً",
-                      });
-                    }}
-                  >
-                    حذف القصة
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-white hover:bg-white/10 rounded-none"
-                    onClick={() => {
-                      toast({
-                        title: "أرشفة",
-                        description: "تم نقل القصة إلى الأرشيف",
-                      });
-                    }}
-                  >
-                    أرشفة
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-white hover:bg-white/10 rounded-none"
-                    onClick={() => {
-                      toast({
-                        title: "هايلايت",
-                        description: "إضافة إلى الهايلايت",
-                      });
-                    }}
-                  >
-                    إضافة إلى الهايلايت
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-white hover:bg-white/10 rounded-none"
-                    onClick={() => {
-                      toast({
-                        title: "حفظ",
-                        description: "تم حفظ القصة",
-                      });
-                    }}
-                  >
-                    حفظ
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-white hover:bg-white/10 rounded-none"
-                    onClick={() => {
-                      toast({
-                        title: "إرسال",
-                        description: "إرسال القصة إلى الأصدقاء",
-                      });
-                    }}
-                  >
-                    إرسال
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-white hover:bg-white/10 rounded-none"
-                    onClick={() => setShowViewers(true)}
-                  >
-                    <Eye className="h-4 w-4 ml-2" />
-                    المشاهدات ({currentStory.views_count})
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-white hover:bg-white/10 rounded-none"
-                    onClick={() => {
-                      toast({
-                        title: "إعدادات القصة",
-                        description: "فتح إعدادات القصة",
-                      });
-                    }}
-                  >
-                    إعدادات القصة
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-white hover:bg-white/10 rounded-none"
-                    onClick={() => {
-                      toast({
-                        title: "إيقاف التعليقات",
-                        description: "تم إيقاف التعليقات على القصة",
-                      });
-                    }}
-                  >
-                    إيقاف التعليقات
-                  </Button>
-                </div>
+              <PopoverContent className="w-72 p-0 bg-gray-900/98 backdrop-blur-sm border-gray-800" align="end">
+                <ScrollArea className="max-h-[500px]">
+                  <div className="flex flex-col py-2">
+                    <p className="px-4 py-2 text-xs text-gray-400">
+                      أرشف القصص أثناء نشاطها
+                    </p>
+                    
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-red-500 hover:bg-white/10 hover:text-red-400 rounded-none py-3"
+                      onClick={() => {
+                        toast({
+                          title: "حذف القصة",
+                          description: "سيتم حذف القصة",
+                        });
+                      }}
+                    >
+                      حذف القصة
+                    </Button>
+
+                    <div className="border-t border-gray-800 my-1" />
+
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-white hover:bg-white/10 rounded-none py-3"
+                      onClick={() => {
+                        toast({
+                          title: "أرشفة",
+                          description: "تم نقل القصة إلى الأرشيف",
+                        });
+                      }}
+                    >
+                      أرشفة
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-white hover:bg-white/10 rounded-none py-3"
+                      onClick={() => {
+                        toast({
+                          title: "هايلايت",
+                          description: "إضافة إلى الهايلايت",
+                        });
+                      }}
+                    >
+                      إضافة إلى الهايلايت
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-white hover:bg-white/10 rounded-none py-3"
+                      onClick={() => {
+                        toast({
+                          title: "حفظ",
+                          description: "تم حفظ القصة",
+                        });
+                      }}
+                    >
+                      حفظ...
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-white hover:bg-white/10 rounded-none py-3"
+                      onClick={() => {
+                        toast({
+                          title: "إرسال",
+                          description: "إرسال القصة إلى الأصدقاء",
+                        });
+                      }}
+                    >
+                      إرسال
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-white hover:bg-white/10 rounded-none py-3"
+                      onClick={() => {
+                        toast({
+                          title: "Edit AI Label",
+                          description: "تعديل التسمية",
+                        });
+                      }}
+                    >
+                      Edit AI Label
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-white hover:bg-white/10 rounded-none py-3"
+                      onClick={() => {
+                        toast({
+                          title: "تعزيز القصة",
+                          description: "تعزيز القصة للوصول لجمهور أكبر",
+                        });
+                      }}
+                    >
+                      تعزيز القصة
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-white hover:bg-white/10 rounded-none py-3"
+                      onClick={() => {
+                        toast({
+                          title: "مشاركة",
+                          description: "مشاركة إلى قصة فيسبوك",
+                        });
+                      }}
+                    >
+                      مشاركة إلى قصة فيسبوك
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-white hover:bg-white/10 rounded-none py-3"
+                      onClick={() => {
+                        toast({
+                          title: "إعدادات القصة",
+                          description: "فتح إعدادات القصة",
+                        });
+                      }}
+                    >
+                      إعدادات القصة
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-white hover:bg-white/10 rounded-none py-3"
+                      onClick={() => {
+                        toast({
+                          title: "إيقاف التعليقات",
+                          description: "تم إيقاف التعليقات على القصة",
+                        });
+                      }}
+                    >
+                      إيقاف التعليقات
+                    </Button>
+
+                    <div className="border-t border-gray-800 my-1" />
+
+                    <Button
+                      variant="ghost"
+                      className="justify-center text-white hover:bg-white/10 rounded-none py-3"
+                      onClick={() => {}}
+                    >
+                      إلغاء
+                    </Button>
+                  </div>
+                </ScrollArea>
               </PopoverContent>
             </Popover>
           )}
