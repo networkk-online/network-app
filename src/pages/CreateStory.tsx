@@ -5,9 +5,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { X, Type, Smile, Music, Wand2, Sparkles, Paintbrush, Download, MoreHorizontal, Users, Send, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { StickersLibrary } from '@/components/StickersLibrary';
+import { Textarea } from '@/components/ui/textarea';
+import { Slider } from '@/components/ui/slider';
 
 const CreateStory = () => {
   const navigate = useNavigate();
@@ -21,8 +23,23 @@ const CreateStory = () => {
   const [caption, setCaption] = useState('');
   const [showPublishOptions, setShowPublishOptions] = useState(false);
   const [showStickers, setShowStickers] = useState(false);
+  const [showTextDialog, setShowTextDialog] = useState(false);
+  const [showMusicDialog, setShowMusicDialog] = useState(false);
+  const [showEffectsDialog, setShowEffectsDialog] = useState(false);
+  const [showDrawDialog, setShowDrawDialog] = useState(false);
   const [stickers, setStickers] = useState<Array<{ id: string; emoji: string; x: number; y: number; scale: number }>>([]);
-  const [selectedSticker, setSelectedSticker] = useState<string | null>(null);
+  const [texts, setTexts] = useState<Array<{ id: string; text: string; x: number; y: number; fontSize: number; color: string }>>([]);
+  const [currentText, setCurrentText] = useState('');
+  const [textColor, setTextColor] = useState('#ffffff');
+  const [textSize, setTextSize] = useState(32);
+  const [selectedMusic, setSelectedMusic] = useState<{ title: string; artist: string; url: string } | null>(null);
+  const [imageFilters, setImageFilters] = useState({
+    brightness: 100,
+    contrast: 100,
+    saturate: 100,
+    sepia: 0,
+    blur: 0
+  });
   
   const currentFile = selectedFiles[currentFileIndex];
   const currentPreview = previews[currentFileIndex];
@@ -205,6 +222,54 @@ const CreateStory = () => {
     setStickers(stickers.filter(s => s.id !== id));
   };
 
+  const handleAddText = () => {
+    if (!currentText.trim()) return;
+    const newText = {
+      id: Date.now().toString(),
+      text: currentText,
+      x: 50,
+      y: 50,
+      fontSize: textSize,
+      color: textColor
+    };
+    setTexts([...texts, newText]);
+    setCurrentText('');
+    setShowTextDialog(false);
+    toast({
+      title: 'تم الإضافة',
+      description: 'تم إضافة النص إلى قصتك',
+    });
+  };
+
+  const removeText = (id: string) => {
+    setTexts(texts.filter(t => t.id !== id));
+  };
+
+  const handleDownload = () => {
+    if (!currentPreview) return;
+    const link = document.createElement('a');
+    link.href = currentPreview;
+    link.download = `story_${Date.now()}.${currentMediaType === 'video' ? 'mp4' : 'jpg'}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast({
+      title: 'تم التحميل',
+      description: 'تم تحميل القصة على جهازك',
+    });
+  };
+
+  const applyFilter = (filterName: keyof typeof imageFilters, value: number) => {
+    setImageFilters(prev => ({
+      ...prev,
+      [filterName]: value
+    }));
+  };
+
+  const getFilterStyle = () => {
+    return `brightness(${imageFilters.brightness}%) contrast(${imageFilters.contrast}%) saturate(${imageFilters.saturate}%) sepia(${imageFilters.sepia}%) blur(${imageFilters.blur}px)`;
+  };
+
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Header */}
@@ -291,6 +356,7 @@ const CreateStory = () => {
                 key={currentFileIndex}
                 src={currentPreview}
                 className="max-h-full max-w-full object-contain"
+                style={{ filter: getFilterStyle() }}
                 controls
                 autoPlay
                 loop
@@ -301,6 +367,7 @@ const CreateStory = () => {
                 src={currentPreview}
                 alt="Preview"
                 className="max-h-full max-w-full object-contain"
+                style={{ filter: getFilterStyle() }}
               />
             )}
 
@@ -324,6 +391,36 @@ const CreateStory = () => {
                 </button>
               </div>
             ))}
+
+            {/* Text Overlay */}
+            {texts.map((text) => (
+              <div
+                key={text.id}
+                className="absolute group cursor-move"
+                style={{
+                  left: `${text.x}%`,
+                  top: `${text.y}%`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                <p 
+                  className="font-bold select-none text-center"
+                  style={{ 
+                    fontSize: `${text.fontSize}px`,
+                    color: text.color,
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                  }}
+                >
+                  {text.text}
+                </p>
+                <button
+                  onClick={() => removeText(text.id)}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -331,7 +428,10 @@ const CreateStory = () => {
       {/* Tools Sidebar */}
       {selectedFiles.length > 0 && (
         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-5 z-10">
-          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+          <button 
+            onClick={() => setShowTextDialog(true)}
+            className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95"
+          >
             <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
               <Type className="w-5 h-5" />
             </div>
@@ -348,42 +448,71 @@ const CreateStory = () => {
             <span className="text-xs font-medium">Stickers</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+          <button 
+            onClick={() => setShowMusicDialog(true)}
+            className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95"
+          >
             <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
               <Music className="w-5 h-5" />
             </div>
             <span className="text-xs font-medium">Audio</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+          <button 
+            onClick={() => {
+              setImageFilters({
+                brightness: 120,
+                contrast: 110,
+                saturate: 80,
+                sepia: 30,
+                blur: 0
+              });
+              toast({ title: 'تم التطبيق', description: 'تم تطبيق فلتر Vintage' });
+            }}
+            className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95"
+          >
             <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
               <Wand2 className="w-5 h-5" />
             </div>
             <span className="text-xs font-medium">Restyle</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+          <button 
+            onClick={() => setShowEffectsDialog(true)}
+            className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95"
+          >
             <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
               <Sparkles className="w-5 h-5" />
             </div>
             <span className="text-xs font-medium">Effects</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+          <button 
+            onClick={() => setShowDrawDialog(true)}
+            className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95"
+          >
             <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
               <Paintbrush className="w-5 h-5" />
             </div>
             <span className="text-xs font-medium">Draw</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+          <button 
+            onClick={handleDownload}
+            className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95"
+          >
             <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
               <Download className="w-5 h-5" />
             </div>
             <span className="text-xs font-medium">Download</span>
           </button>
 
-          <button className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95">
+          <button 
+            onClick={() => {
+              toast({ title: 'المزيد', description: 'خيارات إضافية قريباً' });
+            }}
+            className="flex flex-col items-center gap-1 text-white hover:scale-110 transition-transform active:scale-95"
+          >
             <div className="w-11 h-11 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-full border border-white/20">
               <MoreHorizontal className="w-5 h-5" />
             </div>
@@ -425,10 +554,161 @@ const CreateStory = () => {
         </div>
       )}
 
+      {/* Text Dialog */}
+      <Dialog open={showTextDialog} onOpenChange={setShowTextDialog}>
+        <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">إضافة نص</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 p-4">
+            <Textarea
+              value={currentText}
+              onChange={(e) => setCurrentText(e.target.value)}
+              placeholder="اكتب نصك هنا..."
+              className="bg-gray-800 border-gray-700 text-white min-h-[100px]"
+            />
+            <div className="space-y-2">
+              <label className="text-white text-sm">اللون</label>
+              <div className="flex gap-2">
+                {['#ffffff', '#000000', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'].map(color => (
+                  <button
+                    key={color}
+                    onClick={() => setTextColor(color)}
+                    className={`w-10 h-10 rounded-full ${textColor === color ? 'ring-2 ring-white' : ''}`}
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-white text-sm">الحجم: {textSize}px</label>
+              <Slider
+                value={[textSize]}
+                onValueChange={([value]) => setTextSize(value)}
+                min={16}
+                max={72}
+                step={4}
+                className="w-full"
+              />
+            </div>
+            <Button onClick={handleAddText} className="w-full">إضافة</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Stickers Library Dialog */}
       <Dialog open={showStickers} onOpenChange={setShowStickers}>
         <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-xl p-0">
           <StickersLibrary onStickerSelect={handleStickerSelect} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Music Dialog */}
+      <Dialog open={showMusicDialog} onOpenChange={setShowMusicDialog}>
+        <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">إضافة موسيقى</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 p-4">
+            <p className="text-gray-400 text-sm">اختر موسيقى من المكتبة</p>
+            {['أغنية 1', 'أغنية 2', 'أغنية 3'].map((song, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  setSelectedMusic({ title: song, artist: 'فنان', url: '#' });
+                  setShowMusicDialog(false);
+                  toast({ title: 'تم الإضافة', description: `تم إضافة ${song}` });
+                }}
+                className="w-full p-3 text-right bg-gray-800 hover:bg-gray-700 rounded-lg text-white transition-colors"
+              >
+                {song}
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Effects Dialog */}
+      <Dialog open={showEffectsDialog} onOpenChange={setShowEffectsDialog}>
+        <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">التأثيرات</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 p-4">
+            <div className="space-y-2">
+              <label className="text-white text-sm">السطوع: {imageFilters.brightness}%</label>
+              <Slider
+                value={[imageFilters.brightness]}
+                onValueChange={([value]) => applyFilter('brightness', value)}
+                min={0}
+                max={200}
+                step={10}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-white text-sm">التباين: {imageFilters.contrast}%</label>
+              <Slider
+                value={[imageFilters.contrast]}
+                onValueChange={([value]) => applyFilter('contrast', value)}
+                min={0}
+                max={200}
+                step={10}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-white text-sm">التشبع: {imageFilters.saturate}%</label>
+              <Slider
+                value={[imageFilters.saturate]}
+                onValueChange={([value]) => applyFilter('saturate', value)}
+                min={0}
+                max={200}
+                step={10}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-white text-sm">Sepia: {imageFilters.sepia}%</label>
+              <Slider
+                value={[imageFilters.sepia]}
+                onValueChange={([value]) => applyFilter('sepia', value)}
+                min={0}
+                max={100}
+                step={10}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-white text-sm">Blur: {imageFilters.blur}px</label>
+              <Slider
+                value={[imageFilters.blur]}
+                onValueChange={([value]) => applyFilter('blur', value)}
+                min={0}
+                max={10}
+                step={1}
+              />
+            </div>
+            <Button 
+              onClick={() => {
+                setImageFilters({ brightness: 100, contrast: 100, saturate: 100, sepia: 0, blur: 0 });
+                toast({ title: 'تم الإعادة', description: 'تم إعادة التأثيرات للوضع الافتراضي' });
+              }}
+              variant="outline"
+              className="w-full"
+            >
+              إعادة تعيين
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Draw Dialog */}
+      <Dialog open={showDrawDialog} onOpenChange={setShowDrawDialog}>
+        <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">الرسم</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 text-center">
+            <p className="text-gray-400 mb-4">ميزة الرسم قيد التطوير</p>
+            <p className="text-sm text-gray-500">ستتمكن قريباً من الرسم على قصصك</p>
+          </div>
         </DialogContent>
       </Dialog>
 
