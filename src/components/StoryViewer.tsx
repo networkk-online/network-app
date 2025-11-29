@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical, Star, AtSign, MoreHorizontal } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical, Star, AtSign, MoreHorizontal, Share2, Facebook, Twitter, Instagram, Link, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from './ui/button';
@@ -50,6 +50,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
   const [progress, setProgress] = useState(0);
   const [showViewers, setShowViewers] = useState(false);
   const [showAddToHighlight, setShowAddToHighlight] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [isOwnStory, setIsOwnStory] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [isSendingReply, setIsSendingReply] = useState(false);
@@ -565,22 +566,10 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
 
               <button 
                 className="flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-lg transition-colors"
-                onClick={() => {
-                  const currentStory = stories[currentIndex];
-                  const storyUrl = `${window.location.origin}/story/${currentStory.id}`;
-                  const shareText = `شاهد قصتي على Network!\n${storyUrl}`;
-                  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
-                  
-                  window.open(whatsappUrl, '_blank');
-                  
-                  toast({
-                    title: "تم فتح واتساب",
-                    description: "يمكنك الآن مشاركة قصتك",
-                  });
-                }}
+                onClick={() => setShowShareDialog(true)}
               >
-                <MessageCircle className="w-6 h-6 text-white" />
-                <span className="text-xs text-white">WhatsApp</span>
+                <Share2 className="w-6 h-6 text-white" />
+                <span className="text-xs text-white">Share</span>
               </button>
 
               <button 
@@ -650,6 +639,175 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
           userId={currentStory.user_id}
         />
       )}
+
+      {/* Share Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white text-center">مشاركة القصة</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[70vh]">
+            <div className="grid grid-cols-3 gap-4 p-4">
+              {/* WhatsApp */}
+              <button
+                onClick={() => {
+                  const storyUrl = `${window.location.origin}/story/${currentStory.id}`;
+                  const shareText = `شاهد قصتي على Network!\n${storyUrl}`;
+                  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+                  window.open(whatsappUrl, '_blank');
+                  setShowShareDialog(false);
+                  toast({ title: "تم فتح واتساب", description: "يمكنك الآن مشاركة قصتك" });
+                }}
+                className="flex flex-col items-center gap-2 p-4 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                  <MessageCircle className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-white text-xs">WhatsApp</span>
+              </button>
+
+              {/* Facebook */}
+              <button
+                onClick={() => {
+                  const storyUrl = `${window.location.origin}/story/${currentStory.id}`;
+                  const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(storyUrl)}`;
+                  window.open(fbUrl, '_blank');
+                  setShowShareDialog(false);
+                  toast({ title: "تم فتح فيسبوك", description: "يمكنك الآن مشاركة قصتك" });
+                }}
+                className="flex flex-col items-center gap-2 p-4 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
+                  <Facebook className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-white text-xs">Facebook</span>
+              </button>
+
+              {/* Twitter/X */}
+              <button
+                onClick={() => {
+                  const storyUrl = `${window.location.origin}/story/${currentStory.id}`;
+                  const shareText = `شاهد قصتي على Network!`;
+                  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(storyUrl)}`;
+                  window.open(twitterUrl, '_blank');
+                  setShowShareDialog(false);
+                  toast({ title: "تم فتح تويتر", description: "يمكنك الآن مشاركة قصتك" });
+                }}
+                className="flex flex-col items-center gap-2 p-4 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center">
+                  <Twitter className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-white text-xs">Twitter</span>
+              </button>
+
+              {/* Telegram */}
+              <button
+                onClick={() => {
+                  const storyUrl = `${window.location.origin}/story/${currentStory.id}`;
+                  const shareText = `شاهد قصتي على Network!`;
+                  const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(storyUrl)}&text=${encodeURIComponent(shareText)}`;
+                  window.open(telegramUrl, '_blank');
+                  setShowShareDialog(false);
+                  toast({ title: "تم فتح تيليجرام", description: "يمكنك الآن مشاركة قصتك" });
+                }}
+                className="flex flex-col items-center gap-2 p-4 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+                  <Send className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-white text-xs">Telegram</span>
+              </button>
+
+              {/* Email */}
+              <button
+                onClick={() => {
+                  const storyUrl = `${window.location.origin}/story/${currentStory.id}`;
+                  const subject = 'شاهد قصتي على Network!';
+                  const body = `شاهد قصتي على Network!\n\n${storyUrl}`;
+                  const mailUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                  window.location.href = mailUrl;
+                  setShowShareDialog(false);
+                  toast({ title: "تم فتح البريد", description: "يمكنك الآن مشاركة قصتك" });
+                }}
+                className="flex flex-col items-center gap-2 p-4 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-white text-xs">Email</span>
+              </button>
+
+              {/* Copy Link */}
+              <button
+                onClick={() => {
+                  const storyUrl = `${window.location.origin}/story/${currentStory.id}`;
+                  navigator.clipboard.writeText(storyUrl);
+                  setShowShareDialog(false);
+                  toast({ title: "تم النسخ", description: "تم نسخ رابط القصة" });
+                }}
+                className="flex flex-col items-center gap-2 p-4 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center">
+                  <Link className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-white text-xs">نسخ الرابط</span>
+              </button>
+
+              {/* Instagram (Info only) */}
+              <button
+                onClick={() => {
+                  toast({ 
+                    title: "إنستجرام", 
+                    description: "قم بحفظ القصة ثم شاركها على إنستجرام من تطبيقهم" 
+                  });
+                  setShowShareDialog(false);
+                }}
+                className="flex flex-col items-center gap-2 p-4 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 flex items-center justify-center">
+                  <Instagram className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-white text-xs">Instagram</span>
+              </button>
+
+              {/* Snapchat (Info only) */}
+              <button
+                onClick={() => {
+                  toast({ 
+                    title: "سناب شات", 
+                    description: "قم بحفظ القصة ثم شاركها على سناب شات من تطبيقهم" 
+                  });
+                  setShowShareDialog(false);
+                }}
+                className="flex flex-col items-center gap-2 p-4 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center">
+                  <MessageCircle className="w-6 h-6 text-black" />
+                </div>
+                <span className="text-white text-xs">Snapchat</span>
+              </button>
+
+              {/* LinkedIn */}
+              <button
+                onClick={() => {
+                  const storyUrl = `${window.location.origin}/story/${currentStory.id}`;
+                  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(storyUrl)}`;
+                  window.open(linkedinUrl, '_blank');
+                  setShowShareDialog(false);
+                  toast({ title: "تم فتح لينكد إن", description: "يمكنك الآن مشاركة قصتك" });
+                }}
+                className="flex flex-col items-center gap-2 p-4 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-blue-700 flex items-center justify-center">
+                  <Share2 className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-white text-xs">LinkedIn</span>
+              </button>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
