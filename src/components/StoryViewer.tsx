@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical, Star, AtSign, MoreHorizontal, Plus } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical, Star, AtSign, MoreHorizontal } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from './ui/button';
@@ -87,6 +87,9 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
           clearInterval(timer);
           if (currentIndex < stories.length - 1) {
             onNext();
+          } else if (isOwnStory) {
+            // عند انتهاء آخر قصة للمستخدم، انتقل لصفحة إنشاء قصة جديدة
+            navigate('/create-story');
           } else {
             onClose();
           }
@@ -476,19 +479,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
 
       {/* Media content */}
       <div className="relative w-full h-full flex items-center justify-center">
-        {currentIndex === stories.length - 1 && isOwnStory ? (
-          // زر + في نهاية القصص الخاصة بالمستخدم
-          <div 
-            onClick={() => navigate('/create-story')}
-            className="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-gradient-to-b from-gray-900 to-black"
-          >
-            <div className="w-28 h-28 rounded-full border-4 border-primary flex items-center justify-center mb-4 hover:scale-105 transition-transform">
-              <Plus className="w-16 h-16 text-primary" />
-            </div>
-            <p className="text-foreground text-xl font-semibold">إضافة قصة</p>
-            <p className="text-muted-foreground text-sm mt-2">أضف المزيد من القصص</p>
-          </div>
-        ) : currentStory.media_type === 'video' ? (
+        {currentStory.media_type === 'video' ? (
           <video 
             src={currentStory.media_url}
             className="max-h-full max-w-full object-contain"
