@@ -5,7 +5,7 @@ import UserProfile from '@/components/UserProfile';
 import WalletCard from '@/components/WalletCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, MessageCircle, Bookmark, Wallet, Plus } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Wallet, Plus, Play, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HighlightCircle } from '@/components/HighlightCircle';
 import { CreateHighlightDialog } from '@/components/CreateHighlightDialog';
@@ -20,9 +20,10 @@ const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [userPosts, setUserPosts] = useState<any[]>([]);
+  const [userReels, setUserReels] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [todayEarnings, setTodayEarnings] = useState(0);
-  const [activeTab, setActiveTab] = useState<'posts' | 'saved' | 'stats' | 'wallet'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'reels' | 'saved' | 'stats' | 'wallet'>('posts');
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [highlights, setHighlights] = useState<any[]>([]);
   const [showCreateHighlight, setShowCreateHighlight] = useState(false);
@@ -57,6 +58,7 @@ const Profile = () => {
       if (targetUserId) {
         await loadProfile(targetUserId, isOwn);
         await loadPosts(targetUserId);
+        await loadReels(targetUserId);
         await loadHighlights(targetUserId);
       }
     } catch (error) {
@@ -241,6 +243,42 @@ const Profile = () => {
     }
   };
 
+  const loadReels = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('reels')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUserReels(data || []);
+
+      // Subscribe to realtime changes
+      const channel = supabase
+        .channel('user-reels-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'reels',
+            filter: `user_id=eq.${userId}`
+          },
+          () => {
+            loadReels(userId);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (error) {
+      console.error('Error loading reels:', error);
+    }
+  };
+
   const loadHighlights = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -389,6 +427,20 @@ const Profile = () => {
               >
                 المنشورات
                 {activeTab === 'posts' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab('reels')}
+                className={`flex-1 min-w-[80px] py-3 text-center font-semibold transition-colors relative whitespace-nowrap flex items-center justify-center gap-2 ${
+                  activeTab === 'reels'
+                    ? 'text-primary'
+                    : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                <Play className="w-4 h-4" />
+                الريلز
+                {activeTab === 'reels' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
                 )}
               </button>
@@ -557,6 +609,70 @@ const Profile = () => {
                 ) : (
                   <div className="col-span-3 text-center py-8">
                     <p className="text-gray-600 text-xs opacity-50">لا توجد منشورات بعد</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Reels Grid - Responsive */}
+            {activeTab === 'reels' && (
+              <div className="grid grid-cols-3 gap-0.5 sm:gap-1 lg:gap-2 mt-6 sm:mt-8">
+                {userReels.length > 0 ? (
+                  userReels.map((reel) => (
+                    <div 
+                      key={reel.id} 
+                      className="relative aspect-[9/16] group cursor-pointer"
+                      onClick={() => navigate('/shorts')}
+                    >
+                      {reel.thumbnail_url ? (
+                        <img 
+                          src={reel.thumbnail_url} 
+                          alt="Reel"
+                          className="w-full h-full object-cover rounded-sm lg:rounded-md"
+                        />
+                      ) : (
+                        <video
+                          src={reel.video_url}
+                          className="w-full h-full object-cover rounded-sm lg:rounded-md"
+                          muted
+                        />
+                      )}
+                      {/* Play Icon Overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Play className="w-8 h-8 text-white/80 fill-white/80" />
+                      </div>
+                      {/* Views Count */}
+                      <div className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-xs">
+                        <Eye className="w-4 h-4" />
+                        <span>{reel.views_count || 0}</span>
+                      </div>
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-sm lg:rounded-md">
+                        <div className="flex items-center space-x-3 sm:space-x-4 text-white text-sm sm:text-base lg:text-lg">
+                          <div className="flex items-center space-x-1">
+                            <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
+                            <span className="font-semibold">{reel.likes_count || 0}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
+                            <span className="font-semibold">{reel.comments_count || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center py-8">
+                    <p className="text-gray-600 text-xs opacity-50">لا توجد ريلز بعد</p>
+                    {isOwnProfile && (
+                      <Button
+                        onClick={() => navigate('/create-reel')}
+                        className="mt-4 bg-primary hover:bg-primary/90"
+                      >
+                        <Play className="w-4 h-4 ml-2" />
+                        إنشاء ريل جديد
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
