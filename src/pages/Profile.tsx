@@ -355,7 +355,7 @@ const Profile = () => {
   const userData = {
     username: profile?.username || user?.user_metadata?.username || 'مستخدم',
     displayName: profile?.full_name || user?.user_metadata?.full_name || 'مستخدم',
-    avatar: profile?.avatar_url || user?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+    avatar: profile?.avatar_url || user?.user_metadata?.avatar_url || '/default-avatar.jpg',
     followers: profile?.followers_count || 0,
     following: profile?.following_count || 0,
     posts: userPosts.length,

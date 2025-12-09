@@ -94,7 +94,7 @@ const Index = () => {
         id: post.id,
         userId: post.user_id,
         username: post.profiles?.username || post.profiles?.full_name || 'مستخدم',
-        userAvatar: post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+        userAvatar: post.profiles?.avatar_url || '/default-avatar.jpg',
         image: post.media_url,
         caption: post.content,
         likes: post.likes_count || 0,
@@ -141,7 +141,7 @@ const Index = () => {
                 {userProfile && (
                   <StoryCircle
                     username={userProfile.username || 'أنت'}
-                    avatar={userProfile.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
+                    avatar={userProfile.avatar_url || '/default-avatar.jpg'}
                     hasStory={stories[userId]?.stories.length > 0}
                     isOwn={true}
                     onClick={() => {
