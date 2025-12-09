@@ -219,7 +219,7 @@ const Messages = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary to-primary/70">
                     <img
-                      src={otherUser.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'}
+                      src={otherUser.avatar_url || '/default-avatar.jpg'}
                       alt={otherUser.username}
                       className="w-full h-full object-cover"
                     />

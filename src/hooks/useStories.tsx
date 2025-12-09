@@ -98,7 +98,7 @@ export const useStories = (currentUserId?: string) => {
             user: {
               id: profile.id,
               username: profile.username || 'مستخدم',
-              avatar_url: profile.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+              avatar_url: profile.avatar_url || '/default-avatar.jpg',
               full_name: profile.full_name || 'مستخدم'
             },
             stories: [],

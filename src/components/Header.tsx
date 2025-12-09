@@ -150,7 +150,7 @@ const Header = () => {
   const userData = {
     username: user?.user_metadata?.username || 'your_username',
     displayName: user?.user_metadata?.full_name || 'Your Name', 
-    avatar: profile?.avatar_url || user?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+    avatar: profile?.avatar_url || user?.user_metadata?.avatar_url || '/default-avatar.jpg',
     followers: 1248,
     following: 567,
     posts: 127,

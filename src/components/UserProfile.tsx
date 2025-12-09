@@ -471,7 +471,7 @@ const UserProfile = ({
                     onClick={handleAvatarClick}
                   >
                     <img 
-                      src={avatarUrl || '/placeholder.svg'} 
+                      src={avatarUrl || '/default-avatar.jpg'} 
                       alt={displayName} 
                       className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background object-cover transition-opacity group-hover:opacity-75 shadow-lg"
                     />
@@ -494,7 +494,7 @@ const UserProfile = ({
                 </>
               ) : (
                 <img 
-                  src={avatarUrl || '/placeholder.svg'} 
+                  src={avatarUrl || '/default-avatar.jpg'} 
                   alt={displayName} 
                   className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background object-cover shadow-lg"
                 />
