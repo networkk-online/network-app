@@ -8,6 +8,7 @@ import { Crown, MapPin, School, Briefcase, Users } from "lucide-react";
 import { toast } from "sonner";
 import { FollowButton } from "@/components/FollowButton";
 import Header from "@/components/Header";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 
 interface RankedUser {
   id: string;
@@ -20,6 +21,7 @@ interface RankedUser {
   school?: string;
   profession?: string;
   gender?: string;
+  is_verified?: boolean;
 }
 
 const LocalFameRank = () => {
@@ -62,7 +64,7 @@ const LocalFameRank = () => {
       // Load all rankings
       const { data: all, error: allError } = await supabase
         .from("profiles")
-        .select("id, username, full_name, avatar_url, fame_score, followers_count, location, school, profession, gender")
+        .select("id, username, full_name, avatar_url, fame_score, followers_count, location, school, profession, gender, is_verified")
         .order("fame_score", { ascending: false })
         .limit(50);
 
@@ -73,7 +75,7 @@ const LocalFameRank = () => {
       if (currentUser?.location) {
         const { data: location } = await supabase
           .from("profiles")
-          .select("id, username, full_name, avatar_url, fame_score, followers_count, location, school, profession, gender")
+          .select("id, username, full_name, avatar_url, fame_score, followers_count, location, school, profession, gender, is_verified")
           .eq("location", currentUser.location)
           .order("fame_score", { ascending: false })
           .limit(20);
@@ -151,7 +153,10 @@ const LocalFameRank = () => {
               <AvatarFallback>{user.username?.[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <h3 className="font-semibold text-foreground">{user.full_name || user.username}</h3>
+              <div className="flex items-center gap-1">
+                <h3 className="font-semibold text-foreground">{user.full_name || user.username}</h3>
+                {user.is_verified && <VerifiedBadge size="sm" />}
+              </div>
               <p className="text-sm text-muted-foreground">@{user.username}</p>
             </div>
           </div>

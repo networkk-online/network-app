@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 
 interface SearchProfile {
   id: string;
@@ -17,6 +18,7 @@ interface SearchProfile {
   avatar_url: string;
   bio: string;
   followers_count: number;
+  is_verified?: boolean;
 }
 
 interface SearchPost {
@@ -193,7 +195,10 @@ const Search = () => {
           </AvatarFallback>
         </Avatar>
         <div>
-          <h3 className="text-white font-semibold">{user.full_name || user.username}</h3>
+          <div className="flex items-center gap-1">
+            <h3 className="text-white font-semibold">{user.full_name || user.username}</h3>
+            {user.is_verified && <VerifiedBadge size="sm" />}
+          </div>
           <p className="text-gray-400 text-sm">@{user.username}</p>
           {user.bio && (
             <p className="text-gray-500 text-sm mt-1 line-clamp-1">{user.bio}</p>

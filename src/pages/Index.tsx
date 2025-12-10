@@ -83,7 +83,8 @@ const Index = () => {
           profiles!posts_user_id_fkey (
             username,
             full_name,
-            avatar_url
+            avatar_url,
+            is_verified
           )
         `)
         .order('created_at', { ascending: false });
@@ -95,6 +96,7 @@ const Index = () => {
         userId: post.user_id,
         username: post.profiles?.username || post.profiles?.full_name || 'مستخدم',
         userAvatar: post.profiles?.avatar_url || '/default-avatar.jpg',
+        isVerified: post.profiles?.is_verified || false,
         image: post.media_url,
         caption: post.content,
         likes: post.likes_count || 0,

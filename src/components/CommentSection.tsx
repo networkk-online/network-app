@@ -8,6 +8,7 @@ import { Loader2, Send, Trash2, MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 
 interface CommentSectionProps {
   type: 'post' | 'reel';
@@ -38,6 +39,7 @@ const CommentItem = ({ comment, currentUserId, onDelete, onReply, level = 0 }: C
           <span className="font-semibold text-sm">
             {comment.profiles?.username || 'مستخدم'}
           </span>
+          {comment.profiles?.is_verified && <VerifiedBadge size="sm" />}
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(comment.created_at), {
               addSuffix: true,

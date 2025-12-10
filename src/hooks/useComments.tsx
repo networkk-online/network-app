@@ -13,6 +13,7 @@ export interface Comment {
     username: string | null;
     avatar_url: string | null;
     full_name: string | null;
+    is_verified?: boolean;
   };
   replies?: Comment[];
 }
@@ -41,7 +42,7 @@ export const useComments = (type: 'post' | 'reel', itemId: string) => {
         const userIds = commentsData.map((c: any) => c.user_id);
         const { data: profilesData } = await supabase
           .from('profiles')
-          .select('id, username, avatar_url, full_name')
+          .select('id, username, avatar_url, full_name, is_verified')
           .in('id', userIds);
 
         const profilesMap = new Map(profilesData?.map((p: any) => [p.id, p]) || []);
