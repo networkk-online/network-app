@@ -10,12 +10,15 @@ import { useSavedPosts } from '@/hooks/useSavedPosts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CommentSection } from '@/components/CommentSection';
 import { useMessages } from '@/hooks/useMessages';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
+
 
 interface PostProps {
   id: string;
   userId: string;
   username: string;
   userAvatar: string;
+  isVerified?: boolean;
   image?: string;
   caption: string;
   likes: number;
@@ -26,7 +29,7 @@ interface PostProps {
   voiceDuration?: number;
 }
 
-const Post = ({ id, userId, username, userAvatar, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration }: PostProps) => {
+const Post = ({ id, userId, username, userAvatar, isVerified = false, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration }: PostProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { createConversation } = useMessages();
@@ -265,7 +268,10 @@ const Post = ({ id, userId, username, userAvatar, image, caption, likes, comment
             className="w-10 h-10 rounded-full object-cover border-2 border-green-500"
           />
           <div>
-            <p className="font-semibold neon-text">{username}</p>
+            <div className="flex items-center gap-1">
+              <p className="font-semibold neon-text">{username}</p>
+              {isVerified && <VerifiedBadge size="sm" />}
+            </div>
             <div className="flex items-center space-x-2 text-xs text-gray-400">
               <span>{timeAgo}</span>
               <span>•</span>

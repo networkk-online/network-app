@@ -13,6 +13,7 @@ interface Story {
     username: string;
     avatar_url: string;
     full_name: string;
+    is_verified?: boolean;
   };
 }
 
@@ -23,6 +24,7 @@ interface GroupedStories {
       username: string;
       avatar_url: string;
       full_name: string;
+      is_verified?: boolean;
     };
     stories: Story[];
     hasViewed: boolean;
@@ -80,7 +82,7 @@ export const useStories = (currentUserId?: string) => {
       // Get profiles for all users
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, username, avatar_url, full_name')
+        .select('id, username, avatar_url, full_name, is_verified')
         .in('id', userIds);
 
       if (profilesError) throw profilesError;
@@ -99,7 +101,8 @@ export const useStories = (currentUserId?: string) => {
               id: profile.id,
               username: profile.username || 'مستخدم',
               avatar_url: profile.avatar_url || '/default-avatar.jpg',
-              full_name: profile.full_name || 'مستخدم'
+              full_name: profile.full_name || 'مستخدم',
+              is_verified: profile.is_verified || false
             },
             stories: [],
             hasViewed: false

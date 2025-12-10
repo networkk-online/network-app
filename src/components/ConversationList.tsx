@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { Conversation } from '@/hooks/useMessages';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -47,9 +48,12 @@ export const ConversationList = ({
 
             <div className="flex-1 min-w-0 text-right">
               <div className="flex items-center justify-between mb-1">
-                <p className={`font-semibold text-sm truncate ${hasUnread ? 'text-foreground' : 'text-foreground/80'}`}>
-                  {otherUser?.username || otherUser?.full_name || 'مستخدم'}
-                </p>
+                <div className="flex items-center gap-1">
+                  <p className={`font-semibold text-sm truncate ${hasUnread ? 'text-foreground' : 'text-foreground/80'}`}>
+                    {otherUser?.username || otherUser?.full_name || 'مستخدم'}
+                  </p>
+                  {otherUser?.is_verified && <VerifiedBadge size="sm" />}
+                </div>
                 {conv.last_message && (
                   <span className="text-xs text-muted-foreground shrink-0 mr-2">
                     {formatDistanceToNow(new Date(conv.last_message.created_at), {

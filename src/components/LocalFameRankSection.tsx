@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Crown, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 
 interface RankedUser {
   id: string;
@@ -14,6 +15,7 @@ interface RankedUser {
   avatar_url: string;
   fame_score: number;
   followers_count: number;
+  is_verified?: boolean;
 }
 
 const LocalFameRankSection = () => {
@@ -29,7 +31,7 @@ const LocalFameRankSection = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, username, full_name, avatar_url, fame_score, followers_count")
+        .select("id, username, full_name, avatar_url, fame_score, followers_count, is_verified")
         .order("fame_score", { ascending: false })
         .limit(5);
 
@@ -85,7 +87,10 @@ const LocalFameRankSection = () => {
               <AvatarFallback>{user.username?.[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm truncate">{user.full_name || user.username}</p>
+              <div className="flex items-center gap-1">
+                <p className="font-semibold text-sm truncate">{user.full_name || user.username}</p>
+                {user.is_verified && <VerifiedBadge size="sm" />}
+              </div>
               <p className="text-xs text-muted-foreground">@{user.username}</p>
             </div>
             <div className="text-left">

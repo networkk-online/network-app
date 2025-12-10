@@ -15,6 +15,7 @@ import { ReportDialog } from './ReportDialog';
 import { useFollow } from '@/hooks/useFollow';
 import { ScrollArea } from './ui/scroll-area';
 import { AddToHighlightDialog } from './AddToHighlightDialog';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface Story {
   id: string;
@@ -33,6 +34,7 @@ interface Story {
   profiles?: {
     username: string;
     avatar_url: string;
+    is_verified?: boolean;
   };
 }
 
@@ -192,7 +194,10 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
             className="w-10 h-10 rounded-full border-2 border-white"
           />
           <div>
-            <p className="text-white font-semibold">{currentStory.profiles?.username}</p>
+            <div className="flex items-center gap-1">
+              <p className="text-white font-semibold">{currentStory.profiles?.username}</p>
+              {currentStory.profiles?.is_verified && <VerifiedBadge size="sm" className="text-white" />}
+            </div>
             <p className="text-gray-300 text-sm">{timeAgo(currentStory.created_at)}</p>
           </div>
         </div>

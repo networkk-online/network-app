@@ -101,7 +101,7 @@ export const useMessages = (conversationId?: string) => {
           if (otherUserIds.length > 0) {
             const { data: profiles } = await supabase
               .from('profiles')
-              .select('id, username, full_name, avatar_url')
+              .select('id, username, full_name, avatar_url, is_verified')
               .in('id', otherUserIds);
             participants = profiles || [];
           }
