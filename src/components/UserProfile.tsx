@@ -17,6 +17,7 @@ import { CloseFriendsButton } from '@/components/CloseFriendsButton';
 import { CloseFriendsDialog } from '@/components/CloseFriendsDialog';
 import { BlockButton } from '@/components/BlockButton';
 import { ReportDialog } from '@/components/ReportDialog';
+import { ImageCropDialog } from '@/components/ImageCropDialog';
 
 interface UserProfileProps {
   username: string;
@@ -75,6 +76,10 @@ const UserProfile = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [coverUrl, setCoverUrl] = useState(coverImage);
+  const [showAvatarCrop, setShowAvatarCrop] = useState(false);
+  const [showCoverCrop, setShowCoverCrop] = useState(false);
+  const [pendingAvatarSrc, setPendingAvatarSrc] = useState<string | null>(null);
+  const [pendingCoverSrc, setPendingCoverSrc] = useState<string | null>(null);
   
   const form = useForm({
     defaultValues: {
@@ -180,41 +185,51 @@ const UserProfile = ({
     }
   };
 
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
+
+    const file = event.target.files[0];
+    
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "خطأ",
+        description: "الرجاء اختيار صورة فقط",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (file.size > 10000000) {
+      toast({
+        title: "خطأ",
+        description: "حجم الملف يجب أن يكون أقل من 10 ميجا",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPendingAvatarSrc(reader.result as string);
+      setShowAvatarCrop(true);
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input
+    event.target.value = '';
+  };
+
+  const handleAvatarCropComplete = async (croppedBlob: Blob) => {
     try {
       setUploading(true);
       
-      if (!event.target.files || event.target.files.length === 0) {
-        return;
-      }
-
-      const file = event.target.files[0];
-      
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "خطأ",
-          description: "الرجاء اختيار صورة فقط",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (file.size > 5000000) {
-        toast({
-          title: "خطأ",
-          description: "حجم الملف يجب أن يكون أقل من 5 ميجا",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const fileExt = file.name.split('.').pop();
-      const fileName = `avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(fileName, croppedBlob);
 
       if (uploadError) {
         console.error('Avatar upload error:', uploadError);
@@ -223,7 +238,7 @@ const UserProfile = ({
 
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
       setAvatarUrl(publicUrl);
 
@@ -244,6 +259,7 @@ const UserProfile = ({
       });
     } finally {
       setUploading(false);
+      setPendingAvatarSrc(null);
     }
   };
 
@@ -253,41 +269,51 @@ const UserProfile = ({
     }
   };
 
-  const handleCoverUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
+
+    const file = event.target.files[0];
+    
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "خطأ",
+        description: "الرجاء اختيار صورة فقط",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (file.size > 10000000) {
+      toast({
+        title: "خطأ",
+        description: "حجم الملف يجب أن يكون أقل من 10 ميجا",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPendingCoverSrc(reader.result as string);
+      setShowCoverCrop(true);
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input
+    event.target.value = '';
+  };
+
+  const handleCoverCropComplete = async (croppedBlob: Blob) => {
     try {
       setUploading(true);
       
-      if (!event.target.files || event.target.files.length === 0) {
-        return;
-      }
-
-      const file = event.target.files[0];
-      
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "خطأ",
-          description: "الرجاء اختيار صورة فقط",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (file.size > 10000000) {
-        toast({
-          title: "خطأ",
-          description: "حجم الملف يجب أن يكون أقل من 10 ميجا",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const fileExt = file.name.split('.').pop();
-      const fileName = `cover_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `cover_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from('covers')
-        .upload(filePath, file);
+        .upload(fileName, croppedBlob);
 
       if (uploadError) {
         console.error('Cover upload error:', uploadError);
@@ -296,7 +322,7 @@ const UserProfile = ({
 
       const { data: { publicUrl } } = supabase.storage
         .from('covers')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
       setCoverUrl(publicUrl);
 
@@ -317,8 +343,10 @@ const UserProfile = ({
       });
     } finally {
       setUploading(false);
+      setPendingCoverSrc(null);
     }
   };
+
 
   const onSubmit = async (data: any) => {
     if (!onUpdate) return;
@@ -456,7 +484,7 @@ const UserProfile = ({
                 ref={coverInputRef}
                 type="file"
                 accept="image/*"
-                onChange={handleCoverUpload}
+                onChange={handleCoverFileSelect}
                 className="hidden"
               />
             </>
@@ -492,7 +520,7 @@ const UserProfile = ({
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
-                    onChange={handleAvatarUpload}
+                    onChange={handleAvatarFileSelect}
                     className="hidden"
                   />
                 </>
@@ -752,6 +780,37 @@ const UserProfile = ({
         <div className="mt-4">
           <CloseFriendsButton userId={profileId} />
         </div>
+      )}
+
+      {/* Image Crop Dialogs */}
+      {pendingAvatarSrc && (
+        <ImageCropDialog
+          open={showAvatarCrop}
+          onClose={() => {
+            setShowAvatarCrop(false);
+            setPendingAvatarSrc(null);
+          }}
+          imageSrc={pendingAvatarSrc}
+          onCropComplete={handleAvatarCropComplete}
+          aspectRatio={1}
+          circularCrop={true}
+          title="قص صورة البروفايل"
+        />
+      )}
+
+      {pendingCoverSrc && (
+        <ImageCropDialog
+          open={showCoverCrop}
+          onClose={() => {
+            setShowCoverCrop(false);
+            setPendingCoverSrc(null);
+          }}
+          imageSrc={pendingCoverSrc}
+          onCropComplete={handleCoverCropComplete}
+          aspectRatio={16 / 9}
+          circularCrop={false}
+          title="قص صورة الغلاف"
+        />
       )}
     </div>
   );
