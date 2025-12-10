@@ -209,7 +209,7 @@ const UserProfile = ({
       }
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -217,6 +217,7 @@ const UserProfile = ({
         .upload(filePath, file);
 
       if (uploadError) {
+        console.error('Avatar upload error:', uploadError);
         throw uploadError;
       }
 
@@ -235,9 +236,10 @@ const UserProfile = ({
         description: "تم تحديث الصورة الشخصية بنجاح",
       });
     } catch (error: any) {
+      console.error('Avatar upload error:', error);
       toast({
         title: "خطأ",
-        description: error.message,
+        description: error.message || "حدث خطأ أثناء رفع الصورة",
         variant: "destructive"
       });
     } finally {
@@ -270,29 +272,30 @@ const UserProfile = ({
         return;
       }
 
-      if (file.size > 5000000) {
+      if (file.size > 10000000) {
         toast({
           title: "خطأ",
-          description: "حجم الملف يجب أن يكون أقل من 5 ميجا",
+          description: "حجم الملف يجب أن يكون أقل من 10 ميجا",
           variant: "destructive"
         });
         return;
       }
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `cover_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
+        .from('covers')
         .upload(filePath, file);
 
       if (uploadError) {
+        console.error('Cover upload error:', uploadError);
         throw uploadError;
       }
 
       const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
+        .from('covers')
         .getPublicUrl(filePath);
 
       setCoverUrl(publicUrl);
@@ -306,9 +309,10 @@ const UserProfile = ({
         description: "تم تحديث صورة الغلاف بنجاح",
       });
     } catch (error: any) {
+      console.error('Cover upload error:', error);
       toast({
         title: "خطأ",
-        description: error.message,
+        description: error.message || "حدث خطأ أثناء رفع الصورة",
         variant: "destructive"
       });
     } finally {
