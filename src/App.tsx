@@ -29,6 +29,22 @@ import AdminSettings from "./pages/AdminSettings";
 import SecretAdminAccess from "./pages/SecretAdminAccess";
 import Settings from "./pages/Settings";
 import LanguageSettings from "./pages/LanguageSettings";
+import BlockedAccounts from "./pages/settings/BlockedAccounts";
+import PrivacySettings from "./pages/settings/PrivacySettings";
+import MessagesSettings from "./pages/settings/MessagesSettings";
+import MutedAccounts from "./pages/settings/MutedAccounts";
+import ContentPreferences from "./pages/settings/ContentPreferences";
+import ArchiveDownload from "./pages/settings/ArchiveDownload";
+import AccessibilitySettings from "./pages/settings/AccessibilitySettings";
+import AccountStatus from "./pages/settings/AccountStatus";
+import CreatorTools from "./pages/settings/CreatorTools";
+import NotificationsSettings from "./pages/settings/NotificationsSettings";
+import HiddenWords from "./pages/settings/HiddenWords";
+import TagsMentions from "./pages/settings/TagsMentions";
+import SharingSettings from "./pages/settings/SharingSettings";
+import RestrictedAccounts from "./pages/settings/RestrictedAccounts";
+import StoryLocationSettings from "./pages/settings/StoryLocationSettings";
+import PrivacyCenter from "./pages/settings/PrivacyCenter";
 import Search from "./pages/Search";
 import Followers from "./pages/Followers";
 import Following from "./pages/Following";
@@ -77,6 +93,22 @@ const App = () => (
           <Route path="/admin/verification" element={<VerificationRequests />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/settings/language" element={<LanguageSettings />} />
+          <Route path="/settings/blocked" element={<BlockedAccounts />} />
+          <Route path="/settings/privacy" element={<PrivacySettings />} />
+          <Route path="/settings/messages" element={<MessagesSettings />} />
+          <Route path="/settings/muted" element={<MutedAccounts />} />
+          <Route path="/settings/content" element={<ContentPreferences />} />
+          <Route path="/settings/archive" element={<ArchiveDownload />} />
+          <Route path="/settings/accessibility" element={<AccessibilitySettings />} />
+          <Route path="/settings/account-status" element={<AccountStatus />} />
+          <Route path="/settings/creator-tools" element={<CreatorTools />} />
+          <Route path="/settings/notifications" element={<NotificationsSettings />} />
+          <Route path="/settings/hidden-words" element={<HiddenWords />} />
+          <Route path="/settings/tags-mentions" element={<TagsMentions />} />
+          <Route path="/settings/sharing" element={<SharingSettings />} />
+          <Route path="/settings/restricted" element={<RestrictedAccounts />} />
+          <Route path="/settings/story-location" element={<StoryLocationSettings />} />
+          <Route path="/settings/privacy-center" element={<PrivacyCenter />} />
           <Route path="/search" element={<Search />} />
           <Route path="/followers" element={<Followers />} />
           <Route path="/following" element={<Following />} />
