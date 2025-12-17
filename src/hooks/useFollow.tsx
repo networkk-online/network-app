@@ -58,9 +58,13 @@ export const useFollow = (targetUserId?: string) => {
       return;
     }
 
+    // Optimistic update - update UI immediately
+    const wasFollowing = isFollowing;
+    setIsFollowing(!wasFollowing);
     setLoading(true);
+
     try {
-      if (isFollowing) {
+      if (wasFollowing) {
         const { error } = await supabase
           .from('follows')
           .delete()
@@ -69,7 +73,6 @@ export const useFollow = (targetUserId?: string) => {
 
         if (error) throw error;
 
-        setIsFollowing(false);
         toast({
           title: 'تم إلغاء المتابعة',
           description: 'تم إلغاء المتابعة بنجاح',
@@ -84,13 +87,14 @@ export const useFollow = (targetUserId?: string) => {
 
         if (error) throw error;
 
-        setIsFollowing(true);
         toast({
           title: 'تمت المتابعة',
           description: 'تم متابعة المستخدم بنجاح',
         });
       }
     } catch (error: any) {
+      // Revert optimistic update on error
+      setIsFollowing(wasFollowing);
       console.error('Error toggling follow:', error);
       toast({
         title: 'خطأ',
