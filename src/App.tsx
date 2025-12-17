@@ -28,6 +28,7 @@ import ManageAds from "./pages/ManageAds";
 import AdminSettings from "./pages/AdminSettings";
 import SecretAdminAccess from "./pages/SecretAdminAccess";
 import Settings from "./pages/Settings";
+import LanguageSettings from "./pages/LanguageSettings";
 import Search from "./pages/Search";
 import Followers from "./pages/Followers";
 import Following from "./pages/Following";
@@ -75,6 +76,7 @@ const App = () => (
           <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/verification" element={<VerificationRequests />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/settings/language" element={<LanguageSettings />} />
           <Route path="/search" element={<Search />} />
           <Route path="/followers" element={<Followers />} />
           <Route path="/following" element={<Following />} />
