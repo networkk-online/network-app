@@ -8,16 +8,23 @@ interface FollowButtonProps {
   size?: 'default' | 'sm' | 'lg' | 'icon';
   className?: string;
   showIcon?: boolean;
+  onOptimisticChange?: (nextIsFollowing: boolean, prevIsFollowing: boolean) => void;
+  onRevertChange?: (prevIsFollowing: boolean, optimisticIsFollowing: boolean) => void;
 }
 
-export const FollowButton = ({ 
-  userId, 
-  variant = 'default', 
+export const FollowButton = ({
+  userId,
+  variant = 'default',
   size = 'default',
   className = '',
-  showIcon = true 
+  showIcon = true,
+  onOptimisticChange,
+  onRevertChange,
 }: FollowButtonProps) => {
-  const { isFollowing, loading, toggleFollow, isOwnProfile } = useFollow(userId);
+  const { isFollowing, loading, toggleFollow, isOwnProfile } = useFollow(userId, {
+    onOptimisticChange,
+    onRevertChange,
+  });
 
   if (isOwnProfile) {
     return null;
