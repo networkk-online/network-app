@@ -80,6 +80,12 @@ const UserProfile = ({
   const [showCoverCrop, setShowCoverCrop] = useState(false);
   const [pendingAvatarSrc, setPendingAvatarSrc] = useState<string | null>(null);
   const [pendingCoverSrc, setPendingCoverSrc] = useState<string | null>(null);
+
+  const [followersCount, setFollowersCount] = useState(followers);
+
+  useEffect(() => {
+    setFollowersCount(followers);
+  }, [followers]);
   
   const form = useForm({
     defaultValues: {
@@ -541,7 +547,7 @@ const UserProfile = ({
                   <p className="text-xs sm:text-sm text-muted-foreground">منشورات</p>
                 </div>
                 <button onClick={() => navigate('/followers')} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
-                  <p className="text-xl sm:text-2xl font-bold text-foreground">{followers}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-foreground">{followersCount}</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">متابع</p>
                 </button>
                 <button onClick={() => navigate('/following')} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
@@ -714,6 +720,15 @@ const UserProfile = ({
                 variant="default"
                 size="lg"
                 showIcon={false}
+                onOptimisticChange={(next, prev) => {
+                  if (next === prev) return;
+                  setFollowersCount((c) => Math.max(0, c + (next ? 1 : -1)));
+                }}
+                onRevertChange={(prev, optimistic) => {
+                  if (prev === optimistic) return;
+                  // revert the previous optimistic delta
+                  setFollowersCount((c) => Math.max(0, c + (prev ? 1 : -1)));
+                }}
                 className="flex-1 rounded-lg font-semibold text-base h-11 bg-green-500 hover:bg-green-600 text-white"
               />
               <Button

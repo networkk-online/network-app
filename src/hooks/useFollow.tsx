@@ -2,7 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export const useFollow = (targetUserId?: string) => {
+export type UseFollowOptions = {
+  onOptimisticChange?: (nextIsFollowing: boolean, prevIsFollowing: boolean) => void;
+  onRevertChange?: (prevIsFollowing: boolean, optimisticIsFollowing: boolean) => void;
+};
+
+export const useFollow = (targetUserId?: string, options?: UseFollowOptions) => {
   const { toast } = useToast();
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -19,7 +24,9 @@ export const useFollow = (targetUserId?: string) => {
   }, [currentUserId, targetUserId]);
 
   const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     setCurrentUserId(user?.id || null);
   };
 
@@ -60,9 +67,11 @@ export const useFollow = (targetUserId?: string) => {
 
     // Optimistic update - update UI immediately
     const wasFollowing = isFollowing;
-    setIsFollowing(!wasFollowing);
-    setLoading(true);
+    const optimisticIsFollowing = !wasFollowing;
+    setIsFollowing(optimisticIsFollowing);
+    options?.onOptimisticChange?.(optimisticIsFollowing, wasFollowing);
 
+    setLoading(true);
     try {
       if (wasFollowing) {
         const { error } = await supabase
@@ -78,12 +87,10 @@ export const useFollow = (targetUserId?: string) => {
           description: 'تم إلغاء المتابعة بنجاح',
         });
       } else {
-        const { error } = await supabase
-          .from('follows')
-          .insert({
-            follower_id: currentUserId,
-            following_id: targetUserId,
-          });
+        const { error } = await supabase.from('follows').insert({
+          follower_id: currentUserId,
+          following_id: targetUserId,
+        });
 
         if (error) throw error;
 
@@ -95,6 +102,8 @@ export const useFollow = (targetUserId?: string) => {
     } catch (error: any) {
       // Revert optimistic update on error
       setIsFollowing(wasFollowing);
+      options?.onRevertChange?.(wasFollowing, optimisticIsFollowing);
+
       console.error('Error toggling follow:', error);
       toast({
         title: 'خطأ',
@@ -104,7 +113,7 @@ export const useFollow = (targetUserId?: string) => {
     } finally {
       setLoading(false);
     }
-  }, [currentUserId, targetUserId, isFollowing, toast]);
+  }, [currentUserId, targetUserId, isFollowing, toast, options]);
 
   return {
     isFollowing,
