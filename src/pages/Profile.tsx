@@ -368,7 +368,7 @@ const Profile = () => {
     <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="pt-16 sm:pt-20 pb-8">
+      <main className="pt-16 sm:pt-20 pb-28">
         <div className="desktop-layout">
           <div className="container-responsive mobile-padding">
             <UserProfile 
