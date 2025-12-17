@@ -22,7 +22,15 @@ import {
   Type, 
   VolumeX, 
   Settings2,
-  ChevronLeft
+  ChevronLeft,
+  Download,
+  Accessibility,
+  Globe,
+  Monitor,
+  UserCheck,
+  BriefcaseBusiness,
+  Shield,
+  UserCog
 } from 'lucide-react';
 
 interface SettingItemProps {
@@ -282,28 +290,55 @@ const Settings = () => {
               />
             </SettingSection>
 
-            {/* الإشعارات */}
-            <SettingSection title="الإشعارات">
+            {/* تطبيقك ووسائطك */}
+            <SettingSection title="تطبيقك ووسائطك">
               <SettingItem
-                icon={<MessageCircle className="w-5 h-5" />}
-                title="السماح بالرسائل من غير الأصدقاء"
-                hasSwitch
-                switchValue={settings.allow_messages_from_non_friends}
-                onSwitchChange={(value) => handleToggle('allow_messages_from_non_friends', value)}
+                icon={<Download className="w-5 h-5" />}
+                title="الأرشفة والتنزيل"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
               />
               <SettingItem
-                icon={<MessageSquare className="w-5 h-5" />}
-                title="إشعارات الإعجابات"
-                hasSwitch
-                switchValue={settings.likes_notifications}
-                onSwitchChange={(value) => handleToggle('likes_notifications', value)}
+                icon={<Accessibility className="w-5 h-5" />}
+                title="إمكانية الوصول"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
               />
               <SettingItem
-                icon={<Users className="w-5 h-5" />}
-                title="إشعارات المتابعة"
-                hasSwitch
-                switchValue={settings.follows_notifications}
-                onSwitchChange={(value) => handleToggle('follows_notifications', value)}
+                icon={<Globe className="w-5 h-5" />}
+                title="اللغة"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<Monitor className="w-5 h-5" />}
+                title="أذونات الموقع الإلكتروني"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+            </SettingSection>
+
+            {/* مركز العائلة */}
+            <SettingSection title="مركز العائلة">
+              <SettingItem
+                icon={<UserCheck className="w-5 h-5" />}
+                title="الإشراف على حسابات المراهقين"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+            </SettingSection>
+
+            {/* مزيد من المعلومات والدعم */}
+            <SettingSection title="مزيد من المعلومات والدعم">
+              <SettingItem
+                icon={<BriefcaseBusiness className="w-5 h-5" />}
+                title="الوظائف"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<Shield className="w-5 h-5" />}
+                title="مركز الخصوصية"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<UserCog className="w-5 h-5" />}
+                title="حالة الحساب"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
               />
             </SettingSection>
           </div>
