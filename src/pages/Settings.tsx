@@ -305,7 +305,7 @@ const Settings = () => {
               <SettingItem
                 icon={<Globe className="w-5 h-5" />}
                 title="اللغة"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/language')}
               />
               <SettingItem
                 icon={<Monitor className="w-5 h-5" />}
