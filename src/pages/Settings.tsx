@@ -3,12 +3,71 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Heart, MessageCircle, Bell, Shield, Database } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Briefcase, 
+  BarChart3, 
+  CreditCard, 
+  Lock, 
+  Users, 
+  Ban, 
+  MapPin, 
+  MessageCircle, 
+  AtSign, 
+  MessageSquare, 
+  Share2, 
+  UserX, 
+  Type, 
+  VolumeX, 
+  Settings2,
+  ChevronLeft
+} from 'lucide-react';
+
+interface SettingItemProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  onClick?: () => void;
+  hasSwitch?: boolean;
+  switchValue?: boolean;
+  onSwitchChange?: (value: boolean) => void;
+}
+
+const SettingItem = ({ icon, title, subtitle, onClick, hasSwitch, switchValue, onSwitchChange }: SettingItemProps) => (
+  <div 
+    className={`flex items-center justify-between py-3 ${onClick ? 'cursor-pointer hover:bg-gray-900/50' : ''}`}
+    onClick={onClick}
+  >
+    <div className="flex items-center gap-3">
+      <div className="text-gray-400">
+        {icon}
+      </div>
+      <div>
+        <p className="text-white text-sm">{title}</p>
+        {subtitle && <p className="text-gray-500 text-xs">{subtitle}</p>}
+      </div>
+    </div>
+    {hasSwitch ? (
+      <Switch
+        checked={switchValue}
+        onCheckedChange={onSwitchChange}
+      />
+    ) : onClick ? (
+      <ChevronLeft className="w-5 h-5 text-gray-500" />
+    ) : null}
+  </div>
+);
+
+const SettingSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div className="mb-6">
+    <h3 className="text-green-500 text-sm font-medium mb-2 px-1">{title}</h3>
+    <div className="space-y-1">
+      {children}
+    </div>
+  </div>
+);
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -17,7 +76,6 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   
-  // Settings state
   const [settings, setSettings] = useState({
     likes_enabled: true,
     comments_enabled: true,
@@ -77,56 +135,24 @@ const Settings = () => {
     }
   };
 
-  const handleToggle = (key: string, value: boolean) => {
+  const handleToggle = async (key: string, value: boolean) => {
     setSettings(prev => ({
       ...prev,
       [key]: value
     }));
-  };
-
-  const handleSave = async () => {
-    if (!userId) return;
     
-    setSaving(true);
-    try {
-      const { error } = await supabase
-        .from('user_settings')
-        .upsert({
-          user_id: userId,
-          ...settings,
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "تم الحفظ",
-        description: "تم حفظ إعداداتك بنجاح",
-      });
-    } catch (error: any) {
-      console.error('Error saving settings:', error);
-      toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء حفظ الإعدادات",
-        variant: "destructive"
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleBackup = async () => {
-    try {
-      toast({
-        title: "جاري النسخ الاحتياطي",
-        description: "سيتم إشعارك عند اكتمال النسخ الاحتياطي",
-      });
-      // Implement backup logic here
-    } catch (error: any) {
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء النسخ الاحتياطي",
-        variant: "destructive"
-      });
+    if (userId) {
+      try {
+        await supabase
+          .from('user_settings')
+          .upsert({
+            user_id: userId,
+            ...settings,
+            [key]: value,
+          });
+      } catch (error) {
+        console.error('Error saving setting:', error);
+      }
     }
   };
 
@@ -147,7 +173,7 @@ const Settings = () => {
     <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="pt-20 pb-8">
+      <main className="pt-20 pb-24">
         <div className="desktop-layout">
           <div className="container-responsive mobile-padding max-w-2xl mx-auto">
             {/* Header */}
@@ -163,185 +189,123 @@ const Settings = () => {
               <h1 className="text-2xl font-bold text-white mr-4">الإعدادات</h1>
             </div>
 
-            <div className="space-y-6">
-              {/* Privacy Settings */}
-              <Card className="bg-gray-900 border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center">
-                    <Heart className="w-5 h-5 ml-2 text-green-500" />
-                    إعدادات الإعجابات
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    تحكم في من يمكنه التفاعل بالإعجاب على منشوراتك
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-white">تفعيل الإعجابات</Label>
-                      <p className="text-sm text-gray-400">السماح للآخرين بالإعجاب بمنشوراتك</p>
-                    </div>
-                    <Switch
-                      checked={settings.likes_enabled}
-                      onCheckedChange={(value) => handleToggle('likes_enabled', value)}
-                    />
-                  </div>
-                  <Separator className="bg-gray-800" />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-white">إشعارات الإعجابات</Label>
-                      <p className="text-sm text-gray-400">تلقي إشعار عند إعجاب أحدهم بمنشورك</p>
-                    </div>
-                    <Switch
-                      checked={settings.likes_notifications}
-                      onCheckedChange={(value) => handleToggle('likes_notifications', value)}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+            {/* للمحترفين */}
+            <SettingSection title="للمحترفين">
+              <SettingItem
+                icon={<Briefcase className="w-5 h-5" />}
+                title="حساب احترافي"
+                onClick={() => navigate('/business-account')}
+              />
+              <SettingItem
+                icon={<BarChart3 className="w-5 h-5" />}
+                title="أدوات وعناصر تحكم المنشئ"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<CreditCard className="w-5 h-5" />}
+                title="مدفوعات الإعلانات"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+            </SettingSection>
 
-              {/* Comments Settings */}
-              <Card className="bg-gray-900 border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center">
-                    <MessageCircle className="w-5 h-5 ml-2 text-blue-500" />
-                    إعدادات التعليقات
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    تحكم في من يمكنه التعليق على منشوراتك
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-white">تفعيل التعليقات</Label>
-                      <p className="text-sm text-gray-400">السماح للآخرين بالتعليق على منشوراتك</p>
-                    </div>
-                    <Switch
-                      checked={settings.comments_enabled}
-                      onCheckedChange={(value) => handleToggle('comments_enabled', value)}
-                    />
-                  </div>
-                  <Separator className="bg-gray-800" />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-white">إشعارات التعليقات</Label>
-                      <p className="text-sm text-gray-400">تلقي إشعار عند تعليق أحدهم على منشورك</p>
-                    </div>
-                    <Switch
-                      checked={settings.comments_notifications}
-                      onCheckedChange={(value) => handleToggle('comments_notifications', value)}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+            {/* من يمكنه رؤية محتواك */}
+            <SettingSection title="من يمكنه رؤية محتواك">
+              <SettingItem
+                icon={<Lock className="w-5 h-5" />}
+                title="خصوصية الحساب"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<Users className="w-5 h-5" />}
+                title="الأصدقاء المقربون"
+                onClick={() => navigate('/profile')}
+              />
+              <SettingItem
+                icon={<Ban className="w-5 h-5" />}
+                title="محظور"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<MapPin className="w-5 h-5" />}
+                title="القصة والموقع"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+            </SettingSection>
 
-              {/* Notifications Settings */}
-              <Card className="bg-gray-900 border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center">
-                    <Bell className="w-5 h-5 ml-2 text-yellow-500" />
-                    إعدادات الإشعارات
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    اختر أنواع الإشعارات التي تريد استقبالها
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-white">تفعيل جميع الإشعارات</Label>
-                      <p className="text-sm text-gray-400">تلقي جميع أنواع الإشعارات</p>
-                    </div>
-                    <Switch
-                      checked={settings.notifications_enabled}
-                      onCheckedChange={(value) => handleToggle('notifications_enabled', value)}
-                    />
-                  </div>
-                  <Separator className="bg-gray-800" />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-white">إشعارات المتابعة</Label>
-                      <p className="text-sm text-gray-400">تلقي إشعار عند متابعة أحدهم لك</p>
-                    </div>
-                    <Switch
-                      checked={settings.follows_notifications}
-                      onCheckedChange={(value) => handleToggle('follows_notifications', value)}
-                      disabled={!settings.notifications_enabled}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+            {/* كيف يمكن للآخرين التفاعل معك */}
+            <SettingSection title="كيف يمكن للآخرين التفاعل معك">
+              <SettingItem
+                icon={<MessageCircle className="w-5 h-5" />}
+                title="الرسائل وردود القصص"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<AtSign className="w-5 h-5" />}
+                title="الوسوم والإشارات"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<MessageSquare className="w-5 h-5" />}
+                title="التعليقات"
+                hasSwitch
+                switchValue={settings.comments_enabled}
+                onSwitchChange={(value) => handleToggle('comments_enabled', value)}
+              />
+              <SettingItem
+                icon={<Share2 className="w-5 h-5" />}
+                title="المشاركة وإعادة الاستخدام"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<UserX className="w-5 h-5" />}
+                title="الحسابات المقيدة"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<Type className="w-5 h-5" />}
+                title="الكلمات المخفية"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+            </SettingSection>
 
-              {/* Privacy & Security Settings */}
-              <Card className="bg-gray-900 border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center">
-                    <Shield className="w-5 h-5 ml-2 text-green-500" />
-                    الخصوصية والأمان
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    تحكم في خصوصية حسابك وأمانه
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-white">السماح بالرسائل من غير الأصدقاء</Label>
-                      <p className="text-sm text-gray-400">السماح لأي شخص بإرسال رسائل لك</p>
-                    </div>
-                    <Switch
-                      checked={settings.allow_messages_from_non_friends}
-                      onCheckedChange={(value) => handleToggle('allow_messages_from_non_friends', value)}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+            {/* ما تراه */}
+            <SettingSection title="ما تراه">
+              <SettingItem
+                icon={<VolumeX className="w-5 h-5" />}
+                title="الحسابات المكتومة"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+              <SettingItem
+                icon={<Settings2 className="w-5 h-5" />}
+                title="تفضيلات المحتوى"
+                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+              />
+            </SettingSection>
 
-              {/* Backup Settings */}
-              <Card className="bg-gray-900 border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center">
-                    <Database className="w-5 h-5 ml-2 text-purple-500" />
-                    النسخ الاحتياطي
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    احفظ نسخة احتياطية من بياناتك
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-white">النسخ الاحتياطي التلقائي</Label>
-                      <p className="text-sm text-gray-400">نسخ احتياطي تلقائي لبياناتك كل أسبوع</p>
-                    </div>
-                    <Switch
-                      checked={settings.auto_backup_enabled}
-                      onCheckedChange={(value) => handleToggle('auto_backup_enabled', value)}
-                    />
-                  </div>
-                  <Separator className="bg-gray-800" />
-                  <Button 
-                    onClick={handleBackup}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Database className="w-4 h-4 ml-2" />
-                    إنشاء نسخة احتياطية الآن
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Save Button */}
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full bg-primary hover:bg-primary/90"
-                size="lg"
-              >
-                {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
-              </Button>
-            </div>
+            {/* الإشعارات */}
+            <SettingSection title="الإشعارات">
+              <SettingItem
+                icon={<MessageCircle className="w-5 h-5" />}
+                title="السماح بالرسائل من غير الأصدقاء"
+                hasSwitch
+                switchValue={settings.allow_messages_from_non_friends}
+                onSwitchChange={(value) => handleToggle('allow_messages_from_non_friends', value)}
+              />
+              <SettingItem
+                icon={<MessageSquare className="w-5 h-5" />}
+                title="إشعارات الإعجابات"
+                hasSwitch
+                switchValue={settings.likes_notifications}
+                onSwitchChange={(value) => handleToggle('likes_notifications', value)}
+              />
+              <SettingItem
+                icon={<Users className="w-5 h-5" />}
+                title="إشعارات المتابعة"
+                hasSwitch
+                switchValue={settings.follows_notifications}
+                onSwitchChange={(value) => handleToggle('follows_notifications', value)}
+              />
+            </SettingSection>
           </div>
         </div>
       </main>
