@@ -30,7 +30,8 @@ import {
   UserCheck,
   BriefcaseBusiness,
   Shield,
-  UserCog
+  UserCog,
+  Bell
 } from 'lucide-react';
 
 interface SettingItemProps {
@@ -81,7 +82,6 @@ const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   
   const [settings, setSettings] = useState({
@@ -207,12 +207,12 @@ const Settings = () => {
               <SettingItem
                 icon={<BarChart3 className="w-5 h-5" />}
                 title="أدوات وعناصر تحكم المنشئ"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/creator-tools')}
               />
               <SettingItem
                 icon={<CreditCard className="w-5 h-5" />}
                 title="مدفوعات الإعلانات"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/withdraw')}
               />
             </SettingSection>
 
@@ -221,7 +221,7 @@ const Settings = () => {
               <SettingItem
                 icon={<Lock className="w-5 h-5" />}
                 title="خصوصية الحساب"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/privacy')}
               />
               <SettingItem
                 icon={<Users className="w-5 h-5" />}
@@ -231,12 +231,12 @@ const Settings = () => {
               <SettingItem
                 icon={<Ban className="w-5 h-5" />}
                 title="محظور"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/blocked')}
               />
               <SettingItem
                 icon={<MapPin className="w-5 h-5" />}
                 title="القصة والموقع"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/story-location')}
               />
             </SettingSection>
 
@@ -245,12 +245,12 @@ const Settings = () => {
               <SettingItem
                 icon={<MessageCircle className="w-5 h-5" />}
                 title="الرسائل وردود القصص"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/messages')}
               />
               <SettingItem
                 icon={<AtSign className="w-5 h-5" />}
                 title="الوسوم والإشارات"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/tags-mentions')}
               />
               <SettingItem
                 icon={<MessageSquare className="w-5 h-5" />}
@@ -262,17 +262,17 @@ const Settings = () => {
               <SettingItem
                 icon={<Share2 className="w-5 h-5" />}
                 title="المشاركة وإعادة الاستخدام"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/sharing')}
               />
               <SettingItem
                 icon={<UserX className="w-5 h-5" />}
                 title="الحسابات المقيدة"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/restricted')}
               />
               <SettingItem
                 icon={<Type className="w-5 h-5" />}
                 title="الكلمات المخفية"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/hidden-words')}
               />
             </SettingSection>
 
@@ -281,12 +281,21 @@ const Settings = () => {
               <SettingItem
                 icon={<VolumeX className="w-5 h-5" />}
                 title="الحسابات المكتومة"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/muted')}
               />
               <SettingItem
                 icon={<Settings2 className="w-5 h-5" />}
                 title="تفضيلات المحتوى"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/content')}
+              />
+            </SettingSection>
+
+            {/* الإشعارات */}
+            <SettingSection title="الإشعارات">
+              <SettingItem
+                icon={<Bell className="w-5 h-5" />}
+                title="إعدادات الإشعارات"
+                onClick={() => navigate('/settings/notifications')}
               />
             </SettingSection>
 
@@ -295,12 +304,12 @@ const Settings = () => {
               <SettingItem
                 icon={<Download className="w-5 h-5" />}
                 title="الأرشفة والتنزيل"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/archive')}
               />
               <SettingItem
                 icon={<Accessibility className="w-5 h-5" />}
                 title="إمكانية الوصول"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/accessibility')}
               />
               <SettingItem
                 icon={<Globe className="w-5 h-5" />}
@@ -333,12 +342,12 @@ const Settings = () => {
               <SettingItem
                 icon={<Shield className="w-5 h-5" />}
                 title="مركز الخصوصية"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/privacy-center')}
               />
               <SettingItem
                 icon={<UserCog className="w-5 h-5" />}
                 title="حالة الحساب"
-                onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })}
+                onClick={() => navigate('/settings/account-status')}
               />
             </SettingSection>
           </div>
