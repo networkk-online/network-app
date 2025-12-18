@@ -37,10 +37,10 @@ const Messages = () => {
 
   useEffect(() => {
     const userId = searchParams.get('userId');
-    if (userId && !isCreatingConversation && conversations.length > 0) {
+    if (userId && !isCreatingConversation && !loading) {
       startConversationWithUser(userId);
     }
-  }, [searchParams, conversations, isCreatingConversation]);
+  }, [searchParams, loading, isCreatingConversation]);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
