@@ -711,6 +711,7 @@ export type Database = {
           phone_number: string | null
           profession: string | null
           school: string | null
+          social_links: Json | null
           updated_at: string
           username: string | null
           website: string | null
@@ -739,6 +740,7 @@ export type Database = {
           phone_number?: string | null
           profession?: string | null
           school?: string | null
+          social_links?: Json | null
           updated_at?: string
           username?: string | null
           website?: string | null
@@ -767,6 +769,7 @@ export type Database = {
           phone_number?: string | null
           profession?: string | null
           school?: string | null
+          social_links?: Json | null
           updated_at?: string
           username?: string | null
           website?: string | null
