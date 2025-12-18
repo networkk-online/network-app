@@ -34,6 +34,7 @@ interface GroupedStories {
 export const useStories = (currentUserId?: string) => {
   const [stories, setStories] = useState<GroupedStories>({});
   const [loading, setLoading] = useState(true);
+  const [viewedUsers, setViewedUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadStories();
@@ -57,7 +58,7 @@ export const useStories = (currentUserId?: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentUserId]);
 
   const loadStories = async () => {
     try {
@@ -87,6 +88,17 @@ export const useStories = (currentUserId?: string) => {
 
       if (profilesError) throw profilesError;
 
+      // Get viewed stories for current user
+      let viewedStoryIds: string[] = [];
+      if (currentUserId) {
+        const { data: viewsData } = await supabase
+          .from('story_views')
+          .select('story_id')
+          .eq('user_id', currentUserId);
+        
+        viewedStoryIds = viewsData?.map(v => v.story_id) || [];
+      }
+
       // Group stories by user
       const grouped: GroupedStories = {};
       
@@ -115,6 +127,13 @@ export const useStories = (currentUserId?: string) => {
         });
       });
 
+      // Check if user has viewed all stories from each user
+      Object.keys(grouped).forEach(userId => {
+        const userStories = grouped[userId].stories;
+        const allViewed = userStories.every(story => viewedStoryIds.includes(story.id));
+        grouped[userId].hasViewed = allViewed || viewedUsers.has(userId);
+      });
+
       setStories(grouped);
     } catch (error) {
       console.error('Error loading stories:', error);
@@ -123,5 +142,16 @@ export const useStories = (currentUserId?: string) => {
     }
   };
 
-  return { stories, loading, reload: loadStories };
+  const markUserStoriesAsViewed = (userId: string) => {
+    setViewedUsers(prev => new Set([...prev, userId]));
+    setStories(prev => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        hasViewed: true
+      }
+    }));
+  };
+
+  return { stories, loading, reload: loadStories, markUserStoriesAsViewed };
 };

@@ -19,10 +19,11 @@ const Index = () => {
   const [userId, setUserId] = useState<string>('');
   const [userProfile, setUserProfile] = useState<any>(null);
   const [viewingStories, setViewingStories] = useState<any[]>([]);
+  const [viewingStoriesUserId, setViewingStoriesUserId] = useState<string>('');
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   
-  const { stories, loading: storiesLoading } = useStories(userId);
+  const { stories, loading: storiesLoading, markUserStoriesAsViewed } = useStories(userId);
 
   useEffect(() => {
     getCurrentUser();
@@ -64,10 +65,19 @@ const Index = () => {
     }
   };
 
-  const handleStoryClick = (userStories: any[]) => {
+  const handleStoryClick = (userStories: any[], storyUserId: string) => {
     setViewingStories(userStories);
+    setViewingStoriesUserId(storyUserId);
     setCurrentStoryIndex(0);
     setShowStoryViewer(true);
+  };
+
+  const handleCloseStoryViewer = () => {
+    setShowStoryViewer(false);
+    // Mark stories as viewed when closing
+    if (viewingStoriesUserId) {
+      markUserStoriesAsViewed(viewingStoriesUserId);
+    }
   };
 
   const handleCreateStory = () => {
@@ -76,34 +86,47 @@ const Index = () => {
 
   const loadPosts = async () => {
     try {
-      const { data, error } = await supabase
+      // Get posts first
+      const { data: postsData, error: postsError } = await supabase
         .from('posts')
-        .select(`
-          *,
-          profiles!posts_user_id_fkey (
-            username,
-            full_name,
-            avatar_url,
-            is_verified
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (postsError) throw postsError;
 
-      const formattedPosts = data?.map((post: any) => ({
-        id: post.id,
-        userId: post.user_id,
-        username: post.profiles?.username || post.profiles?.full_name || 'مستخدم',
-        userAvatar: post.profiles?.avatar_url || '/default-avatar.jpg',
-        isVerified: post.profiles?.is_verified || false,
-        image: post.media_url,
-        caption: post.content,
-        likes: post.likes_count || 0,
-        commentsCount: post.comments_count || 0,
-        timeAgo: getTimeAgo(post.created_at),
-        walletEarnings: 0
-      })) || [];
+      if (!postsData || postsData.length === 0) {
+        setPosts([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get unique user IDs
+      const userIds = [...new Set(postsData.map(post => post.user_id))];
+
+      // Get profiles for all users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, avatar_url, is_verified')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      const formattedPosts = postsData.map((post: any) => {
+        const profile = profilesData?.find(p => p.id === post.user_id);
+        return {
+          id: post.id,
+          userId: post.user_id,
+          username: profile?.username || profile?.full_name || 'مستخدم',
+          userAvatar: profile?.avatar_url || '/default-avatar.jpg',
+          isVerified: profile?.is_verified || false,
+          image: post.media_url,
+          caption: post.content,
+          likes: post.likes_count || 0,
+          commentsCount: post.comments_count || 0,
+          timeAgo: getTimeAgo(post.created_at),
+          walletEarnings: 0
+        };
+      });
 
       setPosts(formattedPosts);
     } catch (error: any) {
@@ -146,9 +169,10 @@ const Index = () => {
                     avatar={userProfile.avatar_url || '/default-avatar.jpg'}
                     hasStory={stories[userId]?.stories.length > 0}
                     isOwn={true}
+                    hasViewed={stories[userId]?.hasViewed || false}
                     onClick={() => {
                       if (stories[userId]?.stories.length > 0) {
-                        handleStoryClick(stories[userId].stories);
+                        handleStoryClick(stories[userId].stories, userId);
                       } else {
                         handleCreateStory();
                       }
@@ -166,7 +190,8 @@ const Index = () => {
                       username={userStory.user.username}
                       avatar={userStory.user.avatar_url}
                       hasStory={true}
-                      onClick={() => handleStoryClick(userStory.stories)}
+                      hasViewed={userStory.hasViewed}
+                      onClick={() => handleStoryClick(userStory.stories, userStory.user.id)}
                     />
                   );
                 })}
@@ -206,7 +231,7 @@ const Index = () => {
         <StoryViewer
           stories={viewingStories}
           currentIndex={currentStoryIndex}
-          onClose={() => setShowStoryViewer(false)}
+          onClose={handleCloseStoryViewer}
           onNext={() => setCurrentStoryIndex(prev => Math.min(prev + 1, viewingStories.length - 1))}
           onPrev={() => setCurrentStoryIndex(prev => Math.max(prev - 1, 0))}
         />
