@@ -567,11 +567,11 @@ const UserProfile = ({
                   <p className="text-xl sm:text-2xl font-bold text-foreground">{posts}</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">منشورات</p>
                 </div>
-                <button onClick={() => navigate('/followers')} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
+                <button onClick={() => navigate('/followers', { state: { profileId, username } })} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
                   <p className="text-xl sm:text-2xl font-bold text-foreground">{followersCount}</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">متابع</p>
                 </button>
-                <button onClick={() => navigate('/following')} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
+                <button onClick={() => navigate('/following', { state: { profileId, username } })} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
                   <p className="text-xl sm:text-2xl font-bold text-foreground">{following}</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">متابعون</p>
                 </button>
