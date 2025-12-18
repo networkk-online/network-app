@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Camera, MapPin, Calendar, BadgeCheck, MoreHorizontal, Share2, Copy, Check, Link as LinkIcon } from 'lucide-react';
+import { Camera, MapPin, Calendar, BadgeCheck, MoreHorizontal, Share2, Copy, Check, Link as LinkIcon, Instagram, Twitter, Youtube } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,28 @@ import { CloseFriendsDialog } from '@/components/CloseFriendsDialog';
 import { BlockButton } from '@/components/BlockButton';
 import { ReportDialog } from '@/components/ReportDialog';
 import { ImageCropDialog } from '@/components/ImageCropDialog';
+
+// Social media icons
+const TikTokIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
+  </svg>
+);
+
+const SnapchatIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03a3.17 3.17 0 01-.538-.074 4.776 4.776 0 00-.975-.12c-.329 0-.72.015-1.183.149-.715.209-1.154.72-2.154 1.438-.874.629-1.786 1.063-3.086 1.063-.03 0-.06 0-.089-.002-.03 0-.061.002-.091.002-1.3 0-2.212-.434-3.086-1.063-1-.718-1.439-1.229-2.154-1.438-.463-.134-.854-.149-1.183-.149a4.776 4.776 0 00-.975.12 3.14 3.14 0 01-.538.074h-.03c-.284 0-.479-.134-.554-.405-.061-.193-.106-.374-.135-.553-.045-.195-.104-.479-.165-.57-1.872-.283-2.905-.702-3.145-1.271a.49.49 0 01-.045-.225c-.016-.24.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.014l.015-.015c.182-.344.21-.644.12-.868-.195-.45-.884-.675-1.333-.81a2.557 2.557 0 01-.344-.119c-.823-.33-1.228-.72-1.213-1.168 0-.36.284-.689.735-.838.149-.061.326-.09.508-.09.121 0 .3.016.465.104.374.181.733.285 1.033.301.198 0 .326-.045.401-.09a33.4 33.4 0 01-.03-.51l-.003-.06c-.104-1.628-.23-3.654.299-4.847C7.547 1.069 10.904.793 11.894.793h.312z"/>
+  </svg>
+);
+
+interface SocialLinks {
+  instagram?: string;
+  twitter?: string;
+  tiktok?: string;
+  youtube?: string;
+  snapchat?: string;
+  website?: string;
+}
 
 interface UserProfileProps {
   username: string;
@@ -40,6 +62,7 @@ interface UserProfileProps {
   gender?: string;
   isVerified?: boolean;
   website?: string;
+  socialLinks?: SocialLinks;
 }
 
 const UserProfile = ({ 
@@ -62,7 +85,8 @@ const UserProfile = ({
   profession,
   gender,
   isVerified = false,
-  website
+  website,
+  socialLinks = {}
 }: UserProfileProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -99,7 +123,12 @@ const UserProfile = ({
       profession: profession || '',
       gender: gender || '',
       birthDate: birthDate || '',
-      website: website || ''
+      website: website || '',
+      instagram: socialLinks?.instagram || '',
+      twitter: socialLinks?.twitter || '',
+      tiktok: socialLinks?.tiktok || '',
+      youtube: socialLinks?.youtube || '',
+      snapchat: socialLinks?.snapchat || ''
     }
   });
 
@@ -113,11 +142,16 @@ const UserProfile = ({
       profession: profession || '',
       gender: gender || '',
       birthDate: birthDate || '',
-      website: website || ''
+      website: website || '',
+      instagram: socialLinks?.instagram || '',
+      twitter: socialLinks?.twitter || '',
+      tiktok: socialLinks?.tiktok || '',
+      youtube: socialLinks?.youtube || '',
+      snapchat: socialLinks?.snapchat || ''
     });
     setAvatarUrl(avatar);
     setCoverUrl(coverImage);
-  }, [displayName, bio, username, avatar, coverImage, location, school, profession, gender, birthDate, website]);
+  }, [displayName, bio, username, avatar, coverImage, location, school, profession, gender, birthDate, website, socialLinks]);
 
   useEffect(() => {
     if (isOwnProfile) {
@@ -682,13 +716,93 @@ const UserProfile = ({
                         name="website"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>الرابط</FormLabel>
+                            <FormLabel>الموقع الإلكتروني</FormLabel>
                             <FormControl>
                               <Input {...field} placeholder="https://example.com" dir="ltr" />
                             </FormControl>
                           </FormItem>
                         )}
                       />
+                      
+                      {/* Social Media Links */}
+                      <div className="space-y-3 border-t pt-4 mt-4">
+                        <h4 className="text-sm font-semibold text-foreground">روابط التواصل الاجتماعي</h4>
+                        <FormField
+                          control={form.control}
+                          name="instagram"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <Instagram className="h-4 w-4 text-pink-500" />
+                                Instagram
+                              </FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="username" dir="ltr" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="twitter"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <Twitter className="h-4 w-4 text-blue-400" />
+                                X (Twitter)
+                              </FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="username" dir="ltr" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="tiktok"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <TikTokIcon />
+                                TikTok
+                              </FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="username" dir="ltr" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="youtube"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <Youtube className="h-4 w-4 text-red-500" />
+                                YouTube
+                              </FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="channel" dir="ltr" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="snapchat"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <SnapchatIcon />
+                                Snapchat
+                              </FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="username" dir="ltr" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                       <Button 
                         type="submit" 
                         className="w-full"
@@ -745,17 +859,76 @@ const UserProfile = ({
           <div className="mb-4">
             <h3 className="text-lg font-bold text-foreground mb-2">الوصف</h3>
             <p className="text-muted-foreground whitespace-pre-wrap text-2xl font-bold leading-relaxed">{bio}</p>
-            {website && (
-              <a 
-                href={website.startsWith('http') ? website : `https://${website}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 mt-2 text-primary hover:underline"
-              >
-                <LinkIcon className="h-4 w-4" />
-                <span className="truncate">{website}</span>
-              </a>
-            )}
+            
+            {/* Social Links */}
+            <div className="flex flex-wrap gap-3 mt-3">
+              {website && (
+                <a 
+                  href={website.startsWith('http') ? website : `https://${website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted hover:bg-muted/80 text-sm transition-colors"
+                >
+                  <LinkIcon className="h-4 w-4" />
+                  <span className="truncate max-w-[150px]">الموقع</span>
+                </a>
+              )}
+              {socialLinks?.instagram && (
+                <a 
+                  href={`https://instagram.com/${socialLinks.instagram}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm hover:opacity-90 transition-opacity"
+                >
+                  <Instagram className="h-4 w-4" />
+                  <span>Instagram</span>
+                </a>
+              )}
+              {socialLinks?.twitter && (
+                <a 
+                  href={`https://twitter.com/${socialLinks.twitter}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500 text-white text-sm hover:opacity-90 transition-opacity"
+                >
+                  <Twitter className="h-4 w-4" />
+                  <span>X</span>
+                </a>
+              )}
+              {socialLinks?.tiktok && (
+                <a 
+                  href={`https://tiktok.com/@${socialLinks.tiktok}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black text-white text-sm hover:opacity-90 transition-opacity border border-gray-600"
+                >
+                  <TikTokIcon />
+                  <span>TikTok</span>
+                </a>
+              )}
+              {socialLinks?.youtube && (
+                <a 
+                  href={`https://youtube.com/${socialLinks.youtube}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-600 text-white text-sm hover:opacity-90 transition-opacity"
+                >
+                  <Youtube className="h-4 w-4" />
+                  <span>YouTube</span>
+                </a>
+              )}
+              {socialLinks?.snapchat && (
+                <a 
+                  href={`https://snapchat.com/add/${socialLinks.snapchat}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-400 text-black text-sm hover:opacity-90 transition-opacity"
+                >
+                  <SnapchatIcon />
+                  <span>Snapchat</span>
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Additional Info */}

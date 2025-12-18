@@ -316,6 +316,18 @@ const Profile = () => {
       if (data.gender !== undefined) updateData.gender = data.gender;
       if (data.birthDate !== undefined) updateData.birth_date = data.birthDate;
       if (data.website !== undefined) updateData.website = data.website;
+      
+      // Build social links object
+      const socialLinks: any = {};
+      if (data.instagram) socialLinks.instagram = data.instagram;
+      if (data.twitter) socialLinks.twitter = data.twitter;
+      if (data.tiktok) socialLinks.tiktok = data.tiktok;
+      if (data.youtube) socialLinks.youtube = data.youtube;
+      if (data.snapchat) socialLinks.snapchat = data.snapchat;
+      
+      if (Object.keys(socialLinks).length > 0 || data.instagram === '' || data.twitter === '' || data.tiktok === '' || data.youtube === '' || data.snapchat === '') {
+        updateData.social_links = socialLinks;
+      }
 
       const { error } = await supabase
         .from('profiles')
@@ -384,6 +396,7 @@ const Profile = () => {
               isVerified={profile?.is_verified || false}
               isOwnProfile={isOwnProfile}
               website={profile?.website}
+              socialLinks={profile?.social_links as any}
             />
             
             {/* Highlights Section */}
