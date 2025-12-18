@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { useMessages } from '@/hooks/useMessages';
+
 import { FollowButton } from '@/components/FollowButton';
 import { CloseFriendsButton } from '@/components/CloseFriendsButton';
 import { CloseFriendsDialog } from '@/components/CloseFriendsDialog';
@@ -64,12 +64,12 @@ const UserProfile = ({
 }: UserProfileProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { createConversation } = useMessages();
+  
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(avatar);
   const [uploading, setUploading] = useState(false);
-  const [messageLoading, setMessageLoading] = useState(false);
+  
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -379,25 +379,8 @@ const UserProfile = ({
 
   const handleMessage = async () => {
     if (!profileId) return;
-
-    setMessageLoading(true);
-    try {
-      const result = await createConversation(profileId);
-      
-      if (result?.success) {
-        navigate('/messages');
-      } else {
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء بدء المحادثة",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Error starting chat:', error);
-    } finally {
-      setMessageLoading(false);
-    }
+    // Navigate to messages with userId param - Messages page will handle conversation creation/selection
+    navigate(`/messages?userId=${profileId}`);
   };
 
   const handleCopyProfile = async () => {
@@ -735,10 +718,9 @@ const UserProfile = ({
                 variant="outline"
                 size="lg"
                 onClick={handleMessage}
-                disabled={messageLoading}
                 className="flex-1 rounded-lg font-semibold text-base h-11"
               >
-                {messageLoading ? "جاري..." : "مراسلة"}
+                مراسلة
               </Button>
             </div>
           )}
