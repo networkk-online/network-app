@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import { FollowButton } from '@/components/FollowButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 
 interface Following {
   id: string;
@@ -26,9 +26,19 @@ const Following = () => {
   const [following, setFollowing] = useState<Following[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
   
   const profileId = location.state?.profileId;
   const username = location.state?.username;
+
+  const filteredFollowing = useMemo(() => {
+    if (!searchQuery.trim()) return following;
+    const query = searchQuery.toLowerCase();
+    return following.filter(follow => 
+      follow.profiles.username?.toLowerCase().includes(query) ||
+      follow.profiles.full_name?.toLowerCase().includes(query)
+    );
+  }, [following, searchQuery]);
 
   useEffect(() => {
     loadFollowing();
@@ -124,20 +134,33 @@ const Following = () => {
       
       <main className="pt-20 pb-8">
         <div className="max-w-xl mx-auto px-4">
-          <div className="flex items-center space-x-4 mb-6">
+          <div className="flex items-center space-x-4 mb-4">
             <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-800 rounded-full">
               <ArrowRight className="w-6 h-6" />
             </button>
             <h1 className="text-xl font-semibold">يتابع - {username}</h1>
           </div>
 
+          {/* Search Input */}
+          <div className="relative mb-6">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="بحث..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pr-10 bg-gray-900/50 border-gray-700"
+            />
+          </div>
+
           {loading ? (
             <div className="text-center text-gray-500 py-12">جاري التحميل...</div>
-          ) : following.length === 0 ? (
-            <div className="text-center text-gray-500 py-12">لا يتابع أحد</div>
+          ) : filteredFollowing.length === 0 ? (
+            <div className="text-center text-gray-500 py-12">
+              {searchQuery ? 'لا توجد نتائج' : 'لا يتابع أحد'}
+            </div>
           ) : (
             <div className="space-y-4">
-              {following.map((follow) => (
+              {filteredFollowing.map((follow) => (
                 <div key={follow.id} className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg hover:bg-gray-900/70 transition-colors">
                   <div className="flex items-center gap-3 flex-1">
                     <Avatar className="h-12 w-12">
