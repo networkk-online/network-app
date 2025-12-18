@@ -309,15 +309,19 @@ export const useMessages = (conversationId?: string) => {
 
       if (convError) throw convError;
 
-      // Add participants
-      const { error: partError } = await supabase
+      // Add current user first
+      const { error: selfPartError } = await supabase
         .from('conversation_participants')
-        .insert([
-          { conversation_id: newConv.id, user_id: currentUser.id },
-          { conversation_id: newConv.id, user_id: otherUserId }
-        ]);
+        .insert({ conversation_id: newConv.id, user_id: currentUser.id });
 
-      if (partError) throw partError;
+      if (selfPartError) throw selfPartError;
+
+      // Then add other user
+      const { error: otherPartError } = await supabase
+        .from('conversation_participants')
+        .insert({ conversation_id: newConv.id, user_id: otherUserId });
+
+      if (otherPartError) throw otherPartError;
 
       await loadConversations();
 
