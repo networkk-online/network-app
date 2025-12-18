@@ -601,7 +601,7 @@ const UserProfile = ({
                     تعديل الملف الشخصي
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>تعديل الملف الشخصي</DialogTitle>
                   </DialogHeader>
@@ -859,9 +859,11 @@ const UserProfile = ({
           <div className="mb-4">
             <h3 className="text-lg font-bold text-foreground mb-2">الوصف</h3>
             <p className="text-muted-foreground whitespace-pre-wrap text-2xl font-bold leading-relaxed">{bio}</p>
+          </div>
             
-            {/* Social Links */}
-            <div className="flex flex-wrap gap-3 mt-3">
+          {/* Social Links - مباشرة تحت الوصف */}
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-3">
               {website && (
                 <a 
                   href={website.startsWith('http') ? website : `https://${website}`}
