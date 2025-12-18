@@ -713,6 +713,7 @@ export type Database = {
           school: string | null
           updated_at: string
           username: string | null
+          website: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -740,6 +741,7 @@ export type Database = {
           school?: string | null
           updated_at?: string
           username?: string | null
+          website?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -767,6 +769,7 @@ export type Database = {
           school?: string | null
           updated_at?: string
           username?: string | null
+          website?: string | null
         }
         Relationships: []
       }

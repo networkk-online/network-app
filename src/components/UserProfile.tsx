@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Camera, MapPin, Calendar, BadgeCheck, MoreHorizontal, Share2, Copy, Check } from 'lucide-react';
+import { Camera, MapPin, Calendar, BadgeCheck, MoreHorizontal, Share2, Copy, Check, Link as LinkIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,7 @@ interface UserProfileProps {
   profession?: string;
   gender?: string;
   isVerified?: boolean;
+  website?: string;
 }
 
 const UserProfile = ({ 
@@ -60,7 +61,8 @@ const UserProfile = ({
   school,
   profession,
   gender,
-  isVerified = false
+  isVerified = false,
+  website
 }: UserProfileProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -96,7 +98,8 @@ const UserProfile = ({
       school: school || '',
       profession: profession || '',
       gender: gender || '',
-      birthDate: birthDate || ''
+      birthDate: birthDate || '',
+      website: website || ''
     }
   });
 
@@ -109,11 +112,12 @@ const UserProfile = ({
       school: school || '',
       profession: profession || '',
       gender: gender || '',
-      birthDate: birthDate || ''
+      birthDate: birthDate || '',
+      website: website || ''
     });
     setAvatarUrl(avatar);
     setCoverUrl(coverImage);
-  }, [displayName, bio, username, avatar, coverImage, location, school, profession, gender, birthDate]);
+  }, [displayName, bio, username, avatar, coverImage, location, school, profession, gender, birthDate, website]);
 
   useEffect(() => {
     if (isOwnProfile) {
@@ -673,6 +677,18 @@ const UserProfile = ({
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={form.control}
+                        name="website"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>الرابط</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="https://example.com" dir="ltr" />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
                       <Button 
                         type="submit" 
                         className="w-full"
@@ -729,6 +745,17 @@ const UserProfile = ({
           <div className="mb-4">
             <h3 className="text-lg font-bold text-foreground mb-2">الوصف</h3>
             <p className="text-muted-foreground whitespace-pre-wrap text-2xl font-bold leading-relaxed">{bio}</p>
+            {website && (
+              <a 
+                href={website.startsWith('http') ? website : `https://${website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 mt-2 text-primary hover:underline"
+              >
+                <LinkIcon className="h-4 w-4" />
+                <span className="truncate">{website}</span>
+              </a>
+            )}
           </div>
 
           {/* Additional Info */}

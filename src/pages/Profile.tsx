@@ -315,6 +315,7 @@ const Profile = () => {
       if (data.profession !== undefined) updateData.profession = data.profession;
       if (data.gender !== undefined) updateData.gender = data.gender;
       if (data.birthDate !== undefined) updateData.birth_date = data.birthDate;
+      if (data.website !== undefined) updateData.website = data.website;
 
       const { error } = await supabase
         .from('profiles')
@@ -382,6 +383,7 @@ const Profile = () => {
               gender={profile?.gender}
               isVerified={profile?.is_verified || false}
               isOwnProfile={isOwnProfile}
+              website={profile?.website}
             />
             
             {/* Highlights Section */}
