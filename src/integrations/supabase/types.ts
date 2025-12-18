@@ -353,6 +353,45 @@ export type Database = {
           },
         ]
       }
+      featured_posts: {
+        Row: {
+          author_avatar: string | null
+          author_location: string | null
+          author_name: string
+          comments_count: number | null
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          likes_count: number | null
+          media_url: string | null
+        }
+        Insert: {
+          author_avatar?: string | null
+          author_location?: string | null
+          author_name: string
+          comments_count?: number | null
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          likes_count?: number | null
+          media_url?: string | null
+        }
+        Update: {
+          author_avatar?: string | null
+          author_location?: string | null
+          author_name?: string
+          comments_count?: number | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          likes_count?: number | null
+          media_url?: string | null
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string

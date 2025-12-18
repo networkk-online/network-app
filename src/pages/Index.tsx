@@ -15,6 +15,7 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
+  const [featuredPosts, setFeaturedPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string>('');
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -28,6 +29,7 @@ const Index = () => {
   useEffect(() => {
     getCurrentUser();
     loadPosts();
+    loadFeaturedPosts();
     
     // Subscribe to realtime changes
     const channel = supabase
@@ -141,6 +143,38 @@ const Index = () => {
     }
   };
 
+  const loadFeaturedPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('featured_posts')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        const formattedPosts = data.map((post: any) => ({
+          id: post.id,
+          userId: 'featured',
+          username: post.author_name,
+          userAvatar: post.author_avatar || '/default-avatar.jpg',
+          isVerified: false,
+          image: post.media_url,
+          caption: post.content,
+          likes: post.likes_count || 0,
+          commentsCount: post.comments_count || 0,
+          timeAgo: getTimeAgo(post.created_at),
+          walletEarnings: 0,
+          isFeatured: true
+        }));
+        setFeaturedPosts(formattedPosts);
+      }
+    } catch (error) {
+      console.error('Error loading featured posts:', error);
+    }
+  };
+
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -211,6 +245,19 @@ const Index = () => {
                     {(index + 1) % 3 === 0 && <Advertisement placement="feed" className="mt-4" />}
                   </div>
                 ))
+              ) : featuredPosts.length > 0 ? (
+                <>
+                  <div className="text-center py-4 mb-4">
+                    <p className="text-primary text-sm font-medium">✨ محتوى مقترح لك</p>
+                    <p className="text-gray-500 text-xs">تابع أشخاص لرؤية منشوراتهم هنا</p>
+                  </div>
+                  {featuredPosts.map((post, index) => (
+                    <div key={post.id}>
+                      <Post {...post} />
+                      {(index + 1) % 3 === 0 && <Advertisement placement="feed" className="mt-4" />}
+                    </div>
+                  ))}
+                </>
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-500 text-sm">لا توجد منشورات بعد</p>
