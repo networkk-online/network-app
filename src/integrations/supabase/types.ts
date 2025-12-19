@@ -1686,6 +1686,10 @@ export type Database = {
     }
     Functions: {
       calculate_fame_score: { Args: { user_id: string }; Returns: number }
+      get_user_conversation_ids: {
+        Args: { p_user_id: string }
+        Returns: string[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
