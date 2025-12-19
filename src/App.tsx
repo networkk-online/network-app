@@ -51,6 +51,7 @@ import Following from "./pages/Following";
 import CreateStory from "./pages/CreateStory";
 import CreateReel from "./pages/CreateReel";
 import SavedPosts from "./pages/SavedPosts";
+import PostView from "./pages/PostView";
 import SavedContent from "./pages/SavedContent";
 import LocalFameRank from "./pages/LocalFameRank";
 import VerificationRequests from "./pages/VerificationRequests";
@@ -115,6 +116,7 @@ const App = () => (
           <Route path="/create-story" element={<CreateStory />} />
           <Route path="/create-reel" element={<CreateReel />} />
           <Route path="/saved-posts" element={<SavedPosts />} />
+          <Route path="/post/:postId" element={<PostView />} />
           <Route path="/saved-content" element={<SavedContent />} />
           <Route path="/local-fame-rank" element={<LocalFameRank />} />
           <Route path="/notifications" element={<NotificationsPage />} />
