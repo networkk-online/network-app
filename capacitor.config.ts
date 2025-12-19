@@ -1,13 +1,41 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.561c8d1c237445399d5db1ad09a68e68',
-  appName: 'network-app',
+  appId: 'com.networkapp.social',
+  appName: 'Network App',
   webDir: 'dist',
-  server: {
-    url: 'https://561c8d1c-2374-4539-9d5d-b1ad09a68e68.lovableproject.com?forceHideBadge=true',
-    cleartext: true
-  }
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 2000,
+      launchAutoHide: true,
+      backgroundColor: '#1a1a2e',
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER_CROP',
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
+    StatusBar: {
+      style: 'dark',
+      backgroundColor: '#1a1a2e',
+    },
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true,
+    },
+    PushNotifications: {
+      presentationOptions: ['badge', 'sound', 'alert'],
+    },
+  },
+  android: {
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: false,
+  },
+  ios: {
+    contentInset: 'automatic',
+    scrollEnabled: true,
+  },
 };
 
 export default config;
