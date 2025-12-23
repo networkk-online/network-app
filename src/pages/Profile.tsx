@@ -585,7 +585,7 @@ const Profile = () => {
                     <div 
                       key={post.id} 
                       className="relative aspect-square group cursor-pointer"
-                      onClick={() => navigate('/')}
+                      onClick={() => navigate(`/post/${post.id}`)}
                     >
                       {post.media_url ? (
                         <img 

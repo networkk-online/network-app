@@ -601,7 +601,7 @@ const UserProfile = ({
                     تعديل الملف الشخصي
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-[425px] max-h-[85vh] overflow-y-auto overscroll-contain">
                   <DialogHeader>
                     <DialogTitle>تعديل الملف الشخصي</DialogTitle>
                   </DialogHeader>

@@ -184,12 +184,12 @@ export const CommentSection = ({ type, itemId }: CommentSectionProps) => {
             onClick={handleSubmit}
             disabled={submitting || !newComment.trim()}
             size="icon"
-            className="h-auto min-w-[44px] min-h-[44px] flex-shrink-0"
+            className="h-auto min-w-[44px] min-h-[44px] flex-shrink-0 bg-primary hover:bg-primary/90"
           >
             {submitting ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin text-primary-foreground" />
             ) : (
-              <Send className="w-5 h-5" />
+              <Send className="w-5 h-5 text-primary-foreground" />
             )}
           </Button>
         </div>

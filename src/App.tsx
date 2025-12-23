@@ -46,6 +46,8 @@ import SharingSettings from "./pages/settings/SharingSettings";
 import RestrictedAccounts from "./pages/settings/RestrictedAccounts";
 import StoryLocationSettings from "./pages/settings/StoryLocationSettings";
 import PrivacyCenter from "./pages/settings/PrivacyCenter";
+import PostSettings from "./pages/settings/PostSettings";
+import ReelsSettings from "./pages/settings/ReelsSettings";
 import Search from "./pages/Search";
 import Followers from "./pages/Followers";
 import Following from "./pages/Following";
@@ -111,6 +113,8 @@ const AppContent = () => {
         <Route path="/settings/restricted" element={<RestrictedAccounts />} />
         <Route path="/settings/story-location" element={<StoryLocationSettings />} />
         <Route path="/settings/privacy-center" element={<PrivacyCenter />} />
+        <Route path="/settings/posts" element={<PostSettings />} />
+        <Route path="/settings/reels" element={<ReelsSettings />} />
         <Route path="/search" element={<Search />} />
         <Route path="/followers" element={<Followers />} />
         <Route path="/following" element={<Following />} />
