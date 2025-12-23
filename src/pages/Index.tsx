@@ -27,6 +27,13 @@ const Index = () => {
   const { stories, loading: storiesLoading, markUserStoriesAsViewed } = useStories(userId);
 
   useEffect(() => {
+    // Check if first time user
+    const hasSeenSplash = localStorage.getItem('hasSeenSplash');
+    if (!hasSeenSplash) {
+      navigate('/welcome', { replace: true });
+      return;
+    }
+
     getCurrentUser();
     loadPosts();
     loadFeaturedPosts();
@@ -50,7 +57,7 @@ const Index = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [navigate]);
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
