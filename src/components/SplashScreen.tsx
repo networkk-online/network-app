@@ -1,49 +1,102 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, Users, MessageCircle, Video, Shield, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import networkLogo from '@/assets/network-logo.png';
+
+interface OnboardingSlide {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  color: string;
+}
+
+const slides: OnboardingSlide[] = [
+  {
+    icon: <Sparkles className="w-16 h-16" />,
+    title: "أهلاً بكم في العالم الجديد",
+    description: "منصة اجتماعية متكاملة تجمعك مع أصدقائك وعائلتك في مكان واحد",
+    color: "from-green-500 to-emerald-600"
+  },
+  {
+    icon: <Users className="w-16 h-16" />,
+    title: "تواصل مع الجميع",
+    description: "تابع أصدقائك، شارك لحظاتك، واكتشف أشخاص جدد من حولك",
+    color: "from-blue-500 to-cyan-600"
+  },
+  {
+    icon: <MessageCircle className="w-16 h-16" />,
+    title: "محادثات فورية",
+    description: "أرسل رسائل نصية وصوتية وصور بسرعة وأمان تام",
+    color: "from-purple-500 to-pink-600"
+  },
+  {
+    icon: <Video className="w-16 h-16" />,
+    title: "قصص وريلز",
+    description: "شارك قصصك اليومية وأنشئ فيديوهات قصيرة ممتعة",
+    color: "from-orange-500 to-red-600"
+  },
+  {
+    icon: <Shield className="w-16 h-16" />,
+    title: "خصوصية وأمان",
+    description: "بياناتك محمية ومشفرة، تحكم كامل في خصوصيتك",
+    color: "from-teal-500 to-green-600"
+  }
+];
 
 const SplashScreen = () => {
   const navigate = useNavigate();
-  const [stage, setStage] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    // Check if user has seen splash before
+    // Check if user has seen onboarding before
     const hasSeenSplash = localStorage.getItem('hasSeenSplash');
     if (hasSeenSplash) {
       navigate('/login', { replace: true });
-      return;
     }
-
-    // Animation stages
-    const timer1 = setTimeout(() => setStage(1), 500);
-    const timer2 = setTimeout(() => setStage(2), 1500);
-    const timer3 = setTimeout(() => setStage(3), 2500);
-    const timer4 = setTimeout(() => {
-      localStorage.setItem('hasSeenSplash', 'true');
-      navigate('/login', { replace: true });
-    }, 4000);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
-    };
   }, [navigate]);
 
+  const goToSlide = (index: number) => {
+    if (isAnimating || index === currentSlide) return;
+    setIsAnimating(true);
+    setCurrentSlide(index);
+    setTimeout(() => setIsAnimating(false), 500);
+  };
+
+  const nextSlide = () => {
+    if (currentSlide < slides.length - 1) {
+      goToSlide(currentSlide + 1);
+    } else {
+      finishOnboarding();
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentSlide > 0) {
+      goToSlide(currentSlide - 1);
+    }
+  };
+
+  const finishOnboarding = () => {
+    localStorage.setItem('hasSeenSplash', 'true');
+    navigate('/login', { replace: true });
+  };
+
+  const slide = slides[currentSlide];
+
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-green-400/15 rounded-full blur-2xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-600/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className={`absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r ${slide.color} opacity-20 rounded-full blur-3xl transition-all duration-1000`}></div>
+        <div className={`absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r ${slide.color} opacity-15 rounded-full blur-2xl transition-all duration-1000 delay-300`}></div>
         
         {/* Floating particles */}
-        {[...Array(20)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-green-400 rounded-full animate-bounce"
+            className="absolute w-1 h-1 bg-white/30 rounded-full animate-bounce"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -54,78 +107,105 @@ const SplashScreen = () => {
         ))}
 
         {/* Grid overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.1)_1px,transparent_1px)] bg-[length:50px_50px] opacity-30"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[length:50px_50px] opacity-30"></div>
       </div>
 
-      {/* Logo Animation */}
-      <div 
-        className={`relative z-10 transition-all duration-1000 ease-out ${
-          stage >= 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
-        }`}
-      >
-        <div className="relative">
-          {/* Glow effect */}
-          <div className="absolute inset-0 w-40 h-40 bg-green-500/30 rounded-full blur-2xl animate-pulse"></div>
-          <img 
-            src={networkLogo} 
-            alt="Network Logo" 
-            className="w-40 h-40 object-contain relative z-10"
-          />
+      {/* Header with Logo */}
+      <div className="relative z-10 pt-12 pb-6 flex justify-center">
+        <img 
+          src={networkLogo} 
+          alt="Network Logo" 
+          className="w-20 h-20 object-contain"
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 relative z-10 flex flex-col items-center justify-center px-8">
+        {/* Slide Content */}
+        <div 
+          className={`flex flex-col items-center text-center transition-all duration-500 ${
+            isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          }`}
+        >
+          {/* Icon */}
+          <div className={`mb-8 p-6 rounded-full bg-gradient-to-r ${slide.color} text-white shadow-2xl`}>
+            {slide.icon}
+          </div>
+
+          {/* Title */}
+          <h1 className="text-3xl font-bold text-white mb-4">
+            {slide.title}
+          </h1>
+
+          {/* Description */}
+          <p className="text-gray-400 text-lg max-w-sm leading-relaxed">
+            {slide.description}
+          </p>
         </div>
       </div>
 
-      {/* Welcome Text */}
-      <div 
-        className={`mt-8 text-center z-10 transition-all duration-1000 ease-out ${
-          stage >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-      >
-        <h1 className="text-4xl font-bold text-white mb-4">
-          أهلاً بكم
-        </h1>
-        <p className="text-2xl text-green-400 font-semibold">
-          في العالم الجديد
-        </p>
-      </div>
-
-      {/* Tagline */}
-      <div 
-        className={`mt-6 z-10 transition-all duration-1000 ease-out ${
-          stage >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-      >
-        <p className="text-gray-400 text-lg">تواصل • شارك • اكتشف</p>
-      </div>
-
-      {/* Loading indicator */}
-      <div 
-        className={`mt-12 z-10 transition-all duration-500 ${
-          stage >= 2 ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <div className="flex gap-2">
-          {[0, 1, 2].map((i) => (
-            <div 
-              key={i}
-              className="w-3 h-3 bg-green-500 rounded-full animate-bounce"
-              style={{ animationDelay: `${i * 0.15}s` }}
+      {/* Navigation */}
+      <div className="relative z-10 pb-12 px-8">
+        {/* Dots Indicator */}
+        <div className="flex justify-center gap-2 mb-8">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index === currentSlide 
+                  ? 'w-8 bg-white' 
+                  : 'w-2 bg-gray-600 hover:bg-gray-500'
+              }`}
             />
           ))}
         </div>
+
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between gap-4">
+          {/* Previous / Skip */}
+          <Button
+            variant="ghost"
+            onClick={currentSlide === 0 ? finishOnboarding : prevSlide}
+            className="text-gray-400 hover:text-white"
+          >
+            {currentSlide === 0 ? (
+              'تخطي'
+            ) : (
+              <>
+                <ChevronRight className="w-5 h-5 ml-1" />
+                السابق
+              </>
+            )}
+          </Button>
+
+          {/* Next / Start */}
+          <Button
+            onClick={nextSlide}
+            className={`bg-gradient-to-r ${slide.color} hover:opacity-90 text-white px-8 py-6 rounded-xl font-semibold shadow-lg`}
+          >
+            {currentSlide === slides.length - 1 ? (
+              'ابدأ الآن'
+            ) : (
+              <>
+                التالي
+                <ChevronLeft className="w-5 h-5 mr-1" />
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
-      {/* Skip button */}
-      <button
-        onClick={() => {
-          localStorage.setItem('hasSeenSplash', 'true');
-          navigate('/login', { replace: true });
-        }}
-        className={`absolute bottom-10 z-10 text-gray-500 hover:text-white transition-all duration-500 ${
-          stage >= 1 ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        تخطي
-      </button>
+      {/* Swipe hint for first slide */}
+      {currentSlide === 0 && (
+        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-10">
+          <div className="flex items-center gap-2 text-gray-500 text-sm animate-pulse">
+            <ChevronLeft className="w-4 h-4" />
+            <span>اسحب للتنقل</span>
+            <ChevronRight className="w-4 h-4" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
