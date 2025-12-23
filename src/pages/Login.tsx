@@ -196,7 +196,8 @@ const Login = () => {
               className="w-full h-full object-contain"
             />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Log In</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">أهلاً بكم في العالم الجديد</h1>
+          <p className="text-green-400 text-lg">تسجيل الدخول</p>
         </div>
 
         {/* Login Form */}
