@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Mic } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Mic, Repeat2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { VoiceRecorder } from './VoiceRecorder';
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CommentSection } from '@/components/CommentSection';
 import { useMessages } from '@/hooks/useMessages';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
+import { useRepost } from '@/hooks/useRepost';
 
 
 interface PostProps {
@@ -44,6 +45,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
   const { isSaved, loading: saveLoading, toggleSave } = useSavedPosts(id);
+  const { isReposted, repostCount, loading: repostLoading, toggleRepost } = useRepost(id);
 
   useEffect(() => {
     checkUser();
@@ -206,6 +208,32 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
     }
   };
 
+  const handleRepost = async () => {
+    if (!currentUser) {
+      toast({
+        title: "يجب تسجيل الدخول",
+        description: "سجل دخولك لإعادة النشر",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+
+    const result = await toggleRepost();
+    if (result?.success) {
+      toast({
+        title: result.action === 'reposted' ? "تمت إعادة النشر" : "تم إلغاء إعادة النشر",
+        description: result.action === 'reposted' ? "تم إعادة نشر المنشور على صفحتك" : "تم إلغاء إعادة النشر",
+      });
+    } else if (result?.error) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إعادة النشر",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!currentUser) {
       toast({
@@ -333,6 +361,21 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               variant="ghost" 
               size="sm" 
               className="p-0 hover:bg-transparent group"
+              onClick={handleRepost}
+              disabled={repostLoading}
+            >
+              <Repeat2 
+                className={`w-6 h-6 transition-all duration-200 group-hover:scale-110 ${
+                  isReposted 
+                    ? 'text-green-500' 
+                    : 'text-white hover:text-green-400'
+                } ${repostLoading ? 'opacity-50' : ''}`} 
+              />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-0 hover:bg-transparent group"
               onClick={handleSendMessage}
               disabled={sendingMessage}
             >
@@ -356,20 +399,27 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           </Button>
         </div>
 
-        {/* Enhanced Likes Count */}
-        <div className="flex items-center space-x-2 mb-2">
-          <div className="flex -space-x-1">
-            {/* Sample avatar stack for recent likes */}
-            <div className="w-5 h-5 rounded-full bg-gradient-to-r from-pink-400 to-red-400 border border-white"></div>
-            <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 border border-white"></div>
-            <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-400 to-teal-400 border border-white"></div>
+        {/* Enhanced Likes and Reposts Count */}
+        <div className="flex items-center gap-4 mb-2">
+          <div className="flex items-center space-x-2">
+            <div className="flex -space-x-1">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-r from-pink-400 to-red-400 border border-white"></div>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 border border-white"></div>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-400 to-teal-400 border border-white"></div>
+            </div>
+            <p className="font-semibold text-white">
+              <span className="bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
+                {likeCount.toLocaleString()}
+              </span>
+              <span className="text-gray-300 ml-1">إعجاب</span>
+            </p>
           </div>
-          <p className="font-semibold text-white">
-            <span className="bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
-              {likeCount.toLocaleString()}
-            </span>
-            <span className="text-gray-300 ml-1">إعجاب</span>
-          </p>
+          {repostCount > 0 && (
+            <p className="font-semibold text-white">
+              <span className="text-green-400">{repostCount.toLocaleString()}</span>
+              <span className="text-gray-300 ml-1">إعادة نشر</span>
+            </p>
+          )}
         </div>
 
         {/* Caption */}
