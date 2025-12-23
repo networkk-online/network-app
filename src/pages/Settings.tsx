@@ -290,6 +290,20 @@ const Settings = () => {
               />
             </SettingSection>
 
+            {/* إعدادات المحتوى */}
+            <SettingSection title="إعدادات المحتوى">
+              <SettingItem
+                icon={<MessageSquare className="w-5 h-5" />}
+                title="إعدادات المنشورات"
+                onClick={() => navigate('/settings/posts')}
+              />
+              <SettingItem
+                icon={<Settings2 className="w-5 h-5" />}
+                title="إعدادات الريلز"
+                onClick={() => navigate('/settings/reels')}
+              />
+            </SettingSection>
+
             {/* الإشعارات */}
             <SettingSection title="الإشعارات">
               <SettingItem

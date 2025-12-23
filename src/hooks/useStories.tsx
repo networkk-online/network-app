@@ -142,7 +142,8 @@ export const useStories = (currentUserId?: string) => {
     }
   };
 
-  const markUserStoriesAsViewed = (userId: string) => {
+  const markUserStoriesAsViewed = async (userId: string) => {
+    // Update local state immediately
     setViewedUsers(prev => new Set([...prev, userId]));
     setStories(prev => ({
       ...prev,
@@ -151,6 +152,23 @@ export const useStories = (currentUserId?: string) => {
         hasViewed: true
       }
     }));
+
+    // Save views to database
+    if (currentUserId && stories[userId]) {
+      const storyIds = stories[userId].stories.map(s => s.id);
+      for (const storyId of storyIds) {
+        try {
+          await supabase
+            .from('story_views')
+            .upsert(
+              { user_id: currentUserId, story_id: storyId },
+              { onConflict: 'user_id,story_id', ignoreDuplicates: true }
+            );
+        } catch (error) {
+          console.error('Error saving story view:', error);
+        }
+      }
+    }
   };
 
   return { stories, loading, reload: loadStories, markUserStoriesAsViewed };

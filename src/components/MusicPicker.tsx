@@ -58,11 +58,6 @@ export const MusicPicker = ({ onMusicSelect, onRemove, currentMusic }: MusicPick
         value={musicTitle}
         onChange={(e) => setMusicTitle(e.target.value)}
       />
-      <Input
-        placeholder="اسم الفنان (اختياري)..."
-        value={musicArtist}
-        onChange={(e) => setMusicArtist(e.target.value)}
-      />
       <Button
         type="button"
         variant="outline"
