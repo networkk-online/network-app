@@ -60,6 +60,7 @@ import LocalFameRank from "./pages/LocalFameRank";
 import VerificationRequests from "./pages/VerificationRequests";
 import NotificationsPage from "./pages/NotificationsPage";
 import BottomNav from "./components/BottomNav";
+import SplashScreen from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const AppContent = () => {
     <>
       <BottomNav />
       <Routes>
+        <Route path="/welcome" element={<SplashScreen />} />
         <Route path="/" element={<Index />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/broadcast" element={<Broadcast />} />
