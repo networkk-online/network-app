@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import qiCardLogo from '@/assets/wallet-logo.jpg';
 import zainCashLogo from '@/assets/zaincash-logo.jpg';
+import mastercardLogo from '@/assets/mastercard-logo.jpg';
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -277,7 +278,8 @@ const Withdraw = () => {
       fee: '3%',
       processingTime: '1-3 أيام عمل',
       minAmount: 25,
-      currency: 'USD'
+      currency: 'USD',
+      customLogo: mastercardLogo
     },
     {
       id: 'paypal',
