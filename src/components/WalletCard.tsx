@@ -3,7 +3,6 @@ import { Wallet, TrendingUp, Bitcoin, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import walletLogo from '@/assets/wallet-logo.jpg';
 
 interface WalletCardProps {
   balance: number;
@@ -26,12 +25,10 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
         </div>
         
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3 rtl:space-x-reverse">
-            <img 
-              src={walletLogo} 
-              alt="Wallet Logo" 
-              className="w-10 h-10 rounded-full object-cover border-2 border-yellow-400"
-            />
+          <div className="flex items-center space-x-3">
+            <div className="bg-gradient-to-r from-green-500 to-orange-500 p-2 rounded-full">
+              <Wallet className="w-6 h-6 text-white" />
+            </div>
             <h3 className="text-xl font-bold bg-gradient-to-r from-green-400 to-orange-400 bg-clip-text text-transparent">
               محفظة المبدعين
             </h3>

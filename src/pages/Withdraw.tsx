@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import qiCardLogo from '@/assets/wallet-logo.jpg';
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -255,7 +256,8 @@ const Withdraw = () => {
       fee: '500 IQD',
       processingTime: 'فوري - 1 ساعة',
       minAmount: 10,
-      currency: 'USD'
+      currency: 'USD',
+      customLogo: qiCardLogo
     },
     {
       id: 'visa',
@@ -714,6 +716,7 @@ const Withdraw = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {withdrawMethods.map((method) => {
                     const Icon = method.icon;
+                    const hasCustomLogo = 'customLogo' in method && method.customLogo;
                     return (
                       <button
                         key={method.id}
@@ -725,9 +728,17 @@ const Withdraw = () => {
                         }`}
                       >
                         <div className="flex flex-col items-center space-y-2">
-                          <Icon className={`w-8 h-8 ${
-                            selectedMethod === method.id ? 'text-green-400' : 'text-gray-400'
-                          }`} />
+                          {hasCustomLogo ? (
+                            <img 
+                              src={(method as any).customLogo} 
+                              alt={method.name} 
+                              className="w-10 h-10 rounded-full object-cover border-2 border-yellow-400"
+                            />
+                          ) : (
+                            <Icon className={`w-8 h-8 ${
+                              selectedMethod === method.id ? 'text-green-400' : 'text-gray-400'
+                            }`} />
+                          )}
                           <span className="text-white font-medium">{method.name}</span>
                           <span className="text-xs text-gray-400">رسوم: {method.fee}</span>
                           <span className="text-xs text-gray-500">{method.processingTime}</span>
