@@ -1,41 +1,59 @@
-import { motion, Transition } from "framer-motion";
+import { motion, Transition, Variants } from "framer-motion";
 import { ReactNode } from "react";
+
+type TransitionType = "fade" | "slide-left" | "slide-right" | "slide-up" | "scale" | "zoom";
 
 interface PageTransitionProps {
   children: ReactNode;
+  type?: TransitionType;
 }
 
-const pageVariants = {
-  initial: {
-    opacity: 0,
-    y: 20,
-    scale: 0.98,
+const transitionVariants: Record<TransitionType, Variants> = {
+  fade: {
+    initial: { opacity: 0 },
+    in: { opacity: 1 },
+    out: { opacity: 0 },
   },
-  in: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
+  "slide-left": {
+    initial: { opacity: 0, x: 100 },
+    in: { opacity: 1, x: 0 },
+    out: { opacity: 0, x: -100 },
   },
-  out: {
-    opacity: 0,
-    y: -20,
-    scale: 0.98,
+  "slide-right": {
+    initial: { opacity: 0, x: -100 },
+    in: { opacity: 1, x: 0 },
+    out: { opacity: 0, x: 100 },
+  },
+  "slide-up": {
+    initial: { opacity: 0, y: 50 },
+    in: { opacity: 1, y: 0 },
+    out: { opacity: 0, y: -50 },
+  },
+  scale: {
+    initial: { opacity: 0, scale: 0.9 },
+    in: { opacity: 1, scale: 1 },
+    out: { opacity: 0, scale: 0.9 },
+  },
+  zoom: {
+    initial: { opacity: 0, scale: 0.8 },
+    in: { opacity: 1, scale: 1 },
+    out: { opacity: 0, scale: 1.1 },
   },
 };
 
 const pageTransition: Transition = {
   type: "tween",
-  ease: "anticipate",
-  duration: 0.4,
+  ease: [0.25, 0.46, 0.45, 0.94],
+  duration: 0.3,
 };
 
-const PageTransition = ({ children }: PageTransitionProps) => {
+const PageTransition = ({ children, type = "fade" }: PageTransitionProps) => {
   return (
     <motion.div
       initial="initial"
       animate="in"
       exit="out"
-      variants={pageVariants}
+      variants={transitionVariants[type]}
       transition={pageTransition}
       className="w-full min-h-screen"
     >
