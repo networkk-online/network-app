@@ -16,6 +16,7 @@ import zainCashLogo from '@/assets/zaincash-logo.jpg';
 import mastercardLogo from '@/assets/mastercard-logo.jpg';
 import paypalLogo from '@/assets/paypal-logo.png';
 import bitcoinLogo from '@/assets/bitcoin-logo.png';
+import visaLogo from '@/assets/visa-logo.png';
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -271,7 +272,8 @@ const Withdraw = () => {
       fee: '3%',
       processingTime: '1-3 أيام عمل',
       minAmount: 25,
-      currency: 'USD'
+      currency: 'USD',
+      customLogo: visaLogo
     },
     {
       id: 'mastercard',
