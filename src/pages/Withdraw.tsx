@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import qiCardLogo from '@/assets/wallet-logo.jpg';
 import zainCashLogo from '@/assets/zaincash-logo.jpg';
 import mastercardLogo from '@/assets/mastercard-logo.jpg';
+import paypalLogo from '@/assets/paypal-logo.png';
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -288,7 +289,8 @@ const Withdraw = () => {
       fee: '2.9% + $0.30',
       processingTime: '1-2 أيام عمل',
       minAmount: 50,
-      currency: 'USD'
+      currency: 'USD',
+      customLogo: paypalLogo
     },
     {
       id: 'bank',
