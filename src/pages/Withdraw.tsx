@@ -17,6 +17,7 @@ import mastercardLogo from '@/assets/mastercard-logo.jpg';
 import paypalLogo from '@/assets/paypal-logo.png';
 import bitcoinLogo from '@/assets/bitcoin-logo.png';
 import visaLogo from '@/assets/visa-logo.png';
+import bankLogo from '@/assets/bank-logo.png';
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -302,7 +303,8 @@ const Withdraw = () => {
       fee: '$25',
       processingTime: '3-5 أيام عمل', 
       minAmount: 100,
-      currency: 'USD'
+      currency: 'USD',
+      customLogo: bankLogo
     },
     {
       id: 'bitcoin',
