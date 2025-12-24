@@ -15,6 +15,7 @@ import qiCardLogo from '@/assets/wallet-logo.jpg';
 import zainCashLogo from '@/assets/zaincash-logo.jpg';
 import mastercardLogo from '@/assets/mastercard-logo.jpg';
 import paypalLogo from '@/assets/paypal-logo.png';
+import bitcoinLogo from '@/assets/bitcoin-logo.png';
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -308,7 +309,8 @@ const Withdraw = () => {
       fee: '1%',
       processingTime: '30 دقيقة - ساعة',
       minAmount: 25,
-      currency: 'BTC'
+      currency: 'BTC',
+      customLogo: bitcoinLogo
     }
   ];
 
