@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useStories } from '@/hooks/useStories';
 import LocalFameRankSection from '@/components/LocalFameRankSection';
+import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
 
 const Index = () => {
   const { toast } = useToast();
@@ -202,48 +203,54 @@ const Index = () => {
           <div className="container-responsive mobile-padding">
             {/* Stories */}
             <div className="border-b border-gray-800 pb-4 mb-6">
-              <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
-                {/* Own story */}
-                {userProfile && (
-                  <StoryCircle
-                    username={userProfile.username || 'أنت'}
-                    avatar={userProfile.avatar_url || '/default-avatar.jpg'}
-                    hasStory={stories[userId]?.stories.length > 0}
-                    isOwn={true}
-                    hasViewed={stories[userId]?.hasViewed || false}
-                    onClick={() => {
-                      if (stories[userId]?.stories.length > 0) {
-                        handleStoryClick(stories[userId].stories, userId);
-                      } else {
-                        handleCreateStory();
-                      }
-                    }}
-                  />
-                )}
-                
-                {/* Other users' stories */}
-                {Object.values(stories).map((userStory: any) => {
-                  if (userStory.user.id === userId) return null;
-                  
-                  return (
+              {storiesLoading ? (
+                <StoriesRowSkeleton count={6} />
+              ) : (
+                <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
+                  {/* Own story */}
+                  {userProfile && (
                     <StoryCircle
-                      key={userStory.user.id}
-                      username={userStory.user.username}
-                      avatar={userStory.user.avatar_url}
-                      hasStory={true}
-                      hasViewed={userStory.hasViewed}
-                      onClick={() => handleStoryClick(userStory.stories, userStory.user.id)}
+                      username={userProfile.username || 'أنت'}
+                      avatar={userProfile.avatar_url || '/default-avatar.jpg'}
+                      hasStory={stories[userId]?.stories.length > 0}
+                      isOwn={true}
+                      hasViewed={stories[userId]?.hasViewed || false}
+                      onClick={() => {
+                        if (stories[userId]?.stories.length > 0) {
+                          handleStoryClick(stories[userId].stories, userId);
+                        } else {
+                          handleCreateStory();
+                        }
+                      }}
                     />
-                  );
-                })}
-              </div>
+                  )}
+                  
+                  {/* Other users' stories */}
+                  {Object.values(stories).map((userStory: any) => {
+                    if (userStory.user.id === userId) return null;
+                    
+                    return (
+                      <StoryCircle
+                        key={userStory.user.id}
+                        username={userStory.user.username}
+                        avatar={userStory.user.avatar_url}
+                        hasStory={true}
+                        hasViewed={userStory.hasViewed}
+                        onClick={() => handleStoryClick(userStory.stories, userStory.user.id)}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </div>
             
             {/* Posts Feed */}
             <div className="space-y-4 sm:space-y-6 lg:space-y-8">
               {loading ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 text-sm">جاري التحميل...</p>
+                <div className="space-y-6">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <PostSkeleton key={i} />
+                  ))}
                 </div>
               ) : posts.length > 0 ? (
                 posts.map((post, index) => (
