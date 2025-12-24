@@ -1,4 +1,5 @@
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Mic, Repeat2 } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, Mic, Repeat2 } from 'lucide-react';
+import PostSettingsMenu from './PostSettingsMenu';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { VoiceRecorder } from './VoiceRecorder';
@@ -307,9 +308,12 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="sm" className="p-1">
-          <MoreHorizontal className="w-5 h-5 text-gray-400" />
-        </Button>
+        <PostSettingsMenu 
+          postId={id}
+          userId={userId}
+          currentUserId={currentUser?.id}
+          onPostDeleted={() => window.location.reload()}
+        />
       </div>
 
       {/* Post Content */}
