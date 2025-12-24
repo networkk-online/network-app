@@ -3,10 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useNativeApp } from "@/hooks/useNativeApp";
-import { AnimatePresence } from "framer-motion";
-import PageTransition from "./components/PageTransition";
 import Index from "./pages/Index";
 import Explore from "./pages/Explore";
 import Broadcast from "./pages/Broadcast";
@@ -66,102 +64,70 @@ import SplashScreen from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
 
-const AnimatedRoutes = () => {
-  const location = useLocation();
-  
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* Welcome & Auth - Zoom */}
-        <Route path="/welcome" element={<PageTransition type="zoom"><SplashScreen /></PageTransition>} />
-        <Route path="/login" element={<PageTransition type="zoom"><Login /></PageTransition>} />
-        <Route path="/signup" element={<PageTransition type="zoom"><SignUp /></PageTransition>} />
-        
-        {/* Main Pages - Fade */}
-        <Route path="/" element={<PageTransition type="fade"><Index /></PageTransition>} />
-        <Route path="/explore" element={<PageTransition type="fade"><Explore /></PageTransition>} />
-        <Route path="/shorts" element={<PageTransition type="fade"><Shorts /></PageTransition>} />
-        <Route path="/search" element={<PageTransition type="fade"><Search /></PageTransition>} />
-        
-        {/* Profile & Social - Scale */}
-        <Route path="/profile" element={<PageTransition type="scale"><Profile /></PageTransition>} />
-        <Route path="/profile/:userId" element={<PageTransition type="scale"><Profile /></PageTransition>} />
-        <Route path="/followers" element={<PageTransition type="scale"><Followers /></PageTransition>} />
-        <Route path="/following" element={<PageTransition type="scale"><Following /></PageTransition>} />
-        
-        {/* Content Creation - Slide Up */}
-        <Route path="/create-post" element={<PageTransition type="slide-up"><CreatePost /></PageTransition>} />
-        <Route path="/create-story" element={<PageTransition type="slide-up"><CreateStory /></PageTransition>} />
-        <Route path="/create-reel" element={<PageTransition type="slide-up"><CreateReel /></PageTransition>} />
-        <Route path="/broadcast" element={<PageTransition type="slide-up"><Broadcast /></PageTransition>} />
-        
-        {/* Messages & Notifications - Slide Left */}
-        <Route path="/messages" element={<PageTransition type="slide-left"><Messages /></PageTransition>} />
-        <Route path="/notifications" element={<PageTransition type="slide-left"><NotificationsPage /></PageTransition>} />
-        <Route path="/quick-reply" element={<PageTransition type="slide-left"><QuickReply /></PageTransition>} />
-        
-        {/* Settings - Slide Right */}
-        <Route path="/settings" element={<PageTransition type="slide-right"><Settings /></PageTransition>} />
-        <Route path="/settings/language" element={<PageTransition type="slide-right"><LanguageSettings /></PageTransition>} />
-        <Route path="/settings/blocked" element={<PageTransition type="slide-right"><BlockedAccounts /></PageTransition>} />
-        <Route path="/settings/privacy" element={<PageTransition type="slide-right"><PrivacySettings /></PageTransition>} />
-        <Route path="/settings/messages" element={<PageTransition type="slide-right"><MessagesSettings /></PageTransition>} />
-        <Route path="/settings/muted" element={<PageTransition type="slide-right"><MutedAccounts /></PageTransition>} />
-        <Route path="/settings/content" element={<PageTransition type="slide-right"><ContentPreferences /></PageTransition>} />
-        <Route path="/settings/archive" element={<PageTransition type="slide-right"><ArchiveDownload /></PageTransition>} />
-        <Route path="/settings/accessibility" element={<PageTransition type="slide-right"><AccessibilitySettings /></PageTransition>} />
-        <Route path="/settings/account-status" element={<PageTransition type="slide-right"><AccountStatus /></PageTransition>} />
-        <Route path="/settings/creator-tools" element={<PageTransition type="slide-right"><CreatorTools /></PageTransition>} />
-        <Route path="/settings/notifications" element={<PageTransition type="slide-right"><NotificationsSettings /></PageTransition>} />
-        <Route path="/settings/hidden-words" element={<PageTransition type="slide-right"><HiddenWords /></PageTransition>} />
-        <Route path="/settings/tags-mentions" element={<PageTransition type="slide-right"><TagsMentions /></PageTransition>} />
-        <Route path="/settings/sharing" element={<PageTransition type="slide-right"><SharingSettings /></PageTransition>} />
-        <Route path="/settings/restricted" element={<PageTransition type="slide-right"><RestrictedAccounts /></PageTransition>} />
-        <Route path="/settings/story-location" element={<PageTransition type="slide-right"><StoryLocationSettings /></PageTransition>} />
-        <Route path="/settings/privacy-center" element={<PageTransition type="slide-right"><PrivacyCenter /></PageTransition>} />
-        <Route path="/settings/posts" element={<PageTransition type="slide-right"><PostSettings /></PageTransition>} />
-        <Route path="/settings/reels" element={<PageTransition type="slide-right"><ReelsSettings /></PageTransition>} />
-        
-        {/* Business & Pages - Scale */}
-        <Route path="/business" element={<PageTransition type="scale"><BusinessAccount /></PageTransition>} />
-        <Route path="/pages" element={<PageTransition type="scale"><Pages /></PageTransition>} />
-        
-        {/* Content Views - Fade */}
-        <Route path="/post/:postId" element={<PageTransition type="fade"><PostView /></PageTransition>} />
-        <Route path="/saved-posts" element={<PageTransition type="fade"><SavedPosts /></PageTransition>} />
-        <Route path="/saved-content" element={<PageTransition type="fade"><SavedContent /></PageTransition>} />
-        <Route path="/local-fame-rank" element={<PageTransition type="fade"><LocalFameRank /></PageTransition>} />
-        
-        {/* Tools & Utilities - Scale */}
-        <Route path="/ai-tools" element={<PageTransition type="scale"><AITools /></PageTransition>} />
-        <Route path="/withdraw" element={<PageTransition type="scale"><Withdraw /></PageTransition>} />
-        
-        {/* Admin - Slide Left */}
-        <Route path="/admin-login" element={<PageTransition type="slide-left"><AdminLogin /></PageTransition>} />
-        <Route path="/admin" element={<PageTransition type="slide-left"><AdminDashboard /></PageTransition>} />
-        <Route path="/admin-control-panel-secret" element={<PageTransition type="slide-left"><SecretAdminAccess /></PageTransition>} />
-        <Route path="/admin/staff" element={<PageTransition type="slide-left"><ManageStaff /></PageTransition>} />
-        <Route path="/admin/users" element={<PageTransition type="slide-left"><ManageUsers /></PageTransition>} />
-        <Route path="/admin/content" element={<PageTransition type="slide-left"><ManageContent /></PageTransition>} />
-        <Route path="/admin/ads" element={<PageTransition type="slide-left"><ManageAds /></PageTransition>} />
-        <Route path="/admin/settings" element={<PageTransition type="slide-left"><AdminSettings /></PageTransition>} />
-        <Route path="/admin/verification" element={<PageTransition type="slide-left"><VerificationRequests /></PageTransition>} />
-        
-        {/* 404 */}
-        <Route path="*" element={<PageTransition type="fade"><NotFound /></PageTransition>} />
-      </Routes>
-    </AnimatePresence>
-  );
-};
-
 const AppContent = () => {
-  // Initialize native app features
   useNativeApp();
   
   return (
     <>
       <BottomNav />
-      <AnimatedRoutes />
+      <Routes>
+        <Route path="/welcome" element={<SplashScreen />} />
+        <Route path="/" element={<Index />} />
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/broadcast" element={<Broadcast />} />
+        <Route path="/business" element={<BusinessAccount />} />
+        <Route path="/pages" element={<Pages />} />
+        <Route path="/shorts" element={<Shorts />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/messages" element={<Messages />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:userId" element={<Profile />} />
+        <Route path="/ai-tools" element={<AITools />} />
+        <Route path="/create-post" element={<CreatePost />} />
+        <Route path="/quick-reply" element={<QuickReply />} />
+        <Route path="/withdraw" element={<Withdraw />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin-control-panel-secret" element={<SecretAdminAccess />} />
+        <Route path="/admin/staff" element={<ManageStaff />} />
+        <Route path="/admin/users" element={<ManageUsers />} />
+        <Route path="/admin/content" element={<ManageContent />} />
+        <Route path="/admin/ads" element={<ManageAds />} />
+        <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/verification" element={<VerificationRequests />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/language" element={<LanguageSettings />} />
+        <Route path="/settings/blocked" element={<BlockedAccounts />} />
+        <Route path="/settings/privacy" element={<PrivacySettings />} />
+        <Route path="/settings/messages" element={<MessagesSettings />} />
+        <Route path="/settings/muted" element={<MutedAccounts />} />
+        <Route path="/settings/content" element={<ContentPreferences />} />
+        <Route path="/settings/archive" element={<ArchiveDownload />} />
+        <Route path="/settings/accessibility" element={<AccessibilitySettings />} />
+        <Route path="/settings/account-status" element={<AccountStatus />} />
+        <Route path="/settings/creator-tools" element={<CreatorTools />} />
+        <Route path="/settings/notifications" element={<NotificationsSettings />} />
+        <Route path="/settings/hidden-words" element={<HiddenWords />} />
+        <Route path="/settings/tags-mentions" element={<TagsMentions />} />
+        <Route path="/settings/sharing" element={<SharingSettings />} />
+        <Route path="/settings/restricted" element={<RestrictedAccounts />} />
+        <Route path="/settings/story-location" element={<StoryLocationSettings />} />
+        <Route path="/settings/privacy-center" element={<PrivacyCenter />} />
+        <Route path="/settings/posts" element={<PostSettings />} />
+        <Route path="/settings/reels" element={<ReelsSettings />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/followers" element={<Followers />} />
+        <Route path="/following" element={<Following />} />
+        <Route path="/create-story" element={<CreateStory />} />
+        <Route path="/create-reel" element={<CreateReel />} />
+        <Route path="/saved-posts" element={<SavedPosts />} />
+        <Route path="/post/:postId" element={<PostView />} />
+        <Route path="/saved-content" element={<SavedContent />} />
+        <Route path="/local-fame-rank" element={<LocalFameRank />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </>
   );
 };
