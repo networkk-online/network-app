@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import qiCardLogo from '@/assets/wallet-logo.jpg';
+import zainCashLogo from '@/assets/zaincash-logo.jpg';
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -247,7 +248,8 @@ const Withdraw = () => {
       fee: '1000 IQD',
       processingTime: 'فوري - 30 دقيقة',
       minAmount: 10,
-      currency: 'USD'
+      currency: 'USD',
+      customLogo: zainCashLogo
     },
     {
       id: 'qicard',
