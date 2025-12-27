@@ -114,7 +114,10 @@ const PrivacyCenter = () => {
             <h3 className="font-bold">السياسات والشروط</h3>
           </div>
           <div className="space-y-2 text-sm">
-            <button className="block text-primary hover:underline">
+            <button 
+              className="block text-primary hover:underline"
+              onClick={() => navigate('/settings/privacy-policy')}
+            >
               سياسة الخصوصية
             </button>
             <button className="block text-primary hover:underline">
