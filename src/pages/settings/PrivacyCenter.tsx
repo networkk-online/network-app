@@ -39,7 +39,7 @@ const PrivacyCenter = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <div className="sticky top-0 z-10 bg-background border-b border-border">
         <div className="flex items-center gap-3 p-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/settings')}>
@@ -49,7 +49,7 @@ const PrivacyCenter = () => {
         </div>
       </div>
 
-      <div className="p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-20">
         <p className="text-sm text-muted-foreground">
           نحن ملتزمون بحماية خصوصيتك وأمان بياناتك
         </p>
