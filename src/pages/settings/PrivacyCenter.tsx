@@ -138,7 +138,7 @@ const PrivacyCenter = () => {
           <Button
             variant="destructive"
             className="w-full"
-            onClick={() => navigate('/settings/account-status')}
+            onClick={() => navigate('/settings/delete-account')}
           >
             حذف الحساب
           </Button>
