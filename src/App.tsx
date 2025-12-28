@@ -47,6 +47,7 @@ import RestrictedAccounts from "./pages/settings/RestrictedAccounts";
 import StoryLocationSettings from "./pages/settings/StoryLocationSettings";
 import PrivacyCenter from "./pages/settings/PrivacyCenter";
 import PrivacyPolicy from "./pages/settings/PrivacyPolicy";
+import DeleteAccount from "./pages/settings/DeleteAccount";
 import PostSettings from "./pages/settings/PostSettings";
 import ReelsSettings from "./pages/settings/ReelsSettings";
 import Search from "./pages/Search";
@@ -116,6 +117,7 @@ const AppContent = () => {
         <Route path="/settings/story-location" element={<StoryLocationSettings />} />
         <Route path="/settings/privacy-center" element={<PrivacyCenter />} />
         <Route path="/settings/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/settings/delete-account" element={<DeleteAccount />} />
         <Route path="/settings/posts" element={<PostSettings />} />
         <Route path="/settings/reels" element={<ReelsSettings />} />
         <Route path="/search" element={<Search />} />
