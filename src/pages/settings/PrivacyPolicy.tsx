@@ -543,13 +543,6 @@ const PrivacyPolicy = () => {
             </p>
           </section>
 
-          {/* التواصل والدعم */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-primary">التواصل والدعم</h2>
-            <p>لأي استفسارات أو بلاغات تتعلق بالخصوصية أو إساءة الاستخدام، يرجى التواصل عبر:</p>
-            <p className="text-primary font-medium">📧 support@network-app.com</p>
-            <p>أو من خلال صفحة الدعم داخل التطبيق.</p>
-          </section>
 
           {/* التحديثات */}
           <section className="space-y-3">
