@@ -555,6 +555,33 @@ const PrivacyPolicy = () => {
             </p>
           </section>
 
+          {/* مزيد من المعلومات والدعم */}
+          <section className="space-y-4 bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+            <h2 className="text-lg font-bold text-destructive">مزيد من المعلومات والدعم</h2>
+            <div className="space-y-3">
+              <p>
+                إذا كنت ترغب في حذف حسابك نهائياً، يمكنك القيام بذلك من خلال إعدادات الحساب. سيتم حذف جميع بياناتك الشخصية والمحتوى المرتبط بحسابك خلال 30 يومًا من تاريخ طلب الحذف.
+              </p>
+              <div className="bg-background/50 rounded-lg p-3 space-y-2">
+                <h4 className="font-semibold">ماذا يحدث عند حذف الحساب؟</h4>
+                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                  <li>سيتم حذف جميع منشوراتك وصورك ومقاطع الفيديو الخاصة بك</li>
+                  <li>سيتم حذف جميع رسائلك ومحادثاتك</li>
+                  <li>سيتم إلغاء متابعتك لجميع الحسابات</li>
+                  <li>لن تتمكن من استعادة حسابك بعد الحذف النهائي</li>
+                  <li>سيتم فقدان أي أرباح أو رصيد غير مسحوب</li>
+                </ul>
+              </div>
+              <button
+                onClick={() => navigate('/settings/account-status')}
+                className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90 py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <span>حذف الحساب</span>
+                <span className="text-sm opacity-80">Delete Account</span>
+              </button>
+            </div>
+          </section>
+
           <div className="h-8" />
         </div>
       </ScrollArea>
