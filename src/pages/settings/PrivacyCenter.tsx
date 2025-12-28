@@ -128,6 +128,34 @@ const PrivacyCenter = () => {
             </button>
           </div>
         </div>
+
+        {/* حالة الحساب */}
+        <div className="bg-card rounded-xl p-4">
+          <h3 className="font-bold mb-3">حالة الحساب</h3>
+          <Button
+            variant="ghost"
+            className="w-full justify-between"
+            onClick={() => navigate('/settings/account-status')}
+          >
+            <span>عرض حالة الحساب</span>
+            <ExternalLink className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* مزيد من المعلومات والدعم */}
+        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4">
+          <h3 className="font-bold text-destructive mb-3">مزيد من المعلومات والدعم</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            إذا كنت ترغب في حذف حسابك نهائياً، سيتم حذف جميع بياناتك خلال 30 يومًا.
+          </p>
+          <Button
+            variant="destructive"
+            className="w-full"
+            onClick={() => navigate('/settings/account-status')}
+          >
+            حذف الحساب - Delete Account
+          </Button>
+        </div>
       </div>
     </div>
   );
