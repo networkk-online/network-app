@@ -13,9 +13,12 @@ const PrivacyPolicy = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowRight className="w-5 h-5" />
           </Button>
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-primary" />
-            <h1 className="text-xl font-bold">سياسة الخصوصية</h1>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              <h1 className="text-xl font-bold">سياسة الخصوصية</h1>
+            </div>
+            <span className="text-xs text-muted-foreground mr-7">Privacy Policy</span>
           </div>
         </div>
       </div>

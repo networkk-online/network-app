@@ -118,7 +118,7 @@ const PrivacyCenter = () => {
               className="block text-primary hover:underline"
               onClick={() => navigate('/settings/privacy-policy')}
             >
-              سياسة الخصوصية
+              سياسة الخصوصية - Privacy Policy
             </button>
             <button className="block text-primary hover:underline">
               شروط الاستخدام
