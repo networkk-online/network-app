@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useCountUp } from '@/hooks/useCountUp';
 
 import { FollowButton } from '@/components/FollowButton';
 import { CloseFriendsButton } from '@/components/CloseFriendsButton';
@@ -65,7 +66,13 @@ interface UserProfileProps {
   socialLinks?: SocialLinks;
 }
 
-const UserProfile = ({ 
+// Animated Number Component
+const AnimatedNumber = ({ value, delay = 0 }: { value: number; delay?: number }) => {
+  const count = useCountUp({ end: value, duration: 800, delay });
+  return <p className="text-xl sm:text-2xl font-bold text-foreground">{count}</p>;
+};
+
+const UserProfile = ({
   username, 
   displayName, 
   avatar, 
@@ -568,7 +575,7 @@ const UserProfile = ({
                   className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1 animate-fade-in"
                   style={{ animationDelay: '0.1s', animationFillMode: 'backwards' }}
                 >
-                  <p className="text-xl sm:text-2xl font-bold text-foreground">{following}</p>
+                  <AnimatedNumber value={following} delay={100} />
                   <p className="text-xs sm:text-sm text-muted-foreground">يتابع</p>
                 </button>
                 <button 
@@ -576,14 +583,14 @@ const UserProfile = ({
                   className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1 animate-fade-in"
                   style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}
                 >
-                  <p className="text-xl sm:text-2xl font-bold text-foreground">{followersCount}</p>
+                  <AnimatedNumber value={followersCount} delay={200} />
                   <p className="text-xs sm:text-sm text-muted-foreground">المتابعون</p>
                 </button>
                 <div 
                   className="text-center flex flex-col gap-1 animate-fade-in"
                   style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}
                 >
-                  <p className="text-xl sm:text-2xl font-bold text-foreground">{posts}</p>
+                  <AnimatedNumber value={posts} delay={300} />
                   <p className="text-xs sm:text-sm text-muted-foreground">المنشورات</p>
                 </div>
               </div>
