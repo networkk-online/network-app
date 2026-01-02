@@ -222,6 +222,7 @@ const Index = () => {
                           handleCreateStory();
                         }
                       }}
+                      onCameraClick={handleCreateStory}
                     />
                   )}
                   
