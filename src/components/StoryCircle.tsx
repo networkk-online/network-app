@@ -1,5 +1,5 @@
-import { Avatar } from '@/components/ui/avatar';
-import { Plus } from 'lucide-react';
+import { Camera, Plus } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 interface StoryCircleProps {
   username: string;
@@ -8,9 +8,10 @@ interface StoryCircleProps {
   isOwn?: boolean;
   hasViewed?: boolean;
   onClick: () => void;
+  onCameraClick?: () => void;
 }
 
-const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, hasViewed = false, onClick }: StoryCircleProps) => {
+const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, hasViewed = false, onClick, onCameraClick }: StoryCircleProps) => {
   const getBorderStyle = () => {
     if (!hasStory) return 'p-0.5 bg-gray-700';
     if (hasViewed) return 'p-0.5 bg-gray-500'; // رمادي بعد المشاهدة
@@ -18,8 +19,8 @@ const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, hasVie
   };
 
   return (
-    <div className="flex flex-col items-center space-y-1 cursor-pointer" onClick={onClick}>
-      <div className="relative">
+    <div className="flex flex-col items-center space-y-1">
+      <div className="relative cursor-pointer" onClick={onClick}>
         <div className={`${getBorderStyle()} rounded-full`}>
           <div className="bg-black p-0.5 rounded-full">
             <img 
@@ -29,7 +30,31 @@ const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, hasVie
             />
           </div>
         </div>
+        
+        {/* زر الإضافة للقصة الخاصة */}
+        {isOwn && !hasStory && (
+          <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1 border-2 border-black">
+            <Plus className="w-3 h-3 text-primary-foreground" />
+          </div>
+        )}
       </div>
+      
+      {/* اللوجو وزر الكاميرا أسفل قصتك */}
+      {isOwn && (
+        <div className="flex items-center gap-1 mt-0.5">
+          <img src={logo} alt="Logo" className="w-4 h-4 object-contain" />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCameraClick?.();
+            }}
+            className="bg-primary/20 hover:bg-primary/40 rounded-full p-1 transition-colors"
+          >
+            <Camera className="w-3 h-3 text-primary" />
+          </button>
+        </div>
+      )}
+      
       <span className="text-xs text-gray-300 max-w-[70px] truncate">
         {isOwn ? 'قصتك' : username}
       </span>
