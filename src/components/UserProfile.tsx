@@ -563,18 +563,18 @@ const UserProfile = ({
             {/* Stats */}
             <div className="flex flex-col justify-center pt-20 sm:pt-24 gap-2 flex-1">
               <div className="flex gap-8 sm:gap-12">
-                <div className="text-center flex flex-col gap-1">
-                  <p className="text-xl sm:text-2xl font-bold text-foreground">{posts}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">منشورات</p>
-                </div>
-                <button onClick={() => navigate('/followers', { state: { profileId, username } })} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
-                  <p className="text-xl sm:text-2xl font-bold text-foreground">{followersCount}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">متابع</p>
-                </button>
                 <button onClick={() => navigate('/following', { state: { profileId, username } })} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
                   <p className="text-xl sm:text-2xl font-bold text-foreground">{following}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">متابعون</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">يتابع</p>
                 </button>
+                <button onClick={() => navigate('/followers', { state: { profileId, username } })} className="text-center hover:opacity-80 transition-opacity flex flex-col gap-1">
+                  <p className="text-xl sm:text-2xl font-bold text-foreground">{followersCount}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">المتابعون</p>
+                </button>
+                <div className="text-center flex flex-col gap-1">
+                  <p className="text-xl sm:text-2xl font-bold text-foreground">{posts}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">المنشورات</p>
+                </div>
               </div>
             </div>
           </div>
