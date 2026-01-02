@@ -30,26 +30,19 @@ const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, hasVie
           </div>
         </div>
         
-        {/* زر الإضافة للقصة الخاصة */}
-        {isOwn && !hasStory && (
-          <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1 border-2 border-black">
-            <Plus className="w-3 h-3 text-primary-foreground" />
-          </div>
+        {/* زر الكاميرا للقصة الخاصة - أسفل يمين الدائرة */}
+        {isOwn && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCameraClick?.();
+            }}
+            className="absolute -bottom-1 -right-1 bg-primary hover:bg-primary/80 rounded-full p-1.5 border-2 border-black transition-colors"
+          >
+            <Camera className="w-4 h-4 text-primary-foreground" />
+          </button>
         )}
       </div>
-      
-      {/* زر الكاميرا أسفل قصتك */}
-      {isOwn && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onCameraClick?.();
-          }}
-          className="bg-primary/20 hover:bg-primary/40 rounded-full p-1 transition-colors mt-0.5"
-        >
-          <Camera className="w-3 h-3 text-primary" />
-        </button>
-      )}
       
       <span className="text-xs text-gray-300 max-w-[70px] truncate">
         {isOwn ? 'قصتك' : username}
