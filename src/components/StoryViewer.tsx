@@ -57,6 +57,8 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
   const [replyText, setReplyText] = useState('');
   const [isSendingReply, setIsSendingReply] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isTypingReply, setIsTypingReply] = useState(false);
   const currentStory = stories[currentIndex];
   const { recordView } = useStoryViews(currentStory?.id || '');
   const { isFollowing, toggleFollow } = useFollow(currentStory?.user_id || '');
@@ -85,6 +87,9 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
     const increment = (interval / duration) * 100;
 
     const timer = setInterval(() => {
+      // Don't progress if paused or typing reply
+      if (isPaused || isTypingReply) return;
+      
       setProgress(prev => {
         if (prev >= 100) {
           clearInterval(timer);
@@ -103,7 +108,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
     }, interval);
 
     return () => clearInterval(timer);
-  }, [currentIndex, currentStory]);
+  }, [currentIndex, currentStory, isPaused, isTypingReply]);
 
   if (!currentStory) return null;
 
@@ -535,6 +540,8 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
             <Input
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
+              onFocus={() => setIsTypingReply(true)}
+              onBlur={() => setIsTypingReply(false)}
               placeholder="أرسل رسالة..."
               className="flex-1 bg-transparent border-0 text-white placeholder:text-gray-400 focus-visible:ring-0"
               onKeyDown={(e) => {

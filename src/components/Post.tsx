@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom';
 import { useSavedPosts } from '@/hooks/useSavedPosts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CommentSection } from '@/components/CommentSection';
-import { useMessages } from '@/hooks/useMessages';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { useRepost } from '@/hooks/useRepost';
 
@@ -34,7 +33,6 @@ interface PostProps {
 const Post = ({ id, userId, username, userAvatar, isVerified = false, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration }: PostProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { createConversation } = useMessages();
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
@@ -257,20 +255,56 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
 
     setSendingMessage(true);
     try {
-      const result = await createConversation(userId);
-      if (result?.success && result.conversationId) {
-        navigate('/messages');
-        toast({
-          title: "تم فتح المحادثة",
-          description: "يمكنك الآن المراسلة",
-        });
-      } else {
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ أثناء فتح المحادثة",
-          variant: "destructive"
-        });
+      // Check for existing conversation or create new one
+      const { data: existingParticipations } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', currentUser.id);
+
+      let conversationId = null;
+
+      if (existingParticipations) {
+        for (const part of existingParticipations) {
+          const { data: otherPart } = await supabase
+            .from('conversation_participants')
+            .select('conversation_id')
+            .eq('conversation_id', part.conversation_id)
+            .eq('user_id', userId)
+            .maybeSingle();
+
+          if (otherPart) {
+            conversationId = part.conversation_id;
+            break;
+          }
+        }
       }
+
+      if (!conversationId) {
+        // Create new conversation
+        const { data: newConv, error: convError } = await supabase
+          .from('conversations')
+          .insert({})
+          .select()
+          .single();
+
+        if (convError) throw convError;
+
+        // Add participants
+        await supabase
+          .from('conversation_participants')
+          .insert([
+            { conversation_id: newConv.id, user_id: currentUser.id },
+            { conversation_id: newConv.id, user_id: userId }
+          ]);
+
+        conversationId = newConv.id;
+      }
+
+      navigate('/messages');
+      toast({
+        title: "تم فتح المحادثة",
+        description: "يمكنك الآن المراسلة",
+      });
     } catch (error) {
       console.error('Error starting conversation:', error);
       toast({
