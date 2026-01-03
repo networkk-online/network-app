@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Image, Upload, X, Loader2, Star } from 'lucide-react';
+import { ArrowLeft, Image, Upload, X, Loader2, Star, Copy, Radio, TrendingUp, Sparkles } from 'lucide-react';
 import Header from '@/components/Header';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -195,6 +195,46 @@ const CreatePost = () => {
               </CardHeader>
               
               <CardContent>
+                {/* Quick Action Buttons */}
+                <div className="grid grid-cols-4 gap-2 mb-6 pb-4 border-b border-gray-700">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="flex flex-col items-center gap-2 h-auto py-3 text-white hover:bg-gray-800"
+                    onClick={() => {}}
+                  >
+                    <Copy className="w-5 h-5" />
+                    <span className="text-xs">Post</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="flex flex-col items-center gap-2 h-auto py-3 text-white hover:bg-gray-800"
+                    onClick={() => navigate('/broadcast')}
+                  >
+                    <Radio className="w-5 h-5" />
+                    <span className="text-xs">Live video</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="flex flex-col items-center gap-2 h-auto py-3 text-white hover:bg-gray-800"
+                    onClick={() => navigate('/manage-ads')}
+                  >
+                    <TrendingUp className="w-5 h-5" />
+                    <span className="text-xs">Ad</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="flex flex-col items-center gap-2 h-auto py-3 text-white hover:bg-gray-800"
+                    onClick={() => navigate('/ai-tools')}
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    <span className="text-xs">AI</span>
+                  </Button>
+                </div>
+
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">

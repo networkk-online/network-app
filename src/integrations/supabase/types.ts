@@ -1004,6 +1004,7 @@ export type Database = {
           music_title: string | null
           music_url: string | null
           shares_count: number | null
+          show_in_feed: boolean | null
           thumbnail_url: string | null
           updated_at: string
           user_id: string
@@ -1026,6 +1027,7 @@ export type Database = {
           music_title?: string | null
           music_url?: string | null
           shares_count?: number | null
+          show_in_feed?: boolean | null
           thumbnail_url?: string | null
           updated_at?: string
           user_id: string
@@ -1048,6 +1050,7 @@ export type Database = {
           music_title?: string | null
           music_url?: string | null
           shares_count?: number | null
+          show_in_feed?: boolean | null
           thumbnail_url?: string | null
           updated_at?: string
           user_id?: string

@@ -31,7 +31,9 @@ import {
   BriefcaseBusiness,
   Shield,
   UserCog,
-  Bell
+  Bell,
+  LogOut,
+  Radio
 } from 'lucide-react';
 
 interface SettingItemProps {
@@ -161,6 +163,24 @@ const Settings = () => {
       } catch (error) {
         console.error('Error saving setting:', error);
       }
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "تم تسجيل الخروج",
+        description: "تم تسجيل خروجك بنجاح",
+      });
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        title: "خطأ",
+        description: "فشل تسجيل الخروج",
+        variant: "destructive"
+      });
     }
   };
 
@@ -346,6 +366,16 @@ const Settings = () => {
               />
             </SettingSection>
 
+            {/* البث المباشر */}
+            <SettingSection title="البث المباشر">
+              <SettingItem
+                icon={<Radio className="w-5 h-5" />}
+                title="إعدادات البث المباشر"
+                subtitle="إدارة إعدادات البث والتبرعات"
+                onClick={() => navigate('/broadcast')}
+              />
+            </SettingSection>
+
             {/* مزيد من المعلومات والدعم */}
             <SettingSection title="مزيد من المعلومات والدعم">
               <SettingItem
@@ -362,6 +392,16 @@ const Settings = () => {
                 icon={<UserCog className="w-5 h-5" />}
                 title="حالة الحساب"
                 onClick={() => navigate('/settings/account-status')}
+              />
+            </SettingSection>
+
+            {/* تسجيل الخروج */}
+            <SettingSection title="تسجيل الخروج">
+              <SettingItem
+                icon={<LogOut className="w-5 h-5 text-red-500" />}
+                title="تسجيل الخروج"
+                subtitle="الخروج من حسابك"
+                onClick={handleLogout}
               />
             </SettingSection>
           </div>

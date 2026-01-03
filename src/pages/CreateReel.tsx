@@ -21,6 +21,7 @@ const CreateReel = () => {
   const [uploading, setUploading] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
   const [closeFriendsOnly, setCloseFriendsOnly] = useState(false);
+  const [showInFeed, setShowInFeed] = useState(true);
   const [location, setLocation] = useState<{ name: string; lat?: number; lng?: number } | null>(null);
   const [music, setMusic] = useState<{ title: string; artist?: string; url?: string } | null>(null);
   const [mentions, setMentions] = useState<string[]>([]);
@@ -120,6 +121,7 @@ const CreateReel = () => {
           caption: caption || null,
           duration: duration,
           close_friends_only: closeFriendsOnly,
+          show_in_feed: showInFeed,
           location: location?.name || null,
           location_lat: location?.lat || null,
           location_lng: location?.lng || null,
@@ -263,6 +265,26 @@ const CreateReel = () => {
                   id="close-friends-reel"
                   checked={closeFriendsOnly}
                   onCheckedChange={setCloseFriendsOnly}
+                  disabled={uploading}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-3">
+                  <Video className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <Label htmlFor="show-in-feed" className="text-white font-medium">
+                      إظهار في الصفحة الرئيسية
+                    </Label>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      سيظهر الريل في الهوم بجانب قسم الريلز
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="show-in-feed"
+                  checked={showInFeed}
+                  onCheckedChange={setShowInFeed}
                   disabled={uploading}
                 />
               </div>
