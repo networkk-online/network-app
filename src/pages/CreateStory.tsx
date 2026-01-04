@@ -300,11 +300,9 @@ const CreateStory = () => {
             <button 
               onClick={removeCurrentFile}
               className="text-white hover:bg-red-500/20 p-2 rounded-full transition-colors"
+              title="حذف"
             >
               <Trash2 className="w-6 h-6" />
-            </button>
-            <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
-              <Type className="w-6 h-6" />
             </button>
           </div>
         )}

@@ -57,6 +57,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
   const [replyText, setReplyText] = useState('');
   const [isSendingReply, setIsSendingReply] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showOwnMenu, setShowOwnMenu] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isTypingReply, setIsTypingReply] = useState(false);
   const currentStory = stories[currentIndex];
@@ -87,8 +88,8 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
     const increment = (interval / duration) * 100;
 
     const timer = setInterval(() => {
-      // Don't progress if paused or typing reply
-      if (isPaused || isTypingReply) return;
+      // Don't progress if paused, typing reply, or menu is open
+      if (isPaused || isTypingReply || showMenu || showOwnMenu) return;
       
       setProgress(prev => {
         if (prev >= 100) {
@@ -108,7 +109,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
     }, interval);
 
     return () => clearInterval(timer);
-  }, [currentIndex, currentStory, isPaused, isTypingReply]);
+  }, [currentIndex, currentStory, isPaused, isTypingReply, showMenu, showOwnMenu]);
 
   if (!currentStory) return null;
 
@@ -208,7 +209,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
         </div>
         <div className="flex items-center gap-3">
           {isOwnStory && (
-            <Popover>
+            <Popover open={showOwnMenu} onOpenChange={setShowOwnMenu}>
               <PopoverTrigger asChild>
                 <button className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
                   <MoreVertical className="w-6 h-6" />
