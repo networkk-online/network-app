@@ -55,7 +55,7 @@ export const HighlightViewer = ({
         .from('highlight_stories')
         .select(`
           story_id,
-          stories!inner (
+          stories (
             id,
             user_id,
             media_url,
@@ -72,11 +72,7 @@ export const HighlightViewer = ({
             poll_votes,
             question_text,
             sticker_data,
-            allow_story_replies,
-            profiles!inner (
-              username,
-              avatar_url
-            )
+            allow_story_replies
           )
         `)
         .eq('highlight_id', highlightId)
@@ -84,17 +80,28 @@ export const HighlightViewer = ({
 
       if (error) throw error;
 
+      // Get unique user IDs from the stories
+      const userIds = [...new Set(data?.map(item => (item.stories as any)?.user_id).filter(Boolean))];
+      
+      // Fetch profiles for these users
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .in('id', userIds);
+
       const storiesData = data
         .map(item => {
           const story = item.stories as any;
           if (!story) return null;
           
+          const profile = profiles?.find(p => p.id === story.user_id);
           return {
             ...story,
-            profiles: Array.isArray(story.profiles) ? story.profiles[0] : story.profiles
+            profiles: profile || { username: 'مستخدم', avatar_url: '/default-avatar.jpg' }
           };
         })
         .filter(story => story !== null) as Story[];
+
 
       setStories(storiesData);
     } catch (error) {

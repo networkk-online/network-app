@@ -5,12 +5,15 @@ import UserProfile from '@/components/UserProfile';
 import WalletCard from '@/components/WalletCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, MessageCircle, Bookmark, Wallet, Plus, Play, Eye } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Wallet, Plus, Play, Eye, Repeat2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HighlightCircle } from '@/components/HighlightCircle';
 import { CreateHighlightDialog } from '@/components/CreateHighlightDialog';
 import { HighlightViewer } from '@/components/HighlightViewer';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useStories } from '@/hooks/useStories';
+import StoryCircle from '@/components/StoryCircle';
+import StoryViewer from '@/components/StoryViewer';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -20,6 +23,7 @@ const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [userPosts, setUserPosts] = useState<any[]>([]);
+  const [repostedPosts, setRepostedPosts] = useState<any[]>([]);
   const [userReels, setUserReels] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [todayEarnings, setTodayEarnings] = useState(0);
@@ -29,6 +33,9 @@ const Profile = () => {
   const [showCreateHighlight, setShowCreateHighlight] = useState(false);
   const [selectedHighlightId, setSelectedHighlightId] = useState<string | null>(null);
   const [showHighlightViewer, setShowHighlightViewer] = useState(false);
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+  const [viewingStories, setViewingStories] = useState<any[]>([]);
 
   useEffect(() => {
     checkUser();
@@ -60,6 +67,7 @@ const Profile = () => {
         await loadPosts(targetUserId);
         await loadReels(targetUserId);
         await loadHighlights(targetUserId);
+        await loadReposts(targetUserId);
       }
     } catch (error) {
       console.error('Error checking user:', error);
@@ -294,6 +302,50 @@ const Profile = () => {
     }
   };
 
+  const loadReposts = async (userId: string) => {
+    try {
+      // Get reposts by user
+      const { data: repostsData, error: repostsError } = await supabase
+        .from('reposts')
+        .select('post_id')
+        .eq('user_id', userId)
+        .not('post_id', 'is', null);
+
+      if (repostsError) throw repostsError;
+      
+      if (!repostsData || repostsData.length === 0) {
+        setRepostedPosts([]);
+        return;
+      }
+
+      // Get the actual posts
+      const postIds = repostsData.map(r => r.post_id).filter(Boolean);
+      const { data: postsData, error: postsError } = await supabase
+        .from('posts')
+        .select('*')
+        .in('id', postIds);
+
+      if (postsError) throw postsError;
+
+      // Get profiles for these posts
+      const userIds = [...new Set(postsData?.map(p => p.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, avatar_url, is_verified')
+        .in('id', userIds);
+
+      const formattedPosts = (postsData || []).map(post => ({
+        ...post,
+        isRepost: true,
+        originalAuthor: profiles?.find(p => p.id === post.user_id)
+      }));
+
+      setRepostedPosts(formattedPosts);
+    } catch (error) {
+      console.error('Error loading reposts:', error);
+    }
+  };
+
   const handleHighlightClick = (highlightId: string) => {
     setSelectedHighlightId(highlightId);
     setShowHighlightViewer(true);
@@ -352,6 +404,18 @@ const Profile = () => {
     }
   };
 
+  // Get stories for profile user
+  const targetUserId = urlUserId || user?.id;
+  const { stories } = useStories(user?.id);
+  const profileStories = targetUserId && stories[targetUserId] ? stories[targetUserId].stories : [];
+
+  const handleStoryClick = () => {
+    if (profileStories.length > 0) {
+      setViewingStories(profileStories);
+      setCurrentStoryIndex(0);
+      setShowStoryViewer(true);
+    }
+  };
   if (loading) {
     return (
       <div className="min-h-screen bg-black">
@@ -399,11 +463,27 @@ const Profile = () => {
               socialLinks={profile?.social_links as any}
             />
             
-            {/* Highlights Section */}
-            {(highlights.length > 0 || isOwnProfile) && (
+            {/* Story and Highlights Section */}
+            {(highlights.length > 0 || isOwnProfile || profileStories.length > 0) && (
               <div className="mt-6 px-4">
                 <ScrollArea className="w-full whitespace-nowrap">
                   <div className="flex gap-4 pb-2">
+                    {/* User's Story Circle */}
+                    {profileStories.length > 0 && (
+                      <div className="flex-shrink-0">
+                        <StoryCircle
+                          username={isOwnProfile ? 'قصتك' : profile?.username || 'قصة'}
+                          avatar={profile?.avatar_url || '/default-avatar.jpg'}
+                          hasStory={true}
+                          hasViewed={stories[targetUserId!]?.hasViewed || false}
+                          isOwn={isOwnProfile}
+                          onClick={handleStoryClick}
+                          onCameraClick={() => navigate('/create-story')}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Create Highlight Button */}
                     {isOwnProfile && (
                       <div 
                         className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0"
@@ -580,8 +660,10 @@ const Profile = () => {
             {/* Posts Grid - Responsive */}
             {activeTab === 'posts' && (
               <div className="grid grid-cols-3 gap-0.5 sm:gap-1 lg:gap-2 mt-6 sm:mt-8">
-                {userPosts.length > 0 ? (
-                  userPosts.map((post) => (
+                {[...userPosts, ...repostedPosts].length > 0 ? (
+                  [...userPosts, ...repostedPosts]
+                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                    .map((post) => (
                     <div 
                       key={post.id} 
                       className="relative aspect-square group cursor-pointer"
@@ -598,6 +680,12 @@ const Profile = () => {
                           <p className="text-gray-400 text-sm text-center line-clamp-6">
                             {post.content}
                           </p>
+                        </div>
+                      )}
+                      {/* Repost indicator */}
+                      {post.isRepost && (
+                        <div className="absolute top-2 left-2 bg-green-500/80 backdrop-blur-sm rounded-full p-1.5">
+                          <Repeat2 className="w-3 h-3 text-white" />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-sm lg:rounded-md">
@@ -707,6 +795,17 @@ const Profile = () => {
           open={showHighlightViewer}
           onOpenChange={setShowHighlightViewer}
           highlightId={selectedHighlightId}
+        />
+      )}
+
+      {/* Story Viewer */}
+      {showStoryViewer && viewingStories.length > 0 && (
+        <StoryViewer
+          stories={viewingStories}
+          currentIndex={currentStoryIndex}
+          onClose={() => setShowStoryViewer(false)}
+          onNext={() => setCurrentStoryIndex(prev => Math.min(prev + 1, viewingStories.length - 1))}
+          onPrev={() => setCurrentStoryIndex(prev => Math.max(prev - 1, 0))}
         />
       )}
     </div>
