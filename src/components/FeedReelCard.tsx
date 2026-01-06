@@ -29,6 +29,7 @@ const FeedReelCard = ({
   const [isVisible, setIsVisible] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -61,6 +62,20 @@ const FeedReelCard = ({
       }
     }
   }, [isVisible]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const updateProgress = () => {
+      if (video.duration) {
+        setProgress((video.currentTime / video.duration) * 100);
+      }
+    };
+
+    video.addEventListener('timeupdate', updateProgress);
+    return () => video.removeEventListener('timeupdate', updateProgress);
+  }, []);
 
   const handleClick = () => {
     navigate(`/shorts?reelId=${id}`);
@@ -125,7 +140,7 @@ const FeedReelCard = ({
       </div>
       
       {/* Stats */}
-      <div className="absolute bottom-2 left-2 right-2">
+      <div className="absolute bottom-4 left-2 right-2">
         <p className="text-white text-xs truncate mb-1">{caption || ''}</p>
         <div className="flex items-center gap-2 text-white/80 text-xs">
           <span className="flex items-center gap-1">
@@ -137,6 +152,14 @@ const FeedReelCard = ({
             {commentsCount}
           </span>
         </div>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+        <div 
+          className="h-full bg-primary transition-all duration-100"
+          style={{ width: `${progress}%` }}
+        />
       </div>
     </div>
   );
