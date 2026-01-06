@@ -28,7 +28,7 @@ const Index = () => {
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   
   const { stories, loading: storiesLoading, markUserStoriesAsViewed } = useStories(userId);
-  const { reels: feedReels, loading: reelsLoading } = useReels(userId, true);
+  const { reels: feedReels, loading: reelsLoading, likedReels, toggleLike } = useReels(userId, true);
 
   useEffect(() => {
     // Check if first time user
@@ -275,6 +275,8 @@ const Index = () => {
                       commentsCount={reel.comments_count}
                       username={reel.profiles?.username || 'مستخدم'}
                       userAvatar={reel.profiles?.avatar_url || '/default-avatar.jpg'}
+                      isLiked={likedReels.includes(reel.id)}
+                      onDoubleTapLike={toggleLike}
                     />
                   ))}
                 </div>
