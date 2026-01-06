@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -6,11 +5,14 @@ import Post from '@/components/Post';
 import StoryCircle from '@/components/StoryCircle';
 import StoryViewer from '@/components/StoryViewer';
 import Advertisement from '@/components/Advertisement';
+import FeedReelCard from '@/components/FeedReelCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useStories } from '@/hooks/useStories';
+import { useReels } from '@/hooks/useReels';
 import LocalFameRankSection from '@/components/LocalFameRankSection';
 import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
+import { Film } from 'lucide-react';
 
 const Index = () => {
   const { toast } = useToast();
@@ -26,6 +28,7 @@ const Index = () => {
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   
   const { stories, loading: storiesLoading, markUserStoriesAsViewed } = useStories(userId);
+  const { reels: feedReels, loading: reelsLoading } = useReels(userId, true);
 
   useEffect(() => {
     // Check if first time user
@@ -244,6 +247,39 @@ const Index = () => {
                 </div>
               )}
             </div>
+
+            {/* Feed Reels Section */}
+            {!reelsLoading && feedReels.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Film className="w-5 h-5 text-primary" />
+                    <h2 className="text-white font-semibold">ريلز</h2>
+                  </div>
+                  <button 
+                    onClick={() => navigate('/shorts')}
+                    className="text-primary text-sm"
+                  >
+                    عرض الكل
+                  </button>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                  {feedReels.slice(0, 8).map((reel) => (
+                    <FeedReelCard
+                      key={reel.id}
+                      id={reel.id}
+                      videoUrl={reel.video_url}
+                      thumbnailUrl={reel.thumbnail_url}
+                      caption={reel.caption}
+                      likesCount={reel.likes_count}
+                      commentsCount={reel.comments_count}
+                      username={reel.profiles?.username || 'مستخدم'}
+                      userAvatar={reel.profiles?.avatar_url || '/default-avatar.jpg'}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* Posts Feed */}
             <div className="space-y-4 sm:space-y-6 lg:space-y-8">
