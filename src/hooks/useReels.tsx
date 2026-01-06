@@ -21,7 +21,7 @@ export interface Reel {
   };
 }
 
-export const useReels = (currentUserId?: string) => {
+export const useReels = (currentUserId?: string, filterForFeed?: boolean) => {
   const [reels, setReels] = useState<Reel[]>([]);
   const [loading, setLoading] = useState(true);
   const [likedReels, setLikedReels] = useState<string[]>([]);
@@ -29,7 +29,7 @@ export const useReels = (currentUserId?: string) => {
 
   const loadReels = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('reels')
         .select(`
           *,
@@ -40,6 +40,13 @@ export const useReels = (currentUserId?: string) => {
           )
         `)
         .order('created_at', { ascending: false });
+
+      // Filter for feed if requested
+      if (filterForFeed) {
+        query = query.eq('show_in_feed', true);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setReels(data || []);
