@@ -18,8 +18,10 @@ const Shorts = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
+  const [touchStartY, setTouchStartY] = useState(0);
+  const [translateY, setTranslateY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -68,31 +70,57 @@ const Shorts = () => {
     setCurrentVideoIndex((prev) => (prev - 1 + reels.length) % reels.length);
   };
 
-  // Handle touch gestures for swipe
+  // Handle touch gestures for smooth swipe
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientY);
+    if (isTransitioning) return;
+    setTouchStartY(e.targetTouches[0].clientY);
+    setIsDragging(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientY);
+    if (!isDragging || isTransitioning) return;
+    const currentY = e.targetTouches[0].clientY;
+    const diff = currentY - touchStartY;
+    
+    // Limit dragging at edges
+    if ((currentVideoIndex === 0 && diff > 0) || 
+        (currentVideoIndex === reels.length - 1 && diff < 0)) {
+      setTranslateY(diff * 0.3); // Resistance at edges
+    } else {
+      setTranslateY(diff);
+    }
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!isDragging || isTransitioning) return;
+    setIsDragging(false);
     
-    const distance = touchStart - touchEnd;
-    const isSwipeUp = distance > 50;
-    const isSwipeDown = distance < -50;
+    const threshold = window.innerHeight * 0.15; // 15% of screen height
     
-    if (isSwipeUp && currentVideoIndex < reels.length - 1) {
-      nextVideo();
+    if (translateY < -threshold && currentVideoIndex < reels.length - 1) {
+      // Swipe up - next video
+      setIsTransitioning(true);
+      setTranslateY(-window.innerHeight);
+      setTimeout(() => {
+        setCurrentVideoIndex(prev => prev + 1);
+        setTranslateY(0);
+        setIsTransitioning(false);
+      }, 300);
+    } else if (translateY > threshold && currentVideoIndex > 0) {
+      // Swipe down - previous video
+      setIsTransitioning(true);
+      setTranslateY(window.innerHeight);
+      setTimeout(() => {
+        setCurrentVideoIndex(prev => prev - 1);
+        setTranslateY(0);
+        setIsTransitioning(false);
+      }, 300);
+    } else {
+      // Snap back
+      setTranslateY(0);
     }
-    if (isSwipeDown && currentVideoIndex > 0) {
-      previousVideo();
-    }
     
-    setTouchStart(0);
-    setTouchEnd(0);
+    setTouchStartY(0);
   };
 
   const formatDuration = (seconds: number | null) => {
@@ -163,12 +191,18 @@ const Shorts = () => {
       {/* Video Container */}
       <div 
         ref={containerRef}
-        className="relative w-full h-full snap-y snap-mandatory overflow-y-scroll scrollbar-hide"
+        className="relative w-full h-full overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="relative w-full h-full snap-start flex items-center justify-center bg-black">
+        <div 
+          className="relative w-full h-full flex items-center justify-center bg-black"
+          style={{
+            transform: `translateY(${translateY}px)`,
+            transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+          }}
+        >
           {/* Video Player */}
           <video
             ref={videoRef}
