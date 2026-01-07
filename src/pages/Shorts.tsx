@@ -2,13 +2,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Share2, Plus, Volume2, VolumeX, MoreVertical, Bookmark, X, Camera } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Volume2, VolumeX, MoreVertical, Bookmark, X, Camera, Send } from 'lucide-react';
 import { useReels } from '@/hooks/useReels';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CommentSection } from '@/components/CommentSection';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useSavedReels } from '@/hooks/useSavedReels';
+import { useToast } from '@/hooks/use-toast';
 
 const Shorts = () => {
   const [searchParams] = useSearchParams();
@@ -22,11 +24,15 @@ const Shorts = () => {
   const [translateY, setTranslateY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const { reels, loading, likedReels, toggleLike, incrementViews } = useReels(currentUserId);
+  const currentReel = reels[currentVideoIndex];
+  const { isSaved, loading: saveLoading, toggleSave } = useSavedReels(currentReel?.id);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -60,7 +66,6 @@ const Shorts = () => {
     }
   }, [currentVideoIndex, reels]);
 
-  const currentReel = reels[currentVideoIndex];
 
   const nextVideo = () => {
     setCurrentVideoIndex((prev) => (prev + 1) % reels.length);
@@ -121,6 +126,155 @@ const Shorts = () => {
     }
     
     setTouchStartY(0);
+  };
+
+  // Handle Save Reel
+  const handleSave = async () => {
+    if (!currentUserId) {
+      toast({
+        title: "يجب تسجيل الدخول",
+        description: "سجل دخولك لحفظ الريلز",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+
+    const result = await toggleSave();
+    if (result?.success) {
+      toast({
+        title: result.action === 'saved' ? "تم الحفظ" : "تم إلغاء الحفظ",
+        description: result.action === 'saved' ? "تم حفظ الريل بنجاح" : "تم إلغاء حفظ الريل",
+      });
+    } else if (result?.error) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حفظ الريل",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Handle Share Reel
+  const handleShare = async () => {
+    if (!currentReel) return;
+    
+    const shareUrl = `${window.location.origin}/shorts?reelId=${currentReel.id}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: currentReel.caption || 'شاهد هذا الريل',
+          text: currentReel.caption || 'شاهد هذا الريل الرائع!',
+          url: shareUrl
+        });
+        toast({
+          title: "تمت المشاركة",
+          description: "تم مشاركة الريل بنجاح",
+        });
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          // Fallback to clipboard
+          await navigator.clipboard.writeText(shareUrl);
+          toast({
+            title: "تم النسخ",
+            description: "تم نسخ رابط الريل",
+          });
+        }
+      }
+    } else {
+      // Fallback to clipboard
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "تم النسخ",
+        description: "تم نسخ رابط الريل",
+      });
+    }
+  };
+
+  // Handle Send Message
+  const handleSendMessage = async () => {
+    if (!currentUserId) {
+      toast({
+        title: "يجب تسجيل الدخول",
+        description: "سجل دخولك للمراسلة",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+
+    if (!currentReel || currentUserId === currentReel.user_id) {
+      toast({
+        title: "لا يمكن مراسلة نفسك",
+        description: "لا يمكنك إرسال رسالة لنفسك",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSendingMessage(true);
+    try {
+      // Check for existing conversation or create new one
+      const { data: existingParticipations } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', currentUserId);
+
+      let conversationId = null;
+
+      if (existingParticipations) {
+        for (const part of existingParticipations) {
+          const { data: otherPart } = await supabase
+            .from('conversation_participants')
+            .select('conversation_id')
+            .eq('conversation_id', part.conversation_id)
+            .eq('user_id', currentReel.user_id)
+            .maybeSingle();
+
+          if (otherPart) {
+            conversationId = part.conversation_id;
+            break;
+          }
+        }
+      }
+
+      if (!conversationId) {
+        // Create new conversation
+        const { data: newConv, error: convError } = await supabase
+          .from('conversations')
+          .insert({})
+          .select()
+          .single();
+
+        if (convError) throw convError;
+
+        // Add participants
+        await supabase
+          .from('conversation_participants')
+          .insert([
+            { conversation_id: newConv.id, user_id: currentUserId },
+            { conversation_id: newConv.id, user_id: currentReel.user_id }
+          ]);
+
+        conversationId = newConv.id;
+      }
+
+      navigate('/messages');
+      toast({
+        title: "تم فتح المحادثة",
+        description: "يمكنك الآن المراسلة",
+      });
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء فتح المحادثة",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingMessage(false);
+    }
   };
 
   const formatDuration = (seconds: number | null) => {
@@ -281,8 +435,21 @@ const Shorts = () => {
               </span>
             </button>
 
+            {/* Send Button */}
+            <button 
+              onClick={handleSendMessage}
+              disabled={sendingMessage}
+              className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
+            >
+              <Send className={`w-7 h-7 text-white drop-shadow-lg ${sendingMessage ? 'opacity-50' : ''}`} strokeWidth={2.5} />
+              <span className="text-xs text-white font-semibold drop-shadow-lg">إرسال</span>
+            </button>
+
             {/* Share Button */}
-            <button className="flex flex-col items-center gap-1 active:scale-95 transition-transform">
+            <button 
+              onClick={handleShare}
+              className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
+            >
               <Share2 className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
               <span className="text-xs text-white font-semibold drop-shadow-lg">
                 {currentReel.shares_count || 0}
@@ -290,8 +457,22 @@ const Shorts = () => {
             </button>
 
             {/* Save/Bookmark Button */}
-            <button className="flex flex-col items-center gap-1 active:scale-95 transition-transform">
-              <Bookmark className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
+            <button 
+              onClick={handleSave}
+              disabled={saveLoading}
+              className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
+            >
+              <Bookmark 
+                className={`w-7 h-7 drop-shadow-lg transition-all ${
+                  isSaved 
+                    ? 'fill-yellow-400 text-yellow-400' 
+                    : 'text-white'
+                } ${saveLoading ? 'opacity-50' : ''}`} 
+                strokeWidth={2.5} 
+              />
+              <span className="text-xs text-white font-semibold drop-shadow-lg">
+                {isSaved ? 'محفوظ' : 'حفظ'}
+              </span>
             </button>
 
             {/* More Options Button */}

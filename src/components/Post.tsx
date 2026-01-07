@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, Send, Bookmark, Mic, Repeat2 } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, Mic, Repeat2, Share2 } from 'lucide-react';
 import PostSettingsMenu from './PostSettingsMenu';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
@@ -233,6 +233,41 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
     }
   };
 
+  // Handle Share Post
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/post/${id}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: caption ? caption.slice(0, 50) : 'شاهد هذا المنشور',
+          text: caption || 'شاهد هذا المنشور الرائع!',
+          url: shareUrl
+        });
+        toast({
+          title: "تمت المشاركة",
+          description: "تم مشاركة المنشور بنجاح",
+        });
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          // Fallback to clipboard
+          await navigator.clipboard.writeText(shareUrl);
+          toast({
+            title: "تم النسخ",
+            description: "تم نسخ رابط المنشور",
+          });
+        }
+      }
+    } else {
+      // Fallback to clipboard
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "تم النسخ",
+        description: "تم نسخ رابط المنشور",
+      });
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!currentUser) {
       toast({
@@ -418,6 +453,14 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               disabled={sendingMessage}
             >
               <Send className={`w-6 h-6 hover:text-green-400 transition-all duration-200 group-hover:scale-110 ${sendingMessage ? 'opacity-50' : ''}`} />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-0 hover:bg-transparent group"
+              onClick={handleShare}
+            >
+              <Share2 className="w-6 h-6 hover:text-blue-400 transition-all duration-200 group-hover:scale-110" />
             </Button>
           </div>
           <Button 
