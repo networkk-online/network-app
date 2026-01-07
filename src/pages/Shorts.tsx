@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Share2, Plus, Volume2, VolumeX, MoreVertical, Bookmark, X, Camera } from 'lucide-react';
 import { useReels } from '@/hooks/useReels';
@@ -11,7 +11,10 @@ import { CommentSection } from '@/components/CommentSection';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const Shorts = () => {
+  const [searchParams] = useSearchParams();
+  const initialReelId = searchParams.get('reelId');
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [initialIndexSet, setInitialIndexSet] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
@@ -30,6 +33,19 @@ const Shorts = () => {
     };
     getCurrentUser();
   }, []);
+
+  // Set initial index based on reelId from URL
+  useEffect(() => {
+    if (!initialIndexSet && reels.length > 0 && initialReelId) {
+      const index = reels.findIndex(r => r.id === initialReelId);
+      if (index !== -1) {
+        setCurrentVideoIndex(index);
+      }
+      setInitialIndexSet(true);
+    } else if (!initialIndexSet && reels.length > 0) {
+      setInitialIndexSet(true);
+    }
+  }, [reels, initialReelId, initialIndexSet]);
 
   useEffect(() => {
     // Auto-play video when it changes
