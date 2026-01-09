@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Share2, Volume2, VolumeX, MoreVertical, Bookmark, X, Camera, Send } from 'lucide-react';
+import { Heart, MessageCircle, Volume2, VolumeX, MoreVertical, Bookmark, X, Camera, Send } from 'lucide-react';
 import { useReels } from '@/hooks/useReels';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,6 +11,7 @@ import { CommentSection } from '@/components/CommentSection';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useSavedReels } from '@/hooks/useSavedReels';
 import { useToast } from '@/hooks/use-toast';
+import ShareMenu from '@/components/ShareMenu';
 
 const Shorts = () => {
   const [searchParams] = useSearchParams();
@@ -25,6 +26,7 @@ const Shorts = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -155,41 +157,14 @@ const Shorts = () => {
     }
   };
 
-  // Handle Share Reel
-  const handleShare = async () => {
-    if (!currentReel) return;
-    
-    const shareUrl = `${window.location.origin}/shorts?reelId=${currentReel.id}`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: currentReel.caption || 'شاهد هذا الريل',
-          text: currentReel.caption || 'شاهد هذا الريل الرائع!',
-          url: shareUrl
-        });
-        toast({
-          title: "تمت المشاركة",
-          description: "تم مشاركة الريل بنجاح",
-        });
-      } catch (error: any) {
-        if (error.name !== 'AbortError') {
-          // Fallback to clipboard
-          await navigator.clipboard.writeText(shareUrl);
-          toast({
-            title: "تم النسخ",
-            description: "تم نسخ رابط الريل",
-          });
-        }
-      }
-    } else {
-      // Fallback to clipboard
-      await navigator.clipboard.writeText(shareUrl);
-      toast({
-        title: "تم النسخ",
-        description: "تم نسخ رابط الريل",
-      });
-    }
+  // Get share URL for current reel
+  const getShareUrl = () => {
+    if (!currentReel) return '';
+    return `${window.location.origin}/shorts?reelId=${currentReel.id}`;
+  };
+
+  const getShareText = () => {
+    return currentReel?.caption || 'شاهد هذا الريل الرائع!';
   };
 
   // Handle Send Message
@@ -435,25 +410,13 @@ const Shorts = () => {
               </span>
             </button>
 
-            {/* Send Button */}
+            {/* Send/Share Button */}
             <button 
-              onClick={handleSendMessage}
-              disabled={sendingMessage}
+              onClick={() => setShowShareMenu(true)}
               className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
             >
-              <Send className={`w-7 h-7 text-white drop-shadow-lg ${sendingMessage ? 'opacity-50' : ''}`} strokeWidth={2.5} />
-              <span className="text-xs text-white font-semibold drop-shadow-lg">إرسال</span>
-            </button>
-
-            {/* Share Button */}
-            <button 
-              onClick={handleShare}
-              className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
-            >
-              <Share2 className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
-              <span className="text-xs text-white font-semibold drop-shadow-lg">
-                {currentReel.shares_count || 0}
-              </span>
+              <Send className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
+              <span className="text-xs text-white font-semibold drop-shadow-lg">مشاركة</span>
             </button>
 
             {/* Save/Bookmark Button */}
@@ -516,6 +479,15 @@ const Shorts = () => {
           <CommentSection type="reel" itemId={currentReel.id} />
         </DialogContent>
       </Dialog>
+
+      {/* Share Menu */}
+      <ShareMenu
+        isOpen={showShareMenu}
+        onClose={() => setShowShareMenu(false)}
+        shareUrl={getShareUrl()}
+        shareTitle={currentReel?.caption || 'شاهد هذا الريل'}
+        shareText={getShareText()}
+      />
     </div>
   );
 };

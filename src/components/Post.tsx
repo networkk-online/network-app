@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, Send, Bookmark, Mic, Repeat2, Share2 } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, Mic, Repeat2 } from 'lucide-react';
 import PostSettingsMenu from './PostSettingsMenu';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CommentSection } from '@/components/CommentSection';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { useRepost } from '@/hooks/useRepost';
+import ShareMenu from '@/components/ShareMenu';
 
 
 interface PostProps {
@@ -43,6 +44,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const { isSaved, loading: saveLoading, toggleSave } = useSavedPosts(id);
   const { isReposted, repostCount, loading: repostLoading, toggleRepost } = useRepost(id);
 
@@ -233,39 +235,13 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
     }
   };
 
-  // Handle Share Post
-  const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/post/${id}`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: caption ? caption.slice(0, 50) : 'شاهد هذا المنشور',
-          text: caption || 'شاهد هذا المنشور الرائع!',
-          url: shareUrl
-        });
-        toast({
-          title: "تمت المشاركة",
-          description: "تم مشاركة المنشور بنجاح",
-        });
-      } catch (error: any) {
-        if (error.name !== 'AbortError') {
-          // Fallback to clipboard
-          await navigator.clipboard.writeText(shareUrl);
-          toast({
-            title: "تم النسخ",
-            description: "تم نسخ رابط المنشور",
-          });
-        }
-      }
-    } else {
-      // Fallback to clipboard
-      await navigator.clipboard.writeText(shareUrl);
-      toast({
-        title: "تم النسخ",
-        description: "تم نسخ رابط المنشور",
-      });
-    }
+  // Get share URL for post
+  const getShareUrl = () => {
+    return `${window.location.origin}/post/${id}`;
+  };
+
+  const getShareText = () => {
+    return caption || 'شاهد هذا المنشور الرائع!';
   };
 
   const handleSendMessage = async () => {
@@ -449,18 +425,9 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               variant="ghost" 
               size="sm" 
               className="p-0 hover:bg-transparent group"
-              onClick={handleSendMessage}
-              disabled={sendingMessage}
+              onClick={() => setShowShareMenu(true)}
             >
-              <Send className={`w-6 h-6 hover:text-green-400 transition-all duration-200 group-hover:scale-110 ${sendingMessage ? 'opacity-50' : ''}`} />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-0 hover:bg-transparent group"
-              onClick={handleShare}
-            >
-              <Share2 className="w-6 h-6 hover:text-blue-400 transition-all duration-200 group-hover:scale-110" />
+              <Send className="w-6 h-6 hover:text-green-400 transition-all duration-200 group-hover:scale-110" />
             </Button>
           </div>
           <Button 
@@ -586,6 +553,15 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           <CommentSection type="post" itemId={id} />
         </DialogContent>
       </Dialog>
+
+      {/* Share Menu */}
+      <ShareMenu
+        isOpen={showShareMenu}
+        onClose={() => setShowShareMenu(false)}
+        shareUrl={getShareUrl()}
+        shareTitle={caption ? caption.slice(0, 50) : 'شاهد هذا المنشور'}
+        shareText={getShareText()}
+      />
     </div>
   );
 };
