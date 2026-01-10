@@ -1,1 +1,7 @@
 project_id = "ykjnpcrseiyltsazbnci"
+
+[functions.admin-update-password]
+verify_jwt = false
+
+[functions.test-dynamodb]
+verify_jwt = false
