@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.sync-to-dynamodb]
 verify_jwt = false
+
+[functions.log-user-data]
+verify_jwt = false
