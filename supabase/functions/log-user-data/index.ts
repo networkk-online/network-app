@@ -69,6 +69,18 @@ serve(async (req) => {
     const region = Deno.env.get('AWS_REGION') || 'us-east-1';
     const tableName = Deno.env.get('AWS_DYNAMODB_TABLE_NAME') || 'MyDataNetwork';
     
+    // قراءة البيانات من الطلب
+    let action = 'visit';
+    let userId = 'anonymous';
+    
+    try {
+      const body = await req.json();
+      action = body.action || 'visit';
+      userId = body.user_id || 'anonymous';
+    } catch {
+      // إذا لم يكن هناك body، نستخدم القيم الافتراضية
+    }
+    
     // جمع بيانات المستخدم
     const userIP = req.headers.get('x-forwarded-for') || 
                    req.headers.get('x-real-ip') || 
@@ -78,19 +90,21 @@ serve(async (req) => {
     const timestamp = new Date().toISOString();
     const id = crypto.randomUUID();
 
-    console.log(`تسجيل بيانات المستخدم - IP: ${userIP}, Timestamp: ${timestamp}`);
+    console.log(`تسجيل ${action} - User: ${userId}, IP: ${userIP}, Timestamp: ${timestamp}`);
 
     // تحضير البيانات لـ DynamoDB
     const payload = {
       TableName: tableName,
       Item: {
-        pk: { S: `USER_LOG#${id}` },
+        pk: { S: `USER_${action.toUpperCase()}#${id}` },
         sk: { S: timestamp },
         id: { S: id },
+        user_id: { S: userId },
+        action: { S: action },
         user_ip: { S: userIP },
         user_agent: { S: userAgent },
         timestamp: { S: timestamp },
-        type: { S: 'user_log' }
+        type: { S: 'user_activity' }
       }
     };
 
@@ -113,12 +127,12 @@ serve(async (req) => {
       throw new Error(`DynamoDB error: ${response.status} - ${errorText}`);
     }
 
-    console.log(`✅ تم تسجيل البيانات بنجاح - ID: ${id}`);
+    console.log(`✅ تم تسجيل ${action} بنجاح - ID: ${id}`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "تم تسجيل البيانات بنجاح",
+        message: `تم تسجيل ${action} بنجاح`,
         id,
         timestamp
       }), 

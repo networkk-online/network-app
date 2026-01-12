@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUserDataLogger } from '@/hooks/useUserDataLogger';
 import networkLogo from '@/assets/network-logo.png';
 
 const Login = () => {
@@ -12,6 +13,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { logLogin } = useUserDataLogger();
 
   useEffect(() => {
     // Check if user is already logged in
@@ -24,12 +26,14 @@ const Login = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && event === 'SIGNED_IN') {
+        // تسجيل بيانات الدخول في الخلفية
+        logLogin(session.user.id);
         navigate('/');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, logLogin]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

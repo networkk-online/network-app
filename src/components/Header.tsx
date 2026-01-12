@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUserDataLogger } from '@/hooks/useUserDataLogger';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import logo from '@/assets/logo.png';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 const Header = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { logLogout } = useUserDataLogger();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -138,6 +140,9 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
+    // تسجيل بيانات الخروج في الخلفية قبل تسجيل الخروج
+    logLogout(user?.id);
+    
     await supabase.auth.signOut();
     toast({
       title: "تم تسجيل الخروج",
