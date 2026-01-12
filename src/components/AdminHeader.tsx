@@ -32,6 +32,7 @@ const AdminHeader = () => {
     { path: '/admin/content', label: 'إدارة المحتوى' },
     { path: '/admin/ads', label: 'إدارة الإعلانات' },
     { path: '/admin/verification', label: 'طلبات التوثيق' },
+    { path: '/admin/logs', label: 'سجلات الدخول' },
     { path: '/admin/settings', label: 'الإعدادات المتقدمة' },
   ];
 

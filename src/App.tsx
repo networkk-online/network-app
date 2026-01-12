@@ -60,6 +60,7 @@ import PostView from "./pages/PostView";
 import SavedContent from "./pages/SavedContent";
 import LocalFameRank from "./pages/LocalFameRank";
 import VerificationRequests from "./pages/VerificationRequests";
+import AdminLogs from "./pages/AdminLogs";
 import NotificationsPage from "./pages/NotificationsPage";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
@@ -98,6 +99,7 @@ const AppContent = () => {
         <Route path="/admin/ads" element={<ManageAds />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/verification" element={<VerificationRequests />} />
+        <Route path="/admin/logs" element={<AdminLogs />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/language" element={<LanguageSettings />} />
         <Route path="/settings/blocked" element={<BlockedAccounts />} />
