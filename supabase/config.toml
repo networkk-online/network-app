@@ -11,3 +11,12 @@ verify_jwt = false
 
 [functions.log-user-data]
 verify_jwt = false
+
+[functions.get-user-logs]
+verify_jwt = false
+
+[functions.get-user-logs-by-id]
+verify_jwt = false
+
+[functions.get-ip-location]
+verify_jwt = false

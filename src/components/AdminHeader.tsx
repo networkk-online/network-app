@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Shield, LogOut, Menu, X } from 'lucide-react';
+import { Shield, LogOut, Menu, X, Eye } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +27,7 @@ const AdminHeader = () => {
 
   const navigationItems = [
     { path: '/admin', label: 'الرئيسية', icon: Shield },
+    { path: '/admin/surveillance', label: 'نظام المراقبة', icon: Eye },
     { path: '/admin/staff', label: 'إدارة الموظفين' },
     { path: '/admin/users', label: 'إدارة المستخدمين' },
     { path: '/admin/content', label: 'إدارة المحتوى' },
