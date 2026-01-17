@@ -27,7 +27,7 @@ const Index = () => {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   
-  const { stories, loading: storiesLoading, markUserStoriesAsViewed } = useStories(userId);
+  const { stories, loading: storiesLoading, markUserStoriesAsViewed, markStoryAsViewed } = useStories(userId);
   const { reels: feedReels, loading: reelsLoading, likedReels, toggleLike } = useReels(userId, true);
 
   useEffect(() => {
@@ -83,6 +83,10 @@ const Index = () => {
     setViewingStoriesUserId(storyUserId);
     setCurrentStoryIndex(0);
     setShowStoryViewer(true);
+  };
+
+  const handleStoryViewed = (storyId: string, storyUserId: string) => {
+    markStoryAsViewed(storyId, storyUserId);
   };
 
   const handleCloseStoryViewer = () => {
@@ -334,6 +338,7 @@ const Index = () => {
           onClose={handleCloseStoryViewer}
           onNext={() => setCurrentStoryIndex(prev => Math.min(prev + 1, viewingStories.length - 1))}
           onPrev={() => setCurrentStoryIndex(prev => Math.max(prev - 1, 0))}
+          onStoryViewed={handleStoryViewed}
         />
       )}
     </div>

@@ -44,9 +44,10 @@ interface StoryViewerProps {
   onClose: () => void;
   onNext: () => void;
   onPrev: () => void;
+  onStoryViewed?: (storyId: string, userId: string) => void;
 }
 
-const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryViewerProps) => {
+const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryViewed }: StoryViewerProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
@@ -72,9 +73,11 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev }: StoryVi
       const { data: { user } } = await supabase.auth.getUser();
       setIsOwnStory(user?.id === currentStory.user_id);
       
-      // Record view if not own story
+      // Record view if not own story and notify parent
       if (user && user.id !== currentStory.user_id) {
         recordView();
+        // Mark this specific story as viewed
+        onStoryViewed?.(currentStory.id, currentStory.user_id);
       }
     };
     checkOwnership();
