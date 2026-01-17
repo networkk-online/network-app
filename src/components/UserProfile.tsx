@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { Camera, MapPin, Calendar, BadgeCheck, MoreHorizontal, Share2, Copy, Check, Link as LinkIcon, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Camera, MapPin, Calendar, BadgeCheck, MoreHorizontal, Share2, Copy, Check, Link as LinkIcon, Instagram, Twitter, Youtube, EyeOff, UserX } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { FormField, FormItem, FormLabel, FormControl, Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -495,11 +495,35 @@ const UserProfile = ({
                     <MoreHorizontal className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={handleShareProfile}>
+                    <Share2 className="ml-2 h-4 w-4" />
+                    مشاركة الملف الشخصي
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleCopyProfile}>
                     {copied ? <Check className="ml-2 h-4 w-4" /> : <Copy className="ml-2 h-4 w-4" />}
                     نسخ رابط الملف الشخصي
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => {
+                    toast({
+                      title: "تم إخفاء القصة",
+                      description: "لن تظهر قصصك لهذا المستخدم",
+                    });
+                  }}>
+                    <EyeOff className="ml-2 h-4 w-4" />
+                    إخفاء قصتي عنه
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    toast({
+                      title: "تم تقييد الحساب",
+                      description: "تم تقييد هذا الحساب",
+                    });
+                  }}>
+                    <UserX className="ml-2 h-4 w-4" />
+                    تقييد
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <BlockButton userId={profileId!} />
                   <ReportDialog 
                     reportedUserId={profileId}

@@ -406,7 +406,7 @@ const Profile = () => {
 
   // Get stories for profile user
   const targetUserId = urlUserId || user?.id;
-  const { stories } = useStories(user?.id);
+  const { stories, markStoryAsViewed } = useStories(user?.id);
   const profileStories = targetUserId && stories[targetUserId] ? stories[targetUserId].stories : [];
 
   const handleStoryClick = () => {
@@ -468,16 +468,22 @@ const Profile = () => {
               <div className="mt-6 px-4">
                 <ScrollArea className="w-full whitespace-nowrap">
                   <div className="flex gap-4 pb-2">
-                    {/* User's Story Circle */}
-                    {profileStories.length > 0 && (
+                    {/* User's Story Circle - Always show for own profile or if has stories */}
+                    {(profileStories.length > 0 || isOwnProfile) && (
                       <div className="flex-shrink-0">
                         <StoryCircle
                           username={isOwnProfile ? 'قصتك' : profile?.username || 'قصة'}
                           avatar={profile?.avatar_url || '/default-avatar.jpg'}
-                          hasStory={true}
-                          hasViewed={stories[targetUserId!]?.hasViewed || false}
+                          hasStory={profileStories.length > 0}
+                          hasViewed={targetUserId && stories[targetUserId] ? stories[targetUserId].hasViewed : false}
                           isOwn={isOwnProfile}
-                          onClick={handleStoryClick}
+                          onClick={() => {
+                            if (profileStories.length > 0) {
+                              handleStoryClick();
+                            } else if (isOwnProfile) {
+                              navigate('/create-story');
+                            }
+                          }}
                           onCameraClick={() => navigate('/create-story')}
                         />
                       </div>
@@ -806,6 +812,7 @@ const Profile = () => {
           onClose={() => setShowStoryViewer(false)}
           onNext={() => setCurrentStoryIndex(prev => Math.min(prev + 1, viewingStories.length - 1))}
           onPrev={() => setCurrentStoryIndex(prev => Math.max(prev - 1, 0))}
+          onStoryViewed={(storyId, storyUserId) => markStoryAsViewed(storyId, storyUserId)}
         />
       )}
     </div>
