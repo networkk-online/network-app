@@ -50,6 +50,7 @@ import PrivacyPolicy from "./pages/settings/PrivacyPolicy";
 import DeleteAccount from "./pages/settings/DeleteAccount";
 import PostSettings from "./pages/settings/PostSettings";
 import ReelsSettings from "./pages/settings/ReelsSettings";
+import CallSettings from "./pages/settings/CallSettings";
 import Search from "./pages/Search";
 import Followers from "./pages/Followers";
 import Following from "./pages/Following";
@@ -63,6 +64,7 @@ import VerificationRequests from "./pages/VerificationRequests";
 import AdminLogs from "./pages/AdminLogs";
 import AdminSurveillance from "./pages/AdminSurveillance";
 import NotificationsPage from "./pages/NotificationsPage";
+import CallHistory from "./pages/CallHistory";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
@@ -124,6 +126,8 @@ const AppContent = () => {
         <Route path="/settings/delete-account" element={<DeleteAccount />} />
         <Route path="/settings/posts" element={<PostSettings />} />
         <Route path="/settings/reels" element={<ReelsSettings />} />
+        <Route path="/settings/calls" element={<CallSettings />} />
+        <Route path="/call-history" element={<CallHistory />} />
         <Route path="/search" element={<Search />} />
         <Route path="/followers" element={<Followers />} />
         <Route path="/following" element={<Following />} />

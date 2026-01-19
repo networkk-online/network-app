@@ -33,7 +33,9 @@ import {
   UserCog,
   Bell,
   LogOut,
-  Radio
+  Radio,
+  Phone,
+  Video
 } from 'lucide-react';
 
 interface SettingItemProps {
@@ -373,6 +375,22 @@ const Settings = () => {
                 title="إعدادات البث المباشر"
                 subtitle="إدارة إعدادات البث والتبرعات"
                 onClick={() => navigate('/broadcast')}
+              />
+            </SettingSection>
+
+            {/* المكالمات */}
+            <SettingSection title="المكالمات">
+              <SettingItem
+                icon={<Phone className="w-5 h-5" />}
+                title="إعدادات المكالمات"
+                subtitle="المكالمات الصوتية والفيديو والخصوصية"
+                onClick={() => navigate('/settings/calls')}
+              />
+              <SettingItem
+                icon={<Video className="w-5 h-5" />}
+                title="سجل المكالمات"
+                subtitle="عرض المكالمات الواردة والصادرة"
+                onClick={() => navigate('/call-history')}
               />
             </SettingSection>
 

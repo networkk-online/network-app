@@ -166,6 +166,126 @@ export type Database = {
           },
         ]
       }
+      call_history: {
+        Row: {
+          call_type: string
+          caller_id: string
+          created_at: string
+          duration: number | null
+          ended_at: string | null
+          id: string
+          receiver_id: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          call_type: string
+          caller_id: string
+          created_at?: string
+          duration?: number | null
+          ended_at?: string | null
+          id?: string
+          receiver_id: string
+          started_at?: string
+          status: string
+        }
+        Update: {
+          call_type?: string
+          caller_id?: string
+          created_at?: string
+          duration?: number | null
+          ended_at?: string | null
+          id?: string
+          receiver_id?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      call_settings: {
+        Row: {
+          auto_quality: boolean | null
+          block_unverified: boolean | null
+          call_sound: boolean | null
+          created_at: string
+          custom_allowed_users: string[] | null
+          default_camera_off: boolean | null
+          default_mic_muted: boolean | null
+          echo_cancellation: boolean | null
+          end_to_end_encryption: boolean | null
+          hide_call_duration: boolean | null
+          hide_online_status: boolean | null
+          id: string
+          in_app_notifications: boolean | null
+          mute_duration: number | null
+          mute_until: string | null
+          noise_reduction: boolean | null
+          prevent_recording: boolean | null
+          push_notifications: boolean | null
+          recording_alert: boolean | null
+          updated_at: string
+          user_id: string
+          vibration: boolean | null
+          video_calls_enabled: boolean | null
+          voice_calls_enabled: boolean | null
+          who_can_call: string | null
+        }
+        Insert: {
+          auto_quality?: boolean | null
+          block_unverified?: boolean | null
+          call_sound?: boolean | null
+          created_at?: string
+          custom_allowed_users?: string[] | null
+          default_camera_off?: boolean | null
+          default_mic_muted?: boolean | null
+          echo_cancellation?: boolean | null
+          end_to_end_encryption?: boolean | null
+          hide_call_duration?: boolean | null
+          hide_online_status?: boolean | null
+          id?: string
+          in_app_notifications?: boolean | null
+          mute_duration?: number | null
+          mute_until?: string | null
+          noise_reduction?: boolean | null
+          prevent_recording?: boolean | null
+          push_notifications?: boolean | null
+          recording_alert?: boolean | null
+          updated_at?: string
+          user_id: string
+          vibration?: boolean | null
+          video_calls_enabled?: boolean | null
+          voice_calls_enabled?: boolean | null
+          who_can_call?: string | null
+        }
+        Update: {
+          auto_quality?: boolean | null
+          block_unverified?: boolean | null
+          call_sound?: boolean | null
+          created_at?: string
+          custom_allowed_users?: string[] | null
+          default_camera_off?: boolean | null
+          default_mic_muted?: boolean | null
+          echo_cancellation?: boolean | null
+          end_to_end_encryption?: boolean | null
+          hide_call_duration?: boolean | null
+          hide_online_status?: boolean | null
+          id?: string
+          in_app_notifications?: boolean | null
+          mute_duration?: number | null
+          mute_until?: string | null
+          noise_reduction?: boolean | null
+          prevent_recording?: boolean | null
+          push_notifications?: boolean | null
+          recording_alert?: boolean | null
+          updated_at?: string
+          user_id?: string
+          vibration?: boolean | null
+          video_calls_enabled?: boolean | null
+          voice_calls_enabled?: boolean | null
+          who_can_call?: string | null
+        }
+        Relationships: []
+      }
       close_friends: {
         Row: {
           created_at: string | null
@@ -573,6 +693,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      muted_callers: {
+        Row: {
+          created_at: string
+          id: string
+          muted_user_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          muted_user_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          muted_user_id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
