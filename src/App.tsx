@@ -1,10 +1,10 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useNativeApp } from "@/hooks/useNativeApp";
+import { CallProvider } from "@/components/CallProvider";
 import Index from "./pages/Index";
 import Explore from "./pages/Explore";
 import Broadcast from "./pages/Broadcast";
@@ -150,7 +150,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppContent />
+        <CallProvider>
+          <AppContent />
+        </CallProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
