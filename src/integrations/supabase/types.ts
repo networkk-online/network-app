@@ -286,6 +286,36 @@ export type Database = {
         }
         Relationships: []
       }
+      call_signals: {
+        Row: {
+          call_id: string
+          created_at: string
+          from_user_id: string
+          id: string
+          signal_data: Json | null
+          signal_type: string
+          to_user_id: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          from_user_id: string
+          id?: string
+          signal_data?: Json | null
+          signal_type: string
+          to_user_id: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          signal_data?: Json | null
+          signal_type?: string
+          to_user_id?: string
+        }
+        Relationships: []
+      }
       close_friends: {
         Row: {
           created_at: string | null

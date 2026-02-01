@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MessageCircle, Plus, Search, Phone, Video, Flag } from 'lucide-react';
+import { MessageCircle, Plus, Search, Flag } from 'lucide-react';
 import Header from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
 import { useMessages } from '@/hooks/useMessages';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NewMessageDialog } from '@/components/NewMessageDialog';
 import { Badge } from '@/components/ui/badge';
+import CallButtons from '@/components/CallButtons';
 
 const Messages = () => {
   const navigate = useNavigate();
@@ -230,12 +231,14 @@ const Messages = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full">
-                    <Phone className="h-5 w-5" />
-                  </Button>
-                  <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full">
-                    <Video className="h-5 w-5" />
-                  </Button>
+                  <CallButtons 
+                    participant={{
+                      id: otherUser.id,
+                      username: otherUser.username || '',
+                      full_name: otherUser.full_name || '',
+                      avatar_url: otherUser.avatar_url || null,
+                    }}
+                  />
                   <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full">
                     <Flag className="h-5 w-5" />
                   </Button>

@@ -19,6 +19,7 @@ import { CloseFriendsDialog } from '@/components/CloseFriendsDialog';
 import { BlockButton } from '@/components/BlockButton';
 import { ReportDialog } from '@/components/ReportDialog';
 import { ImageCropDialog } from '@/components/ImageCropDialog';
+import CallButtons from '@/components/CallButtons';
 
 // Social media icons
 const TikTokIcon = () => (
@@ -894,6 +895,16 @@ const UserProfile = ({
               >
                 مراسلة
               </Button>
+              <CallButtons 
+                participant={{
+                  id: profileId!,
+                  username: username,
+                  full_name: displayName,
+                  avatar_url: avatar,
+                }}
+                variant="outline"
+                size="lg"
+              />
             </div>
           )}
 
