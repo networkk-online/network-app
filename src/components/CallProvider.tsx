@@ -1,5 +1,6 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useWebRTC } from '@/hooks/useWebRTC';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import IncomingCall from '@/components/IncomingCall';
 import OngoingCall from '@/components/OngoingCall';
 import { AnimatePresence } from 'framer-motion';
@@ -43,6 +44,9 @@ interface CallProviderProps {
 }
 
 export const CallProvider = ({ children }: CallProviderProps) => {
+  // Initialize push notifications
+  const { isRegistered: pushRegistered, token: pushToken } = usePushNotifications();
+
   const {
     isInitialized,
     isInCall,
@@ -62,6 +66,12 @@ export const CallProvider = ({ children }: CallProviderProps) => {
     toggleVideo,
     switchCamera,
   } = useWebRTC();
+
+  useEffect(() => {
+    if (pushRegistered) {
+      console.log('Push notifications registered, token:', pushToken?.substring(0, 20) + '...');
+    }
+  }, [pushRegistered, pushToken]);
 
   const handleAcceptVoice = async () => {
     await acceptCall();
