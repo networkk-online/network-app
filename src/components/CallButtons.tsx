@@ -104,7 +104,7 @@ const CallButtons = ({
         size={size}
         onClick={handleVoiceCall}
         title="مكالمة صوتية"
-        className={`h-9 w-9 rounded-full ${purpleClasses}`}
+        className={`h-11 w-11 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-all ${purpleClasses}`}
       >
         <Phone className="h-5 w-5" />
       </Button>
@@ -113,7 +113,7 @@ const CallButtons = ({
         size={size}
         onClick={handleVideoCall}
         title="مكالمة فيديو"
-        className={`h-9 w-9 rounded-full ${purpleClasses}`}
+        className={`h-11 w-11 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-all ${purpleClasses}`}
       >
         <Video className="h-5 w-5" />
       </Button>
