@@ -54,26 +54,34 @@ export const NewMessageDialog = ({ open, onOpenChange, onConversationCreated }: 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      // First get the following IDs
+      const { data: followsData, error: followsError } = await supabase
         .from('follows')
-        .select(`
-          following_id,
-          profiles:following_id (
-            id,
-            username,
-            full_name,
-            avatar_url
-          )
-        `)
+        .select('following_id')
         .eq('follower_id', user.id);
 
-      if (error) throw error;
+      if (followsError) throw followsError;
 
-      const followingList = data?.map((f: any) => ({
-        id: f.profiles.id,
-        username: f.profiles.username,
-        full_name: f.profiles.full_name,
-        avatar_url: f.profiles.avatar_url,
+      if (!followsData || followsData.length === 0) {
+        setFollowing([]);
+        setFilteredFollowing([]);
+        return;
+      }
+
+      // Then get the profiles for those IDs
+      const followingIds = followsData.map(f => f.following_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, avatar_url')
+        .in('id', followingIds);
+
+      if (profilesError) throw profilesError;
+
+      const followingList = profilesData?.map((profile: any) => ({
+        id: profile.id,
+        username: profile.username,
+        full_name: profile.full_name,
+        avatar_url: profile.avatar_url,
       })) || [];
 
       setFollowing(followingList);
