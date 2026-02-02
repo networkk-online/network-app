@@ -226,31 +226,28 @@ const Messages = () => {
         <div className={`${selectedConversationId ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-background`}>
           {selectedConversationId && otherUser ? (
             <>
-              {/* Chat Header with Icons */}
-              <div className="p-3 border-b border-border flex items-center justify-between bg-background">
+              {/* Chat Header - iOS Style */}
+              <div 
+                className="px-4 py-3 flex items-center justify-between"
+                style={{
+                  background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)',
+                }}
+              >
                 <div className="flex items-center gap-3">
-                  {/* Back button on mobile */}
+                  {/* Back button */}
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="md:hidden h-9 w-9"
+                    className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20"
                     onClick={() => setSelectedConversationId(null)}
                   >
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-5 w-5 text-white" />
                   </Button>
-                  <div className="w-10 h-10 rounded-full overflow-hidden">
-                    <img
-                      src={otherUser.avatar_url || '/default-avatar.jpg'}
-                      alt={otherUser.username}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground text-sm">{otherUser.full_name || otherUser.username}</p>
-                    <p className="text-xs text-muted-foreground">@{otherUser.username}</p>
-                  </div>
+                  <h1 className="text-lg font-semibold text-white">
+                    {otherUser.full_name || otherUser.username}
+                  </h1>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <CallButtons 
                     participant={{
                       id: otherUser.id,
@@ -258,9 +255,14 @@ const Messages = () => {
                       full_name: otherUser.full_name || '',
                       avatar_url: otherUser.avatar_url || null,
                     }}
+                    variant="purple"
                   />
-                  <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full">
-                    <Flag className="h-5 w-5" />
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20"
+                  >
+                    <Flag className="h-5 w-5 text-white" />
                   </Button>
                 </div>
               </div>
