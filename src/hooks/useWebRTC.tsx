@@ -157,6 +157,29 @@ export const useWebRTC = () => {
           call_type: callType,
           status: 'calling',
         });
+
+        // Get caller profile for notification
+        const { data: callerProfile } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url')
+          .eq('id', user.id)
+          .single();
+
+        // Send push notification to receiver
+        try {
+          await supabase.functions.invoke('send-call-notification', {
+            body: {
+              receiverId: participant.id,
+              callerId: user.id,
+              callerName: callerProfile?.full_name || 'مستخدم',
+              callerAvatar: callerProfile?.avatar_url,
+              callType,
+              callId,
+            },
+          });
+        } catch (notifError) {
+          console.log('Push notification not sent:', notifError);
+        }
       }
     } catch (error) {
       console.error('Error starting call:', error);
