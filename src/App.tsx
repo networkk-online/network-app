@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useNativeApp } from "@/hooks/useNativeApp";
-import { CallProvider } from "@/components/CallProvider";
+import { ChimeCallProvider } from "@/components/ChimeCallProvider";
 import Index from "./pages/Index";
 import Explore from "./pages/Explore";
 import Broadcast from "./pages/Broadcast";
@@ -150,9 +150,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <CallProvider>
+        <ChimeCallProvider>
           <AppContent />
-        </CallProvider>
+        </ChimeCallProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

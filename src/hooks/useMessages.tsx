@@ -225,6 +225,39 @@ export const useMessages = (conversationId?: string) => {
     };
   };
 
+  // Sync message to DynamoDB
+  const syncMessageToDynamoDB = async (message: any) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-messages-dynamodb`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            action: 'sync_single',
+            message: message
+          }),
+        }
+      );
+
+      const result = await response.json();
+      if (!result.success) {
+        console.warn('DynamoDB sync warning:', result.error);
+      } else {
+        console.log('✅ Message synced to DynamoDB:', message.id);
+      }
+    } catch (error) {
+      console.error('DynamoDB sync error (non-blocking):', error);
+      // Non-blocking - message is already saved in Supabase
+    }
+  };
+
   const sendMessage = async (
     convId: string,
     content: string | null,
@@ -255,7 +288,7 @@ export const useMessages = (conversationId?: string) => {
         mediaType = mediaFile.type.startsWith('image/') ? 'image' : 'video';
       }
 
-      // Send message
+      // Send message to Supabase (primary storage)
       const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -269,6 +302,9 @@ export const useMessages = (conversationId?: string) => {
         .single();
 
       if (error) throw error;
+
+      // Sync to DynamoDB in background (non-blocking)
+      syncMessageToDynamoDB(data);
 
       return { success: true, data };
     } catch (error: any) {
