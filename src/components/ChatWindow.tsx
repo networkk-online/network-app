@@ -131,7 +131,7 @@ export const ChatWindow = ({
     <div 
       className="flex flex-col h-full"
       style={{
-        background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
+        background: '#000000',
       }}
     >
       {/* Messages */}
@@ -144,7 +144,7 @@ export const ChatWindow = ({
               animate={{ opacity: 1, y: 0 }}
               className="flex justify-center mb-4"
             >
-              <span className="text-xs text-white/50 bg-white/5 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10">
+              <span className="text-xs text-[#8E8E8E] bg-[#262626] px-4 py-1.5 rounded-full">
                 {formatDateHeader(date)}
               </span>
             </motion.div>
@@ -181,8 +181,8 @@ export const ChatWindow = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Glassmorphism Input Area */}
-      <div className="bg-gradient-to-t from-black/30 to-transparent">
+      {/* Instagram-style Input Area */}
+      <div className="bg-black border-t border-[#262626]">
         <GlassInput
           value={messageText}
           onChange={setMessageText}

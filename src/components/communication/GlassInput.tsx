@@ -81,18 +81,18 @@ export const GlassInput = ({
         )}
       </AnimatePresence>
 
-      {/* Main Input Area */}
+      {/* Main Input Area - Instagram Style */}
       <motion.div
         animate={{
           boxShadow: isFocused 
-            ? '0 0 30px rgba(147, 51, 234, 0.3)' 
-            : '0 4px 20px rgba(0, 0, 0, 0.2)'
+            ? '0 0 20px rgba(131, 58, 180, 0.2)' 
+            : 'none'
         }}
         className={cn(
           'flex items-center gap-2 p-1.5 rounded-full',
-          'bg-white/10 backdrop-blur-xl border border-white/20',
+          'bg-[#262626] border border-[#363636]',
           'transition-all duration-300',
-          isFocused && 'border-purple-500/50'
+          isFocused && 'border-[#833AB4]/50'
         )}
       >
         {/* Emoji Button */}
@@ -155,8 +155,8 @@ export const GlassInput = ({
               disabled={disabled}
               className={cn(
                 'w-10 h-10 rounded-full flex items-center justify-center',
-                'bg-gradient-to-r from-purple-600 to-purple-500',
-                'text-white shadow-lg shadow-purple-500/30',
+                'bg-gradient-to-br from-[#833AB4] via-[#C13584] to-[#E1306C]',
+                'text-white shadow-lg',
                 'transition-all duration-300',
                 disabled && 'opacity-50 cursor-not-allowed'
               )}
@@ -176,7 +176,7 @@ export const GlassInput = ({
                 'transition-all duration-300',
                 isRecording 
                   ? 'bg-red-500 animate-pulse' 
-                  : 'bg-gradient-to-r from-purple-600 to-purple-500 shadow-lg shadow-purple-500/30'
+                  : 'bg-gradient-to-br from-[#833AB4] via-[#C13584] to-[#E1306C] shadow-lg'
               )}
             >
               {isRecording ? (

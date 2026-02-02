@@ -58,10 +58,10 @@ export const MessageBubble = ({
             ) : mediaType === 'voice' ? (
               <div 
                 className={cn(
-                  'flex items-center gap-3 px-4 py-3 rounded-3xl backdrop-blur-md',
+                  'flex items-center gap-3 px-4 py-3 rounded-[22px]',
                   isOwn
-                    ? 'bg-gradient-to-r from-purple-600 to-purple-500'
-                    : 'bg-white/10'
+                    ? 'bg-gradient-to-br from-[#833AB4] via-[#C13584] to-[#E1306C]'
+                    : 'bg-[#262626]'
                 )}
               >
                 <motion.button 
@@ -107,17 +107,17 @@ export const MessageBubble = ({
           </motion.div>
         )}
 
-        {/* Text Content */}
+        {/* Text Content - Instagram Style */}
         {content && (
           <motion.div
             className={cn(
-              'rounded-3xl px-4 py-2.5 backdrop-blur-md shadow-lg',
+              'rounded-[22px] px-4 py-2.5 shadow-md max-w-full',
               isOwn
-                ? 'bg-gradient-to-br from-purple-600 via-purple-500 to-purple-600 text-white'
-                : 'bg-white/10 text-white border border-white/10'
+                ? 'bg-gradient-to-br from-[#833AB4] via-[#C13584] to-[#E1306C] text-white'
+                : 'bg-[#262626] text-white'
             )}
           >
-            <p className="text-sm leading-relaxed break-words">{content}</p>
+            <p className="text-[15px] leading-relaxed break-words">{content}</p>
           </motion.div>
         )}
 
