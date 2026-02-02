@@ -30,13 +30,18 @@ export const FollowButton = ({
     return null;
   }
 
+  // Dynamic styling based on follow state
+  const followingStyles = isFollowing 
+    ? 'bg-green-500 hover:bg-green-600 text-white border-0' 
+    : 'bg-primary hover:bg-primary/90 text-primary-foreground';
+
   return (
     <Button
       onClick={toggleFollow}
       disabled={loading}
-      variant={isFollowing ? 'outline' : variant}
+      variant="default"
       size={size}
-      className={`gap-2 ${className}`}
+      className={`gap-2 ${followingStyles} ${className}`}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />

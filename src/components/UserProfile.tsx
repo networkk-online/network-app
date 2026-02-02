@@ -870,7 +870,7 @@ const UserProfile = ({
               )}
             </div>
           ) : (
-            <div className="flex gap-3 mb-4">
+            <div className="flex gap-2 mb-4">
               <FollowButton 
                 userId={profileId!}
                 variant="default"
@@ -885,13 +885,13 @@ const UserProfile = ({
                   // revert the previous optimistic delta
                   setFollowersCount((c) => Math.max(0, c + (prev ? 1 : -1)));
                 }}
-                className="flex-1 rounded-lg font-semibold text-base h-11 bg-green-500 hover:bg-green-600 text-white"
+                className="flex-1 rounded-lg font-semibold text-base h-11"
               />
               <Button
-                variant="outline"
+                variant="default"
                 size="lg"
                 onClick={handleMessage}
-                className="flex-1 rounded-lg font-semibold text-base h-11"
+                className="flex-1 rounded-lg font-semibold text-base h-11 bg-black hover:bg-black/90 text-white border-0"
               >
                 مراسلة
               </Button>
@@ -904,6 +904,7 @@ const UserProfile = ({
                 }}
                 variant="outline"
                 size="lg"
+                className="flex-shrink-0"
               />
             </div>
           )}
