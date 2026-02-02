@@ -42,6 +42,7 @@ export const useWebRTC = () => {
   });
 
   const ringtoneRef = useRef<HTMLAudioElement | null>(null);
+  const callTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize WebRTC service
   useEffect(() => {
@@ -64,11 +65,21 @@ export const useWebRTC = () => {
         setState(prev => ({ ...prev, connectionState }));
         
         if (connectionState === 'connected') {
+          // Clear timeout when call connects
+          if (callTimeoutRef.current) {
+            clearTimeout(callTimeoutRef.current);
+            callTimeoutRef.current = null;
+          }
           setState(prev => ({ ...prev, startTime: new Date() }));
         }
       };
 
       webRTCService.onCallEnded = () => {
+        // Clear timeout when call ends
+        if (callTimeoutRef.current) {
+          clearTimeout(callTimeoutRef.current);
+          callTimeoutRef.current = null;
+        }
         stopRingtone();
         setState(prev => ({
           ...prev,
@@ -135,6 +146,7 @@ export const useWebRTC = () => {
     }
   };
 
+
   const startCall = useCallback(async (participant: CallParticipant, callType: 'voice' | 'video') => {
     try {
       const callId = await webRTCService.startCall(participant.id, callType);
@@ -147,6 +159,23 @@ export const useWebRTC = () => {
         participant,
         callId,
       }));
+
+      // Set a timeout for unanswered calls (30 seconds)
+      callTimeoutRef.current = setTimeout(() => {
+        toast({
+          title: 'لا يوجد رد',
+          description: 'المستخدم غير متاح حالياً أو لم يجب على المكالمة',
+          variant: 'destructive',
+        });
+        webRTCService.endCall();
+        setState(prev => ({
+          ...prev,
+          isInCall: false,
+          isIncoming: false,
+          participant: null,
+          callId: null,
+        }));
+      }, 30000);
 
       // Record call in history
       const { data: { user } } = await supabase.auth.getUser();
