@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MessageCircle, Plus, Search, Flag, ArrowRight, Archive } from 'lucide-react';
+import { MessageCircle, Plus, Search, Flag, ArrowRight, Phone, Video } from 'lucide-react';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +13,9 @@ import { Input } from '@/components/ui/input';
 import { NewMessageDialog } from '@/components/NewMessageDialog';
 import { Badge } from '@/components/ui/badge';
 import CallButtons from '@/components/CallButtons';
+import { OnlineStatus } from '@/components/communication';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const Messages = () => {
   const navigate = useNavigate();
@@ -70,7 +73,6 @@ const Messages = () => {
     try {
       setIsCreatingConversation(true);
       
-      // Check if conversation already exists
       const existingConversation = conversations.find(conv => 
         conv.participants?.some(p => p.id === userId)
       );
@@ -79,7 +81,6 @@ const Messages = () => {
         setSelectedConversationId(existingConversation.id);
         navigate('/messages', { replace: true });
       } else {
-        // Create new conversation
         const result = await createConversation(userId);
         if (result.success && result.conversationId) {
           setSelectedConversationId(result.conversationId);
@@ -109,7 +110,6 @@ const Messages = () => {
   const selectedConversation = conversations.find(c => c.id === selectedConversationId);
   const otherUser = selectedConversation?.participants?.[0];
 
-  // Filter conversations based on search and active filter
   const filteredConversations = conversations.filter(conv => {
     const otherUser = conv.participants?.[0];
     const matchesSearch = !searchQuery || 
@@ -123,11 +123,15 @@ const Messages = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-background">
         <Header />
         <main className="pt-20 pb-8">
-          <div className="text-center text-gray-500">
-            جاري التحميل...
+          <div className="flex items-center justify-center h-[60vh]">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
+            />
           </div>
         </main>
       </div>
@@ -139,75 +143,72 @@ const Messages = () => {
       <Header />
       
       <main className="pt-16 pb-20 md:pb-0 flex h-screen">
-        {/* Conversations Sidebar - Full width on mobile when no chat selected */}
-        <div className={`${selectedConversationId ? 'hidden md:flex' : 'flex'} w-full md:w-96 border-r border-border flex-col bg-background`}>
+        {/* Conversations Sidebar with Glassmorphism */}
+        <motion.div 
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          className={`${selectedConversationId ? 'hidden md:flex' : 'flex'} w-full md:w-96 border-r border-white/10 flex-col`}
+          style={{
+            background: 'linear-gradient(180deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.95) 100%)',
+          }}
+        >
           {/* Header */}
-          <div className="p-4 border-b border-border">
+          <div className="p-4 border-b border-white/10">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold text-foreground">الرسائل</h1>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => setShowNewMessageDialog(true)}
-                className="h-9 w-9 rounded-full hover:bg-accent"
-              >
-                <Plus className="h-5 w-5" />
-              </Button>
+              <h1 className="text-xl font-bold text-white">الرسائل</h1>
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setShowNewMessageDialog(true)}
+                  className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
+              </motion.div>
             </div>
 
-            {/* Search Bar */}
+            {/* Search Bar with Glass Effect */}
             <div className="relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="البحث في الرسائل على الاسم او اليوزر"
-                className="pr-10 bg-accent border-0 text-foreground placeholder:text-muted-foreground rounded-lg"
+                placeholder="البحث في الرسائل"
+                className="pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-xl backdrop-blur-md focus:border-purple-500/50 focus:ring-purple-500/20"
               />
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="px-4 py-3 border-b border-border flex items-center gap-2 overflow-x-auto scrollbar-hide">
-            <Button
-              variant={activeFilter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setActiveFilter('all')}
-              className="rounded-full shrink-0 text-xs"
-            >
-              الكل
-            </Button>
-            <Button
-              variant={activeFilter === 'primary' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setActiveFilter('primary')}
-              className="rounded-full shrink-0 text-xs"
-            >
-              <span className="flex items-center gap-1.5">
-                الأساسية
-                {primaryCount > 0 && (
-                  <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                    {primaryCount}
-                  </Badge>
-                )}
-              </span>
-            </Button>
-            <Button
-              variant={activeFilter === 'requests' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setActiveFilter('requests')}
-              className="rounded-full shrink-0 text-xs"
-            >
-              طلبات الرسائل
-            </Button>
-            <Button
-              variant={activeFilter === 'general' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setActiveFilter('general')}
-              className="rounded-full shrink-0 text-xs"
-            >
-              عام
-            </Button>
+          {/* Filters with Glass Effect */}
+          <div className="px-4 py-3 border-b border-white/10 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            {[
+              { key: 'all', label: 'الكل' },
+              { key: 'primary', label: 'الأساسية', count: primaryCount },
+              { key: 'requests', label: 'طلبات الرسائل' },
+              { key: 'general', label: 'عام' }
+            ].map((filter) => (
+              <motion.button
+                key={filter.key}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setActiveFilter(filter.key as any)}
+                className={`px-4 py-2 rounded-full text-xs font-medium transition-all shrink-0 ${
+                  activeFilter === filter.key
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30'
+                    : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  {filter.label}
+                  {filter.count && filter.count > 0 && (
+                    <span className="bg-white/20 px-1.5 py-0.5 rounded-full text-[10px]">
+                      {filter.count}
+                    </span>
+                  )}
+                </span>
+              </motion.button>
+            ))}
           </div>
 
           {/* Conversations List */}
@@ -220,78 +221,125 @@ const Messages = () => {
               onRefresh={loadConversations}
             />
           </div>
-        </div>
+        </motion.div>
 
-        {/* Chat Window - Show on mobile when conversation selected */}
-        <div className={`${selectedConversationId ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-background`}>
-          {selectedConversationId && otherUser ? (
-            <>
-              {/* Chat Header - iOS Style */}
-              <div 
-                className="px-4 py-3 flex items-center justify-between"
-                style={{
-                  background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)',
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  {/* Back button */}
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20"
-                    onClick={() => setSelectedConversationId(null)}
+        {/* Chat Window with Enhanced Design */}
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={selectedConversationId || 'empty'}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className={`${selectedConversationId ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-background`}
+          >
+            {selectedConversationId && otherUser ? (
+              <>
+                {/* Chat Header with Glassmorphism */}
+                <motion.div 
+                  initial={{ y: -10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="px-4 py-3 flex items-center justify-between backdrop-blur-xl border-b border-white/10"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(26, 26, 46, 0.98) 0%, rgba(22, 33, 62, 0.95) 100%)',
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Back button */}
+                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 md:hidden"
+                        onClick={() => setSelectedConversationId(null)}
+                      >
+                        <ArrowRight className="h-5 w-5 text-white" />
+                      </Button>
+                    </motion.div>
+                    
+                    {/* User Avatar & Info */}
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <Avatar className="h-10 w-10 border-2 border-purple-500/30">
+                          <AvatarImage src={otherUser.avatar_url || ''} />
+                          <AvatarFallback className="bg-gradient-to-br from-purple-500 to-purple-700 text-white">
+                            {otherUser.full_name?.charAt(0) || otherUser.username?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-0.5 -right-0.5">
+                          <OnlineStatus isOnline={true} size="sm" />
+                        </div>
+                      </div>
+                      <div>
+                        <h1 className="text-base font-semibold text-white">
+                          {otherUser.full_name || otherUser.username}
+                        </h1>
+                        <p className="text-xs text-white/50">متصل الآن</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-1">
+                    <CallButtons 
+                      participant={{
+                        id: otherUser.id,
+                        username: otherUser.username || '',
+                        full_name: otherUser.full_name || '',
+                        avatar_url: otherUser.avatar_url || null,
+                      }}
+                      variant="purple"
+                    />
+                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20"
+                      >
+                        <Flag className="h-5 w-5 text-white/70" />
+                      </Button>
+                    </motion.div>
+                  </div>
+                </motion.div>
+                
+                <ChatWindow
+                  messages={messages}
+                  currentUserId={currentUser?.id}
+                  otherUser={otherUser}
+                  onSendMessage={handleSendMessage}
+                />
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-background to-background/80">
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-center px-6"
+                >
+                  <motion.div 
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ repeat: Infinity, duration: 3 }}
+                    className="w-24 h-24 bg-gradient-to-br from-purple-600/20 to-purple-400/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-500/20 backdrop-blur-md"
                   >
-                    <ArrowRight className="h-5 w-5 text-white" />
-                  </Button>
-                  <h1 className="text-lg font-semibold text-white">
-                    {otherUser.full_name || otherUser.username}
-                  </h1>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CallButtons 
-                    participant={{
-                      id: otherUser.id,
-                      username: otherUser.username || '',
-                      full_name: otherUser.full_name || '',
-                      avatar_url: otherUser.avatar_url || null,
-                    }}
-                    variant="purple"
-                  />
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
-                    className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20"
-                  >
-                    <Flag className="h-5 w-5 text-white" />
-                  </Button>
-                </div>
+                    <MessageCircle className="w-12 h-12 text-purple-400" />
+                  </motion.div>
+                  <h2 className="text-xl font-semibold text-foreground mb-2">رسائلك</h2>
+                  <p className="text-muted-foreground text-sm mb-4">ابدأ محادثة جديدة أو اختر من المحادثات الموجودة</p>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button 
+                      onClick={() => setShowNewMessageDialog(true)}
+                      className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white shadow-lg shadow-purple-500/30"
+                    >
+                      <Plus className="h-4 w-4 ml-2" />
+                      إرسال رسالة
+                    </Button>
+                  </motion.div>
+                </motion.div>
               </div>
-              <ChatWindow
-                messages={messages}
-                currentUserId={currentUser?.id}
-                otherUser={otherUser}
-                onSendMessage={handleSendMessage}
-              />
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center bg-background">
-              <div className="text-center px-6">
-                <div className="w-24 h-24 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="w-12 h-12 text-muted-foreground" />
-                </div>
-                <h2 className="text-xl font-semibold text-foreground mb-2">رسائلك</h2>
-                <p className="text-muted-foreground text-sm mb-4">ابدأ محادثة جديدة أو اختر من المحادثات الموجودة</p>
-                <Button onClick={() => setShowNewMessageDialog(true)}>
-                  <Plus className="h-4 w-4 ml-2" />
-                  إرسال رسالة
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
-      {/* Bottom Nav on mobile */}
       <BottomNav />
 
       <NewMessageDialog

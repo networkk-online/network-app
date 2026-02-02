@@ -195,7 +195,7 @@ export const ConversationList = ({
   };
 
   return (
-    <div className="divide-y divide-border">
+    <div className="divide-y divide-white/5">
       {visibleConversations.map((conv) => {
         const otherUser = conv.participants?.[0];
         const isSelected = conv.id === selectedConversationId;
@@ -249,7 +249,7 @@ export const ConversationList = ({
               dragElastic={0.1}
               onDragEnd={(_, info) => handleDragEnd(conv.id, info)}
               animate={{ x: isSwiped ? -150 : 0 }}
-              className="bg-background"
+              className="bg-transparent"
             >
               <button
                 onClick={() => {
@@ -259,23 +259,29 @@ export const ConversationList = ({
                     setSwipedId(null);
                   }
                 }}
-                className={`w-full p-4 flex items-center gap-3 hover:bg-accent/50 transition-colors ${
-                  isSelected ? 'bg-accent' : ''
+                className={`w-full p-4 flex items-center gap-3 transition-all duration-200 ${
+                  isSelected 
+                    ? 'bg-purple-600/20 border-r-2 border-purple-500' 
+                    : 'hover:bg-white/5'
                 }`}
               >
                 {/* Avatar with Online Status */}
                 <div className="relative shrink-0">
-                  <Avatar className="w-14 h-14 border-2 border-transparent">
+                  <Avatar className="w-14 h-14 border-2 border-purple-500/20">
                     <AvatarImage 
                       src={otherUser?.avatar_url || '/default-avatar.jpg'} 
                       alt={otherUser?.username || 'مستخدم'}
                     />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-purple-700 text-white text-lg">
                       {otherUser?.username?.charAt(0) || otherUser?.full_name?.charAt(0) || 'م'}
                     </AvatarFallback>
                   </Avatar>
-                  {/* Online indicator - can be connected to presence later */}
-                  <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-background" />
+                  {/* Online indicator with pulse animation */}
+                  <motion.div 
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-background"
+                  />
                 </div>
 
                 {/* Content */}
