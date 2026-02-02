@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MessageCircle, Plus, Search, Flag } from 'lucide-react';
+import { MessageCircle, Plus, Search, Flag, ArrowRight, Archive } from 'lucide-react';
 import Header from '@/components/Header';
+import BottomNav from '@/components/BottomNav';
 import { useToast } from '@/hooks/use-toast';
 import { useMessages } from '@/hooks/useMessages';
 import { ConversationList } from '@/components/ConversationList';
@@ -29,7 +30,8 @@ const Messages = () => {
     loading,
     currentUser,
     sendMessage,
-    createConversation
+    createConversation,
+    loadConversations
   } = useMessages(selectedConversationId || undefined);
 
   useEffect(() => {
@@ -133,12 +135,12 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="pt-16 flex h-screen">
-        {/* Conversations Sidebar */}
-        <div className="w-full md:w-96 border-r border-border flex flex-col bg-background">
+      <main className="pt-16 pb-20 md:pb-0 flex h-screen">
+        {/* Conversations Sidebar - Full width on mobile when no chat selected */}
+        <div className={`${selectedConversationId ? 'hidden md:flex' : 'flex'} w-full md:w-96 border-r border-border flex-col bg-background`}>
           {/* Header */}
           <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between mb-4">
@@ -166,17 +168,25 @@ const Messages = () => {
           </div>
 
           {/* Filters */}
-          <div className="p-4 border-b border-border flex items-center gap-2 overflow-x-auto">
+          <div className="px-4 py-3 border-b border-border flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            <Button
+              variant={activeFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveFilter('all')}
+              className="rounded-full shrink-0 text-xs"
+            >
+              الكل
+            </Button>
             <Button
               variant={activeFilter === 'primary' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setActiveFilter('primary')}
-              className="rounded-full shrink-0"
+              className="rounded-full shrink-0 text-xs"
             >
-              <span className="flex items-center gap-2">
-                Primary
+              <span className="flex items-center gap-1.5">
+                الأساسية
                 {primaryCount > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  <Badge variant="secondary" className="h-5 px-1.5 text-xs">
                     {primaryCount}
                   </Badge>
                 )}
@@ -186,17 +196,17 @@ const Messages = () => {
               variant={activeFilter === 'requests' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setActiveFilter('requests')}
-              className="rounded-full shrink-0"
+              className="rounded-full shrink-0 text-xs"
             >
-              Requests
+              طلبات الرسائل
             </Button>
             <Button
               variant={activeFilter === 'general' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setActiveFilter('general')}
-              className="rounded-full shrink-0"
+              className="rounded-full shrink-0 text-xs"
             >
-              General
+              عام
             </Button>
           </div>
 
@@ -207,18 +217,28 @@ const Messages = () => {
               selectedConversationId={selectedConversationId || undefined}
               onSelectConversation={handleSelectConversation}
               currentUserId={currentUser?.id}
+              onRefresh={loadConversations}
             />
           </div>
         </div>
 
-        {/* Chat Window */}
-        <div className="hidden md:flex flex-1 flex-col bg-background">
+        {/* Chat Window - Show on mobile when conversation selected */}
+        <div className={`${selectedConversationId ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-background`}>
           {selectedConversationId && otherUser ? (
             <>
               {/* Chat Header with Icons */}
-              <div className="p-4 border-b border-border flex items-center justify-between bg-background">
+              <div className="p-3 border-b border-border flex items-center justify-between bg-background">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary to-primary/70">
+                  {/* Back button on mobile */}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="md:hidden h-9 w-9"
+                    onClick={() => setSelectedConversationId(null)}
+                  >
+                    <ArrowRight className="h-5 w-5" />
+                  </Button>
+                  <div className="w-10 h-10 rounded-full overflow-hidden">
                     <img
                       src={otherUser.avatar_url || '/default-avatar.jpg'}
                       alt={otherUser.username}
@@ -226,11 +246,11 @@ const Messages = () => {
                     />
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">{otherUser.username || otherUser.full_name}</p>
-                    <p className="text-xs text-muted-foreground">{otherUser.username}</p>
+                    <p className="font-semibold text-foreground text-sm">{otherUser.full_name || otherUser.username}</p>
+                    <p className="text-xs text-muted-foreground">@{otherUser.username}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <CallButtons 
                     participant={{
                       id: otherUser.id,
@@ -253,17 +273,24 @@ const Messages = () => {
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center bg-background">
-              <div className="text-center">
+              <div className="text-center px-6">
                 <div className="w-24 h-24 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
                   <MessageCircle className="w-12 h-12 text-muted-foreground" />
                 </div>
-                <h2 className="text-xl font-semibold text-foreground mb-2">اختر محادثة</h2>
-                <p className="text-muted-foreground">ابدأ محادثة جديدة أو اختر من المحادثات الموجودة</p>
+                <h2 className="text-xl font-semibold text-foreground mb-2">رسائلك</h2>
+                <p className="text-muted-foreground text-sm mb-4">ابدأ محادثة جديدة أو اختر من المحادثات الموجودة</p>
+                <Button onClick={() => setShowNewMessageDialog(true)}>
+                  <Plus className="h-4 w-4 ml-2" />
+                  إرسال رسالة
+                </Button>
               </div>
             </div>
           )}
         </div>
       </main>
+
+      {/* Bottom Nav on mobile */}
+      <BottomNav />
 
       <NewMessageDialog
         open={showNewMessageDialog}

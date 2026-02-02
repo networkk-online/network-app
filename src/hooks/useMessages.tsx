@@ -24,6 +24,8 @@ export interface Conversation {
   participants?: any[];
   last_message?: Message;
   unread_count?: number;
+  pinned_by?: string[];
+  archived_by?: string[];
 }
 
 export const useMessages = (conversationId?: string) => {
