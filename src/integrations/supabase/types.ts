@@ -1887,6 +1887,10 @@ export type Database = {
     }
     Functions: {
       calculate_fame_score: { Args: { user_id: string }; Returns: number }
+      can_add_participant_to_conversation: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
+      }
       get_user_conversation_ids: {
         Args: { p_user_id: string }
         Returns: string[]
