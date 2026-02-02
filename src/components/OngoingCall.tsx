@@ -1,14 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, Volume2, MoreVertical, Camera, Monitor, MessageSquare, Users } from 'lucide-react';
+import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, Volume2, Plus, Grid3X3, Users, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { motion } from 'framer-motion';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface OngoingCallProps {
   participant: {
@@ -30,6 +24,7 @@ const OngoingCall = ({ participant, callType, startTime, onEndCall, localStream,
   const [isSpeaker, setIsSpeaker] = useState(false);
   const [duration, setDuration] = useState('00:00');
   const [showLocalVideo, setShowLocalVideo] = useState(true);
+  const [showAudioMenu, setShowAudioMenu] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -75,14 +70,13 @@ const OngoingCall = ({ participant, callType, startTime, onEndCall, localStream,
     setIsVideoOff(!isVideoOff);
   };
 
-  const toggleSpeaker = () => {
-    setIsSpeaker(!isSpeaker);
-    // In native app, this would use Capacitor plugin
-  };
-
-  const switchCamera = () => {
-    // Switch between front and back camera
-    // In native app, this would use Capacitor plugin
+  const selectAudioOutput = (output: string) => {
+    if (output === 'speaker') {
+      setIsSpeaker(true);
+    } else {
+      setIsSpeaker(false);
+    }
+    setShowAudioMenu(false);
   };
 
   return (
@@ -90,9 +84,12 @@ const OngoingCall = ({ participant, callType, startTime, onEndCall, localStream,
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-black flex flex-col"
+      className="fixed inset-0 z-[100] flex flex-col"
+      style={{
+        background: 'linear-gradient(180deg, #1c1c1e 0%, #2c2c2e 50%, #1c1c1e 100%)',
+      }}
     >
-      {/* Video Area */}
+      {/* Video Area for Video Calls */}
       {callType === 'video' && !isVideoOff ? (
         <div className="flex-1 relative">
           {/* Remote Video (Full Screen) */}
@@ -108,167 +105,182 @@ const OngoingCall = ({ participant, callType, startTime, onEndCall, localStream,
             <motion.div
               drag
               dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-              className="absolute top-20 right-4 w-28 h-40 rounded-2xl overflow-hidden border-2 border-white/30 shadow-lg"
+              className="absolute top-20 right-4 w-28 h-40 rounded-2xl overflow-hidden border-2 border-white/20 shadow-xl"
             >
               <video
                 ref={localVideoRef}
                 autoPlay
                 playsInline
                 muted
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover scale-x-[-1]"
               />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-1 right-1 h-6 w-6 bg-black/50"
-                onClick={() => setShowLocalVideo(false)}
-              >
-                <VideoOff className="h-3 w-3 text-white" />
-              </Button>
             </motion.div>
           )}
 
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/80 pointer-events-none" />
+          {/* Gradient Overlays */}
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 to-black">
-          <Avatar className="w-28 h-28 border-4 border-green-500/30">
+        /* Voice Call / Video Off UI */
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <Avatar className="w-24 h-24 border-2 border-white/20">
             <AvatarImage src={participant.avatar_url || ''} />
-            <AvatarFallback className="text-4xl bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+            <AvatarFallback className="text-3xl bg-gradient-to-br from-gray-500 to-gray-600 text-white">
               {participant.full_name?.charAt(0) || participant.username?.charAt(0) || 'U'}
             </AvatarFallback>
           </Avatar>
-          <h2 className="text-xl font-bold text-white mt-4">{participant.full_name || participant.username}</h2>
         </div>
       )}
 
-      {/* Top Bar */}
-      <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {callType === 'video' && isVideoOff && (
-            <Avatar className="w-10 h-10">
+      {/* Top Bar - Caller Info */}
+      <div className="absolute top-0 left-0 right-0 pt-12 px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex-1" />
+          <div className="text-center">
+            <h1 className="text-xl font-semibold text-white">
+              {participant.full_name || participant.username}
+            </h1>
+            <p className="text-green-400 text-base mt-1">{duration}</p>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <Avatar className="w-10 h-10 border border-white/20">
               <AvatarImage src={participant.avatar_url || ''} />
-              <AvatarFallback>
+              <AvatarFallback className="text-sm bg-gray-600 text-white">
                 {participant.full_name?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
-          )}
-          <div>
-            <p className="text-white font-medium">{participant.full_name || participant.username}</p>
-            <p className="text-green-400 text-sm flex items-center gap-1">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              {duration}
-            </p>
           </div>
         </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-white">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-            <DropdownMenuItem className="text-white hover:bg-gray-700">
-              <Users className="h-4 w-4 mr-2" />
-              إضافة مشاركين
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-white hover:bg-gray-700">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              إرسال رسالة
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-white hover:bg-gray-700">
-              <Monitor className="h-4 w-4 mr-2" />
-              مشاركة الشاشة
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
-      {/* Bottom Controls */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 pb-10">
-        <div className="flex items-center justify-center gap-4">
-          {/* Mute */}
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <Button
-              size="lg"
-              variant={isMuted ? 'default' : 'outline'}
-              className={`w-14 h-14 rounded-full ${
-                isMuted 
-                  ? 'bg-red-500 hover:bg-red-600 border-0' 
-                  : 'bg-gray-800/80 border-gray-600 hover:bg-gray-700'
-              }`}
-              onClick={toggleMute}
+      {/* Audio Output Menu */}
+      <AnimatePresence>
+        {showAudioMenu && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="absolute bottom-56 left-4 right-4 bg-[#2c2c2e] rounded-2xl overflow-hidden shadow-2xl"
+          >
+            <button
+              className="w-full flex items-center justify-between px-4 py-4 text-white hover:bg-gray-700/50 border-b border-gray-700/50"
+              onClick={() => selectAudioOutput('phone')}
             >
+              <span>الهاتف</span>
+              {!isSpeaker && <span className="text-blue-400">✓</span>}
+            </button>
+            <button
+              className="w-full flex items-center justify-between px-4 py-4 text-white hover:bg-gray-700/50 border-b border-gray-700/50"
+              onClick={() => selectAudioOutput('speaker')}
+            >
+              <span>مكبر الصوت</span>
+              {isSpeaker && <span className="text-blue-400">✓</span>}
+            </button>
+            <button
+              className="w-full px-4 py-4 text-blue-400 hover:bg-gray-700/50 font-medium"
+              onClick={() => setShowAudioMenu(false)}
+            >
+              إلغاء
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom Controls */}
+      <div className="absolute bottom-0 left-0 right-0 pb-12 px-6">
+        {/* Control Grid - iOS Style */}
+        <div className="grid grid-cols-3 gap-4 mb-8 max-w-xs mx-auto">
+          {/* Mute */}
+          <button 
+            className="flex flex-col items-center gap-2"
+            onClick={toggleMute}
+          >
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+              isMuted ? 'bg-white' : 'bg-[#3a3a3c]'
+            }`}>
               {isMuted ? (
-                <MicOff className="h-6 w-6 text-white" />
+                <MicOff className="h-6 w-6 text-black" />
               ) : (
                 <Mic className="h-6 w-6 text-white" />
               )}
-            </Button>
-          </motion.div>
+            </div>
+            <span className="text-white text-xs">كتم</span>
+          </button>
 
-          {/* Video Toggle */}
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <Button
-              size="lg"
-              variant={isVideoOff ? 'default' : 'outline'}
-              className={`w-14 h-14 rounded-full ${
-                isVideoOff 
-                  ? 'bg-gray-600 hover:bg-gray-700 border-0' 
-                  : 'bg-gray-800/80 border-gray-600 hover:bg-gray-700'
-              }`}
-              onClick={toggleVideo}
-            >
+          {/* Keypad */}
+          <button className="flex flex-col items-center gap-2">
+            <div className="w-14 h-14 rounded-full bg-[#3a3a3c] flex items-center justify-center">
+              <Grid3X3 className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-white text-xs">لوحة المفاتيح</span>
+          </button>
+
+          {/* Audio Output */}
+          <button 
+            className="flex flex-col items-center gap-2"
+            onClick={() => setShowAudioMenu(true)}
+          >
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+              isSpeaker ? 'bg-white' : 'bg-[#3a3a3c]'
+            }`}>
+              <Volume2 className={`h-6 w-6 ${isSpeaker ? 'text-black' : 'text-white'}`} />
+            </div>
+            <span className="text-white text-xs">صوت</span>
+          </button>
+
+          {/* Add Call */}
+          <button className="flex flex-col items-center gap-2">
+            <div className="w-14 h-14 rounded-full bg-[#3a3a3c] flex items-center justify-center">
+              <Plus className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-white text-xs">إضافة</span>
+          </button>
+
+          {/* FaceTime / Video Toggle */}
+          <button 
+            className="flex flex-col items-center gap-2"
+            onClick={toggleVideo}
+          >
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+              !isVideoOff ? 'bg-white' : 'bg-[#3a3a3c]'
+            }`}>
               {isVideoOff ? (
                 <VideoOff className="h-6 w-6 text-white" />
               ) : (
-                <Video className="h-6 w-6 text-white" />
+                <Video className="h-6 w-6 text-black" />
               )}
-            </Button>
-          </motion.div>
+            </div>
+            <span className="text-white text-xs">فيديو</span>
+          </button>
 
-          {/* End Call */}
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <Button
-              size="lg"
-              className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
-              onClick={onEndCall}
-            >
-              <PhoneOff className="h-7 w-7 text-white" />
-            </Button>
-          </motion.div>
-
-          {/* Speaker */}
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <Button
-              size="lg"
-              variant={isSpeaker ? 'default' : 'outline'}
-              className={`w-14 h-14 rounded-full ${
-                isSpeaker 
-                  ? 'bg-blue-500 hover:bg-blue-600 border-0' 
-                  : 'bg-gray-800/80 border-gray-600 hover:bg-gray-700'
-              }`}
-              onClick={toggleSpeaker}
-            >
-              <Volume2 className="h-6 w-6 text-white" />
-            </Button>
-          </motion.div>
-
-          {/* Switch Camera */}
-          {callType === 'video' && !isVideoOff && (
-            <motion.div whileTap={{ scale: 0.9 }}>
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-14 h-14 rounded-full bg-gray-800/80 border-gray-600 hover:bg-gray-700"
-                onClick={switchCamera}
-              >
+          {/* Contacts / Switch Camera */}
+          <button 
+            className="flex flex-col items-center gap-2"
+            onClick={() => {/* Switch camera */}}
+          >
+            <div className="w-14 h-14 rounded-full bg-[#3a3a3c] flex items-center justify-center">
+              {callType === 'video' && !isVideoOff ? (
                 <Camera className="h-6 w-6 text-white" />
-              </Button>
-            </motion.div>
-          )}
+              ) : (
+                <Users className="h-6 w-6 text-white" />
+              )}
+            </div>
+            <span className="text-white text-xs">
+              {callType === 'video' && !isVideoOff ? 'الكاميرا' : 'جهات الاتصال'}
+            </span>
+          </button>
+        </div>
+
+        {/* End Call Button */}
+        <div className="flex justify-center">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/30"
+            onClick={onEndCall}
+          >
+            <PhoneOff className="h-8 w-8 text-white transform rotate-[135deg]" />
+          </motion.button>
         </div>
       </div>
     </motion.div>
