@@ -1,6 +1,6 @@
 import { Phone, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useCall } from '@/components/CallProvider';
+import { useChimeCall } from '@/components/ChimeCallProvider';
 import { toast } from '@/hooks/use-toast';
 
 interface CallButtonsProps {
@@ -23,7 +23,7 @@ const CallButtons = ({
   showLabels = false,
   className = ''
 }: CallButtonsProps) => {
-  const { startCall, isInCall, isInitialized } = useCall();
+  const { startCall, isInCall, isInitialized, isConnecting } = useChimeCall();
 
   const handleVoiceCall = async () => {
     if (!isInitialized) {
@@ -34,7 +34,7 @@ const CallButtons = ({
       return;
     }
 
-    if (isInCall) {
+    if (isInCall || isConnecting) {
       toast({
         title: 'مكالمة جارية',
         description: 'أنت في مكالمة حالياً',
@@ -55,7 +55,7 @@ const CallButtons = ({
       return;
     }
 
-    if (isInCall) {
+    if (isInCall || isConnecting) {
       toast({
         title: 'مكالمة جارية',
         description: 'أنت في مكالمة حالياً',
