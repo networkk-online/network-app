@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Phone, PhoneOff, Video, Mic, MicOff, MessageSquare, X } from 'lucide-react';
+import { Phone, PhoneOff, MessageSquare, Clock, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,13 +29,11 @@ const IncomingCall = ({ caller, callType, onAccept, onDecline, onDeclineWithMess
   const [ringAudio] = useState(() => typeof Audio !== 'undefined' ? new Audio('/ringtone.mp3') : null);
 
   useEffect(() => {
-    // Play ringtone
     if (ringAudio) {
       ringAudio.loop = true;
       ringAudio.play().catch(() => {});
     }
 
-    // Vibrate if supported
     if (navigator.vibrate) {
       const vibrateInterval = setInterval(() => {
         navigator.vibrate([200, 100, 200]);
@@ -59,10 +57,6 @@ const IncomingCall = ({ caller, callType, onAccept, onDecline, onDeclineWithMess
     };
   }, [ringAudio]);
 
-  const handleDecline = () => {
-    onDecline();
-  };
-
   const handleDeclineWithMessage = (message: string) => {
     onDeclineWithMessage(message);
     setShowQuickReplies(false);
@@ -73,126 +67,125 @@ const IncomingCall = ({ caller, callType, onAccept, onDecline, onDeclineWithMess
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-gradient-to-b from-gray-900 via-gray-800 to-black flex flex-col items-center justify-between p-8"
+      className="fixed inset-0 z-[100] flex flex-col"
+      style={{
+        background: 'linear-gradient(180deg, #1c1c1e 0%, #2c2c2e 50%, #1c1c1e 100%)',
+      }}
     >
-      {/* Caller Info */}
-      <div className="flex-1 flex flex-col items-center justify-center">
+      {/* Status Bar Spacer */}
+      <div className="h-12" />
+
+      {/* Header - Caller Info */}
+      <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-semibold text-white">
+            {caller.full_name || caller.username}
+          </h1>
+          <p className="text-gray-400 text-base mt-1">
+            {callType === 'video' ? 'مكالمة فيديو' : 'مكالمة صوتية'}
+          </p>
+        </div>
         <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
+          animate={{ scale: [1, 1.05, 1] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          className="relative"
         >
-          <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse" />
-          <Avatar className="w-32 h-32 border-4 border-green-500/50">
+          <Avatar className="w-16 h-16 border-2 border-white/20">
             <AvatarImage src={caller.avatar_url || ''} />
-            <AvatarFallback className="text-4xl bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+            <AvatarFallback className="text-xl bg-gradient-to-br from-gray-500 to-gray-600 text-white">
               {caller.full_name?.charAt(0) || caller.username?.charAt(0) || 'U'}
             </AvatarFallback>
           </Avatar>
         </motion.div>
-
-        <h2 className="text-2xl font-bold text-white mt-6">{caller.full_name || caller.username}</h2>
-        <p className="text-green-400 mt-2 flex items-center gap-2">
-          {callType === 'video' ? <Video className="h-4 w-4" /> : <Phone className="h-4 w-4" />}
-          {callType === 'video' ? 'مكالمة فيديو واردة' : 'مكالمة صوتية واردة'}
-        </p>
-
-        <motion.p
-          animate={{ opacity: [1, 0.5, 1] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-          className="text-gray-400 mt-4"
-        >
-          جارٍ الرنين...
-        </motion.p>
       </div>
 
-      {/* Quick Replies */}
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Quick Replies Modal */}
       <AnimatePresence>
         {showQuickReplies && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="absolute bottom-40 left-4 right-4 bg-gray-800/90 rounded-2xl p-4 space-y-2"
+            exit={{ opacity: 0, y: 100 }}
+            className="absolute bottom-52 left-4 right-4 bg-[#2c2c2e] rounded-2xl overflow-hidden"
           >
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-white font-medium">رد سريع</h3>
+            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-700">
+              <h3 className="text-white font-medium">الرد برسالة</h3>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowQuickReplies(false)}
-                className="text-gray-400"
+                className="text-gray-400 h-8 w-8"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </Button>
             </div>
             {quickReplies.map((reply, index) => (
-              <Button
+              <button
                 key={index}
-                variant="outline"
-                className="w-full justify-start text-white border-gray-600 hover:bg-gray-700"
+                className="w-full text-right px-4 py-3 text-white hover:bg-gray-700/50 transition-colors border-b border-gray-700/50 last:border-0"
                 onClick={() => handleDeclineWithMessage(reply)}
               >
                 {reply}
-              </Button>
+              </button>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Action Buttons */}
-      <div className="space-y-4 w-full max-w-sm">
-        {/* Accept Buttons */}
-        <div className="flex justify-center gap-6">
-          {/* Accept Voice */}
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <Button
-              size="lg"
-              className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 shadow-lg shadow-green-500/30"
-              onClick={() => onAccept('voice')}
-            >
-              <Phone className="h-7 w-7 text-white" />
-            </Button>
-          </motion.div>
+      {/* Bottom Actions */}
+      <div className="pb-12 px-8">
+        {/* Secondary Actions */}
+        <div className="flex justify-center gap-16 mb-10">
+          {/* Remind Me */}
+          <button 
+            className="flex flex-col items-center gap-2"
+            onClick={() => {/* TODO: Remind later */}}
+          >
+            <div className="w-14 h-14 rounded-full bg-[#3a3a3c] flex items-center justify-center">
+              <Clock className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-white text-xs">ذكّرني</span>
+          </button>
 
-          {/* Accept Video (if video call) */}
-          {callType === 'video' && (
-            <motion.div whileTap={{ scale: 0.9 }}>
-              <Button
-                size="lg"
-                className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/30"
-                onClick={() => onAccept('video')}
-              >
-                <Video className="h-7 w-7 text-white" />
-              </Button>
-            </motion.div>
-          )}
+          {/* Message */}
+          <button 
+            className="flex flex-col items-center gap-2"
+            onClick={() => setShowQuickReplies(!showQuickReplies)}
+          >
+            <div className="w-14 h-14 rounded-full bg-[#3a3a3c] flex items-center justify-center">
+              <MessageSquare className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-white text-xs">رسالة</span>
+          </button>
         </div>
 
-        {/* Decline Buttons */}
-        <div className="flex justify-center gap-4">
-          {/* Quick Reply */}
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-14 h-14 rounded-full border-gray-600 text-white hover:bg-gray-800"
-              onClick={() => setShowQuickReplies(!showQuickReplies)}
-            >
-              <MessageSquare className="h-6 w-6" />
-            </Button>
-          </motion.div>
-
+        {/* Main Action Buttons */}
+        <div className="flex justify-center gap-20">
           {/* Decline */}
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <Button
-              size="lg"
-              className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
-              onClick={handleDecline}
-            >
-              <PhoneOff className="h-7 w-7 text-white" />
-            </Button>
-          </motion.div>
+          <motion.button 
+            whileTap={{ scale: 0.9 }}
+            className="flex flex-col items-center gap-3"
+            onClick={onDecline}
+          >
+            <div className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/30">
+              <PhoneOff className="h-8 w-8 text-white" />
+            </div>
+            <span className="text-white text-sm">رفض</span>
+          </motion.button>
+
+          {/* Accept */}
+          <motion.button 
+            whileTap={{ scale: 0.9 }}
+            className="flex flex-col items-center gap-3"
+            onClick={() => onAccept(callType)}
+          >
+            <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
+              <Phone className="h-8 w-8 text-white" />
+            </div>
+            <span className="text-white text-sm">قبول</span>
+          </motion.button>
         </div>
       </div>
     </motion.div>
