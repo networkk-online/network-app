@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { PhoneOff, Video, VideoOff, Mic, MicOff, Volume2, MoreHorizontal, SwitchCamera, X } from 'lucide-react';
+import { PhoneOff, Video, VideoOff, Mic, MicOff, Volume2, MoreHorizontal, SwitchCamera, X, Phone } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -74,34 +74,39 @@ const OngoingCall = ({ participant, callType, startTime, onEndCall, localStream,
     setShowAudioMenu(false);
   };
 
-  // Desktop Voice/Audio Call UI - Compact Window Style
+  // Desktop Voice/Audio Call UI - Compact Window Style (Universal Design)
   const DesktopCallWindow = () => (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className="fixed inset-0 z-[100] hidden md:flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] hidden md:flex items-center justify-center bg-black/60 backdrop-blur-sm"
     >
       <div 
-        className="relative w-[520px] rounded-2xl overflow-hidden shadow-2xl"
+        className="relative w-[480px] rounded-xl overflow-hidden shadow-2xl border border-white/10"
         style={{
-          background: 'linear-gradient(180deg, #3d5a6c 0%, #2c4251 50%, #1e2d38 100%)',
+          background: 'linear-gradient(180deg, #2d3748 0%, #1a202c 100%)',
         }}
       >
-        {/* Window Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-[#1a252d]">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500 cursor-pointer hover:bg-red-400" onClick={onEndCall} />
-            <div className="w-3 h-3 rounded-full bg-yellow-500" />
-            <div className="w-3 h-3 rounded-full bg-green-500" />
+        {/* Window Header - Universal Style */}
+        <div className="flex items-center justify-between px-4 py-2.5 bg-black/40 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
+              <Phone className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-white font-medium text-sm">مكالمة {callType === 'video' ? 'فيديو' : 'صوتية'}</span>
           </div>
-          <span className="text-white/60 text-sm">مكالمة {callType === 'video' ? 'فيديو' : 'صوتية'}</span>
-          <button 
-            onClick={onEndCall}
-            className="w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
-          >
-            <X className="w-4 h-4 text-white/60" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button className="w-8 h-8 hover:bg-white/10 flex items-center justify-center transition-colors rounded">
+              <span className="text-white/60 text-lg">−</span>
+            </button>
+            <button 
+              onClick={onEndCall}
+              className="w-8 h-8 hover:bg-red-500 flex items-center justify-center transition-colors rounded group"
+            >
+              <X className="w-4 h-4 text-white/60 group-hover:text-white" />
+            </button>
+          </div>
         </div>
 
         {/* Main Content */}
@@ -275,25 +280,35 @@ const OngoingCall = ({ participant, callType, startTime, onEndCall, localStream,
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className="fixed inset-0 z-[100] hidden md:flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] hidden md:flex items-center justify-center bg-black/60 backdrop-blur-sm"
     >
-      <div className="relative w-[640px] h-[480px] rounded-2xl overflow-hidden shadow-2xl bg-gray-900">
-        {/* Window Header */}
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/60 to-transparent z-10">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500 cursor-pointer hover:bg-red-400" onClick={onEndCall} />
-            <div className="w-3 h-3 rounded-full bg-yellow-500" />
-            <div className="w-3 h-3 rounded-full bg-green-500" />
+      <div className="relative w-[700px] h-[500px] rounded-xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10">
+        {/* Window Header - Universal Style */}
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-2 bg-black/70 backdrop-blur z-10 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
+              <Video className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-white font-medium text-sm">
+              {participant.full_name || participant.username}
+            </span>
+            <span className="text-white/50 text-sm">•</span>
+            <span className="text-white/70 text-sm">{duration}</span>
           </div>
-          <span className="text-white/80 text-sm font-medium">
-            {participant.full_name || participant.username} • {duration}
-          </span>
-          <button 
-            onClick={onEndCall}
-            className="w-6 h-6 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors"
-          >
-            <X className="w-4 h-4 text-white/80" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button className="w-8 h-8 hover:bg-white/10 flex items-center justify-center transition-colors rounded">
+              <span className="text-white/60 text-lg">−</span>
+            </button>
+            <button className="w-8 h-8 hover:bg-white/10 flex items-center justify-center transition-colors rounded">
+              <span className="text-white/60 text-xs">☐</span>
+            </button>
+            <button 
+              onClick={onEndCall}
+              className="w-8 h-8 hover:bg-red-500 flex items-center justify-center transition-colors rounded group"
+            >
+              <X className="w-4 h-4 text-white/60 group-hover:text-white" />
+            </button>
+          </div>
         </div>
 
         {/* Remote Video */}
