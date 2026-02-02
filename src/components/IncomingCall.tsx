@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Phone, PhoneOff, MessageSquare, Clock, X } from 'lucide-react';
+import { Phone, PhoneOff, MessageSquare, Clock, X, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -69,37 +69,50 @@ const IncomingCall = ({ caller, callType, onAccept, onDecline, onDeclineWithMess
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[100] flex flex-col"
       style={{
-        background: 'linear-gradient(180deg, #1c1c1e 0%, #2c2c2e 50%, #1c1c1e 100%)',
+        background: 'linear-gradient(180deg, #4a1a7a 0%, #2d1050 50%, #1a0a30 100%)',
       }}
     >
       {/* Status Bar Spacer */}
       <div className="h-12" />
 
-      {/* Header - Caller Info */}
+      {/* Header */}
       <div className="flex items-center justify-between px-6 py-4">
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-semibold text-white">
-            {caller.full_name || caller.username}
-          </h1>
-          <p className="text-gray-400 text-base mt-1">
-            {callType === 'video' ? 'مكالمة فيديو' : 'مكالمة صوتية'}
+        <div className="w-10" />
+        <div className="text-center">
+          <p className="text-white/70 text-sm">
+            {callType === 'video' ? 'مكالمة فيديو واردة' : 'مكالمة صوتية واردة'}
           </p>
         </div>
-        <motion.div
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-        >
-          <Avatar className="w-16 h-16 border-2 border-white/20">
-            <AvatarImage src={caller.avatar_url || ''} />
-            <AvatarFallback className="text-xl bg-gradient-to-br from-gray-500 to-gray-600 text-white">
-              {caller.full_name?.charAt(0) || caller.username?.charAt(0) || 'U'}
-            </AvatarFallback>
-          </Avatar>
-        </motion.div>
+        <div className="w-10" />
       </div>
 
-      {/* Spacer */}
-      <div className="flex-1" />
+      {/* Caller Info - Center */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6">
+        <div className="relative mb-6">
+          <motion.div
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+          >
+            <Avatar className="w-32 h-32 border-4 border-white/20">
+              <AvatarImage src={caller.avatar_url || ''} className="object-cover" />
+              <AvatarFallback className="text-4xl bg-gradient-to-br from-purple-400 to-purple-600 text-white">
+                {caller.full_name?.charAt(0) || caller.username?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
+          </motion.div>
+          {/* Pulse rings */}
+          <div className="absolute inset-0 rounded-full border-2 border-purple-400/30 animate-ping" style={{ animationDuration: '2s' }} />
+          <div className="absolute -inset-4 rounded-full border border-purple-400/20" />
+          <div className="absolute -inset-8 rounded-full border border-purple-400/10" />
+        </div>
+        
+        <h1 className="text-2xl font-semibold text-white mb-1">
+          {caller.full_name || caller.username}
+        </h1>
+        <p className="text-white/60 text-base">
+          @{caller.username}
+        </p>
+      </div>
 
       {/* Quick Replies Modal */}
       <AnimatePresence>
@@ -108,9 +121,9 @@ const IncomingCall = ({ caller, callType, onAccept, onDecline, onDeclineWithMess
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="absolute bottom-52 left-4 right-4 bg-[#2c2c2e] rounded-2xl overflow-hidden"
+            className="absolute bottom-52 left-4 right-4 bg-[#2d1050] rounded-2xl overflow-hidden border border-purple-500/20"
           >
-            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-700">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-purple-500/20">
               <h3 className="text-white font-medium">الرد برسالة</h3>
               <Button
                 variant="ghost"
@@ -124,7 +137,7 @@ const IncomingCall = ({ caller, callType, onAccept, onDecline, onDeclineWithMess
             {quickReplies.map((reply, index) => (
               <button
                 key={index}
-                className="w-full text-right px-4 py-3 text-white hover:bg-gray-700/50 transition-colors border-b border-gray-700/50 last:border-0"
+                className="w-full text-right px-4 py-3 text-white hover:bg-purple-600/30 transition-colors border-b border-purple-500/20 last:border-0"
                 onClick={() => handleDeclineWithMessage(reply)}
               >
                 {reply}
@@ -143,7 +156,7 @@ const IncomingCall = ({ caller, callType, onAccept, onDecline, onDeclineWithMess
             className="flex flex-col items-center gap-2"
             onClick={() => {/* TODO: Remind later */}}
           >
-            <div className="w-14 h-14 rounded-full bg-[#3a3a3c] flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
               <Clock className="h-6 w-6 text-white" />
             </div>
             <span className="text-white text-xs">ذكّرني</span>
@@ -154,7 +167,7 @@ const IncomingCall = ({ caller, callType, onAccept, onDecline, onDeclineWithMess
             className="flex flex-col items-center gap-2"
             onClick={() => setShowQuickReplies(!showQuickReplies)}
           >
-            <div className="w-14 h-14 rounded-full bg-[#3a3a3c] flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
               <MessageSquare className="h-6 w-6 text-white" />
             </div>
             <span className="text-white text-xs">رسالة</span>
@@ -182,7 +195,11 @@ const IncomingCall = ({ caller, callType, onAccept, onDecline, onDeclineWithMess
             onClick={() => onAccept(callType)}
           >
             <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
-              <Phone className="h-8 w-8 text-white" />
+              {callType === 'video' ? (
+                <Video className="h-8 w-8 text-white" />
+              ) : (
+                <Phone className="h-8 w-8 text-white" />
+              )}
             </div>
             <span className="text-white text-sm">قبول</span>
           </motion.button>
