@@ -10,10 +10,15 @@ interface CallParticipant {
   avatar_url: string | null;
 }
 
+// Call status for outgoing calls
+export type OutgoingCallStatus = 'initiating' | 'ringing' | 'connecting' | null;
+
 interface WebRTCState {
   isInitialized: boolean;
   isInCall: boolean;
   isIncoming: boolean;
+  isOutgoing: boolean;
+  outgoingCallStatus: OutgoingCallStatus;
   callType: 'voice' | 'video';
   participant: CallParticipant | null;
   callId: string | null;
@@ -30,6 +35,8 @@ export const useWebRTC = () => {
     isInitialized: false,
     isInCall: false,
     isIncoming: false,
+    isOutgoing: false,
+    outgoingCallStatus: null,
     callType: 'voice',
     participant: null,
     callId: null,
@@ -43,6 +50,18 @@ export const useWebRTC = () => {
 
   const ringtoneRef = useRef<HTMLAudioElement | null>(null);
   const callTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Initialize AudioContext on user gesture (for web autoplay policy)
+  const initAudioContext = useCallback(() => {
+    if (!audioContextRef.current && typeof AudioContext !== 'undefined') {
+      audioContextRef.current = new AudioContext();
+    }
+    // Resume if suspended (Chrome autoplay policy)
+    if (audioContextRef.current?.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+  }, []);
 
   // Initialize WebRTC service
   useEffect(() => {
@@ -70,7 +89,19 @@ export const useWebRTC = () => {
             clearTimeout(callTimeoutRef.current);
             callTimeoutRef.current = null;
           }
-          setState(prev => ({ ...prev, startTime: new Date() }));
+          // Transition from outgoing to active call
+          setState(prev => ({ 
+            ...prev, 
+            isInCall: true,
+            isOutgoing: false,
+            outgoingCallStatus: null,
+            startTime: new Date() 
+          }));
+        } else if (connectionState === 'connecting') {
+          setState(prev => ({ 
+            ...prev, 
+            outgoingCallStatus: 'connecting' 
+          }));
         }
       };
 
@@ -85,6 +116,8 @@ export const useWebRTC = () => {
           ...prev,
           isInCall: false,
           isIncoming: false,
+          isOutgoing: false,
+          outgoingCallStatus: null,
           participant: null,
           callId: null,
           startTime: null,
@@ -148,15 +181,26 @@ export const useWebRTC = () => {
 
 
   const startCall = useCallback(async (participant: CallParticipant, callType: 'voice' | 'video') => {
+    // Initialize audio context on user gesture (critical for web autoplay)
+    initAudioContext();
+    
+    // IMMEDIATELY show outgoing call UI before any async operations
+    setState(prev => ({
+      ...prev,
+      isOutgoing: true,
+      outgoingCallStatus: 'initiating',
+      callType,
+      participant,
+    }));
+
     try {
+      // Now start the actual call (async)
       const callId = await webRTCService.startCall(participant.id, callType);
       
+      // Update status to ringing
       setState(prev => ({
         ...prev,
-        isInCall: true,
-        isIncoming: false,
-        callType,
-        participant,
+        outgoingCallStatus: 'ringing',
         callId,
       }));
 
@@ -171,21 +215,24 @@ export const useWebRTC = () => {
         setState(prev => ({
           ...prev,
           isInCall: false,
+          isOutgoing: false,
+          outgoingCallStatus: null,
           isIncoming: false,
           participant: null,
           callId: null,
         }));
       }, 30000);
 
-      // Record call in history
+      // Record call in history (don't block UI)
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from('call_history').insert({
+        // Fire and forget - don't await
+        supabase.from('call_history').insert({
           caller_id: user.id,
           receiver_id: participant.id,
           call_type: callType,
           status: 'calling',
-        });
+        }).then(() => {});
 
         // Get caller profile for notification
         const { data: callerProfile } = await supabase
@@ -194,30 +241,51 @@ export const useWebRTC = () => {
           .eq('id', user.id)
           .single();
 
-        // Send push notification to receiver
-        try {
-          await supabase.functions.invoke('send-call-notification', {
-            body: {
-              receiverId: participant.id,
-              callerId: user.id,
-              callerName: callerProfile?.full_name || 'مستخدم',
-              callerAvatar: callerProfile?.avatar_url,
-              callType,
-              callId,
-            },
-          });
-        } catch (notifError) {
+        // Send push notification to receiver (don't block)
+        supabase.functions.invoke('send-call-notification', {
+          body: {
+            receiverId: participant.id,
+            callerId: user.id,
+            callerName: callerProfile?.full_name || 'مستخدم',
+            callerAvatar: callerProfile?.avatar_url,
+            callType,
+            callId,
+          },
+        }).catch(notifError => {
           console.log('Push notification not sent:', notifError);
-        }
+        });
       }
     } catch (error) {
       console.error('Error starting call:', error);
+      // Reset state on error
+      setState(prev => ({
+        ...prev,
+        isOutgoing: false,
+        outgoingCallStatus: null,
+        participant: null,
+      }));
       toast({
         title: 'خطأ',
         description: 'فشل في بدء المكالمة',
         variant: 'destructive',
       });
     }
+  }, [initAudioContext]);
+
+  const cancelOutgoingCall = useCallback(async () => {
+    if (callTimeoutRef.current) {
+      clearTimeout(callTimeoutRef.current);
+      callTimeoutRef.current = null;
+    }
+    await webRTCService.endCall();
+    setState(prev => ({
+      ...prev,
+      isOutgoing: false,
+      outgoingCallStatus: null,
+      isInCall: false,
+      participant: null,
+      callId: null,
+    }));
   }, []);
 
   const acceptCall = useCallback(async () => {
@@ -341,6 +409,7 @@ export const useWebRTC = () => {
     acceptCall,
     rejectCall,
     endCall,
+    cancelOutgoingCall,
     toggleMute,
     toggleVideo,
     switchCamera,

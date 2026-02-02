@@ -1,8 +1,9 @@
 import { createContext, useContext, ReactNode, useEffect } from 'react';
-import { useWebRTC } from '@/hooks/useWebRTC';
+import { useWebRTC, OutgoingCallStatus } from '@/hooks/useWebRTC';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import IncomingCall from '@/components/IncomingCall';
 import OngoingCall from '@/components/OngoingCall';
+import OutgoingCall from '@/components/OutgoingCall';
 import { AnimatePresence } from 'framer-motion';
 
 interface CallParticipant {
@@ -16,12 +17,15 @@ interface CallContextType {
   isInitialized: boolean;
   isInCall: boolean;
   isIncoming: boolean;
+  isOutgoing: boolean;
+  outgoingCallStatus: OutgoingCallStatus;
   callType: 'voice' | 'video';
   participant: CallParticipant | null;
   startCall: (participant: CallParticipant, callType: 'voice' | 'video') => Promise<void>;
   acceptCall: () => Promise<void>;
   rejectCall: () => Promise<void>;
   endCall: () => Promise<void>;
+  cancelOutgoingCall: () => Promise<void>;
   toggleMute: () => boolean;
   toggleVideo: () => boolean;
   switchCamera: () => Promise<void>;
@@ -51,6 +55,8 @@ export const CallProvider = ({ children }: CallProviderProps) => {
     isInitialized,
     isInCall,
     isIncoming,
+    isOutgoing,
+    outgoingCallStatus,
     callType,
     participant,
     startTime,
@@ -62,6 +68,7 @@ export const CallProvider = ({ children }: CallProviderProps) => {
     acceptCall,
     rejectCall,
     endCall,
+    cancelOutgoingCall,
     toggleMute,
     toggleVideo,
     switchCamera,
@@ -97,12 +104,15 @@ export const CallProvider = ({ children }: CallProviderProps) => {
         isInitialized,
         isInCall,
         isIncoming,
+        isOutgoing,
+        outgoingCallStatus,
         callType,
         participant,
         startCall,
         acceptCall,
         rejectCall,
         endCall,
+        cancelOutgoingCall,
         toggleMute,
         toggleVideo,
         switchCamera,
@@ -112,10 +122,22 @@ export const CallProvider = ({ children }: CallProviderProps) => {
     >
       {children}
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
+        {/* Outgoing Call Screen - Shows IMMEDIATELY on call button click */}
+        {isOutgoing && participant && !isInCall && (
+          <OutgoingCall
+            key="outgoing"
+            participant={participant}
+            callType={callType}
+            callStatus={outgoingCallStatus || 'initiating'}
+            onCancel={cancelOutgoingCall}
+          />
+        )}
+
         {/* Incoming Call Screen */}
-        {isIncoming && participant && !isInCall && (
+        {isIncoming && participant && !isInCall && !isOutgoing && (
           <IncomingCall
+            key="incoming"
             caller={participant}
             callType={callType}
             onAccept={handleAcceptVoice}
@@ -127,6 +149,7 @@ export const CallProvider = ({ children }: CallProviderProps) => {
         {/* Ongoing Call Screen */}
         {isInCall && participant && startTime && (
           <OngoingCall
+            key="ongoing"
             participant={participant}
             callType={callType}
             startTime={startTime}
