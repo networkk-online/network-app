@@ -11,7 +11,7 @@ interface CallButtonsProps {
     avatar_url: string | null;
   };
   size?: 'sm' | 'default' | 'lg' | 'icon';
-  variant?: 'ghost' | 'outline' | 'default';
+  variant?: 'ghost' | 'outline' | 'default' | 'purple';
   showLabels?: boolean;
   className?: string;
 }
@@ -67,23 +67,28 @@ const CallButtons = ({
     await startCall(participant, 'video');
   };
 
+  // Purple variant styling for chat header
+  const isPurple = variant === 'purple';
+  const buttonVariant = isPurple ? 'ghost' : variant;
+  const purpleClasses = isPurple ? 'bg-purple-600/30 hover:bg-purple-600/50 text-white' : '';
+
   if (showLabels) {
     return (
       <div className={`flex gap-2 ${className}`}>
         <Button
-          variant={variant}
+          variant={buttonVariant}
           size={size}
           onClick={handleVoiceCall}
-          className="flex items-center gap-2"
+          className={`flex items-center gap-2 ${purpleClasses}`}
         >
           <Phone className="h-4 w-4" />
           <span>مكالمة صوتية</span>
         </Button>
         <Button
-          variant={variant}
+          variant={buttonVariant}
           size={size}
           onClick={handleVideoCall}
-          className="flex items-center gap-2"
+          className={`flex items-center gap-2 ${purpleClasses}`}
         >
           <Video className="h-4 w-4" />
           <span>مكالمة فيديو</span>
@@ -95,18 +100,20 @@ const CallButtons = ({
   return (
     <div className={`flex gap-1 ${className}`}>
       <Button
-        variant={variant}
+        variant={buttonVariant}
         size={size}
         onClick={handleVoiceCall}
         title="مكالمة صوتية"
+        className={`h-9 w-9 rounded-full ${purpleClasses}`}
       >
         <Phone className="h-5 w-5" />
       </Button>
       <Button
-        variant={variant}
+        variant={buttonVariant}
         size={size}
         onClick={handleVideoCall}
         title="مكالمة فيديو"
+        className={`h-9 w-9 rounded-full ${purpleClasses}`}
       >
         <Video className="h-5 w-5" />
       </Button>
