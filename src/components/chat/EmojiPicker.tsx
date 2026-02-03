@@ -51,7 +51,7 @@ export const EmojiPicker = ({ isOpen, onClose, onSelect }: EmojiPickerProps) => 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm"
           />
           
           <motion.div
@@ -59,7 +59,7 @@ export const EmojiPicker = ({ isOpen, onClose, onSelect }: EmojiPickerProps) => 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="absolute bottom-full left-0 mb-2 z-50 w-72"
+            className="fixed bottom-24 left-4 right-4 z-[9999] max-w-sm mx-auto"
           >
             <div className="bg-[#1C1C1E]/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
               {/* Search */}
