@@ -226,7 +226,7 @@ export const EnhancedChatWindow = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-black">
+    <div className="flex flex-col h-full bg-black font-[Inter]">
       {/* Messages Container */}
       <div 
         ref={scrollContainerRef}
@@ -238,9 +238,10 @@ export const EnhancedChatWindow = ({
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               className="flex justify-center mb-4"
             >
-              <span className="text-xs text-white/50 bg-[#1C1C1E] px-4 py-1.5 rounded-full border border-white/5">
+              <span className="text-xs text-white/50 bg-[#1C1C1E] px-4 py-1.5 rounded-full border border-white/5 font-[Inter]">
                 {formatDateHeader(date)}
               </span>
             </motion.div>
