@@ -304,12 +304,12 @@ const Messages = () => {
                 <div className="w-1 h-16 bg-white/30 rounded-full" />
               </motion.div>
 
-              {/* Sticky Chat Header with Safe Area */}
+              {/* Sticky Chat Header with Safe Area - shrink-0 to prevent compression */}
               <motion.div 
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={springConfig}
-                className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between backdrop-blur-xl border-b border-white/10 bg-black/95 safe-area-top"
+                className="shrink-0 sticky top-0 z-50 px-4 py-3 flex items-center justify-between backdrop-blur-xl border-b border-white/10 bg-black/95 safe-area-top"
               >
                 <div className="flex items-center gap-3">
                   {/* Back Button - Always visible and easy to reach */}
@@ -379,8 +379,8 @@ const Messages = () => {
                 </div>
               </motion.div>
               
-              {/* Chat Window with flexible height - Takes remaining space */}
-              <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              {/* Chat Window - flex-1 min-h-0 to fill remaining space and enable scrolling */}
+              <div className="flex-1 min-h-0 overflow-hidden">
                 <EnhancedChatWindow
                   messages={messages}
                   currentUserId={currentUser?.id}

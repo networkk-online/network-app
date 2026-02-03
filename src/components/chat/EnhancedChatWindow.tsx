@@ -263,11 +263,12 @@ export const EnhancedChatWindow = ({
 
   return (
     <ScreenshotProtection enabled={screenshotProtection}>
-      <div className="flex flex-col h-full min-h-0 bg-black font-[Inter]">
-        {/* Messages Container - Flex-1 and scrollable */}
+      {/* Main Chat Container with strict flexbox layout */}
+      <div className="chat-room-container bg-black font-[Inter]">
+        {/* Messages Container - Takes remaining space and scrolls */}
         <div 
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide min-h-0"
+          className="chat-messages-area p-4 space-y-4 scrollbar-hide"
         >
           {Object.entries(groupedMessages).map(([date, msgs]) => (
             <div key={date}>
@@ -349,8 +350,8 @@ export const EnhancedChatWindow = ({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area - Fixed at bottom with proper z-index and safe area */}
-        <div className="shrink-0 border-t border-[#1C1C1E]/80 bg-black/95 backdrop-blur-xl z-40 safe-area-bottom">
+        {/* Input Area - Sticky at bottom with glass effect */}
+        <div className="chat-input-area">
           <EnhancedGlassInput
             value={messageText}
             onChange={handleInputChange}

@@ -484,3 +484,46 @@
 .bottom-nav-visible {
   transform: translateY(0);
 }
+
+/* Chat Room Layout - Strict Flexbox */
+.chat-room-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.chat-messages-area {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chat-input-area {
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 40;
+}
+
+/* Mobile Keyboard Handling */
+@supports (height: 100dvh) {
+  .chat-room-container {
+    height: 100dvh;
+  }
+}
+
+/* Ensure input stays visible with keyboard */
+@media (max-width: 767px) {
+  .chat-input-area {
+    position: sticky;
+    bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
