@@ -14,6 +14,9 @@ export { EnhancedChatWindow } from './EnhancedChatWindow';
 export { ChatSettingsDrawer } from './ChatSettingsDrawer';
 export { ScreenshotProtection } from './ScreenshotProtection';
 export { MessageStatusIndicator } from './MessageStatusIndicator';
+export { ChatHeader } from './ChatHeader';
+export { MessagesListHeader } from './MessagesListHeader';
+export { SwipeableView } from './SwipeableView';
 
 // Re-export MessageReaction type from hooks for consistency
 export type { MessageReaction } from '@/hooks/useMessages';

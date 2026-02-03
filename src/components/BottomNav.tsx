@@ -5,10 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Hide bottom nav when in a chat conversation
+  const isInChatRoom = location.pathname === '/messages' && location.search.includes('userId');
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
@@ -130,9 +134,17 @@ const BottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-border">
-      <div className="flex items-center justify-around px-2 py-3">
-        {navItems.map((item) => {
+    <AnimatePresence>
+      {!isInChatRoom && (
+        <motion.nav 
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          exit={{ y: 100 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-border"
+        >
+          <div className="flex items-center justify-around px-2 py-3">
+            {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
           
@@ -154,34 +166,36 @@ const BottomNav = () => {
           );
         })}
         
-        {/* Profile Avatar */}
-        <button
-          onClick={() => navigate('/profile')}
-          className="flex flex-col items-center justify-center min-w-[60px] group relative"
-        >
-          {user ? (
-            <Avatar className={`w-7 h-7 ring-2 transition-all ${
-              isActive('/profile') 
-                ? 'ring-primary' 
-                : 'ring-transparent group-hover:ring-primary'
-            }`}>
-              <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url} />
-              <AvatarFallback>
-                <User className="w-4 h-4" />
-              </AvatarFallback>
-            </Avatar>
-          ) : (
-            <User 
-              className={`w-7 h-7 transition-colors ${
-                isActive('/profile') 
-                  ? 'text-primary' 
-                  : 'text-white group-hover:text-primary'
-              }`}
-            />
-          )}
-        </button>
-      </div>
-    </nav>
+            {/* Profile Avatar */}
+            <button
+              onClick={() => navigate('/profile')}
+              className="flex flex-col items-center justify-center min-w-[60px] group relative"
+            >
+              {user ? (
+                <Avatar className={`w-7 h-7 ring-2 transition-all ${
+                  isActive('/profile') 
+                    ? 'ring-primary' 
+                    : 'ring-transparent group-hover:ring-primary'
+                }`}>
+                  <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url} />
+                  <AvatarFallback>
+                    <User className="w-4 h-4" />
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <User 
+                  className={`w-7 h-7 transition-colors ${
+                    isActive('/profile') 
+                      ? 'text-primary' 
+                      : 'text-white group-hover:text-primary'
+                  }`}
+                />
+              )}
+            </button>
+          </div>
+        </motion.nav>
+      )}
+    </AnimatePresence>
   );
 };
 
