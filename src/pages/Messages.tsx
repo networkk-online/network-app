@@ -34,7 +34,9 @@ const Messages = () => {
     currentUser,
     sendMessage,
     createConversation,
-    loadConversations
+    loadConversations,
+    deleteMessage,
+    toggleReaction
   } = useMessages(selectedConversationId || undefined);
 
   useEffect(() => {
@@ -306,6 +308,8 @@ const Messages = () => {
                   currentUserId={currentUser?.id}
                   otherUser={otherUser}
                   onSendMessage={handleSendMessage}
+                  onDeleteMessage={deleteMessage}
+                  onReaction={toggleReaction}
                 />
               </>
             ) : (

@@ -263,10 +263,14 @@ export const EnhancedChatWindow = ({
                     isDelivered={true}
                     senderName={message.sender?.full_name || message.sender?.username}
                     senderAvatar={message.sender?.avatar_url}
+                    reactions={message.reactions || []}
                     onReply={() => handleReply(message)}
-                    onCopy={() => toast({ title: 'تم النسخ' })}
+                    onCopy={() => {
+                      if (message.content) navigator.clipboard.writeText(message.content);
+                      toast({ title: 'تم نسخ النص' });
+                    }}
                     onForward={() => toast({ title: 'قريباً', description: 'ميزة إعادة التوجيه قادمة' })}
-                    onReport={() => toast({ title: 'تم الإبلاغ' })}
+                    onReport={() => toast({ title: 'تم الإبلاغ', description: 'شكراً لإبلاغك عن هذه الرسالة' })}
                     onDeleteForMe={() => handleDeleteForMe(message.id)}
                     onDeleteForEveryone={isOwn ? () => handleDeleteForEveryone(message.id) : undefined}
                     onReaction={(emoji) => handleReactionSelect(message.id, emoji)}
