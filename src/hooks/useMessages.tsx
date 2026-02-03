@@ -34,6 +34,29 @@ export const useMessages = (conversationId?: string) => {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  const callBackendFunction = async <T,>(path: string, body: unknown): Promise<T> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('يجب تسجيل الدخول');
+
+    const res = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${path}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok || json?.success === false) {
+      throw new Error(json?.error || json?.details || 'حدث خطأ غير متوقع');
+    }
+    return json as T;
+  };
+
   useEffect(() => {
     checkUser();
   }, []);
@@ -338,32 +361,15 @@ export const useMessages = (conversationId?: string) => {
         }
       }
 
-      // Create new conversation
-      const { data: newConv, error: convError } = await supabase
-        .from('conversations')
-        .insert({})
-        .select()
-        .single();
-
-      if (convError) throw convError;
-
-      // Add current user first
-      const { error: selfPartError } = await supabase
-        .from('conversation_participants')
-        .insert({ conversation_id: newConv.id, user_id: currentUser.id });
-
-      if (selfPartError) throw selfPartError;
-
-      // Then add other user
-      const { error: otherPartError } = await supabase
-        .from('conversation_participants')
-        .insert({ conversation_id: newConv.id, user_id: otherUserId });
-
-      if (otherPartError) throw otherPartError;
+      // Create conversation via backend function (avoids client-side RLS edge cases)
+      const result = await callBackendFunction<{ success: boolean; conversationId: string }>(
+        'create-conversation',
+        { otherUserId }
+      );
 
       await loadConversations();
 
-      return { success: true, conversationId: newConv.id };
+      return { success: true, conversationId: result.conversationId };
     } catch (error: any) {
       console.error('Error creating conversation:', error);
       return { success: false, error: error.message };

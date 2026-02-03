@@ -189,6 +189,7 @@ export const ChatWindow = ({
           onSend={handleSend}
           onFileSelect={handleFileSelect}
           disabled={sending}
+          autoFocus
           placeholder="اكتب رسالتك..."
           selectedFile={selectedFile}
           previewUrl={previewUrl}
