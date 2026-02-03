@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Image as ImageIcon, Mic, Smile, Paperclip, X, Video, StopCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ interface GlassInputProps {
   previewUrl?: string | null;
   onRemoveFile?: () => void;
   isRecording?: boolean;
+  autoFocus?: boolean;
 }
 
 export const GlassInput = ({
@@ -31,10 +32,19 @@ export const GlassInput = ({
   selectedFile,
   previewUrl,
   onRemoveFile,
-  isRecording = false
+  isRecording = false,
+  autoFocus = false
 }: GlassInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!autoFocus || disabled) return;
+    // Defer one tick to ensure layout is ready (important after navigation)
+    const t = window.setTimeout(() => inputRef.current?.focus(), 0);
+    return () => window.clearTimeout(t);
+  }, [autoFocus, disabled]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -106,6 +116,7 @@ export const GlassInput = ({
 
         {/* Text Input */}
         <input
+          ref={inputRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
