@@ -11,8 +11,8 @@ const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Hide bottom nav when in a chat conversation
-  const isInChatRoom = location.pathname === '/messages' && location.search.includes('userId');
+  // Hide bottom nav when in messages section
+  const shouldHideNav = location.pathname === '/messages';
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
@@ -135,13 +135,13 @@ const BottomNav = () => {
 
   return (
     <AnimatePresence>
-      {!isInChatRoom && (
+      {!shouldHideNav && (
         <motion.nav 
           initial={{ y: 100 }}
           animate={{ y: 0 }}
           exit={{ y: 100 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-border"
+          className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-border safe-area-bottom"
         >
           <div className="flex items-center justify-around px-2 py-3">
             {navItems.map((item) => {
