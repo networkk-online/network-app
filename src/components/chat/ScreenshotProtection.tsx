@@ -76,7 +76,7 @@ export const ScreenshotProtection = ({
 
   return (
     <div 
-      className="relative"
+      className="relative flex flex-col h-full w-full min-h-0"
       style={{
         userSelect: enabled ? 'none' : 'auto',
         WebkitUserSelect: enabled ? 'none' : 'auto',
