@@ -1,5 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+
+export interface MessageReaction {
+  emoji: string;
+  userId: string;
+  username?: string;
+}
 
 export interface Message {
   id: string;
@@ -10,6 +16,10 @@ export interface Message {
   media_type: string | null;
   created_at: string;
   is_read: boolean;
+  deleted_for_sender?: boolean;
+  deleted_for_receiver?: boolean;
+  deleted_for_everyone?: boolean;
+  reactions?: MessageReaction[];
   sender?: {
     username: string;
     full_name: string;
@@ -31,6 +41,8 @@ export interface Conversation {
 export const useMessages = (conversationId?: string) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [localReactions, setLocalReactions] = useState<Record<string, MessageReaction[]>>({});
+  const [deletedMessages, setDeletedMessages] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -376,13 +388,122 @@ export const useMessages = (conversationId?: string) => {
     }
   };
 
+  // Delete message handler
+  const deleteMessage = useCallback(async (messageId: string, forEveryone: boolean) => {
+    if (!currentUser) return;
+
+    try {
+      if (forEveryone) {
+        // Update in database - mark as deleted for everyone
+        await supabase
+          .from('messages')
+          .update({ deleted_for_everyone: true, content: null, media_url: null })
+          .eq('id', messageId)
+          .eq('sender_id', currentUser.id); // Only sender can delete for everyone
+      } else {
+        // Mark as deleted only for current user
+        const message = messages.find(m => m.id === messageId);
+        if (message?.sender_id === currentUser.id) {
+          await supabase
+            .from('messages')
+            .update({ deleted_for_sender: true })
+            .eq('id', messageId);
+        } else {
+          await supabase
+            .from('messages')
+            .update({ deleted_for_receiver: true })
+            .eq('id', messageId);
+        }
+      }
+
+      // Update local state immediately for optimistic UI
+      setDeletedMessages(prev => new Set([...prev, messageId]));
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      throw error;
+    }
+  }, [currentUser, messages]);
+
+  // Add/toggle reaction handler
+  const toggleReaction = useCallback(async (messageId: string, emoji: string) => {
+    if (!currentUser) return;
+
+    setLocalReactions(prev => {
+      const messageReactions = prev[messageId] || [];
+      const existingReaction = messageReactions.find(
+        r => r.userId === currentUser.id && r.emoji === emoji
+      );
+
+      if (existingReaction) {
+        // Remove reaction
+        return {
+          ...prev,
+          [messageId]: messageReactions.filter(
+            r => !(r.userId === currentUser.id && r.emoji === emoji)
+          )
+        };
+      } else {
+        // Add reaction
+        return {
+          ...prev,
+          [messageId]: [
+            ...messageReactions.filter(r => r.userId !== currentUser.id), // Remove other reactions from same user
+            { emoji, userId: currentUser.id, username: currentUser.email?.split('@')[0] }
+          ]
+        };
+      }
+    });
+
+    // Update message state with new reaction
+    setMessages(prev => prev.map(msg => {
+      if (msg.id !== messageId) return msg;
+      
+      const currentReactions = msg.reactions || [];
+      const existingReaction = currentReactions.find(
+        r => r.userId === currentUser.id && r.emoji === emoji
+      );
+
+      if (existingReaction) {
+        return {
+          ...msg,
+          reactions: currentReactions.filter(
+            r => !(r.userId === currentUser.id && r.emoji === emoji)
+          )
+        };
+      } else {
+        return {
+          ...msg,
+          reactions: [
+            ...currentReactions.filter(r => r.userId !== currentUser.id),
+            { emoji, userId: currentUser.id, username: currentUser.email?.split('@')[0] }
+          ]
+        };
+      }
+    }));
+  }, [currentUser]);
+
+  // Get filtered messages (excluding deleted ones)
+  const filteredMessages = messages.filter(m => {
+    if (deletedMessages.has(m.id)) return false;
+    if (m.deleted_for_everyone) return false;
+    if (m.sender_id === currentUser?.id && m.deleted_for_sender) return false;
+    if (m.sender_id !== currentUser?.id && m.deleted_for_receiver) return false;
+    return true;
+  }).map(m => ({
+    ...m,
+    reactions: [...(m.reactions || []), ...(localReactions[m.id] || [])]
+  }));
+
   return {
     conversations,
-    messages,
+    messages: filteredMessages,
     loading,
     currentUser,
     loadConversations,
     sendMessage,
-    createConversation
+    createConversation,
+    deleteMessage,
+    toggleReaction
   };
 };

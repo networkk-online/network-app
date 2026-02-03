@@ -82,7 +82,7 @@ export const MessageContextMenu = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
           />
           
           {/* Menu */}
@@ -95,7 +95,7 @@ export const MessageContextMenu = ({
               position: 'fixed',
               left: Math.min(position.x, window.innerWidth - 220),
               top: Math.min(position.y, window.innerHeight - 350),
-              zIndex: 51
+              zIndex: 9999
             }}
             className="w-52"
           >

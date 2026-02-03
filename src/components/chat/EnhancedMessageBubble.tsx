@@ -10,8 +10,10 @@ import { MessageContextMenu } from './MessageContextMenu';
 
 export interface MessageReaction {
   emoji: string;
-  count: number;
-  userReacted: boolean;
+  userId: string;
+  username?: string;
+  count?: number;
+  userReacted?: boolean;
 }
 
 export interface ReplyToMessage {
@@ -367,14 +369,26 @@ export const EnhancedMessageBubble = ({
               )}
             >
               <div className="flex items-center gap-0.5 px-2 py-1 rounded-full bg-[#262626] border border-white/10">
-                {reactions.map((reaction, i) => (
-                  <span key={i} className="text-sm">{reaction.emoji}</span>
+                {/* Group reactions by emoji */}
+                {Object.entries(
+                  reactions.reduce((acc, r) => {
+                    acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                    return acc;
+                  }, {} as Record<string, number>)
+                ).map(([emoji, count]) => (
+                  <motion.span 
+                    key={emoji} 
+                    className="text-sm cursor-pointer hover:scale-125 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onReaction?.(emoji);
+                    }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {emoji}
+                    {count > 1 && <span className="text-[10px] text-white/60 ml-0.5">{count}</span>}
+                  </motion.span>
                 ))}
-                {reactions.reduce((sum, r) => sum + r.count, 0) > 1 && (
-                  <span className="text-[10px] text-white/60 ml-1">
-                    {reactions.reduce((sum, r) => sum + r.count, 0)}
-                  </span>
-                )}
               </div>
             </motion.div>
           )}

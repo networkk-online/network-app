@@ -8,6 +8,9 @@ export { VoiceRecorderButton } from './VoiceRecorderButton';
 export { LinkPreview } from './LinkPreview';
 export { ImageLightbox } from './ImageLightbox';
 export { EnhancedMessageBubble } from './EnhancedMessageBubble';
-export type { EnhancedMessageBubbleProps, MessageReaction, ReplyToMessage } from './EnhancedMessageBubble';
+export type { EnhancedMessageBubbleProps, ReplyToMessage } from './EnhancedMessageBubble';
 export { EnhancedGlassInput } from './EnhancedGlassInput';
 export { EnhancedChatWindow } from './EnhancedChatWindow';
+
+// Re-export MessageReaction type from hooks for consistency
+export type { MessageReaction } from '@/hooks/useMessages';
