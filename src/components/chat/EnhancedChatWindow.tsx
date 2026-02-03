@@ -263,111 +263,111 @@ export const EnhancedChatWindow = ({
 
   return (
     <ScreenshotProtection enabled={screenshotProtection}>
-      <div className="flex flex-col h-full bg-black font-[Inter]">
-        {/* Messages Container */}
+      <div className="flex flex-col h-full min-h-0 bg-black font-[Inter]">
+        {/* Messages Container - Flex-1 and scrollable */}
         <div 
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
+          className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide min-h-0"
         >
-        {Object.entries(groupedMessages).map(([date, msgs]) => (
-          <div key={date}>
-            {/* Date Header */}
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={springConfig}
-              className="flex justify-center mb-4"
-            >
-              <span className="text-xs text-white/50 bg-[#1C1C1E]/90 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/5 font-[Inter] font-medium">
-                {formatDateHeader(date)}
-              </span>
-            </motion.div>
+          {Object.entries(groupedMessages).map(([date, msgs]) => (
+            <div key={date}>
+              {/* Date Header */}
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={springConfig}
+                className="flex justify-center mb-4"
+              >
+                <span className="text-xs text-white/50 bg-[#1C1C1E]/90 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/5 font-[Inter] font-medium">
+                  {formatDateHeader(date)}
+                </span>
+              </motion.div>
 
-            {/* Messages for this date */}
-            <div className="space-y-3">
-              <AnimatePresence mode="popLayout">
-                {msgs.map((message, index) => {
-                  const isOwn = message.sender_id === currentUserId;
+              {/* Messages for this date */}
+              <div className="space-y-3">
+                <AnimatePresence mode="popLayout">
+                  {msgs.map((message, index) => {
+                    const isOwn = message.sender_id === currentUserId;
 
-                  return (
-                    <motion.div
-                      key={message.id}
-                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                      transition={{ 
-                        ...springConfig,
-                        delay: Math.min(index * 0.03, 0.15)
-                      }}
-                      layout
-                    >
-                      <EnhancedMessageBubble
-                        id={message.id}
-                        content={message.content || undefined}
-                        mediaUrl={message.media_url || undefined}
-                        mediaType={message.media_type as 'image' | 'video' | 'voice' | undefined}
-                        isOwn={isOwn}
-                        timestamp={new Date(message.created_at)}
-                        isRead={message.is_read || false}
-                        isDelivered={true}
-                        senderName={message.sender?.full_name || message.sender?.username}
-                        senderAvatar={message.sender?.avatar_url}
-                        reactions={message.reactions || []}
-                        onReply={() => handleReply(message)}
-                        onCopy={() => {
-                          if (message.content) navigator.clipboard.writeText(message.content);
-                          toast({ title: 'تم نسخ النص' });
+                    return (
+                      <motion.div
+                        key={message.id}
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                        transition={{ 
+                          ...springConfig,
+                          delay: Math.min(index * 0.03, 0.15)
                         }}
-                        onForward={() => toast({ title: 'قريباً', description: 'ميزة إعادة التوجيه قادمة' })}
-                        onReport={() => toast({ title: 'تم الإبلاغ', description: 'شكراً لإبلاغك عن هذه الرسالة' })}
-                        onDeleteForMe={() => handleDeleteForMe(message.id)}
-                        onDeleteForEveryone={isOwn ? () => handleDeleteForEveryone(message.id) : undefined}
-                        onReaction={(emoji) => handleReactionSelect(message.id, emoji)}
-                      />
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
+                        layout
+                      >
+                        <EnhancedMessageBubble
+                          id={message.id}
+                          content={message.content || undefined}
+                          mediaUrl={message.media_url || undefined}
+                          mediaType={message.media_type as 'image' | 'video' | 'voice' | undefined}
+                          isOwn={isOwn}
+                          timestamp={new Date(message.created_at)}
+                          isRead={message.is_read || false}
+                          isDelivered={true}
+                          senderName={message.sender?.full_name || message.sender?.username}
+                          senderAvatar={message.sender?.avatar_url}
+                          reactions={message.reactions || []}
+                          onReply={() => handleReply(message)}
+                          onCopy={() => {
+                            if (message.content) navigator.clipboard.writeText(message.content);
+                            toast({ title: 'تم نسخ النص' });
+                          }}
+                          onForward={() => toast({ title: 'قريباً', description: 'ميزة إعادة التوجيه قادمة' })}
+                          onReport={() => toast({ title: 'تم الإبلاغ', description: 'شكراً لإبلاغك عن هذه الرسالة' })}
+                          onDeleteForMe={() => handleDeleteForMe(message.id)}
+                          onDeleteForEveryone={isOwn ? () => handleDeleteForEveryone(message.id) : undefined}
+                          onReaction={(emoji) => handleReactionSelect(message.id, emoji)}
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {/* Typing Indicator */}
-        <AnimatePresence>
-          {isOtherUserTyping && otherUser && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={springConfig}
-            >
-              <TypingIndicator username={otherUser.full_name || otherUser.username} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+          {/* Typing Indicator */}
+          <AnimatePresence>
+            {isOtherUserTyping && otherUser && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={springConfig}
+              >
+                <TypingIndicator username={otherUser.full_name || otherUser.username} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        <div ref={messagesEndRef} />
-      </div>
+          <div ref={messagesEndRef} />
+        </div>
 
-      {/* Input Area */}
-      <div className="border-t border-[#1C1C1E]/80 bg-black/50 backdrop-blur-sm">
-        <EnhancedGlassInput
-          value={messageText}
-          onChange={handleInputChange}
-          onSend={handleSend}
-          onFileSelect={handleFileSelect}
-          onVoiceRecorded={handleVoiceRecorded}
-          onGifSelect={handleGifSelect}
-          disabled={sending}
-          autoFocus
-          placeholder={vanishMode ? "وضع الاختفاء مفعّل..." : "اكتب رسالتك..."}
-          selectedFile={selectedFile}
-          previewUrl={previewUrl}
-          onRemoveFile={handleRemoveFile}
-          replyTo={replyTo}
-          onCancelReply={() => setReplyTo(null)}
-        />
-      </div>
+        {/* Input Area - Fixed at bottom with proper z-index and safe area */}
+        <div className="shrink-0 border-t border-[#1C1C1E]/80 bg-black/95 backdrop-blur-xl z-40 safe-area-bottom">
+          <EnhancedGlassInput
+            value={messageText}
+            onChange={handleInputChange}
+            onSend={handleSend}
+            onFileSelect={handleFileSelect}
+            onVoiceRecorded={handleVoiceRecorded}
+            onGifSelect={handleGifSelect}
+            disabled={sending}
+            autoFocus
+            placeholder={vanishMode ? "وضع الاختفاء مفعّل..." : "اكتب رسالتك..."}
+            selectedFile={selectedFile}
+            previewUrl={previewUrl}
+            onRemoveFile={handleRemoveFile}
+            replyTo={replyTo}
+            onCancelReply={() => setReplyTo(null)}
+          />
+        </div>
       </div>
 
       {/* Chat Settings Drawer */}
