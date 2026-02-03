@@ -376,3 +376,111 @@
 .interactive-element:active {
   transform: scale(0.95);
 }
+
+/* Safe Area Insets for iPhone Notch */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.safe-area-inset {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Messages Split View for Tablet/Desktop */
+.messages-split-view {
+  display: flex;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
+}
+
+.messages-list-panel {
+  width: 100%;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.messages-chat-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .messages-list-panel {
+    width: 320px;
+    max-width: 320px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .messages-list-panel {
+    width: 360px;
+    max-width: 360px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .messages-list-panel {
+    width: 400px;
+    max-width: 400px;
+  }
+}
+
+/* Chat Input Responsive */
+.chat-input-container {
+  width: 100%;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Swipe Indicator */
+.swipe-indicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.swipe-indicator.visible {
+  opacity: 1;
+}
+
+/* Fullscreen Chat on Mobile */
+@media (max-width: 767px) {
+  .mobile-fullscreen-chat {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+  }
+}
+
+/* Bottom Nav Hide Animation */
+.bottom-nav-hidden {
+  transform: translateY(100%);
+  pointer-events: none;
+}
+
+.bottom-nav-visible {
+  transform: translateY(0);
+}
