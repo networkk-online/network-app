@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { Check, CheckCheck, Play, Pause, Download, Eye, Heart, ThumbsUp, Image as ImageIcon, Video, Mic, FileText, Reply } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -51,6 +51,20 @@ export interface EnhancedMessageBubbleProps {
 // URL detection regex
 const urlRegex = /(https?:\/\/[^\s]+)/g;
 
+// Spring animation config for Instagram-like feel
+const springConfig = {
+  type: 'spring' as const,
+  stiffness: 400,
+  damping: 30,
+  mass: 0.8
+};
+
+const bounceSpring = {
+  type: 'spring' as const,
+  stiffness: 500,
+  damping: 15
+};
+
 export const EnhancedMessageBubble = ({
   id,
   content,
@@ -78,34 +92,75 @@ export const EnhancedMessageBubble = ({
   const [voiceProgress, setVoiceProgress] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const lastTapRef = useRef<number>(0);
+  const messageRef = useRef<HTMLDivElement>(null);
+
+  // Swipe to reply gesture
+  const x = useMotionValue(0);
+  const replyOpacity = useTransform(x, [0, 60, 100], [0, 0.5, 1]);
+  const replyScale = useTransform(x, [0, 60, 100], [0.5, 0.8, 1]);
 
   const time = format(timestamp, 'h:mm a', { locale: ar });
-
-  // Extract URLs from content
   const urls = content?.match(urlRegex) || [];
-
-  // Generate random waveform heights for voice messages
   const waveformBars = Array.from({ length: 32 }, () => Math.random() * 20 + 4);
+
+  // Double-tap to heart handler
+  const handleTap = useCallback(() => {
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+    
+    if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+      // Double tap detected - trigger heart reaction
+      triggerHapticFeedback();
+      setShowHeartAnimation(true);
+      onReaction?.('❤️');
+      setTimeout(() => setShowHeartAnimation(false), 1000);
+    }
+    lastTapRef.current = now;
+  }, [onReaction]);
+
+  // Haptic feedback simulation
+  const triggerHapticFeedback = () => {
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  };
 
   const handleContextMenu = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
+    triggerHapticFeedback();
     const { clientX, clientY } = 'touches' in e ? e.touches[0] : e;
     setContextMenu({ x: clientX, y: clientY });
   };
 
   const handleLongPressStart = () => {
+    setIsPressed(true);
     longPressTimer.current = setTimeout(() => {
-      // Trigger haptic feedback on mobile
-      if (navigator.vibrate) navigator.vibrate(50);
+      triggerHapticFeedback();
+      if (messageRef.current) {
+        const rect = messageRef.current.getBoundingClientRect();
+        setContextMenu({ x: rect.left + rect.width / 2, y: rect.top });
+      }
     }, 500);
   };
 
   const handleLongPressEnd = () => {
+    setIsPressed(false);
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
+    }
+  };
+
+  // Swipe to reply handler
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.x > 80) {
+      triggerHapticFeedback();
+      onReply?.();
     }
   };
 
@@ -295,19 +350,23 @@ export const EnhancedMessageBubble = ({
   const renderTextContent = () => {
     if (!content) return null;
 
-    // Render text with clickable links
     const parts = content.split(urlRegex);
     
     return (
       <motion.div
         className={cn(
-          'rounded-[22px] px-4 py-2.5 shadow-md',
+          'rounded-[20px] px-4 py-2.5 shadow-lg font-[Inter]',
           isOwn
             ? 'bg-gradient-to-br from-[#833AB4] via-[#C13584] to-[#E1306C] text-white'
             : 'bg-[#262626] text-white'
         )}
+        style={{
+          boxShadow: isOwn 
+            ? '0 4px 15px rgba(131, 58, 180, 0.3)' 
+            : '0 2px 10px rgba(0, 0, 0, 0.3)'
+        }}
       >
-        <p className="text-[15px] leading-relaxed break-words" dir="auto">
+        <p className="text-[15px] leading-relaxed break-words font-[Inter]" dir="auto">
           {parts.map((part, i) => 
             urlRegex.test(part) ? (
               <a
@@ -330,16 +389,57 @@ export const EnhancedMessageBubble = ({
 
   return (
     <>
+      {/* Swipe Reply Indicator */}
       <motion.div
+        className={cn(
+          'absolute left-0 top-1/2 -translate-y-1/2 flex items-center justify-center',
+          isOwn ? 'hidden' : ''
+        )}
+        style={{ opacity: replyOpacity, scale: replyScale }}
+      >
+        <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+          <Reply className="w-4 h-4 text-white" />
+        </div>
+      </motion.div>
+
+      <motion.div
+        ref={messageRef}
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className={cn('flex', isOwn ? 'justify-end' : 'justify-start')}
+        animate={{ 
+          opacity: 1, 
+          y: 0, 
+          scale: isPressed ? 0.96 : 1 
+        }}
+        transition={springConfig}
+        drag={!isOwn ? 'x' : false}
+        dragConstraints={{ left: 0, right: 100 }}
+        dragElastic={0.1}
+        onDragEnd={handleDragEnd}
+        style={{ x: !isOwn ? x : undefined }}
+        className={cn('flex relative', isOwn ? 'justify-end' : 'justify-start')}
         onContextMenu={handleContextMenu}
         onTouchStart={handleLongPressStart}
         onTouchEnd={handleLongPressEnd}
+        onMouseDown={handleLongPressStart}
+        onMouseUp={handleLongPressEnd}
+        onMouseLeave={handleLongPressEnd}
+        onClick={handleTap}
       >
-        <div className="max-w-[75%]">
+        <div className="max-w-[75%] relative">
+          {/* Double-tap Heart Animation */}
+          <AnimatePresence>
+            {showHeartAnimation && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1.2, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={bounceSpring}
+                className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
+              >
+                <Heart className="w-16 h-16 text-red-500 fill-red-500 drop-shadow-lg" />
+              </motion.div>
+            )}
+          </AnimatePresence>
           {/* Reply Preview */}
           {renderReplyPreview()}
 

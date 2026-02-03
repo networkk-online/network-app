@@ -6,11 +6,6 @@ import {
   Forward, 
   Flag, 
   Trash2, 
-  Heart, 
-  ThumbsUp,
-  Laugh,
-  Frown,
-  Angry,
   Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -31,13 +26,41 @@ interface MessageContextMenuProps {
 }
 
 const reactions = [
-  { emoji: '❤️', icon: Heart, color: 'text-red-500' },
-  { emoji: '😂', icon: Laugh, color: 'text-yellow-500' },
-  { emoji: '👍', icon: ThumbsUp, color: 'text-blue-500' },
-  { emoji: '😮', icon: null, color: 'text-yellow-400' },
-  { emoji: '😢', icon: Frown, color: 'text-blue-400' },
-  { emoji: '😡', icon: Angry, color: 'text-red-600' },
+  { emoji: '❤️' },
+  { emoji: '😂' },
+  { emoji: '👍' },
+  { emoji: '😮' },
+  { emoji: '😢' },
+  { emoji: '😡' },
 ];
+
+// Spring config for Instagram-like bouncy feel
+const springConfig = {
+  type: 'spring' as const,
+  stiffness: 500,
+  damping: 25,
+  mass: 0.5
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.03,
+      delayChildren: 0.05
+    }
+  }
+};
+
+const reactionItem = {
+  hidden: { scale: 0, y: 10 },
+  visible: { 
+    scale: 1, 
+    y: 0,
+    transition: springConfig
+  }
+};
 
 export const MessageContextMenu = ({
   isOpen,
@@ -65,6 +88,13 @@ export const MessageContextMenu = ({
     onClose();
   };
 
+  const handleAction = (action: () => void) => {
+    // Haptic feedback
+    if (navigator.vibrate) navigator.vibrate(5);
+    action();
+    onClose();
+  };
+
   const menuItems = [
     { icon: Reply, label: 'رد', action: onReply },
     { icon: Copy, label: 'نسخ', action: onCopy },
@@ -76,61 +106,66 @@ export const MessageContextMenu = ({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Blurry Backdrop Overlay - Instagram Glassmorphism */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            animate={{ opacity: 1, backdropFilter: 'blur(20px)' }}
+            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[9998] bg-black/40"
+            style={{ WebkitBackdropFilter: 'blur(20px)' }}
           />
           
-          {/* Menu */}
+          {/* Menu Container */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            initial={{ opacity: 0, scale: 0.6, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 10 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            exit={{ opacity: 0, scale: 0.6, y: 20 }}
+            transition={springConfig}
             style={{
               position: 'fixed',
-              left: Math.min(position.x, window.innerWidth - 220),
-              top: Math.min(position.y, window.innerHeight - 350),
+              left: Math.min(Math.max(position.x - 104, 16), window.innerWidth - 224),
+              top: Math.min(Math.max(position.y - 60, 60), window.innerHeight - 350),
               zIndex: 9999
             }}
             className="w-52"
           >
-            {/* Reactions Bar */}
+            {/* Reactions Bar with Stagger Animation */}
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="flex items-center justify-between p-2 mb-2 rounded-2xl bg-[#1C1C1E]/95 backdrop-blur-xl border border-white/10 shadow-2xl"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="flex items-center justify-between p-2.5 mb-2 rounded-2xl bg-[#1C1C1E]/90 backdrop-blur-2xl border border-white/10 shadow-2xl"
+              style={{ 
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                WebkitBackdropFilter: 'blur(40px)'
+              }}
             >
-              {reactions.map(({ emoji }, index) => (
+              {reactions.map(({ emoji }) => (
                 <motion.button
                   key={emoji}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.05 + index * 0.03, type: 'spring' }}
-                  whileHover={{ scale: 1.3 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => {
-                    onReaction(emoji);
-                    onClose();
-                  }}
-                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-xl"
+                  variants={reactionItem}
+                  whileHover={{ scale: 1.4, y: -5 }}
+                  whileTap={{ scale: 0.85 }}
+                  onClick={() => handleAction(() => onReaction(emoji))}
+                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-2xl"
                 >
                   {emoji}
                 </motion.button>
               ))}
             </motion.div>
 
-            {/* Actions */}
+            {/* Actions Menu */}
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="rounded-2xl bg-[#1C1C1E]/95 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden"
+              transition={{ delay: 0.1, ...springConfig }}
+              className="rounded-2xl bg-[#1C1C1E]/90 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden"
+              style={{ 
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                WebkitBackdropFilter: 'blur(40px)'
+              }}
             >
               {!showDeleteConfirm ? (
                 <>
@@ -140,18 +175,15 @@ export const MessageContextMenu = ({
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.12 + index * 0.03 }}
-                      onClick={() => {
-                        item.action();
-                        onClose();
-                      }}
+                      whileTap={{ scale: 0.98, backgroundColor: 'rgba(255,255,255,0.1)' }}
+                      onClick={() => handleAction(item.action)}
                       className={cn(
-                        'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
-                        'hover:bg-white/10',
+                        'w-full flex items-center gap-3 px-4 py-3.5 text-sm transition-all active:bg-white/10',
                         item.danger ? 'text-red-400' : 'text-white'
                       )}
                     >
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.label}</span>
+                      <item.icon className="w-5 h-5" />
+                      <span className="font-medium font-[Inter]">{item.label}</span>
                     </motion.button>
                   ))}
 
@@ -161,14 +193,12 @@ export const MessageContextMenu = ({
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 }}
-                      onClick={() => {
-                        onDeleteForMe();
-                        onClose();
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition-colors"
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleAction(onDeleteForMe)}
+                      className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-red-400 active:bg-white/10 transition-all"
                     >
-                      <Trash2 className="w-4 h-4" />
-                      <span>حذف لي</span>
+                      <Trash2 className="w-5 h-5" />
+                      <span className="font-medium font-[Inter]">حذف لي</span>
                     </motion.button>
 
                     {isOwn && canDeleteForEveryone && (
@@ -176,26 +206,35 @@ export const MessageContextMenu = ({
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.22 }}
-                        onClick={() => setShowDeleteConfirm(true)}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition-colors"
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          if (navigator.vibrate) navigator.vibrate(5);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-red-400 active:bg-white/10 transition-all"
                       >
-                        <Trash2 className="w-4 h-4" />
-                        <span>حذف للجميع</span>
+                        <Trash2 className="w-5 h-5" />
+                        <span className="font-medium font-[Inter]">حذف للجميع</span>
                       </motion.button>
                     )}
                   </div>
                 </>
               ) : (
                 /* Delete Confirmation */
-                <div className="p-4">
-                  <p className="text-white text-sm mb-4 text-center">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={springConfig}
+                  className="p-4"
+                >
+                  <p className="text-white text-sm mb-4 text-center font-[Inter]">
                     هل تريد حذف هذه الرسالة للجميع؟
                   </p>
                   <div className="flex gap-2">
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="flex-1 px-4 py-2 rounded-xl bg-white/10 text-white text-sm font-medium hover:bg-white/20 transition-colors"
+                      className="flex-1 px-4 py-2.5 rounded-xl bg-white/10 text-white text-sm font-medium active:bg-white/20 transition-colors font-[Inter]"
                     >
                       إلغاء
                     </motion.button>
@@ -203,7 +242,7 @@ export const MessageContextMenu = ({
                       whileTap={{ scale: 0.95 }}
                       onClick={handleDeleteForEveryone}
                       disabled={deleteLoading}
-                      className="flex-1 px-4 py-2 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium active:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-[Inter]"
                     >
                       {deleteLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -212,7 +251,7 @@ export const MessageContextMenu = ({
                       )}
                     </motion.button>
                   </div>
-                </div>
+                </motion.div>
               )}
             </motion.div>
           </motion.div>
