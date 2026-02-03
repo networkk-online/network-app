@@ -294,7 +294,7 @@ const Messages = () => {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
               style={{ x: dragX }}
-              className="messages-chat-panel flex flex-col bg-black fixed inset-0 md:relative md:inset-auto z-50 md:z-auto safe-area-inset"
+              className="messages-chat-panel flex flex-col bg-black fixed inset-0 md:relative md:inset-auto z-50 md:z-auto overflow-hidden"
             >
               {/* Swipe Back Indicator */}
               <motion.div 
@@ -379,11 +379,12 @@ const Messages = () => {
                 </div>
               </motion.div>
               
-              {/* Chat Window with flexible height */}
-              <div className="flex-1 min-h-0">
+              {/* Chat Window with flexible height - Takes remaining space */}
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 <EnhancedChatWindow
                   messages={messages}
                   currentUserId={currentUser?.id}
+                  conversationId={selectedConversationId}
                   otherUser={otherUser}
                   onSendMessage={handleSendMessage}
                   onDeleteMessage={deleteMessage}
