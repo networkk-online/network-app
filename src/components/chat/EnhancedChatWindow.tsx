@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { Message } from '@/hooks/useMessages';
@@ -24,6 +24,34 @@ interface EnhancedChatWindowProps {
   onDeleteMessage?: (messageId: string, forEveryone: boolean) => Promise<void>;
   onReaction?: (messageId: string, emoji: string) => Promise<void>;
 }
+
+// Spring animation config
+const springConfig = {
+  type: 'spring' as const,
+  stiffness: 400,
+  damping: 30
+};
+
+// Format date with validation
+const formatDateHeader = (dateStr: string): string => {
+  try {
+    const date = parseISO(dateStr);
+    if (!isValid(date)) return dateStr;
+    
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (format(date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')) {
+      return 'اليوم';
+    } else if (format(date, 'yyyy-MM-dd') === format(yesterday, 'yyyy-MM-dd')) {
+      return 'أمس';
+    }
+    return format(date, 'dd MMMM yyyy', { locale: ar });
+  } catch {
+    return dateStr;
+  }
+};
 
 export const EnhancedChatWindow = ({
   messages,
@@ -52,7 +80,7 @@ export const EnhancedChatWindow = ({
   useEffect(() => {
     if (messages.length > 0) {
       const timer = setTimeout(() => {
-        setIsTyping(Math.random() > 0.8);
+        setIsTyping(Math.random() > 0.85);
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -62,7 +90,7 @@ export const EnhancedChatWindow = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = useCallback((file: File) => {
     const maxSize = file.type.startsWith('image/') ? 10 * 1024 * 1024 : 50 * 1024 * 1024;
     if (file.size > maxSize) {
       toast({
@@ -77,17 +105,17 @@ export const EnhancedChatWindow = ({
 
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
-  };
+  }, [toast]);
 
-  const handleRemoveFile = () => {
+  const handleRemoveFile = useCallback(() => {
     setSelectedFile(null);
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
-  };
+  }, [previewUrl]);
 
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (!messageText.trim() && !selectedFile) return;
 
     setSending(true);
@@ -124,10 +152,10 @@ export const EnhancedChatWindow = ({
     } finally {
       setSending(false);
     }
-  };
+  }, [messageText, selectedFile, replyTo, onSendMessage, handleRemoveFile, toast]);
 
-  const handleVoiceRecorded = async (blob: Blob, duration: number) => {
-    const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+  const handleVoiceRecorded = useCallback(async (blob: Blob, duration: number) => {
+    const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm;codecs=opus' });
     setSending(true);
     try {
       const result = await onSendMessage(null, file, { mediaType: 'voice' });
@@ -143,10 +171,9 @@ export const EnhancedChatWindow = ({
     } finally {
       setSending(false);
     }
-  };
+  }, [onSendMessage, toast]);
 
-  const handleGifSelect = async (gifUrl: string) => {
-    // Create a message with the GIF URL
+  const handleGifSelect = useCallback(async (gifUrl: string) => {
     setSending(true);
     try {
       const result = await onSendMessage(gifUrl, undefined, { mediaType: 'gif' });
@@ -162,9 +189,9 @@ export const EnhancedChatWindow = ({
     } finally {
       setSending(false);
     }
-  };
+  }, [onSendMessage, toast]);
 
-  const handleReply = (message: Message) => {
+  const handleReply = useCallback((message: Message) => {
     const isOwn = message.sender_id === currentUserId;
     setReplyTo({
       id: message.id,
@@ -173,57 +200,49 @@ export const EnhancedChatWindow = ({
       senderName: message.sender?.full_name || message.sender?.username || 'مستخدم',
       isOwn
     });
-  };
+  }, [currentUserId]);
 
-  const handleDeleteForMe = async (messageId: string) => {
+  const handleDeleteForMe = useCallback(async (messageId: string) => {
     try {
-      await onDeleteMessage?.(messageId, false);
+      // Optimistic UI - toast immediately
       toast({ title: 'تم حذف الرسالة' });
+      await onDeleteMessage?.(messageId, false);
     } catch (error) {
       toast({ title: 'خطأ', description: 'فشل حذف الرسالة', variant: 'destructive' });
     }
-  };
+  }, [onDeleteMessage, toast]);
 
-  const handleDeleteForEveryone = async (messageId: string) => {
+  const handleDeleteForEveryone = useCallback(async (messageId: string) => {
     try {
-      await onDeleteMessage?.(messageId, true);
+      // Optimistic UI - toast immediately
       toast({ title: 'تم حذف الرسالة للجميع' });
+      await onDeleteMessage?.(messageId, true);
     } catch (error) {
       toast({ title: 'خطأ', description: 'فشل حذف الرسالة', variant: 'destructive' });
     }
-  };
+  }, [onDeleteMessage, toast]);
 
-  const handleReactionSelect = async (messageId: string, emoji: string) => {
+  const handleReactionSelect = useCallback(async (messageId: string, emoji: string) => {
     try {
       await onReaction?.(messageId, emoji);
     } catch (error) {
       console.error('Error adding reaction:', error);
     }
-  };
+  }, [onReaction]);
 
-  // Group messages by date
+  // Group messages by date with validation
   const groupedMessages = messages.reduce((groups: { [key: string]: Message[] }, message) => {
-    const date = format(new Date(message.created_at), 'yyyy-MM-dd');
-    if (!groups[date]) {
-      groups[date] = [];
+    try {
+      const date = format(new Date(message.created_at), 'yyyy-MM-dd');
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(message);
+    } catch {
+      // Skip invalid dates
     }
-    groups[date].push(message);
     return groups;
   }, {});
-
-  const formatDateHeader = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (format(date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')) {
-      return 'اليوم';
-    } else if (format(date, 'yyyy-MM-dd') === format(yesterday, 'yyyy-MM-dd')) {
-      return 'أمس';
-    }
-    return format(date, 'dd MMMM yyyy', { locale: ar });
-  };
 
   return (
     <div className="flex flex-col h-full bg-black font-[Inter]">
@@ -238,46 +257,59 @@ export const EnhancedChatWindow = ({
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              transition={springConfig}
               className="flex justify-center mb-4"
             >
-              <span className="text-xs text-white/50 bg-[#1C1C1E] px-4 py-1.5 rounded-full border border-white/5 font-[Inter]">
+              <span className="text-xs text-white/50 bg-[#1C1C1E]/90 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/5 font-[Inter] font-medium">
                 {formatDateHeader(date)}
               </span>
             </motion.div>
 
             {/* Messages for this date */}
             <div className="space-y-3">
-              {msgs.map((message) => {
-                const isOwn = message.sender_id === currentUserId;
+              <AnimatePresence mode="popLayout">
+                {msgs.map((message, index) => {
+                  const isOwn = message.sender_id === currentUserId;
 
-                return (
-                  <EnhancedMessageBubble
-                    key={message.id}
-                    id={message.id}
-                    content={message.content || undefined}
-                    mediaUrl={message.media_url || undefined}
-                    mediaType={message.media_type as 'image' | 'video' | 'voice' | undefined}
-                    isOwn={isOwn}
-                    timestamp={new Date(message.created_at)}
-                    isRead={message.is_read || false}
-                    isDelivered={true}
-                    senderName={message.sender?.full_name || message.sender?.username}
-                    senderAvatar={message.sender?.avatar_url}
-                    reactions={message.reactions || []}
-                    onReply={() => handleReply(message)}
-                    onCopy={() => {
-                      if (message.content) navigator.clipboard.writeText(message.content);
-                      toast({ title: 'تم نسخ النص' });
-                    }}
-                    onForward={() => toast({ title: 'قريباً', description: 'ميزة إعادة التوجيه قادمة' })}
-                    onReport={() => toast({ title: 'تم الإبلاغ', description: 'شكراً لإبلاغك عن هذه الرسالة' })}
-                    onDeleteForMe={() => handleDeleteForMe(message.id)}
-                    onDeleteForEveryone={isOwn ? () => handleDeleteForEveryone(message.id) : undefined}
-                    onReaction={(emoji) => handleReactionSelect(message.id, emoji)}
-                  />
-                );
-              })}
+                  return (
+                    <motion.div
+                      key={message.id}
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                      transition={{ 
+                        ...springConfig,
+                        delay: Math.min(index * 0.03, 0.15)
+                      }}
+                      layout
+                    >
+                      <EnhancedMessageBubble
+                        id={message.id}
+                        content={message.content || undefined}
+                        mediaUrl={message.media_url || undefined}
+                        mediaType={message.media_type as 'image' | 'video' | 'voice' | undefined}
+                        isOwn={isOwn}
+                        timestamp={new Date(message.created_at)}
+                        isRead={message.is_read || false}
+                        isDelivered={true}
+                        senderName={message.sender?.full_name || message.sender?.username}
+                        senderAvatar={message.sender?.avatar_url}
+                        reactions={message.reactions || []}
+                        onReply={() => handleReply(message)}
+                        onCopy={() => {
+                          if (message.content) navigator.clipboard.writeText(message.content);
+                          toast({ title: 'تم نسخ النص' });
+                        }}
+                        onForward={() => toast({ title: 'قريباً', description: 'ميزة إعادة التوجيه قادمة' })}
+                        onReport={() => toast({ title: 'تم الإبلاغ', description: 'شكراً لإبلاغك عن هذه الرسالة' })}
+                        onDeleteForMe={() => handleDeleteForMe(message.id)}
+                        onDeleteForEveryone={isOwn ? () => handleDeleteForEveryone(message.id) : undefined}
+                        onReaction={(emoji) => handleReactionSelect(message.id, emoji)}
+                      />
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             </div>
           </div>
         ))}
@@ -285,7 +317,14 @@ export const EnhancedChatWindow = ({
         {/* Typing Indicator */}
         <AnimatePresence>
           {isTyping && otherUser && (
-            <TypingIndicator username={otherUser.full_name || otherUser.username} />
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={springConfig}
+            >
+              <TypingIndicator username={otherUser.full_name || otherUser.username} />
+            </motion.div>
           )}
         </AnimatePresence>
 
@@ -293,7 +332,7 @@ export const EnhancedChatWindow = ({
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-[#1C1C1E]">
+      <div className="border-t border-[#1C1C1E]/80 bg-black/50 backdrop-blur-sm">
         <EnhancedGlassInput
           value={messageText}
           onChange={setMessageText}
