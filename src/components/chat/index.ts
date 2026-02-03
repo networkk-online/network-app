@@ -11,6 +11,9 @@ export { EnhancedMessageBubble } from './EnhancedMessageBubble';
 export type { EnhancedMessageBubbleProps, ReplyToMessage } from './EnhancedMessageBubble';
 export { EnhancedGlassInput } from './EnhancedGlassInput';
 export { EnhancedChatWindow } from './EnhancedChatWindow';
+export { ChatSettingsDrawer } from './ChatSettingsDrawer';
+export { ScreenshotProtection } from './ScreenshotProtection';
+export { MessageStatusIndicator } from './MessageStatusIndicator';
 
 // Re-export MessageReaction type from hooks for consistency
 export type { MessageReaction } from '@/hooks/useMessages';

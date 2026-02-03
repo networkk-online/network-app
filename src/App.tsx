@@ -51,6 +51,7 @@ import DeleteAccount from "./pages/settings/DeleteAccount";
 import PostSettings from "./pages/settings/PostSettings";
 import ReelsSettings from "./pages/settings/ReelsSettings";
 import CallSettings from "./pages/settings/CallSettings";
+import MessagePrivacySettings from "./pages/settings/MessagePrivacySettings";
 import Search from "./pages/Search";
 import Followers from "./pages/Followers";
 import Following from "./pages/Following";
@@ -127,6 +128,7 @@ const AppContent = () => {
         <Route path="/settings/posts" element={<PostSettings />} />
         <Route path="/settings/reels" element={<ReelsSettings />} />
         <Route path="/settings/calls" element={<CallSettings />} />
+        <Route path="/settings/message-privacy" element={<MessagePrivacySettings />} />
         <Route path="/call-history" element={<CallHistory />} />
         <Route path="/search" element={<Search />} />
         <Route path="/followers" element={<Followers />} />
