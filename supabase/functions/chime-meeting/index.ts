@@ -215,7 +215,9 @@ serve(async (req) => {
       // إنشاء اجتماع جديد للمكالمة
       console.log(`Creating Chime meeting: ${callerId} -> ${receiverId} (${callType})`);
 
-      const externalMeetingId = `call_${callerId}_${receiverId}_${Date.now()}`;
+      // AWS Chime requires externalMeetingId <= 64 chars
+      // UUIDs are 36 chars each, so we use first 8 chars of each
+      const externalMeetingId = `call_${callerId.substring(0, 8)}_${receiverId.substring(0, 8)}_${Date.now()}`;
       
       // 1. إنشاء الاجتماع
       const meetingResponse = await createChimeMeeting(
