@@ -6,7 +6,7 @@ import BottomNav from '@/components/BottomNav';
 import { useToast } from '@/hooks/use-toast';
 import { useMessages } from '@/hooks/useMessages';
 import { ConversationList } from '@/components/ConversationList';
-import { ChatWindow } from '@/components/ChatWindow';
+import { EnhancedChatWindow } from '@/components/chat';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -301,7 +301,7 @@ const Messages = () => {
                   </div>
                 </motion.div>
                 
-                <ChatWindow
+                <EnhancedChatWindow
                   messages={messages}
                   currentUserId={currentUser?.id}
                   otherUser={otherUser}
