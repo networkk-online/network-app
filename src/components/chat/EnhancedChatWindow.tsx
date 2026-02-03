@@ -2,18 +2,24 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isValid, parseISO } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Message } from '@/hooks/useMessages';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { 
   EnhancedMessageBubble, 
   EnhancedGlassInput,
   ReplyToMessage 
 } from '@/components/chat';
 import { TypingIndicator } from '@/components/communication';
+import { ChatSettingsDrawer } from './ChatSettingsDrawer';
+import { ScreenshotProtection } from './ScreenshotProtection';
+import { MessageStatusIndicator } from './MessageStatusIndicator';
 
 interface EnhancedChatWindowProps {
   messages: Message[];
   currentUserId?: string;
+  conversationId?: string;
   otherUser?: {
     id?: string;
     username: string;
@@ -56,6 +62,7 @@ const formatDateHeader = (dateStr: string): string => {
 export const EnhancedChatWindow = ({
   messages,
   currentUserId,
+  conversationId,
   otherUser,
   onSendMessage,
   onDeleteMessage,
@@ -66,24 +73,25 @@ export const EnhancedChatWindow = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
   const [replyTo, setReplyTo] = useState<ReplyToMessage | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [vanishMode, setVanishMode] = useState(false);
+  const [screenshotProtection, setScreenshotProtection] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Typing indicator with debounce
+  const { 
+    typingUsers, 
+    handleInputChange: handleTypingChange, 
+    stopTyping 
+  } = useTypingIndicator(conversationId, currentUserId);
+
+  const isOtherUserTyping = typingUsers.length > 0;
+
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
-
-  // Simulate typing indicator
-  useEffect(() => {
-    if (messages.length > 0) {
-      const timer = setTimeout(() => {
-        setIsTyping(Math.random() > 0.85);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
   }, [messages]);
 
   const scrollToBottom = useCallback(() => {
@@ -118,14 +126,17 @@ export const EnhancedChatWindow = ({
   const handleSend = useCallback(async () => {
     if (!messageText.trim() && !selectedFile) return;
 
+    // Stop typing indicator immediately when sending
+    stopTyping();
+    
     setSending(true);
     try {
       const result = await onSendMessage(
         messageText.trim() || null,
         selectedFile || undefined,
         { 
-          temporary: false, 
-          viewOnce: false, 
+          temporary: vanishMode, 
+          viewOnce: vanishMode, 
           viewTwice: false,
           replyToId: replyTo?.id 
         }
@@ -152,7 +163,13 @@ export const EnhancedChatWindow = ({
     } finally {
       setSending(false);
     }
-  }, [messageText, selectedFile, replyTo, onSendMessage, handleRemoveFile, toast]);
+  }, [messageText, selectedFile, replyTo, onSendMessage, handleRemoveFile, toast, stopTyping, vanishMode]);
+
+  // Handle input change with typing indicator
+  const handleInputChange = useCallback((value: string) => {
+    setMessageText(value);
+    handleTypingChange();
+  }, [handleTypingChange]);
 
   const handleVoiceRecorded = useCallback(async (blob: Blob, duration: number) => {
     const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm;codecs=opus' });
@@ -245,12 +262,13 @@ export const EnhancedChatWindow = ({
   }, {});
 
   return (
-    <div className="flex flex-col h-full bg-black font-[Inter]">
-      {/* Messages Container */}
-      <div 
-        ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
-      >
+    <ScreenshotProtection enabled={screenshotProtection}>
+      <div className="flex flex-col h-full bg-black font-[Inter]">
+        {/* Messages Container */}
+        <div 
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
+        >
         {Object.entries(groupedMessages).map(([date, msgs]) => (
           <div key={date}>
             {/* Date Header */}
@@ -316,7 +334,7 @@ export const EnhancedChatWindow = ({
 
         {/* Typing Indicator */}
         <AnimatePresence>
-          {isTyping && otherUser && (
+          {isOtherUserTyping && otherUser && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -335,14 +353,14 @@ export const EnhancedChatWindow = ({
       <div className="border-t border-[#1C1C1E]/80 bg-black/50 backdrop-blur-sm">
         <EnhancedGlassInput
           value={messageText}
-          onChange={setMessageText}
+          onChange={handleInputChange}
           onSend={handleSend}
           onFileSelect={handleFileSelect}
           onVoiceRecorded={handleVoiceRecorded}
           onGifSelect={handleGifSelect}
           disabled={sending}
           autoFocus
-          placeholder="اكتب رسالتك..."
+          placeholder={vanishMode ? "وضع الاختفاء مفعّل..." : "اكتب رسالتك..."}
           selectedFile={selectedFile}
           previewUrl={previewUrl}
           onRemoveFile={handleRemoveFile}
@@ -350,6 +368,21 @@ export const EnhancedChatWindow = ({
           onCancelReply={() => setReplyTo(null)}
         />
       </div>
-    </div>
+      </div>
+
+      {/* Chat Settings Drawer */}
+      <ChatSettingsDrawer
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        otherUser={otherUser}
+        vanishMode={vanishMode}
+        onVanishModeToggle={setVanishMode}
+        onMuteToggle={(muted) => toast({ title: muted ? 'تم كتم الإشعارات' : 'تم تفعيل الإشعارات' })}
+        onViewMedia={() => toast({ title: 'قريباً', description: 'معرض الوسائط قادم' })}
+        onClearChat={() => toast({ title: 'تم مسح المحادثة' })}
+        onBlock={() => toast({ title: 'تم الحظر', variant: 'destructive' })}
+        onReport={() => toast({ title: 'تم الإبلاغ' })}
+      />
+    </ScreenshotProtection>
   );
 };
