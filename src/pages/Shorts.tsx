@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Volume2, VolumeX, MoreVertical, Bookmark, X, Camera, Send } from 'lucide-react';
@@ -12,6 +12,43 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useSavedReels } from '@/hooks/useSavedReels';
 import { useToast } from '@/hooks/use-toast';
 import ShareMenu from '@/components/ShareMenu';
+import { LiveReelCard } from '@/components/LiveReelCard';
+
+// Mock live streams data
+const MOCK_LIVE_STREAMS = [
+  {
+    id: 'live-1',
+    streamerId: 'user-1',
+    streamerName: 'أحمد محمد',
+    streamerAvatar: '/default-avatar.jpg',
+    viewerCount: 1234,
+    title: 'بث مباشر - نلعب ألعاب',
+    isActive: true,
+    startedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    topGifters: [
+      { name: 'سارة', avatar: '/default-avatar.jpg' },
+      { name: 'علي', avatar: '/default-avatar.jpg' },
+    ],
+    recentComments: [
+      { username: 'محمد', message: 'يا رائع! 🔥' },
+      { username: 'فاطمة', message: 'استمر!' },
+    ],
+  },
+  {
+    id: 'live-2',
+    streamerId: 'user-2',
+    streamerName: 'ليلى العراقية',
+    streamerAvatar: '/default-avatar.jpg',
+    viewerCount: 856,
+    title: 'أغاني عراقية حية',
+    isActive: true,
+    startedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    topGifters: [],
+    recentComments: [
+      { username: 'أمير', message: 'صوتك حلو!' },
+    ],
+  },
+];
 
 const Shorts = () => {
   const [searchParams] = useSearchParams();
@@ -33,7 +70,32 @@ const Shorts = () => {
   const { toast } = useToast();
   
   const { reels, loading, likedReels, toggleLike, incrementViews } = useReels(currentUserId);
-  const currentReel = reels[currentVideoIndex];
+  
+  // Insert live streams every 5-7 reels
+  const feedItems = useMemo(() => {
+    const items: Array<{ type: 'reel' | 'live'; data: any }> = [];
+    let liveIndex = 0;
+    
+    reels.forEach((reel, index) => {
+      items.push({ type: 'reel', data: reel });
+      
+      // Insert a live stream every 5-7 reels
+      if ((index + 1) % 6 === 0 && liveIndex < MOCK_LIVE_STREAMS.length) {
+        const liveStream = MOCK_LIVE_STREAMS[liveIndex];
+        if (liveStream.isActive) {
+          items.push({ type: 'live', data: liveStream });
+          liveIndex++;
+        }
+      }
+    });
+    
+    return items;
+  }, [reels]);
+
+  const currentItem = feedItems[currentVideoIndex];
+  const currentReel = currentItem?.type === 'reel' ? currentItem.data : null;
+  const currentLive = currentItem?.type === 'live' ? currentItem.data : null;
+  
   const { isSaved, loading: saveLoading, toggleSave } = useSavedReels(currentReel?.id);
 
   useEffect(() => {
@@ -70,11 +132,11 @@ const Shorts = () => {
 
 
   const nextVideo = () => {
-    setCurrentVideoIndex((prev) => (prev + 1) % reels.length);
+    setCurrentVideoIndex((prev) => (prev + 1) % feedItems.length);
   };
 
   const previousVideo = () => {
-    setCurrentVideoIndex((prev) => (prev - 1 + reels.length) % reels.length);
+    setCurrentVideoIndex((prev) => (prev - 1 + feedItems.length) % feedItems.length);
   };
 
   // Handle touch gestures for smooth swipe
@@ -91,7 +153,7 @@ const Shorts = () => {
     
     // Limit dragging at edges
     if ((currentVideoIndex === 0 && diff > 0) || 
-        (currentVideoIndex === reels.length - 1 && diff < 0)) {
+        (currentVideoIndex === feedItems.length - 1 && diff < 0)) {
       setTranslateY(diff * 0.3); // Resistance at edges
     } else {
       setTranslateY(diff);
@@ -104,7 +166,7 @@ const Shorts = () => {
     
     const threshold = window.innerHeight * 0.15; // 15% of screen height
     
-    if (translateY < -threshold && currentVideoIndex < reels.length - 1) {
+    if (translateY < -threshold && currentVideoIndex < feedItems.length - 1) {
       // Swipe up - next video
       setIsTransitioning(true);
       setTranslateY(-window.innerHeight);
@@ -128,6 +190,11 @@ const Shorts = () => {
     }
     
     setTouchStartY(0);
+  };
+
+  // Handle entering live stream
+  const handleEnterLive = (streamId: string) => {
+    navigate(`/broadcast?liveId=${streamId}`);
   };
 
   // Handle Save Reel
@@ -267,7 +334,7 @@ const Shorts = () => {
     );
   }
 
-  if (!reels || reels.length === 0) {
+  if (!feedItems || feedItems.length === 0) {
     return (
       <div className="h-screen bg-black flex flex-col justify-center items-center">
         <Button
@@ -332,141 +399,153 @@ const Shorts = () => {
             transition: isDragging ? 'none' : 'transform 0.3s ease-out'
           }}
         >
-          {/* Video Player */}
-          <video
-            ref={videoRef}
-            src={currentReel.video_url}
-            className="w-full h-full object-contain"
-            loop
-            playsInline
-            muted={isMuted}
-            onClick={() => {
-              if (videoRef.current?.paused) {
-                videoRef.current?.play();
-              } else {
-                videoRef.current?.pause();
-              }
-            }}
-          />
-
-          {/* User Info Overlay - Bottom Left */}
-          <div className="absolute bottom-20 left-4 right-20 z-30">
-            <div className="flex items-end gap-3 mb-3">
-              <Avatar className="w-12 h-12 border-2 border-white">
-                <AvatarImage src={currentReel.profiles?.avatar_url} />
-                <AvatarFallback className="bg-primary text-white">
-                  {currentReel.profiles?.username?.[0]?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <p className="font-bold text-white text-lg drop-shadow-lg">
-                  {currentReel.profiles?.username || 'مستخدم'}
-                </p>
-              </div>
-              <Button 
-                size="sm" 
-                className="bg-white text-black hover:bg-gray-200 font-bold rounded-lg px-6 h-8"
-              >
-                متابعة
-              </Button>
-            </div>
-            {currentReel.caption && (
-              <p className="text-white text-sm leading-relaxed drop-shadow-lg line-clamp-2">
-                {currentReel.caption}
-              </p>
-            )}
-          </div>
-
-          {/* Side Actions - Right Side */}
-          <div className="absolute right-3 bottom-24 z-30 flex flex-col gap-6">
-            {/* Like Button */}
-            <button
-              onClick={() => toggleLike(currentReel.id)}
-              className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
-            >
-              <div className="relative">
-                <Heart 
-                  className={`w-7 h-7 drop-shadow-lg transition-all ${
-                    likedReels.includes(currentReel.id) 
-                      ? 'fill-red-500 text-red-500 scale-110' 
-                      : 'text-white'
-                  }`}
-                  strokeWidth={2.5}
-                />
-              </div>
-              <span className="text-xs text-white font-semibold drop-shadow-lg">
-                {currentReel.likes_count || 0}
-              </span>
-            </button>
-
-            {/* Comment Button */}
-            <button
-              onClick={() => setShowComments(true)}
-              className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
-            >
-              <MessageCircle className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
-              <span className="text-xs text-white font-semibold drop-shadow-lg">
-                {currentReel.comments_count || 0}
-              </span>
-            </button>
-
-            {/* Send/Share Button */}
-            <button 
-              onClick={() => setShowShareMenu(true)}
-              className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
-            >
-              <Send className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
-              <span className="text-xs text-white font-semibold drop-shadow-lg">مشاركة</span>
-            </button>
-
-            {/* Save/Bookmark Button */}
-            <button 
-              onClick={handleSave}
-              disabled={saveLoading}
-              className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
-            >
-              <Bookmark 
-                className={`w-7 h-7 drop-shadow-lg transition-all ${
-                  isSaved 
-                    ? 'fill-yellow-400 text-yellow-400' 
-                    : 'text-white'
-                } ${saveLoading ? 'opacity-50' : ''}`} 
-                strokeWidth={2.5} 
+          {/* Live Stream or Video Player */}
+          {currentItem?.type === 'live' && currentLive ? (
+            <LiveReelCard
+              stream={currentLive}
+              onEnterLive={handleEnterLive}
+              isMuted={isMuted}
+              onToggleMute={() => setIsMuted(!isMuted)}
+            />
+          ) : currentReel ? (
+            <>
+              {/* Video Player */}
+              <video
+                ref={videoRef}
+                src={currentReel.video_url}
+                className="w-full h-full object-contain"
+                loop
+                playsInline
+                muted={isMuted}
+                onClick={() => {
+                  if (videoRef.current?.paused) {
+                    videoRef.current?.play();
+                  } else {
+                    videoRef.current?.pause();
+                  }
+                }}
               />
-              <span className="text-xs text-white font-semibold drop-shadow-lg">
-                {isSaved ? 'محفوظ' : 'حفظ'}
-              </span>
-            </button>
 
-            {/* More Options Button */}
-            <button className="flex flex-col items-center gap-1 active:scale-95 transition-transform">
-              <MoreVertical className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
-            </button>
-
-            {/* Profile Picture (animated rotating) */}
-            <div className="relative mt-2">
-              <div className="w-10 h-10 rounded-full border-2 border-white p-0.5 animate-spin-slow">
-                <Avatar className="w-full h-full">
-                  <AvatarImage src={currentReel.profiles?.avatar_url} />
-                  <AvatarFallback className="bg-primary text-white text-xs">
-                    {currentReel.profiles?.username?.[0]?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+              {/* User Info Overlay - Bottom Left */}
+              <div className="absolute bottom-20 left-4 right-20 z-30">
+                <div className="flex items-end gap-3 mb-3">
+                  <Avatar className="w-12 h-12 border-2 border-white">
+                    <AvatarImage src={currentReel.profiles?.avatar_url} />
+                    <AvatarFallback className="bg-primary text-white">
+                      {currentReel.profiles?.username?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-bold text-white text-lg drop-shadow-lg">
+                      {currentReel.profiles?.username || 'مستخدم'}
+                    </p>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    className="bg-white text-black hover:bg-gray-200 font-bold rounded-lg px-6 h-8"
+                  >
+                    متابعة
+                  </Button>
+                </div>
+                {currentReel.caption && (
+                  <p className="text-white text-sm leading-relaxed drop-shadow-lg line-clamp-2">
+                    {currentReel.caption}
+                  </p>
+                )}
               </div>
-            </div>
-          </div>
 
-          {/* Volume Control */}
-          <button
-            onClick={() => setIsMuted(!isMuted)}
-            className="absolute bottom-24 left-3 z-30 p-2 bg-black/50 rounded-full active:scale-95 transition-transform"
-          >
-            {isMuted ? (
-              <VolumeX className="w-5 h-5 text-white" />
-            ) : (
-              <Volume2 className="w-5 h-5 text-white" />
-            )}
-          </button>
+              {/* Side Actions - Right Side */}
+              <div className="absolute right-3 bottom-24 z-30 flex flex-col gap-6">
+                {/* Like Button */}
+                <button
+                  onClick={() => toggleLike(currentReel.id)}
+                  className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
+                >
+                  <div className="relative">
+                    <Heart 
+                      className={`w-7 h-7 drop-shadow-lg transition-all ${
+                        likedReels.includes(currentReel.id) 
+                          ? 'fill-red-500 text-red-500 scale-110' 
+                          : 'text-white'
+                      }`}
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                  <span className="text-xs text-white font-semibold drop-shadow-lg">
+                    {currentReel.likes_count || 0}
+                  </span>
+                </button>
+
+                {/* Comment Button */}
+                <button
+                  onClick={() => setShowComments(true)}
+                  className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
+                >
+                  <MessageCircle className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
+                  <span className="text-xs text-white font-semibold drop-shadow-lg">
+                    {currentReel.comments_count || 0}
+                  </span>
+                </button>
+
+                {/* Send/Share Button */}
+                <button 
+                  onClick={() => setShowShareMenu(true)}
+                  className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
+                >
+                  <Send className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
+                  <span className="text-xs text-white font-semibold drop-shadow-lg">مشاركة</span>
+                </button>
+
+                {/* Save/Bookmark Button */}
+                <button 
+                  onClick={handleSave}
+                  disabled={saveLoading}
+                  className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
+                >
+                  <Bookmark 
+                    className={`w-7 h-7 drop-shadow-lg transition-all ${
+                      isSaved 
+                        ? 'fill-yellow-400 text-yellow-400' 
+                        : 'text-white'
+                    } ${saveLoading ? 'opacity-50' : ''}`} 
+                    strokeWidth={2.5} 
+                  />
+                  <span className="text-xs text-white font-semibold drop-shadow-lg">
+                    {isSaved ? 'محفوظ' : 'حفظ'}
+                  </span>
+                </button>
+
+                {/* More Options Button */}
+                <button className="flex flex-col items-center gap-1 active:scale-95 transition-transform">
+                  <MoreVertical className="w-7 h-7 text-white drop-shadow-lg" strokeWidth={2.5} />
+                </button>
+
+                {/* Profile Picture (animated rotating) */}
+                <div className="relative mt-2">
+                  <div className="w-10 h-10 rounded-full border-2 border-white p-0.5 animate-spin-slow">
+                    <Avatar className="w-full h-full">
+                      <AvatarImage src={currentReel.profiles?.avatar_url} />
+                      <AvatarFallback className="bg-primary text-white text-xs">
+                        {currentReel.profiles?.username?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </div>
+              </div>
+
+              {/* Volume Control */}
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className="absolute bottom-24 left-3 z-30 p-2 bg-black/50 rounded-full active:scale-95 transition-transform"
+              >
+                {isMuted ? (
+                  <VolumeX className="w-5 h-5 text-white" />
+                ) : (
+                  <Volume2 className="w-5 h-5 text-white" />
+                )}
+              </button>
+            </>
+          ) : null}
         </div>
       </div>
 
@@ -476,7 +555,7 @@ const Shorts = () => {
           <DialogHeader className="p-4 border-b border-border">
             <DialogTitle className="text-center">التعليقات</DialogTitle>
           </DialogHeader>
-          <CommentSection type="reel" itemId={currentReel.id} />
+          {currentReel && <CommentSection type="reel" itemId={currentReel.id} />}
         </DialogContent>
       </Dialog>
 
