@@ -14,13 +14,7 @@ interface LiveBroadcastProps {
   onClose: () => void;
 }
 
-interface LiveComment {
-  id: string;
-  username: string;
-  avatar?: string;
-  message: string;
-  isTranslated?: boolean;
-}
+import type { LiveComment } from './live';
 
 const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
   const { toast } = useToast();
@@ -298,20 +292,14 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
           viewerCount={viewers}
           onClose={onClose}
           onSendComment={handleSendLiveComment}
+          onSendGift={(giftType, amount) => {
+            console.log('Gift sent:', giftType, amount);
+          }}
           comments={liveComments}
           translationEnabled={showTranslation}
           onToggleTranslation={() => setShowTranslation(!showTranslation)}
+          isHost={true}
         />
-      )}
-
-      {/* Translation overlay */}
-      {showTranslation && isLive && (
-        <div className="absolute top-20 left-4 right-4 z-30 max-h-[40vh] overflow-y-auto">
-          <RealTimeTranslation 
-            isVisible={showTranslation}
-            onToggle={() => setShowTranslation(!showTranslation)}
-          />
-        </div>
       )}
 
       {/* Pre-live controls */}
