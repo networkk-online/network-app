@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { X, Type, Smile, Music, Wand2, Sparkles, Paintbrush, Download, MoreHorizontal, Users, Send, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Type, Smile, Music, Wand2, Sparkles, Paintbrush, Download, MoreHorizontal, Users, Send, Trash2, ChevronLeft, ChevronRight, Camera, Volume2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { StickersLibrary } from '@/components/StickersLibrary';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
+import { StoryCameraCapture } from '@/components/StoryCameraCapture';
+import { IraqiMusicLibrary } from '@/components/IraqiMusicLibrary';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CreateStory = () => {
   const navigate = useNavigate();
@@ -27,12 +30,15 @@ const CreateStory = () => {
   const [showMusicDialog, setShowMusicDialog] = useState(false);
   const [showEffectsDialog, setShowEffectsDialog] = useState(false);
   const [showDrawDialog, setShowDrawDialog] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const [stickers, setStickers] = useState<Array<{ id: string; emoji: string; x: number; y: number; scale: number }>>([]);
   const [texts, setTexts] = useState<Array<{ id: string; text: string; x: number; y: number; fontSize: number; color: string }>>([]);
   const [currentText, setCurrentText] = useState('');
   const [textColor, setTextColor] = useState('#ffffff');
   const [textSize, setTextSize] = useState(32);
-  const [selectedMusic, setSelectedMusic] = useState<{ title: string; artist: string; url: string } | null>(null);
+  const [selectedMusic, setSelectedMusic] = useState<{ title: string; artist: string; url?: string; startTime?: number; endTime?: number } | null>(null);
+  const [cameraVolume, setCameraVolume] = useState(100);
+  const [musicVolume, setMusicVolume] = useState(80);
   const [imageFilters, setImageFilters] = useState({
     brightness: 100,
     contrast: 100,
@@ -44,6 +50,29 @@ const CreateStory = () => {
   const currentFile = selectedFiles[currentFileIndex];
   const currentPreview = previews[currentFileIndex];
   const currentMediaType = mediaTypes[currentFileIndex];
+
+  // Handle camera capture
+  const handleCameraCapture = (file: File, type: 'image' | 'video') => {
+    const preview = URL.createObjectURL(file);
+    setSelectedFiles([file, ...selectedFiles]);
+    setPreviews([preview, ...previews]);
+    setMediaTypes([type, ...mediaTypes]);
+    setCurrentFileIndex(0);
+    setShowCamera(false);
+    toast({
+      title: 'تم الالتقاط',
+      description: type === 'image' ? 'تم التقاط الصورة' : 'تم تسجيل الفيديو',
+    });
+  };
+
+  // Handle music selection
+  const handleMusicSelect = (music: { title: string; artist: string; url?: string; startTime?: number; endTime?: number }) => {
+    setSelectedMusic(music);
+    toast({
+      title: 'تم إضافة الموسيقى',
+      description: `${music.title} - ${music.artist}`,
+    });
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -311,7 +340,11 @@ const CreateStory = () => {
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center relative">
         {selectedFiles.length === 0 ? (
-          <div className="text-center">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center space-y-6"
+          >
             <input
               ref={fileInputRef}
               type="file"
@@ -320,14 +353,37 @@ const CreateStory = () => {
               onChange={handleFileSelect}
               className="hidden"
             />
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full px-8 py-6 text-lg"
+            
+            {/* Camera Button - Primary */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              اختر صور أو فيديوهات
-            </Button>
-            <p className="text-gray-400 mt-4 text-sm">يمكنك اختيار عدة ملفات في نفس الوقت</p>
-          </div>
+              <Button
+                onClick={() => setShowCamera(true)}
+                className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 rounded-full px-10 py-8 text-xl shadow-2xl shadow-purple-500/30"
+              >
+                <Camera className="w-8 h-8 ml-3" />
+                فتح الكاميرا
+              </Button>
+            </motion.div>
+            
+            {/* Gallery Button - Secondary */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                variant="outline"
+                className="bg-white/10 border-white/20 hover:bg-white/20 rounded-full px-8 py-6 text-lg backdrop-blur-sm"
+              >
+                اختر من المعرض
+              </Button>
+            </motion.div>
+            
+            <p className="text-gray-400 mt-4 text-sm">اضغط للصورة • اضغط مع الاستمرار للفيديو</p>
+          </motion.div>
         ) : (
           <div className="relative w-full h-full flex items-center justify-center">
             {/* Navigation Arrows */}
@@ -601,30 +657,87 @@ const CreateStory = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Music Dialog */}
-      <Dialog open={showMusicDialog} onOpenChange={setShowMusicDialog}>
-        <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-white">إضافة موسيقى</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 p-4">
-            <p className="text-gray-400 text-sm">اختر موسيقى من المكتبة</p>
-            {['أغنية 1', 'أغنية 2', 'أغنية 3'].map((song, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  setSelectedMusic({ title: song, artist: 'فنان', url: '#' });
-                  setShowMusicDialog(false);
-                  toast({ title: 'تم الإضافة', description: `تم إضافة ${song}` });
-                }}
-                className="w-full p-3 text-right bg-gray-800 hover:bg-gray-700 rounded-lg text-white transition-colors"
+      {/* Iraqi Music Library */}
+      <IraqiMusicLibrary
+        isOpen={showMusicDialog}
+        onClose={() => setShowMusicDialog(false)}
+        onSelect={handleMusicSelect}
+      />
+
+      {/* Camera Capture */}
+      <StoryCameraCapture
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={handleCameraCapture}
+      />
+
+      {/* Music indicator when selected */}
+      <AnimatePresence>
+        {selectedMusic && selectedFiles.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute top-20 left-4 z-20"
+          >
+            <div className="flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2">
+              <Music className="w-4 h-4 text-primary animate-pulse" />
+              <div className="text-sm">
+                <p className="text-white font-medium">{selectedMusic.title}</p>
+                <p className="text-gray-400 text-xs">{selectedMusic.artist}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSelectedMusic(null)}
+                className="w-6 h-6 rounded-full hover:bg-white/20"
               >
-                {song}
-              </button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+                <X className="w-3 h-3 text-white" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Volume Mixer (when music is selected) */}
+      {selectedMusic && selectedFiles.length > 0 && (
+        <Dialog>
+          <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <Volume2 className="w-5 h-5" />
+                ضبط الصوت
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 p-4">
+              <div className="space-y-2">
+                <label className="text-white text-sm flex items-center justify-between">
+                  <span>صوت الكاميرا</span>
+                  <span className="text-gray-400">{cameraVolume}%</span>
+                </label>
+                <Slider
+                  value={[cameraVolume]}
+                  onValueChange={([v]) => setCameraVolume(v)}
+                  min={0}
+                  max={100}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-white text-sm flex items-center justify-between">
+                  <span>صوت الموسيقى</span>
+                  <span className="text-gray-400">{musicVolume}%</span>
+                </label>
+                <Slider
+                  value={[musicVolume]}
+                  onValueChange={([v]) => setMusicVolume(v)}
+                  min={0}
+                  max={100}
+                />
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Effects Dialog */}
       <Dialog open={showEffectsDialog} onOpenChange={setShowEffectsDialog}>

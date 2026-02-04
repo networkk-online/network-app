@@ -1,31 +1,44 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Video, VideoOff, Mic, MicOff, Users, MessageCircle, Heart, X, Languages, DollarSign, Gift } from 'lucide-react';
+import { Video, VideoOff, Mic, MicOff, X, Gift, RotateCcw, MessageCircle, DollarSign } from 'lucide-react';
 import { RealTimeTranslation } from './RealTimeTranslation';
 import { DonationReplyDialog } from './DonationReplyDialog';
+import { TikTokLiveOverlay } from './TikTokLiveOverlay';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useInteractiveNotifications } from '@/hooks/useInteractiveNotifications';
+import { motion, AnimatePresence } from 'framer-motion';
+
 interface LiveBroadcastProps {
   onClose: () => void;
+}
+
+interface LiveComment {
+  id: string;
+  username: string;
+  avatar?: string;
+  message: string;
+  isTranslated?: boolean;
 }
 
 const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
   const { toast } = useToast();
   const { sendInteractiveNotification, permission, requestPermission } = useInteractiveNotifications();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  
   const [isLive, setIsLive] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [showTranslation, setShowTranslation] = useState(false);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const [viewers, setViewers] = useState(0);
-  const [comments, setComments] = useState<Array<{id: string, username: string, message: string}>>([
-    { id: '1', username: 'alex_creator', message: 'Great stream! 🔥' },
-    { id: '2', username: 'sarah_artist', message: 'Love the content!' },
-    { id: '3', username: 'mike_photographer', message: 'Amazing quality!' }
+  const [liveComments, setLiveComments] = useState<LiveComment[]>([
+    { id: '1', username: 'سيف_العراق', message: 'يا هلا! 🔥' },
+    { id: '2', username: 'نور123', message: 'شلون الحال؟' },
+    { id: '3', username: 'احمد_بغداد', message: 'بث رائع! ❤️' }
   ]);
-  const [newComment, setNewComment] = useState('');
   const [donationAmount, setDonationAmount] = useState('');
   const [donationMessage, setDonationMessage] = useState('');
   const [donations, setDonations] = useState<Array<{id: string, username: string, amount: number, message?: string, donor_user_id: string, creator_user_id: string}>>([]);
@@ -38,12 +51,10 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
     loadCurrentUser();
     loadDonations();
     
-    // Request notification permission on mount
     if (permission === 'default') {
       requestPermission();
     }
     
-    // Subscribe to realtime donations
     const channel = supabase
       .channel('broadcast-donations')
       .on(
@@ -55,7 +66,6 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
           filter: `broadcast_id=eq.${broadcastId}`
         },
         async (payload) => {
-          // Load donor profile
           const { data: profile } = await supabase
             .from('profiles')
             .select('username, avatar_url')
@@ -73,29 +83,21 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
           
           setDonations(prev => [newDonation, ...prev]);
           
-          // Send interactive notification
           if (permission === 'granted') {
             sendInteractiveNotification({
               title: '🎉 دعم جديد!',
-              body: `${profile?.username || 'مستخدم'} أرسل لك ${Number(payload.new.amount).toFixed(2)}$ ${payload.new.message ? `: "${payload.new.message}"` : ''}`,
+              body: `${profile?.username || 'مستخدم'} أرسل لك ${Number(payload.new.amount).toFixed(2)}$`,
               icon: profile?.avatar_url || '/favicon.ico',
-              data: {
+              data: { 
+                type: 'donation',
                 postId: '',
                 userId: payload.new.donor_user_id,
                 userName: profile?.username || 'Anonymous',
                 userAvatar: profile?.avatar_url || '',
-                content: payload.new.message || '',
-                type: 'donation',
-                donationId: payload.new.id,
-                donationAmount: Number(payload.new.amount),
-                donationMessage: payload.new.message
+                content: payload.new.message || ''
               },
               actions: []
             });
-            
-            // Play notification sound
-            const audio = new Audio('/notification.mp3');
-            audio.play().catch(() => console.log('Could not play sound'));
           }
         }
       )
@@ -103,6 +105,9 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
       
     return () => {
       supabase.removeChannel(channel);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
     };
   }, [broadcastId, permission, requestPermission, sendInteractiveNotification]);
   
@@ -150,304 +155,240 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
     setReplyDialogOpen(true);
   };
 
-  const startBroadcast = () => {
+  const initCamera = async () => {
+    try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facingMode, width: { ideal: 1080 }, height: { ideal: 1920 } },
+        audio: isMicOn
+      });
+
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setIsCameraOn(true);
+    } catch (error) {
+      console.error('Camera error:', error);
+      toast({ title: 'خطأ في الكاميرا', description: 'تعذر تشغيل الكاميرا', variant: 'destructive' });
+    }
+  };
+
+  const switchCamera = () => {
+    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+  };
+
+  useEffect(() => {
+    if (isLive && isCameraOn) {
+      initCamera();
+    }
+  }, [isLive, facingMode]);
+
+  const handleSendLiveComment = (message: string) => {
+    const newComment: LiveComment = { id: Date.now().toString(), username: 'أنت', message };
+    setLiveComments(prev => [...prev, newComment]);
+  };
+
+  const startBroadcast = async () => {
+    await initCamera();
     setIsLive(true);
-    // Simulate viewers joining
     const interval = setInterval(() => {
-      setViewers(prev => prev + Math.floor(Math.random() * 3));
-    }, 2000);
-    
-    // Clean up interval after 30 seconds for demo
-    setTimeout(() => clearInterval(interval), 30000);
+      setViewers(prev => prev + Math.floor(Math.random() * 5));
+      const randomComments = [
+        { username: 'مستخدم_عشوائي', message: 'رائع! 🔥' },
+        { username: 'fan123', message: 'استمر!' },
+        { username: 'نور_العراق', message: 'احسنت ❤️' },
+      ];
+      const randomComment = randomComments[Math.floor(Math.random() * randomComments.length)];
+      setLiveComments(prev => [...prev, { ...randomComment, id: Date.now().toString() }].slice(-30));
+    }, 3000);
+    setTimeout(() => clearInterval(interval), 60000);
   };
 
   const stopBroadcast = () => {
     setIsLive(false);
     setViewers(0);
-  };
-
-  const addComment = () => {
-    if (newComment.trim()) {
-      setComments(prev => [...prev, {
-        id: Date.now().toString(),
-        username: 'your_username',
-        message: newComment
-      }]);
-      setNewComment('');
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
     }
   };
-  
+
   const sendDonation = async () => {
     if (!currentUser) {
-      toast({
-        title: "تسجيل الدخول مطلوب",
-        description: "يجب تسجيل الدخول لإرسال دعم",
-        variant: "destructive"
-      });
+      toast({ title: "تسجيل الدخول مطلوب", description: "يجب تسجيل الدخول لإرسال دعم", variant: "destructive" });
       return;
     }
     
     const amount = parseFloat(donationAmount);
     if (!amount || amount <= 0) {
-      toast({
-        title: "مبلغ غير صالح",
-        description: "يرجى إدخال مبلغ صحيح",
-        variant: "destructive"
-      });
+      toast({ title: "مبلغ غير صالح", description: "يرجى إدخال مبلغ صحيح", variant: "destructive" });
       return;
     }
     
     try {
-      // Get creator user ID (in real app, this would be the broadcaster's ID)
       const { data: { user } } = await supabase.auth.getUser();
-      
       const { error } = await supabase
         .from('broadcast_donations')
         .insert({
           broadcast_id: broadcastId,
           donor_user_id: currentUser.id,
-          creator_user_id: user?.id || currentUser.id, // In demo, same user
+          creator_user_id: user?.id || currentUser.id,
           amount: amount,
           message: donationMessage.trim() || null
         });
         
       if (error) throw error;
-      
-      toast({
-        title: "تم إرسال الدعم! 🎉",
-        description: `تم إرسال ${amount}$ بنجاح. المبدع سيحصل على ${(amount * 0.8).toFixed(2)}$ (بعد خصم 20%)`,
-      });
-      
+      toast({ title: "تم إرسال الدعم! 🎉", description: `تم إرسال ${amount}$ بنجاح` });
       setDonationAmount('');
       setDonationMessage('');
     } catch (error) {
       console.error('Error sending donation:', error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء إرسال الدعم",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: "حدث خطأ أثناء إرسال الدعم", variant: "destructive" });
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex">
-      {/* Main broadcast area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-800">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold neon-text">Live Broadcast</h1>
-            {isLive && (
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="text-red-500 font-semibold">LIVE</span>
-                <div className="flex items-center space-x-1 text-gray-400">
-                  <Users className="w-4 h-4" />
-                  <span>{viewers}</span>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black z-50"
+    >
+      {/* Full-screen video background */}
+      <div className="absolute inset-0">
+        {isCameraOn && isLive ? (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`w-full h-full object-cover ${facingMode === 'user' ? 'scale-x-[-1]' : ''}`}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 flex items-center justify-center">
+            {!isLive ? (
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-center"
+              >
+                <div className="w-32 h-32 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-2xl shadow-pink-500/30">
+                  <Video className="w-16 h-16 text-white" />
                 </div>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant={showTranslation ? "default" : "ghost"} 
-              size="sm" 
-              onClick={() => setShowTranslation(!showTranslation)}
-              className="gap-2"
-            >
-              <Languages className="w-4 h-4" />
-              ترجمة فورية
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Video area */}
-        <div className="flex-1 bg-gray-900 flex relative">
-          {/* Main video */}
-          <div className="flex-1 flex items-center justify-center">
-            {isCameraOn ? (
-              <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-32 h-32 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <Video className="w-16 h-16 text-black" />
-                  </div>
-                  <p className="text-gray-400">Camera feed would appear here</p>
-                </div>
-              </div>
+                <h2 className="text-2xl font-bold text-white mb-2">جاهز للبث المباشر؟</h2>
+                <p className="text-gray-400">اضغط على "بدء البث" للانطلاق</p>
+              </motion.div>
             ) : (
               <div className="text-center">
                 <VideoOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-400">Camera is off</p>
+                <p className="text-gray-400">الكاميرا متوقفة</p>
               </div>
             )}
           </div>
+        )}
+      </div>
 
-          {/* Translation overlay */}
-          {showTranslation && (
-            <div className="absolute top-4 left-4 right-4 z-10 max-h-[50vh] overflow-y-auto">
-              <RealTimeTranslation 
-                isVisible={showTranslation}
-                onToggle={() => setShowTranslation(!showTranslation)}
-              />
-            </div>
-          )}
+      {/* TikTok-style overlay when live */}
+      {isLive && (
+        <TikTokLiveOverlay
+          streamerName="أنت"
+          viewerCount={viewers}
+          onClose={onClose}
+          onSendComment={handleSendLiveComment}
+          comments={liveComments}
+          translationEnabled={showTranslation}
+          onToggleTranslation={() => setShowTranslation(!showTranslation)}
+        />
+      )}
+
+      {/* Translation overlay */}
+      {showTranslation && isLive && (
+        <div className="absolute top-20 left-4 right-4 z-30 max-h-[40vh] overflow-y-auto">
+          <RealTimeTranslation 
+            isVisible={showTranslation}
+            onToggle={() => setShowTranslation(!showTranslation)}
+          />
         </div>
+      )}
 
-        {/* Controls */}
-        <div className="p-4 border-t border-gray-800">
-          <div className="flex items-center justify-center space-x-4">
+      {/* Pre-live controls */}
+      {!isLive && (
+        <>
+          <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-20 bg-gradient-to-b from-black/60 to-transparent">
+            <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/20 rounded-full">
+              <X className="w-6 h-6" />
+            </Button>
+            <h1 className="text-xl font-bold text-white">البث المباشر</h1>
+            <div className="w-10" />
+          </div>
+
+          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
+            <div className="flex items-center justify-center gap-6">
+              <Button
+                variant="ghost"
+                size="lg"
+                onClick={() => setIsCameraOn(!isCameraOn)}
+                className={`w-14 h-14 rounded-full ${isCameraOn ? 'bg-white/20' : 'bg-red-500/50'}`}
+              >
+                {isCameraOn ? <Video className="w-6 h-6 text-white" /> : <VideoOff className="w-6 h-6 text-white" />}
+              </Button>
+              
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={startBroadcast}
+                className="w-20 h-20 bg-gradient-to-r from-pink-500 to-red-500 rounded-full flex items-center justify-center shadow-2xl shadow-red-500/40"
+              >
+                <span className="text-white font-bold">بدء</span>
+              </motion.button>
+
+              <Button
+                variant="ghost"
+                size="lg"
+                onClick={() => setIsMicOn(!isMicOn)}
+                className={`w-14 h-14 rounded-full ${isMicOn ? 'bg-white/20' : 'bg-red-500/50'}`}
+              >
+                {isMicOn ? <Mic className="w-6 h-6 text-white" /> : <MicOff className="w-6 h-6 text-white" />}
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Live controls */}
+      {isLive && (
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30">
+          <div className="flex items-center gap-4">
             <Button
-              variant={isCameraOn ? "default" : "destructive"}
-              size="lg"
-              onClick={() => setIsCameraOn(!isCameraOn)}
-              className="rounded-full w-12 h-12 p-0"
+              variant="ghost"
+              size="icon"
+              onClick={switchCamera}
+              className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm"
             >
-              {isCameraOn ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6" />}
+              <RotateCcw className="w-5 h-5 text-white" />
             </Button>
             
-            <Button
-              variant={isMicOn ? "default" : "destructive"}
-              size="lg"
-              onClick={() => setIsMicOn(!isMicOn)}
-              className="rounded-full w-12 h-12 p-0"
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={stopBroadcast}
+              className="px-6 py-3 bg-red-500 rounded-full"
             >
-              {isMicOn ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
-            </Button>
+              <span className="text-white font-bold">إنهاء البث</span>
+            </motion.button>
 
-            {!isLive ? (
-              <Button
-                onClick={startBroadcast}
-                className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold"
-              >
-                Go Live
-              </Button>
-            ) : (
-              <Button
-                onClick={stopBroadcast}
-                variant="destructive"
-                className="px-8 py-3 rounded-full font-semibold"
-              >
-                End Stream
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Chat sidebar */}
-      <div className="w-80 border-l border-gray-800 flex flex-col">
-        <div className="p-4 border-b border-gray-800">
-          <h3 className="font-semibold text-white">Live Chat</h3>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {comments.map((comment) => (
-            <div key={comment.id} className="flex items-start space-x-2">
-              <div className="text-sm">
-                <span className="font-semibold text-green-400">{comment.username}</span>
-                <p className="text-gray-300">{comment.message}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="p-4 border-t border-gray-800">
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addComment()}
-              placeholder="Say something..."
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <Button size="sm" onClick={addComment} className="bg-green-500 hover:bg-green-600">
-              <MessageCircle className="w-4 h-4" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMicOn(!isMicOn)}
+              className={`w-12 h-12 rounded-full ${isMicOn ? 'bg-black/40' : 'bg-red-500/60'} backdrop-blur-sm`}
+            >
+              {isMicOn ? <Mic className="w-5 h-5 text-white" /> : <MicOff className="w-5 h-5 text-white" />}
             </Button>
           </div>
         </div>
-      </div>
-      
-      {/* Donations sidebar */}
-      <div className="w-80 border-l border-gray-800 flex flex-col bg-gradient-to-b from-gray-900 to-gray-950">
-        <div className="p-4 border-b border-gray-800">
-          <div className="flex items-center gap-2">
-            <Gift className="w-5 h-5 text-yellow-400" />
-            <h3 className="font-semibold text-white">الدعم المالي</h3>
-          </div>
-        </div>
-        
-        {/* Donation form */}
-        <div className="p-4 border-b border-gray-800 space-y-3">
-          <div>
-            <label className="text-xs text-gray-400 mb-1 block">المبلغ ($)</label>
-            <Input
-              type="number"
-              value={donationAmount}
-              onChange={(e) => setDonationAmount(e.target.value)}
-              placeholder="10.00"
-              className="bg-gray-800 border-gray-700 text-white"
-              min="1"
-              step="0.01"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 mb-1 block">رسالة (اختياري)</label>
-            <Input
-              type="text"
-              value={donationMessage}
-              onChange={(e) => setDonationMessage(e.target.value)}
-              placeholder="أرسل رسالة للمبدع..."
-              className="bg-gray-800 border-gray-700 text-white"
-            />
-          </div>
-          <Button 
-            onClick={sendDonation}
-            className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-          >
-            <DollarSign className="w-4 h-4 ml-1" />
-            إرسال دعم
-          </Button>
-          <p className="text-xs text-gray-400 text-center">
-            المبدع يحصل على 80% والمنصة 20%
-          </p>
-        </div>
-        
-        {/* Recent donations list */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <h4 className="text-sm font-semibold text-gray-300 mb-3">آخر المتبرعين 💝</h4>
-          <div className="space-y-2">
-            {donations.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4">لا يوجد دعم بعد</p>
-            ) : (
-              donations.map((donation) => (
-                <div key={donation.id} className="bg-gray-800/50 rounded-lg p-3 border border-yellow-500/20">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-yellow-400 text-sm">{donation.username}</span>
-                    <span className="text-yellow-400 font-bold">${donation.amount.toFixed(2)}</span>
-                  </div>
-                  {donation.message && (
-                    <p className="text-xs text-gray-400 mb-2">{donation.message}</p>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleReplyToDonation(donation)}
-                    className="w-full text-xs h-7 border-yellow-500/30 hover:bg-yellow-500/10"
-                  >
-                    <MessageCircle className="w-3 h-3 ml-1" />
-                    رد برسالة شكر
-                  </Button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
+      )}
       
       {selectedDonation && (
         <DonationReplyDialog
@@ -459,7 +400,7 @@ const LiveBroadcast = ({ onClose }: LiveBroadcastProps) => {
           donation={selectedDonation}
         />
       )}
-    </div>
+    </motion.div>
   );
 };
 
