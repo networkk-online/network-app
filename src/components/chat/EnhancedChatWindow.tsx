@@ -313,6 +313,9 @@ export const EnhancedChatWindow = ({
                           isDelivered={true}
                           senderName={message.sender?.full_name || message.sender?.username}
                           senderAvatar={message.sender?.avatar_url}
+                          // Instagram-style: Show reader's avatar when the message is read
+                          readerAvatar={isOwn && message.is_read ? otherUser?.avatar_url : undefined}
+                          readerName={isOwn && message.is_read ? otherUser?.full_name || otherUser?.username : undefined}
                           reactions={message.reactions || []}
                           onReply={() => handleReply(message)}
                           onCopy={() => {

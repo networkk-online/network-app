@@ -13,6 +13,7 @@ import { CommentSection } from '@/components/CommentSection';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { useRepost } from '@/hooks/useRepost';
 import ShareMenu from '@/components/ShareMenu';
+import { PremiumShareSheet } from '@/components/PremiumShareSheet';
 
 
 interface PostProps {
@@ -554,13 +555,19 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         </DialogContent>
       </Dialog>
 
-      {/* Share Menu */}
-      <ShareMenu
+      {/* Premium Share Sheet - Instagram-style */}
+      <PremiumShareSheet
         isOpen={showShareMenu}
         onClose={() => setShowShareMenu(false)}
+        content={{
+          type: 'post',
+          thumbnailUrl: image,
+          creatorName: username,
+          creatorAvatar: userAvatar,
+          caption: caption,
+          id: id
+        }}
         shareUrl={getShareUrl()}
-        shareTitle={caption ? caption.slice(0, 50) : 'شاهد هذا المنشور'}
-        shareText={getShareText()}
       />
     </div>
   );

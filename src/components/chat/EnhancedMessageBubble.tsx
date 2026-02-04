@@ -40,6 +40,9 @@ export interface EnhancedMessageBubbleProps {
   replyTo?: ReplyToMessage;
   senderName?: string;
   senderAvatar?: string;
+  // Reader info for read receipts - shows avatar when message is read
+  readerAvatar?: string;
+  readerName?: string;
   onReply?: () => void;
   onReaction?: (emoji: string) => void;
   onCopy?: () => void;
@@ -112,6 +115,8 @@ export const EnhancedMessageBubble = ({
   replyTo,
   senderName,
   senderAvatar,
+  readerAvatar,
+  readerName,
   onReply,
   onReaction,
   onCopy,
@@ -637,7 +642,7 @@ export const EnhancedMessageBubble = ({
             </motion.div>
           )}
 
-          {/* Time & Status */}
+          {/* Time & Status with Reader Avatar */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -653,9 +658,27 @@ export const EnhancedMessageBubble = ({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={bounceSpring}
+                className="flex items-center"
               >
                 {isRead ? (
-                  <CheckCheck className="w-3.5 h-3.5 text-[#00bfff]" />
+                  readerAvatar ? (
+                    // Instagram-style: Show reader's avatar when message is read
+                    <div className="relative">
+                      <img
+                        src={readerAvatar}
+                        alt={readerName || 'Seen by'}
+                        className="w-4 h-4 rounded-full object-cover ring-1 ring-black"
+                      />
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.1, ...bounceSpring }}
+                        className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-[#00bfff] rounded-full border border-black"
+                      />
+                    </div>
+                  ) : (
+                    <CheckCheck className="w-3.5 h-3.5 text-[#00bfff]" />
+                  )
                 ) : isDelivered ? (
                   <CheckCheck className="w-3.5 h-3.5 text-white/40" />
                 ) : (
