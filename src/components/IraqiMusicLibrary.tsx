@@ -26,7 +26,7 @@ interface Song {
   artist: string;
   cover: string;
   duration: number;
-  previewUrl?: string;
+  previewUrl: string;
   isIraqi?: boolean;
 }
 
@@ -36,40 +36,50 @@ interface IraqiMusicLibraryProps {
   onSelect: (song: { title: string; artist: string; url?: string; startTime?: number; endTime?: number }) => void;
 }
 
+// Sample audio URLs for demo (royalty-free music)
+const SAMPLE_AUDIO_URLS = [
+  'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+  'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+  'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+  'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+  'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
+  'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
+];
+
 // Iraqi Songs Database
 const IRAQI_SONGS: Song[] = [
-  { id: '1', title: 'ماكو منك', artist: 'سيف نبيل', cover: '🇮🇶', duration: 245, isIraqi: true },
-  { id: '2', title: 'يمه', artist: 'محمود التركي', cover: '🇮🇶', duration: 198, isIraqi: true },
-  { id: '3', title: 'غريبة الناس', artist: 'أصيل هميم', cover: '🇮🇶', duration: 267, isIraqi: true },
-  { id: '4', title: 'حب جنون', artist: 'سيف نبيل', cover: '🇮🇶', duration: 223, isIraqi: true },
-  { id: '5', title: 'مو مستاهل', artist: 'نور الزين', cover: '🇮🇶', duration: 234, isIraqi: true },
-  { id: '6', title: 'ابن الوفه', artist: 'علي صابر', cover: '🇮🇶', duration: 256, isIraqi: true },
-  { id: '7', title: 'روحي', artist: 'كاظم الساهر', cover: '🇮🇶', duration: 312, isIraqi: true },
-  { id: '8', title: 'قولي أحبك', artist: 'حسام الرسام', cover: '🇮🇶', duration: 278, isIraqi: true },
-  { id: '9', title: 'حلوة يا بلدي', artist: 'ماجد المهندس', cover: '🇮🇶', duration: 245, isIraqi: true },
-  { id: '10', title: 'يا ناس', artist: 'وليد الشامي', cover: '🇮🇶', duration: 189, isIraqi: true },
-  { id: '11', title: 'شكد كلبك', artist: 'محمد السالم', cover: '🇮🇶', duration: 234, isIraqi: true },
-  { id: '12', title: 'أحبك موت', artist: 'رحمة رياض', cover: '🇮🇶', duration: 267, isIraqi: true },
+  { id: '1', title: 'ماكو منك', artist: 'سيف نبيل', cover: '🇮🇶', duration: 245, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[0] },
+  { id: '2', title: 'يمه', artist: 'محمود التركي', cover: '🇮🇶', duration: 198, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[1] },
+  { id: '3', title: 'غريبة الناس', artist: 'أصيل هميم', cover: '🇮🇶', duration: 267, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[2] },
+  { id: '4', title: 'حب جنون', artist: 'سيف نبيل', cover: '🇮🇶', duration: 223, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[3] },
+  { id: '5', title: 'مو مستاهل', artist: 'نور الزين', cover: '🇮🇶', duration: 234, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[4] },
+  { id: '6', title: 'ابن الوفه', artist: 'علي صابر', cover: '🇮🇶', duration: 256, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[5] },
+  { id: '7', title: 'روحي', artist: 'كاظم الساهر', cover: '🇮🇶', duration: 312, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[0] },
+  { id: '8', title: 'قولي أحبك', artist: 'حسام الرسام', cover: '🇮🇶', duration: 278, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[1] },
+  { id: '9', title: 'حلوة يا بلدي', artist: 'ماجد المهندس', cover: '🇮🇶', duration: 245, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[2] },
+  { id: '10', title: 'يا ناس', artist: 'وليد الشامي', cover: '🇮🇶', duration: 189, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[3] },
+  { id: '11', title: 'شكد كلبك', artist: 'محمد السالم', cover: '🇮🇶', duration: 234, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[4] },
+  { id: '12', title: 'أحبك موت', artist: 'رحمة رياض', cover: '🇮🇶', duration: 267, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[5] },
 ];
 
 // Global Trending Songs
 const GLOBAL_SONGS: Song[] = [
-  { id: 'g1', title: 'Flowers', artist: 'Miley Cyrus', cover: '🌸', duration: 200 },
-  { id: 'g2', title: 'Kill Bill', artist: 'SZA', cover: '⚔️', duration: 195 },
-  { id: 'g3', title: 'Shakira', artist: 'Bzrp Session', cover: '🎤', duration: 210 },
-  { id: 'g4', title: 'Calm Down', artist: 'Rema & Selena', cover: '🎵', duration: 234 },
-  { id: 'g5', title: 'Anti-Hero', artist: 'Taylor Swift', cover: '⭐', duration: 201 },
-  { id: 'g6', title: 'Unholy', artist: 'Sam Smith', cover: '🔥', duration: 189 },
-  { id: 'g7', title: 'As It Was', artist: 'Harry Styles', cover: '💜', duration: 167 },
-  { id: 'g8', title: 'Blinding Lights', artist: 'The Weeknd', cover: '🌃', duration: 203 },
+  { id: 'g1', title: 'Flowers', artist: 'Miley Cyrus', cover: '🌸', duration: 200, previewUrl: SAMPLE_AUDIO_URLS[0] },
+  { id: 'g2', title: 'Kill Bill', artist: 'SZA', cover: '⚔️', duration: 195, previewUrl: SAMPLE_AUDIO_URLS[1] },
+  { id: 'g3', title: 'Shakira', artist: 'Bzrp Session', cover: '🎤', duration: 210, previewUrl: SAMPLE_AUDIO_URLS[2] },
+  { id: 'g4', title: 'Calm Down', artist: 'Rema & Selena', cover: '🎵', duration: 234, previewUrl: SAMPLE_AUDIO_URLS[3] },
+  { id: 'g5', title: 'Anti-Hero', artist: 'Taylor Swift', cover: '⭐', duration: 201, previewUrl: SAMPLE_AUDIO_URLS[4] },
+  { id: 'g6', title: 'Unholy', artist: 'Sam Smith', cover: '🔥', duration: 189, previewUrl: SAMPLE_AUDIO_URLS[5] },
+  { id: 'g7', title: 'As It Was', artist: 'Harry Styles', cover: '💜', duration: 167, previewUrl: SAMPLE_AUDIO_URLS[0] },
+  { id: 'g8', title: 'Blinding Lights', artist: 'The Weeknd', cover: '🌃', duration: 203, previewUrl: SAMPLE_AUDIO_URLS[1] },
 ];
 
 // New Releases
 const NEW_RELEASES: Song[] = [
-  { id: 'n1', title: 'جديد 2024', artist: 'سيف نبيل', cover: '✨', duration: 245, isIraqi: true },
-  { id: 'n2', title: 'حصري', artist: 'محمود التركي', cover: '🔥', duration: 198, isIraqi: true },
-  { id: 'n3', title: 'New Single', artist: 'Global Artist', cover: '🎤', duration: 210 },
-  { id: 'n4', title: 'Fresh Drop', artist: 'Popular DJ', cover: '🎧', duration: 234 },
+  { id: 'n1', title: 'جديد 2024', artist: 'سيف نبيل', cover: '✨', duration: 245, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[2] },
+  { id: 'n2', title: 'حصري', artist: 'محمود التركي', cover: '🔥', duration: 198, isIraqi: true, previewUrl: SAMPLE_AUDIO_URLS[3] },
+  { id: 'n3', title: 'New Single', artist: 'Global Artist', cover: '🎤', duration: 210, previewUrl: SAMPLE_AUDIO_URLS[4] },
+  { id: 'n4', title: 'Fresh Drop', artist: 'Popular DJ', cover: '🎧', duration: 234, previewUrl: SAMPLE_AUDIO_URLS[5] },
 ];
 
 export const IraqiMusicLibrary = ({ isOpen, onClose, onSelect }: IraqiMusicLibraryProps) => {
@@ -79,7 +89,62 @@ export const IraqiMusicLibrary = ({ isOpen, onClose, onSelect }: IraqiMusicLibra
   const [showTrimmer, setShowTrimmer] = useState(false);
   const [trimRange, setTrimRange] = useState<[number, number]>([0, 15]);
   const [currentTime, setCurrentTime] = useState(0);
+  const [volume, setVolume] = useState(1.0);
+  const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Initialize audio context on user interaction
+  const initAudioContext = () => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+  };
+
+  // Cleanup audio on unmount or close
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+    };
+  }, []);
+
+  // Handle audio playback state
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying && playingSong) {
+        audioRef.current.volume = volume;
+        audioRef.current.play().catch(error => {
+          console.log("Playback failed", error);
+          setIsPlaying(false);
+        });
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying, volume]);
+
+  // Update audio time
+  useEffect(() => {
+    if (audioRef.current) {
+      const handleTimeUpdate = () => {
+        setCurrentTime(audioRef.current?.currentTime || 0);
+        // Loop within trim range
+        if (audioRef.current && audioRef.current.currentTime >= trimRange[1]) {
+          audioRef.current.currentTime = trimRange[0];
+        }
+      };
+      audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+      return () => {
+        audioRef.current?.removeEventListener('timeupdate', handleTimeUpdate);
+      };
+    }
+  }, [trimRange]);
 
   // Filter songs based on search
   const filterSongs = (songs: Song[]) => {
@@ -93,33 +158,97 @@ export const IraqiMusicLibrary = ({ isOpen, onClose, onSelect }: IraqiMusicLibra
   };
 
   // Play/Pause song preview
-  const togglePlay = (song: Song) => {
+  const togglePlay = async (song: Song) => {
+    initAudioContext();
+    
     if (playingSong?.id === song.id) {
       setIsPlaying(!isPlaying);
     } else {
+      setIsLoading(true);
       setPlayingSong(song);
+      
+      // Create new audio element
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      
+      const audio = new Audio(song.previewUrl);
+      audio.volume = volume;
+      audio.crossOrigin = 'anonymous';
+      
+      audio.oncanplaythrough = () => {
+        setIsLoading(false);
+        audio.play().catch(error => {
+          console.log("Playback failed", error);
+          setIsLoading(false);
+        });
+      };
+      
+      audio.onerror = () => {
+        console.log("Audio load error");
+        setIsLoading(false);
+      };
+      
+      audioRef.current = audio;
       setIsPlaying(true);
       setTrimRange([0, Math.min(15, song.duration)]);
     }
   };
 
   // Select song and open trimmer
-  const selectSong = (song: Song) => {
+  const selectSong = async (song: Song) => {
+    initAudioContext();
     setPlayingSong(song);
     setShowTrimmer(true);
     setTrimRange([0, Math.min(60, song.duration)]);
+    
+    // Load audio for preview
+    setIsLoading(true);
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    
+    const audio = new Audio(song.previewUrl);
+    audio.volume = volume;
+    audio.crossOrigin = 'anonymous';
+    
+    audio.oncanplaythrough = () => {
+      setIsLoading(false);
+    };
+    
+    audio.onerror = () => {
+      console.log("Audio load error");
+      setIsLoading(false);
+    };
+    
+    audioRef.current = audio;
   };
 
   // Confirm selection
   const confirmSelection = () => {
     if (playingSong) {
+      // Stop audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      
       onSelect({
         title: playingSong.title,
         artist: playingSong.artist,
+        url: playingSong.previewUrl,
         startTime: trimRange[0],
         endTime: trimRange[1]
       });
       onClose();
+    }
+  };
+  
+  // Handle volume change
+  const handleVolumeChange = (newVolume: number[]) => {
+    const vol = newVolume[0];
+    setVolume(vol);
+    if (audioRef.current) {
+      audioRef.current.volume = vol;
     }
   };
 
@@ -163,14 +292,17 @@ export const IraqiMusicLibrary = ({ isOpen, onClose, onSelect }: IraqiMusicLibra
           e.stopPropagation();
           togglePlay(song);
         }}
+        disabled={isLoading && playingSong?.id === song.id}
         className={cn(
-          "w-10 h-10 rounded-full",
+          "w-10 h-10 rounded-full transition-all",
           playingSong?.id === song.id && isPlaying 
             ? "bg-primary text-primary-foreground" 
             : "bg-white/10 text-white"
         )}
       >
-        {playingSong?.id === song.id && isPlaying ? (
+        {isLoading && playingSong?.id === song.id ? (
+          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        ) : playingSong?.id === song.id && isPlaying ? (
           <Pause className="w-5 h-5" />
         ) : (
           <Play className="w-5 h-5 ml-0.5" />
@@ -353,14 +485,44 @@ export const IraqiMusicLibrary = ({ isOpen, onClose, onSelect }: IraqiMusicLibra
                 </p>
               </div>
 
+              {/* Volume control */}
+              <div className="flex items-center gap-3 mb-4 p-3 bg-white/5 rounded-xl">
+                <Volume2 className="w-5 h-5 text-gray-400" />
+                <Slider
+                  value={[volume]}
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  onValueChange={handleVolumeChange}
+                  className="flex-1"
+                />
+                <span className="text-sm text-gray-400 w-12 text-right">
+                  {Math.round(volume * 100)}%
+                </span>
+              </div>
+
               {/* Preview button */}
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => setIsPlaying(!isPlaying)}
+                onClick={() => {
+                  initAudioContext();
+                  if (audioRef.current) {
+                    if (isPlaying) {
+                      audioRef.current.pause();
+                    } else {
+                      audioRef.current.currentTime = trimRange[0];
+                      audioRef.current.play().catch(e => console.log("Playback failed", e));
+                    }
+                    setIsPlaying(!isPlaying);
+                  }
+                }}
+                disabled={isLoading}
                 className="w-full mb-4 border-white/20 text-white"
               >
-                {isPlaying ? (
+                {isLoading ? (
+                  <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" /> جاري التحميل...</>
+                ) : isPlaying ? (
                   <><Pause className="w-5 h-5 mr-2" /> إيقاف المعاينة</>
                 ) : (
                   <><Play className="w-5 h-5 mr-2" /> معاينة المقطع</>
