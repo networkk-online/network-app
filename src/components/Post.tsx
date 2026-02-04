@@ -1,5 +1,5 @@
-import { Heart, MessageCircle, Send, Bookmark, Mic, Repeat2 } from 'lucide-react';
-import PostSettingsMenu from './PostSettingsMenu';
+import { Heart, MessageCircle, Send, Bookmark, Mic, Repeat2, MoreHorizontal } from 'lucide-react';
+import { PostOptionsDrawer } from './PostOptionsDrawer';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { VoiceRecorder } from './VoiceRecorder';
@@ -12,7 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CommentSection } from '@/components/CommentSection';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { useRepost } from '@/hooks/useRepost';
-import ShareMenu from '@/components/ShareMenu';
 import { PremiumShareSheet } from '@/components/PremiumShareSheet';
 
 
@@ -46,6 +45,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showOptionsDrawer, setShowOptionsDrawer] = useState(false);
   const { isSaved, loading: saveLoading, toggleSave } = useSavedPosts(id);
   const { isReposted, repostCount, loading: repostLoading, toggleRepost } = useRepost(id);
 
@@ -354,12 +354,14 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
             </div>
           </div>
         </div>
-        <PostSettingsMenu 
-          postId={id}
-          userId={userId}
-          currentUserId={currentUser?.id}
-          onPostDeleted={() => window.location.reload()}
-        />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-1 hover:bg-transparent"
+          onClick={() => setShowOptionsDrawer(true)}
+        >
+          <MoreHorizontal className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+        </Button>
       </div>
 
       {/* Post Content */}
@@ -568,6 +570,16 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           id: id
         }}
         shareUrl={getShareUrl()}
+      />
+
+      {/* Post Options Drawer - IG Style */}
+      <PostOptionsDrawer
+        isOpen={showOptionsDrawer}
+        onClose={() => setShowOptionsDrawer(false)}
+        postId={id}
+        userId={userId}
+        currentUserId={currentUser?.id}
+        onPostDeleted={() => window.location.reload()}
       />
     </div>
   );
