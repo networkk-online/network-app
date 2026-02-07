@@ -177,8 +177,15 @@ export const EnhancedMessageBubble = ({
     }
   }, [mediaUrl, mediaType]);
 
-  // Double-tap to heart handler with burst animation
+  // Ghaith's exclusive ID for double-heart
+  const GHAITH_ID = 'ghaith-exclusive-id';
+
+  // Double-tap to heart handler with burst animation - NO SCROLL JUMP
   const handleTap = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    // Prevent any scroll behavior
+    e.preventDefault();
+    e.stopPropagation();
+    
     const now = Date.now();
     const DOUBLE_TAP_DELAY = 300;
     
@@ -186,7 +193,10 @@ export const EnhancedMessageBubble = ({
       // Double tap detected - trigger heart reaction with burst
       triggerHapticFeedback();
       setShowHeartAnimation(true);
-      onReaction?.('❤️');
+      
+      // Check for Ghaith's exclusive double-heart (can be extended with actual user ID check)
+      const isGhaith = false; // Will be replaced with actual auth check
+      onReaction?.(isGhaith ? '❤️❤️' : '❤️');
       
       // Create burst particles
       const rect = messageRef.current?.getBoundingClientRect();

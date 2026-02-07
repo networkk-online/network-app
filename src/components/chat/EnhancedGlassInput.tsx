@@ -15,7 +15,8 @@ import { cn } from '@/lib/utils';
 import { EmojiPicker } from './EmojiPicker';
 import { GifPicker } from './GifPicker';
 import { AttachmentMenu } from './AttachmentMenu';
-import { VoiceRecorderButton } from './VoiceRecorderButton';
+import { HoldToRecordButton } from './HoldToRecordButton';
+import { NativeCameraButton } from './NativeCameraButton';
 import { ReplyPreview } from './ReplyPreview';
 
 interface ReplyTo {
@@ -262,6 +263,15 @@ export const EnhancedGlassInput = ({
             <Sticker className="w-5 h-5" />
           </motion.button>
 
+          {/* Camera Button - Native Access */}
+          <NativeCameraButton
+            onPhotoTaken={(file) => onFileSelect?.(file)}
+            onGallerySelect={(files) => {
+              if (files.length > 0) onFileSelect?.(files[0]);
+            }}
+            disabled={disabled}
+          />
+
           {/* Attachment Button */}
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -299,7 +309,7 @@ export const EnhancedGlassInput = ({
               <Send className="w-5 h-5" />
             </motion.button>
           ) : (
-            <VoiceRecorderButton
+            <HoldToRecordButton
               onVoiceRecorded={(blob, duration) => onVoiceRecorded?.(blob, duration)}
               disabled={disabled}
             />
