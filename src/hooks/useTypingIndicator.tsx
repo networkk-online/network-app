@@ -16,14 +16,19 @@ export const useTypingIndicator = (conversationId?: string, currentUserId?: stri
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const connectionStateRef = useRef<'connected' | 'disconnected' | 'connecting'>('disconnected');
+  const reconnectAttemptsRef = useRef(0);
+  const maxReconnectAttempts = 5;
 
   // Clear typing status after timeout (2 seconds of no typing)
   const TYPING_TIMEOUT = 2000;
   const DEBOUNCE_DELAY = 300;
+  const RECONNECT_DELAY = 1000;
 
   // Broadcast typing status
   const broadcastTyping = useCallback(async (typing: boolean) => {
     if (!conversationId || !currentUserId) return;
+    if (connectionStateRef.current !== 'connected') return;
 
     try {
       channelRef.current?.send({
@@ -78,12 +83,31 @@ export const useTypingIndicator = (conversationId?: string, currentUserId?: stri
     broadcastTyping(false);
   }, [broadcastTyping]);
 
-  // Subscribe to typing events
+  // Subscribe to typing events with stable connection
   useEffect(() => {
     if (!conversationId || !currentUserId) return;
 
-    const channel = supabase.channel(`typing-${conversationId}`)
+    let isUnmounting = false;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+
+    const setupChannel = () => {
+      if (isUnmounting) return;
+      
+      connectionStateRef.current = 'connecting';
+      
+      const channel = supabase.channel(`typing-${conversationId}`, {
+        config: {
+          broadcast: {
+            self: false // Don't receive own broadcasts
+          },
+          presence: {
+            key: currentUserId
+          }
+        }
+      })
       .on('broadcast', { event: 'typing' }, (payload) => {
+        if (isUnmounting) return;
+        
         const { userId, isTyping: userTyping, timestamp } = payload.payload;
         
         // Ignore own typing events
@@ -103,22 +127,57 @@ export const useTypingIndicator = (conversationId?: string, currentUserId?: stri
         // Auto-remove after timeout
         if (userTyping) {
           setTimeout(() => {
-            setTypingUsers(prev => prev.filter(id => id !== userId));
+            if (!isUnmounting) {
+              setTypingUsers(prev => prev.filter(id => id !== userId));
+            }
           }, TYPING_TIMEOUT + 1000);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (isUnmounting) return;
+        
+        if (status === 'SUBSCRIBED') {
+          connectionStateRef.current = 'connected';
+          reconnectAttemptsRef.current = 0;
+        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          connectionStateRef.current = 'disconnected';
+          
+          // Attempt to reconnect with exponential backoff
+          if (reconnectAttemptsRef.current < maxReconnectAttempts && !isUnmounting) {
+            const delay = RECONNECT_DELAY * Math.pow(2, reconnectAttemptsRef.current);
+            reconnectAttemptsRef.current++;
+            
+            reconnectTimeout = setTimeout(() => {
+              if (!isUnmounting) {
+                supabase.removeChannel(channel);
+                setupChannel();
+              }
+            }, delay);
+          }
+        }
+      });
 
-    channelRef.current = channel;
+      channelRef.current = channel;
+    };
+
+    setupChannel();
 
     return () => {
+      isUnmounting = true;
+      
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
-      supabase.removeChannel(channel);
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
     };
   }, [conversationId, currentUserId]);
 
@@ -126,6 +185,7 @@ export const useTypingIndicator = (conversationId?: string, currentUserId?: stri
     typingUsers,
     isTyping,
     handleInputChange,
-    stopTyping
+    stopTyping,
+    isConnected: connectionStateRef.current === 'connected'
   };
 };

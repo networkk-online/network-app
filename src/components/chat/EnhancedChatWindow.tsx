@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isValid, parseISO } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -15,6 +15,7 @@ import { TypingIndicator } from '@/components/communication';
 import { ChatSettingsDrawer } from './ChatSettingsDrawer';
 import { ScreenshotProtection } from './ScreenshotProtection';
 import { MessageStatusIndicator } from './MessageStatusIndicator';
+import { ScrollToBottomButton } from './ScrollToBottomButton';
 
 interface EnhancedChatWindowProps {
   messages: Message[];
@@ -77,9 +78,13 @@ export const EnhancedChatWindow = ({
   const [showSettings, setShowSettings] = useState(false);
   const [vanishMode, setVanishMode] = useState(false);
   const [screenshotProtection, setScreenshotProtection] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const prevScrollHeightRef = useRef<number>(0);
+  const isScrollLockedRef = useRef(false);
 
   // Typing indicator with debounce
   const { 
@@ -90,12 +95,50 @@ export const EnhancedChatWindow = ({
 
   const isOtherUserTyping = typingUsers.length > 0;
 
+  // Stable scroll position on new messages (prevent layout shift)
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
+    const currentScrollHeight = container.scrollHeight;
+    const scrollDiff = currentScrollHeight - prevScrollHeightRef.current;
+    
+    // Only auto-scroll if user is at the bottom
+    if (isAtBottom && scrollDiff > 0) {
+      // Smooth scroll to bottom
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+    
+    prevScrollHeightRef.current = currentScrollHeight;
+  }, [messages, isAtBottom]);
+
+  // Track scroll position
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container || isScrollLockedRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    
+    // Consider "at bottom" if within 100px
+    const atBottom = distanceFromBottom < 100;
+    setIsAtBottom(atBottom);
+    setShowScrollButton(!atBottom && distanceFromBottom > 200);
+  }, []);
+
+  // Scroll to bottom with smooth animation
   const scrollToBottom = useCallback(() => {
+    isScrollLockedRef.current = true;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    
+    // Unlock after animation completes
+    setTimeout(() => {
+      isScrollLockedRef.current = false;
+      setIsAtBottom(true);
+      setShowScrollButton(false);
+    }, 500);
   }, []);
 
   const handleFileSelect = useCallback((file: File) => {
@@ -146,6 +189,8 @@ export const EnhancedChatWindow = ({
         setMessageText('');
         handleRemoveFile();
         setReplyTo(null);
+        // Force scroll to bottom on send
+        setTimeout(() => scrollToBottom(), 100);
       } else {
         toast({
           title: 'خطأ',
@@ -163,7 +208,7 @@ export const EnhancedChatWindow = ({
     } finally {
       setSending(false);
     }
-  }, [messageText, selectedFile, replyTo, onSendMessage, handleRemoveFile, toast, stopTyping, vanishMode]);
+  }, [messageText, selectedFile, replyTo, onSendMessage, handleRemoveFile, toast, stopTyping, vanishMode, scrollToBottom]);
 
   // Handle input change with typing indicator
   const handleInputChange = useCallback((value: string) => {
@@ -182,13 +227,15 @@ export const EnhancedChatWindow = ({
           description: 'فشل إرسال الرسالة الصوتية',
           variant: 'destructive'
         });
+      } else {
+        setTimeout(() => scrollToBottom(), 100);
       }
     } catch (error) {
       console.error('Error sending voice:', error);
     } finally {
       setSending(false);
     }
-  }, [onSendMessage, toast]);
+  }, [onSendMessage, toast, scrollToBottom]);
 
   const handleGifSelect = useCallback(async (gifUrl: string) => {
     setSending(true);
@@ -200,13 +247,15 @@ export const EnhancedChatWindow = ({
           description: 'فشل إرسال GIF',
           variant: 'destructive'
         });
+      } else {
+        setTimeout(() => scrollToBottom(), 100);
       }
     } catch (error) {
       console.error('Error sending GIF:', error);
     } finally {
       setSending(false);
     }
-  }, [onSendMessage, toast]);
+  }, [onSendMessage, toast, scrollToBottom]);
 
   const handleReply = useCallback((message: Message) => {
     const isOwn = message.sender_id === currentUserId;
@@ -221,7 +270,6 @@ export const EnhancedChatWindow = ({
 
   const handleDeleteForMe = useCallback(async (messageId: string) => {
     try {
-      // Optimistic UI - toast immediately
       toast({ title: 'تم حذف الرسالة' });
       await onDeleteMessage?.(messageId, false);
     } catch (error) {
@@ -231,7 +279,6 @@ export const EnhancedChatWindow = ({
 
   const handleDeleteForEveryone = useCallback(async (messageId: string) => {
     try {
-      // Optimistic UI - toast immediately
       toast({ title: 'تم حذف الرسالة للجميع' });
       await onDeleteMessage?.(messageId, true);
     } catch (error) {
@@ -247,19 +294,21 @@ export const EnhancedChatWindow = ({
     }
   }, [onReaction]);
 
-  // Group messages by date with validation
-  const groupedMessages = messages.reduce((groups: { [key: string]: Message[] }, message) => {
-    try {
-      const date = format(new Date(message.created_at), 'yyyy-MM-dd');
-      if (!groups[date]) {
-        groups[date] = [];
+  // Group messages by date with validation (memoized for performance)
+  const groupedMessages = useMemo(() => {
+    return messages.reduce((groups: { [key: string]: Message[] }, message) => {
+      try {
+        const date = format(new Date(message.created_at), 'yyyy-MM-dd');
+        if (!groups[date]) {
+          groups[date] = [];
+        }
+        groups[date].push(message);
+      } catch {
+        // Skip invalid dates
       }
-      groups[date].push(message);
-    } catch {
-      // Skip invalid dates
-    }
-    return groups;
-  }, {});
+      return groups;
+    }, {});
+  }, [messages]);
 
   return (
     <ScreenshotProtection enabled={screenshotProtection}>
@@ -268,6 +317,7 @@ export const EnhancedChatWindow = ({
         {/* Messages Container - Takes remaining space and scrolls */}
         <div 
           ref={scrollContainerRef}
+          onScroll={handleScroll}
           className="chat-messages-area p-4 space-y-4 scrollbar-hide"
         >
           {Object.entries(groupedMessages).map(([date, msgs]) => (
@@ -300,7 +350,8 @@ export const EnhancedChatWindow = ({
                           ...springConfig,
                           delay: Math.min(index * 0.03, 0.15)
                         }}
-                        layout
+                        layout="position"
+                        layoutId={message.id}
                       >
                         <EnhancedMessageBubble
                           id={message.id}
@@ -313,7 +364,6 @@ export const EnhancedChatWindow = ({
                           isDelivered={true}
                           senderName={message.sender?.full_name || message.sender?.username}
                           senderAvatar={message.sender?.avatar_url}
-                          // Instagram-style: Show reader's avatar when the message is read
                           readerAvatar={isOwn && message.is_read ? otherUser?.avatar_url : undefined}
                           readerName={isOwn && message.is_read ? otherUser?.full_name || otherUser?.username : undefined}
                           reactions={message.reactions || []}
@@ -350,8 +400,14 @@ export const EnhancedChatWindow = ({
             )}
           </AnimatePresence>
 
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} className="h-1" />
         </div>
+
+        {/* Scroll to Bottom Button */}
+        <ScrollToBottomButton 
+          isVisible={showScrollButton}
+          onClick={scrollToBottom}
+        />
 
         {/* Input Area - Sticky at bottom with glass effect */}
         <div className="chat-input-area">

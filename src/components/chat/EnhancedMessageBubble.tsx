@@ -180,11 +180,26 @@ export const EnhancedMessageBubble = ({
   // Ghaith's exclusive ID for double-heart
   const GHAITH_ID = 'ghaith-exclusive-id';
 
+  // Deep green accent color for like (#043805)
+  const DEEP_GREEN = '#043805';
+
+  // Haptic feedback simulation - MUST be defined before handleTap
+  const triggerHapticFeedback = useCallback(() => {
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  }, []);
+
   // Double-tap to heart handler with burst animation - NO SCROLL JUMP
   const handleTap = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    // Prevent any scroll behavior
+    // Prevent any scroll behavior and default actions
     e.preventDefault();
     e.stopPropagation();
+    
+    // Prevent text selection on double click
+    if ('detail' in e && e.detail === 2) {
+      e.preventDefault();
+    }
     
     const now = Date.now();
     const DOUBLE_TAP_DELAY = 300;
@@ -196,7 +211,7 @@ export const EnhancedMessageBubble = ({
       
       // Check for Ghaith's exclusive double-heart (can be extended with actual user ID check)
       const isGhaith = false; // Will be replaced with actual auth check
-      onReaction?.(isGhaith ? '❤️❤️' : '❤️');
+      onReaction?.(isGhaith ? '💚💚' : '💚');
       
       // Create burst particles
       const rect = messageRef.current?.getBoundingClientRect();
@@ -213,16 +228,13 @@ export const EnhancedMessageBubble = ({
         setShowHeartAnimation(false);
         setHeartParticles([]);
       }, 1200);
+      
+      // Reset tap ref to prevent triple-tap issues
+      lastTapRef.current = 0;
+      return;
     }
     lastTapRef.current = now;
-  }, [onReaction]);
-
-  // Haptic feedback simulation
-  const triggerHapticFeedback = useCallback(() => {
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-  }, []);
+  }, [onReaction, triggerHapticFeedback]);
 
   const handleContextMenu = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
@@ -561,7 +573,7 @@ export const EnhancedMessageBubble = ({
         onClick={handleTap}
       >
         <div className="max-w-[75%] relative">
-          {/* Double-tap Heart Burst Animation */}
+          {/* Double-tap Heart Burst Animation - Deep Green Theme */}
           <AnimatePresence>
             {showHeartAnimation && (
               <>
@@ -572,9 +584,16 @@ export const EnhancedMessageBubble = ({
                   transition={bounceSpring}
                   className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
                 >
-                  <Heart className="w-20 h-20 text-red-500 fill-red-500 drop-shadow-2xl" />
+                  <Heart 
+                    className="w-20 h-20 drop-shadow-2xl" 
+                    style={{ 
+                      color: DEEP_GREEN, 
+                      fill: DEEP_GREEN,
+                      filter: `drop-shadow(0 0 20px ${DEEP_GREEN}80)`
+                    }} 
+                  />
                 </motion.div>
-                {/* Burst particles */}
+                {/* Burst particles with deep green */}
                 {heartParticles.map((particle) => (
                   <motion.div
                     key={particle.id}
@@ -588,7 +607,10 @@ export const EnhancedMessageBubble = ({
                     transition={{ duration: 0.8, ease: 'easeOut' }}
                     className="absolute left-1/2 top-1/2 z-10 pointer-events-none"
                   >
-                    <Heart className="w-4 h-4 text-red-400 fill-red-400" />
+                    <Heart 
+                      className="w-4 h-4" 
+                      style={{ color: DEEP_GREEN, fill: DEEP_GREEN }}
+                    />
                   </motion.div>
                 ))}
               </>
