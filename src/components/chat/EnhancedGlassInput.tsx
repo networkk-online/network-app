@@ -108,7 +108,11 @@ export const EnhancedGlassInput = ({
       {/* القوائم المنبثقة */}
       {showEmojiPicker && (
         <div className="absolute bottom-full mb-4 left-4 z-50">
-          <EmojiPicker onSelect={(emoji: any) => onChange(value + emoji)} onClose={() => setShowEmojiPicker(false)} />
+          <EmojiPicker 
+            isOpen={showEmojiPicker}
+            onSelect={(emoji: any) => onChange(value + emoji)} 
+            onClose={() => setShowEmojiPicker(false)} 
+          />
         </div>
       )}
 
@@ -118,6 +122,8 @@ export const EnhancedGlassInput = ({
             isOpen={showAttachmentMenu}
             onClose={() => setShowAttachmentMenu(false)}
             onImageSelect={onFileSelect}
+            onVideoSelect={onFileSelect}
+            onDocumentSelect={onFileSelect}
           />
         </div>
       )}
