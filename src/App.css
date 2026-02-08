@@ -1,79 +1,37 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* تصميم نيون أخضر على نمط انستغرام */
+:root {
+  --neon-green: #39ff14;
+  --dark-bg: #000000;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* تثبيت العناصر ومنع الطفرات */
+.overlay-panel-active {
+  position: relative;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--neon-green);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* استايل الأزرار النيون */
+.neon-button {
+  background: transparent !important;
+  border: 1px solid var(--neon-green) !important;
+  color: var(--neon-green) !important;
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+  transition: all 0.3s ease;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.neon-button:hover {
+  background: var(--neon-green) !important;
+  color: black !important;
+  box-shadow: 0 0 20px var(--neon-green);
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-/* تثبيت الستوري ومنع إعادة التشغيل عند التفاعل */
+/* تثبيت الستوري ومنع إعادة التشغيل */
 .story-fixed-background {
   position: absolute;
   inset: 0;
   z-index: 5;
-}
-
-/* جعل شاشات الإعدادات والردود تظهر كطبقة فوق الستوري */
-.overlay-panel-active {
-  position: relative;
-  z-index: 100;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-}
-
-/* حركة القلبين الخاصة بغيث */
-.double-heart-animation {
-  position: absolute;
-  animation: heartFly 1s ease-out forwards;
   pointer-events: none;
-}
-
-@keyframes heartFly {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-100px) scale(1.5);
-    opacity: 0;
-  }
-}
-
-/* منع طفرة الشات عند إضافة لايك */
-.chat-messages-container {
-  overflow-anchor: none !important; /* هذا يثبت الشاشة بمكانها */
 }
