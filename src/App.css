@@ -1,31 +1,33 @@
-/* تصميم نيون أخضر على نمط انستغرام */
+/* تصميم أخضر أنيق (نازك) على نمط انستغرام */
 :root {
-  --neon-green: #39ff14;
+  --elegant-green: #19e05b;
   --dark-bg: #000000;
 }
 
-/* تثبيت العناصر ومنع الطفرات */
+/* تثبيت العناصر ومنع الطفرات في حقل الإدخال */
 .overlay-panel-active {
   position: relative;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(10px);
-  border-top: 1px solid var(--neon-green);
+  border-top: 1px solid var(--elegant-green);
+  /* منع القفز (Layout Shift) */
+  overflow-anchor: none;
 }
 
-/* استايل الأزرار النيون */
+/* استايل الأزرار باللون الجديد */
 .neon-button {
   background: transparent !important;
-  border: 1px solid var(--neon-green) !important;
-  color: var(--neon-green) !important;
-  box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+  border: 1px solid var(--elegant-green) !important;
+  color: var(--elegant-green) !important;
+  box-shadow: 0 0 10px rgba(25, 224, 91, 0.15); /* وهج خفيف ونازك */
   transition: all 0.3s ease;
 }
 
 .neon-button:hover {
-  background: var(--neon-green) !important;
+  background: var(--elegant-green) !important;
   color: black !important;
-  box-shadow: 0 0 20px var(--neon-green);
+  box-shadow: 0 0 20px var(--elegant-green);
 }
 
 /* تثبيت الستوري ومنع إعادة التشغيل */
@@ -34,4 +36,9 @@
   inset: 0;
   z-index: 5;
   pointer-events: none;
+}
+
+/* إضافة لمسة احترافية للصور حتى ما تطفر الشاشة */
+img {
+  overflow-anchor: none;
 }
