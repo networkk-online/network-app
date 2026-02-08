@@ -20,6 +20,7 @@ export { MessageStatusIndicator } from './MessageStatusIndicator';
 export { ChatHeader } from './ChatHeader';
 export { MessagesListHeader } from './MessagesListHeader';
 export { SwipeableView } from './SwipeableView';
+export { ScrollToBottomButton } from './ScrollToBottomButton';
 
 // Re-export MessageReaction type from hooks for consistency
 export type { MessageReaction } from '@/hooks/useMessages';
