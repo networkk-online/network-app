@@ -14,7 +14,7 @@ interface FlyingHeartsProps {
   onTap?: () => void;
 }
 
-const HEART_COLORS = ['#ff4757', '#ff6b81', '#ff9ff3', '#feca57', '#ff6b6b', '#fd79a8', '#e84393'];
+const HEART_COLORS = ['#19e05b', '#ff4757', '#ff6b81', '#feca57', '#ff6b6b', '#fd79a8', '#19e05b'];
 
 export const FlyingHearts = ({ onTap }: FlyingHeartsProps) => {
   const [hearts, setHearts] = useState<FlyingHeart[]>([]);
@@ -22,28 +22,25 @@ export const FlyingHearts = ({ onTap }: FlyingHeartsProps) => {
   const addHeart = useCallback(() => {
     const newHeart: FlyingHeart = {
       id: `${Date.now()}-${Math.random()}`,
-      x: Math.random() * 60 + 20, // 20-80%
+      x: Math.random() * 60 + 20,
       color: HEART_COLORS[Math.floor(Math.random() * HEART_COLORS.length)],
-      size: Math.random() * 12 + 20, // 20-32px
-      duration: Math.random() * 1 + 2.5, // 2.5-3.5s
+      size: Math.random() * 12 + 20,
+      duration: Math.random() * 1 + 2.5,
     };
     
     setHearts(prev => [...prev, newHeart]);
     
-    // Haptic feedback
     if (navigator.vibrate) {
       navigator.vibrate(15);
     }
     
     onTap?.();
     
-    // Remove after animation
     setTimeout(() => {
       setHearts(prev => prev.filter(h => h.id !== newHeart.id));
     }, newHeart.duration * 1000 + 500);
   }, [onTap]);
 
-  // Create burst of hearts
   const addHeartBurst = useCallback(() => {
     const burstCount = 5;
     for (let i = 0; i < burstCount; i++) {
@@ -58,13 +55,13 @@ export const FlyingHearts = ({ onTap }: FlyingHeartsProps) => {
     <>
       {/* Tap area */}
       <motion.div
-        className="absolute bottom-32 right-4 w-16 h-16 z-30 cursor-pointer"
+        className="absolute bottom-32 right-4 w-14 h-14 z-30 cursor-pointer"
         whileTap={{ scale: 0.9 }}
         onClick={addHeart}
         onDoubleClick={addHeartBurst}
       >
-        <div className="w-full h-full rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center border border-white/10">
-          <Heart className="w-7 h-7 text-pink-500 fill-pink-500" />
+        <div className="w-full h-full rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-[#19e05b]/30 shadow-[0_0_15px_rgba(25,224,91,0.2)]">
+          <Heart className="w-6 h-6 text-[#19e05b] fill-[#19e05b]" />
         </div>
       </motion.div>
 

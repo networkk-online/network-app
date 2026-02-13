@@ -9,7 +9,7 @@ import {
   Gift,
   MoreVertical,
   Swords,
-  Crown
+  Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -88,8 +88,6 @@ export const TikTokLiveOverlay = ({
     };
     setGifts(prev => [...prev, newGift]);
     onSendGift?.(giftType, amount);
-    
-    // Haptic feedback
     if (navigator.vibrate) {
       navigator.vibrate([50, 30, 50]);
     }
@@ -102,75 +100,89 @@ export const TikTokLiveOverlay = ({
 
   return (
     <div className="absolute inset-0 pointer-events-none z-20">
-      {/* Top section - Streamer info & viewers */}
-      <div className="absolute top-0 left-0 right-0 p-4 pointer-events-auto">
+      {/* ═══ TOP BAR ═══ */}
+      <div className="absolute top-0 left-0 right-0 p-3 pointer-events-auto">
         <div className="flex items-start justify-between">
-          {/* Streamer info */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Avatar className="w-12 h-12 ring-2 ring-pink-500">
-                <AvatarImage src={streamerAvatar} />
-                <AvatarFallback className="bg-gradient-to-br from-pink-500 to-purple-500">
-                  {streamerName[0]}
-                </AvatarFallback>
-              </Avatar>
-              <motion.div 
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-                className="absolute -bottom-1 -right-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold"
-              >
-                LIVE
-              </motion.div>
-            </div>
-            <div>
-              <h3 className="font-bold text-white text-shadow">{streamerName}</h3>
-              <div className="flex items-center gap-2 text-xs text-white/80">
-                <Users className="w-3 h-3" />
-                <span>{viewerCount.toLocaleString()}</span>
+          {/* Streamer info pill */}
+          <div className="flex items-center gap-2">
+            <motion.div 
+              className="flex items-center gap-2 bg-black/50 backdrop-blur-xl rounded-full pl-1 pr-3 py-1 border border-white/10"
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+            >
+              <div className="relative">
+                <Avatar className="w-9 h-9 ring-2 ring-[#19e05b]">
+                  <AvatarImage src={streamerAvatar} />
+                  <AvatarFallback className="bg-[#19e05b] text-black font-bold">
+                    {streamerName[0]}
+                  </AvatarFallback>
+                </Avatar>
               </div>
-            </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-white text-sm leading-tight">{streamerName}</span>
+                <div className="flex items-center gap-1 text-[11px] text-white/60">
+                  <Eye className="w-3 h-3" />
+                  <span>{viewerCount.toLocaleString()}</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* LIVE badge */}
+            <motion.div
+              animate={{ 
+                boxShadow: [
+                  '0 0 0 0 rgba(25, 224, 91, 0)',
+                  '0 0 12px 4px rgba(25, 224, 91, 0.4)',
+                  '0 0 0 0 rgba(25, 224, 91, 0)',
+                ]
+              }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="bg-gradient-to-r from-red-500 to-[#19e05b] text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider"
+            >
+              ● LIVE
+            </motion.div>
+
+            {/* Follow button */}
             {!isFollowing && (
-              <Button
-                size="sm"
+              <motion.button
+                whileTap={{ scale: 0.95 }}
                 onClick={onFollow}
-                className="bg-pink-500 hover:bg-pink-600 text-white rounded-full px-4 h-8"
+                className="bg-[#19e05b] text-black font-bold text-xs px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(25,224,91,0.3)]"
               >
                 متابعة
-              </Button>
+              </motion.button>
             )}
           </div>
 
-          {/* Top gifters & controls */}
-          <div className="flex items-center gap-2">
+          {/* Top right controls */}
+          <div className="flex items-center gap-1.5">
             <TopGiftersBar gifters={topGifters} />
 
-            {/* Translation toggle */}
             <Button
               variant="ghost"
               size="icon"
               onClick={onToggleTranslation}
               className={cn(
-                "w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm",
-                translationEnabled && "bg-primary/50"
+                "w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10",
+                translationEnabled && "border-[#19e05b]/50 bg-[#19e05b]/20"
               )}
             >
               <Languages className="w-4 h-4 text-white" />
             </Button>
 
-            {/* Close button */}
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm"
+              className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10"
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-4 h-4 text-white" />
             </Button>
           </div>
         </div>
       </div>
 
-      {/* PK Battle Overlay */}
+      {/* ═══ PK BATTLE ═══ */}
       {showPK && (
         <PKBattle
           player1={{
@@ -205,8 +217,8 @@ export const TikTokLiveOverlay = ({
       {/* Flying Hearts */}
       <FlyingHearts />
 
-      {/* Comments section - Bottom left */}
-      <div className="absolute bottom-24 left-0 right-20 max-h-[35%] pointer-events-auto px-4">
+      {/* ═══ TWITCH-STYLE CHAT — Bottom Left ═══ */}
+      <div className="absolute bottom-20 left-0 right-20 max-h-[35%] pointer-events-auto px-3">
         <LiveComments 
           comments={comments}
           pinnedComment={pinnedComment}
@@ -216,62 +228,50 @@ export const TikTokLiveOverlay = ({
         <div ref={commentsEndRef} />
       </div>
 
-      {/* Right side actions */}
-      <div className="absolute right-4 bottom-44 flex flex-col items-center gap-4 pointer-events-auto">
-        {/* Gift button */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setShowGiftPanel(true)}
-          className="w-12 h-12 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center border border-white/10"
-        >
-          <Gift className="w-6 h-6 text-yellow-400" />
-        </motion.button>
-
-        {/* Share button */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setShowShareSheet(true)}
-          className="w-12 h-12 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center border border-white/10"
-        >
-          <Share2 className="w-6 h-6 text-white" />
-        </motion.button>
-
-        {/* Multi-guest / PK button */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setShowPK(true)}
-          className="w-12 h-12 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center border border-white/10"
-        >
-          <Swords className="w-6 h-6 text-white" />
-        </motion.button>
-
-        {/* More options */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          className="w-12 h-12 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center border border-white/10"
-        >
-          <MoreVertical className="w-6 h-6 text-white" />
-        </motion.button>
+      {/* ═══ RIGHT SIDE ACTION BUTTONS ═══ */}
+      <div className="absolute right-3 bottom-36 flex flex-col items-center gap-3 pointer-events-auto">
+        {[
+          { icon: <Gift className="w-5 h-5 text-yellow-400" />, action: () => setShowGiftPanel(true) },
+          { icon: <Share2 className="w-5 h-5 text-white" />, action: () => setShowShareSheet(true) },
+          { icon: <Swords className="w-5 h-5 text-white" />, action: () => setShowPK(true) },
+          { icon: <MoreVertical className="w-5 h-5 text-white" />, action: () => {} },
+        ].map((btn, i) => (
+          <motion.button
+            key={i}
+            whileTap={{ scale: 0.9 }}
+            onClick={btn.action}
+            className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10"
+          >
+            {btn.icon}
+          </motion.button>
+        ))}
       </div>
 
-      {/* Bottom input bar */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 pointer-events-auto bg-gradient-to-t from-black/60 to-transparent">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 relative">
-            <Input
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendComment()}
-              placeholder="أرسل تعليقاً..."
-              className="bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/50 rounded-full pr-12"
-            />
-            <Button
-              size="icon"
-              onClick={handleSendComment}
-              className="absolute left-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-primary"
+      {/* ═══ BOTTOM INPUT BAR ═══ */}
+      <div className="absolute bottom-0 left-0 right-0 p-3 pointer-events-auto">
+        <div className="flex items-center gap-2 bg-black/50 backdrop-blur-xl rounded-full border border-white/10 pl-4 pr-1 py-1">
+          <Input
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendComment()}
+            placeholder="أرسل تعليقاً..."
+            className="bg-transparent border-0 text-white placeholder:text-white/40 h-9 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
+          />
+          <div className="flex items-center gap-1">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowGiftPanel(true)}
+              className="w-8 h-8 rounded-full flex items-center justify-center"
             >
-              <Send className="w-4 h-4" />
-            </Button>
+              <Gift className="w-4 h-4 text-yellow-400" />
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleSendComment}
+              className="w-9 h-9 rounded-full bg-[#19e05b] flex items-center justify-center shadow-[0_0_10px_rgba(25,224,91,0.3)]"
+            >
+              <Send className="w-4 h-4 text-black" />
+            </motion.button>
           </div>
         </div>
       </div>
