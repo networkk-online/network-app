@@ -31,14 +31,14 @@ export const ScrollToBottomButton = ({
           className={cn(
             'fixed bottom-24 right-4 z-40',
             'w-11 h-11 rounded-full',
-            'bg-[#043805] hover:bg-[#054a06]',
+            'bg-primary hover:bg-primary/90',
             'flex items-center justify-center',
-            'shadow-lg shadow-[#043805]/30',
-            'border border-[#043805]/50',
+            'shadow-lg shadow-primary/30',
+            'border border-primary/50',
             'transition-colors duration-200'
           )}
           style={{
-            boxShadow: '0 4px 20px rgba(4, 56, 5, 0.4), 0 0 15px rgba(4, 56, 5, 0.2)'
+            boxShadow: '0 4px 20px rgba(8, 160, 69, 0.4), 0 0 15px rgba(8, 160, 69, 0.2)'
           }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -51,12 +51,12 @@ export const ScrollToBottomButton = ({
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               className={cn(
-                'absolute -top-1.5 -right-1.5',
+              'absolute -top-1.5 -right-1.5',
                 'min-w-[20px] h-5 px-1.5',
-                'rounded-full bg-red-500 text-white',
+                'rounded-full bg-destructive text-destructive-foreground',
                 'text-[11px] font-semibold',
                 'flex items-center justify-center',
-                'border-2 border-black'
+                'border-2 border-background'
               )}
             >
               {unreadCount > 99 ? '99+' : unreadCount}
