@@ -91,7 +91,7 @@ export const usePushNotifications = () => {
       const registration = await navigator.serviceWorker.ready;
       
       // Check if already subscribed
-      let subscription = await registration.pushManager.getSubscription();
+      let subscription = await (registration as any).pushManager?.getSubscription();
       
       if (!subscription) {
         // For web push, we'll use the service worker for local notifications
