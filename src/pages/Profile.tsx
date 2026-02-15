@@ -724,7 +724,7 @@ const Profile = () => {
                     <div 
                       key={reel.id} 
                       className="relative aspect-[9/16] group cursor-pointer"
-                      onClick={() => navigate('/shorts')}
+                      onClick={() => navigate(`/shorts?reelId=${reel.id}`)}
                     >
                       {reel.thumbnail_url ? (
                         <img 
@@ -739,13 +739,13 @@ const Profile = () => {
                           muted
                         />
                       )}
-                      {/* Play Icon Overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Play className="w-8 h-8 text-white/80 fill-white/80" />
+                      {/* Play Icon - Top of thumbnail */}
+                      <div className="absolute top-2 left-2">
+                        <Play className="w-4 h-4 text-white/90 fill-white/90 drop-shadow-lg" />
                       </div>
                       {/* Views Count */}
                       <div className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-xs">
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3 h-3" />
                         <span>{reel.views_count || 0}</span>
                       </div>
                       {/* Hover Overlay */}
