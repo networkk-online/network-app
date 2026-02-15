@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical, Star, AtSign, MoreHorizontal, Share2, Facebook, Twitter, Instagram, Link, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -61,6 +61,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
   const [showOwnMenu, setShowOwnMenu] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isTypingReply, setIsTypingReply] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const currentStory = stories[currentIndex];
   const { recordView } = useStoryViews(currentStory?.id || '');
   const { isFollowing, toggleFollow } = useFollow(currentStory?.user_id || '');
@@ -90,17 +91,26 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
     const interval = 50;
     const increment = (interval / duration) * 100;
 
+    const shouldPause = isPaused || isTypingReply || showMenu || showOwnMenu;
+
+    // Pause/resume video when state changes
+    if (videoRef.current) {
+      if (shouldPause) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play().catch(() => {});
+      }
+    }
+
+    if (shouldPause) return; // Don't start timer if paused
+
     const timer = setInterval(() => {
-      // Don't progress if paused, typing reply, or menu is open
-      if (isPaused || isTypingReply || showMenu || showOwnMenu) return;
-      
       setProgress(prev => {
         if (prev >= 100) {
           clearInterval(timer);
           if (currentIndex < stories.length - 1) {
             onNext();
           } else if (isOwnStory) {
-            // عند انتهاء آخر قصة للمستخدم، انتقل لصفحة إنشاء قصة جديدة
             navigate('/create-story');
           } else {
             onClose();
@@ -496,6 +506,7 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
       <div className="relative w-full h-full flex items-center justify-center">
         {currentStory.media_type === 'video' ? (
           <video 
+            ref={videoRef}
             src={currentStory.media_url}
             className="max-h-full max-w-full object-contain"
             autoPlay
