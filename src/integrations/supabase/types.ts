@@ -846,6 +846,50 @@ export type Database = {
         }
         Relationships: []
       }
+      post_tips: {
+        Row: {
+          amount: number
+          created_at: string
+          creator_earning: number
+          creator_id: string
+          id: string
+          message: string | null
+          platform_fee: number
+          post_id: string
+          tipper_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          creator_earning?: number
+          creator_id: string
+          id?: string
+          message?: string | null
+          platform_fee?: number
+          post_id: string
+          tipper_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          creator_earning?: number
+          creator_id?: string
+          id?: string
+          message?: string | null
+          platform_fee?: number
+          post_id?: string
+          tipper_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_tips_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           close_friends_only: boolean | null
@@ -863,6 +907,7 @@ export type Database = {
           music_title: string | null
           music_url: string | null
           shares_count: number | null
+          tipping_enabled: boolean | null
           updated_at: string | null
           user_id: string
         }
@@ -882,6 +927,7 @@ export type Database = {
           music_title?: string | null
           music_url?: string | null
           shares_count?: number | null
+          tipping_enabled?: boolean | null
           updated_at?: string | null
           user_id: string
         }
@@ -901,6 +947,7 @@ export type Database = {
           music_title?: string | null
           music_url?: string | null
           shares_count?: number | null
+          tipping_enabled?: boolean | null
           updated_at?: string | null
           user_id?: string
         }
