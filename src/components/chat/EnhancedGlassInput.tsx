@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Smile, Paperclip, X, Video, Image as ImageIcon, Gift, Sticker, Camera, Plus } from "lucide-react";
+import { Send, Smile, Paperclip, X, Video, Image as ImageIcon, Gift, Sticker, Camera, Plus, Reply } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmojiPicker } from "./EmojiPicker";
 import { GifPicker } from "./GifPicker";
 import { AttachmentMenu } from "./AttachmentMenu";
 import { VoiceRecorderButton } from "./VoiceRecorderButton";
 import { NativeCameraButton } from "./NativeCameraButton";
+
+import { ReplyToMessage } from './EnhancedMessageBubble';
 
 export const EnhancedGlassInput = ({
   value,
@@ -21,6 +23,8 @@ export const EnhancedGlassInput = ({
   selectedFile,
   previewUrl,
   onRemoveFile,
+  replyTo,
+  onCancelReply,
 }: any) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -31,6 +35,29 @@ export const EnhancedGlassInput = ({
 
   return (
     <div className="relative p-4 bg-black/90 backdrop-blur-xl border-t border-[#39FF14]/20">
+      {/* Reply Preview */}
+      <AnimatePresence>
+        {replyTo && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="mb-3 flex items-center gap-2 px-3 py-2 bg-white/5 rounded-xl border-r-2 border-r-[#833AB4]"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-semibold text-[#833AB4]">
+                {replyTo.isOwn ? 'أنت' : replyTo.senderName}
+              </p>
+              <p className="text-xs text-white/60 truncate">
+                {replyTo.content || (replyTo.mediaType === 'image' ? 'صورة' : replyTo.mediaType === 'video' ? 'فيديو' : replyTo.mediaType === 'voice' ? 'رسالة صوتية' : 'مرفق')}
+              </p>
+            </div>
+            <button onClick={onCancelReply} className="p-1 text-white/40 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* معاينة الصورة المرفقة قبل الإرسال */}
       <AnimatePresence>
         {previewUrl && (

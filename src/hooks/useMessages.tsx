@@ -296,7 +296,8 @@ export const useMessages = (conversationId?: string) => {
   const sendMessage = async (
     convId: string,
     content: string | null,
-    mediaFile?: File
+    mediaFile?: File,
+    settings?: { replyToId?: string }
   ) => {
     if (!currentUser) return null;
 
@@ -324,15 +325,20 @@ export const useMessages = (conversationId?: string) => {
       }
 
       // Send message to Supabase (primary storage)
+      const insertData: any = {
+        conversation_id: convId,
+        sender_id: currentUser.id,
+        content,
+        media_url: mediaUrl,
+        media_type: mediaType
+      };
+      if (settings?.replyToId) {
+        insertData.reply_to_message_id = settings.replyToId;
+      }
+
       const { data, error } = await supabase
         .from('messages')
-        .insert({
-          conversation_id: convId,
-          sender_id: currentUser.id,
-          content,
-          media_url: mediaUrl,
-          media_type: mediaType
-        })
+        .insert(insertData)
         .select()
         .single();
 
