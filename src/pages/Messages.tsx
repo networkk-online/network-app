@@ -102,9 +102,9 @@ const Messages = () => {
     }
   }, [handleBack]);
 
-  const handleSendMessage = async (content: string | null, mediaFile?: File) => {
+  const handleSendMessage = async (content: string | null, mediaFile?: File, settings?: any) => {
     if (!selectedConversationId) return { success: false };
-    return await sendMessage(selectedConversationId, content, mediaFile);
+    return await sendMessage(selectedConversationId, content, mediaFile, settings);
   };
 
   const startConversationWithUser = async (userId: string) => {

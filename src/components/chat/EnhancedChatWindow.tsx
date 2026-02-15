@@ -354,6 +354,19 @@ export const EnhancedChatWindow = ({
                         layoutId={message.id}
                       >
                         <EnhancedMessageBubble
+                          replyTo={(() => {
+                            const replyId = (message as any).reply_to_message_id;
+                            if (!replyId) return undefined;
+                            const original = messages.find(m => m.id === replyId);
+                            if (!original) return undefined;
+                            return {
+                              id: original.id,
+                              content: original.content || undefined,
+                              mediaType: original.media_type as any,
+                              senderName: original.sender?.full_name || original.sender?.username || 'مستخدم',
+                              isOwn: original.sender_id === currentUserId
+                            };
+                          })()}
                           id={message.id}
                           content={message.content || undefined}
                           mediaUrl={message.media_url || undefined}
