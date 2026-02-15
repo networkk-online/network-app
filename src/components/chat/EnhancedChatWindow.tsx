@@ -16,6 +16,7 @@ import { ChatSettingsDrawer } from './ChatSettingsDrawer';
 import { ScreenshotProtection } from './ScreenshotProtection';
 import { MessageStatusIndicator } from './MessageStatusIndicator';
 import { ScrollToBottomButton } from './ScrollToBottomButton';
+import { AISmartReply } from '@/components/AISmartReply';
 
 interface EnhancedChatWindowProps {
   messages: Message[];
@@ -421,6 +422,24 @@ export const EnhancedChatWindow = ({
           isVisible={showScrollButton}
           onClick={scrollToBottom}
         />
+
+        {/* Smart Reply Suggestions */}
+        {(() => {
+          const lastOtherMsg = [...messages].reverse().find(m => m.sender_id !== currentUserId);
+          if (!lastOtherMsg) return null;
+          return (
+            <AISmartReply
+              lastMessage={lastOtherMsg.content || ''}
+              conversationHistory={messages.slice(-10).map(m => ({
+                role: m.sender_id === currentUserId ? 'user' as const : 'assistant' as const,
+                content: m.content || ''
+              }))}
+              onSelectSuggestion={(suggestion) => {
+                setMessageText(suggestion);
+              }}
+            />
+          );
+        })()}
 
         {/* Input Area - Sticky at bottom with glass effect */}
         <div className="chat-input-area">

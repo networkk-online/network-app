@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, Send, Bookmark, Mic, Repeat2, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, Mic, Repeat2, MoreHorizontal, DollarSign } from 'lucide-react';
 import { PostOptionsDrawer } from './PostOptionsDrawer';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
@@ -13,6 +13,7 @@ import { CommentSection } from '@/components/CommentSection';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { useRepost } from '@/hooks/useRepost';
 import { PremiumShareSheet } from '@/components/PremiumShareSheet';
+import { TipDialog } from '@/components/TipDialog';
 
 
 interface PostProps {
@@ -46,6 +47,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [showOptionsDrawer, setShowOptionsDrawer] = useState(false);
+  const [showTipDialog, setShowTipDialog] = useState(false);
   const { isSaved, loading: saveLoading, toggleSave } = useSavedPosts(id);
   const { isReposted, repostCount, loading: repostLoading, toggleRepost } = useRepost(id);
 
@@ -432,8 +434,19 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
             >
               <Send className="w-6 h-6 hover:text-green-400 transition-all duration-200 group-hover:scale-110" />
             </Button>
+            {/* Tip Button */}
+            {currentUser?.id !== userId && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-0 hover:bg-transparent group"
+                onClick={() => setShowTipDialog(true)}
+              >
+                <DollarSign className="w-6 h-6 text-green-400 hover:text-green-300 transition-all duration-200 group-hover:scale-110" />
+              </Button>
+            )}
           </div>
-          <Button 
+          <Button
             variant="ghost" 
             size="sm" 
             className="p-0 hover:bg-transparent group"
@@ -580,6 +593,16 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         userId={userId}
         currentUserId={currentUser?.id}
         onPostDeleted={() => window.location.reload()}
+      />
+
+      {/* Tip Dialog */}
+      <TipDialog
+        isOpen={showTipDialog}
+        onClose={() => setShowTipDialog(false)}
+        postId={id}
+        creatorId={userId}
+        creatorName={username}
+        creatorAvatar={userAvatar}
       />
     </div>
   );
