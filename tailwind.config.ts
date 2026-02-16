@@ -84,8 +84,7 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
-			},
+				},
 				'marquee': {
 					'0%': { transform: 'translateX(100%)' },
 					'100%': { transform: 'translateX(-100%)' }
