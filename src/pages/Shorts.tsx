@@ -498,14 +498,15 @@ const Shorts = () => {
 
               {/* Precise Progress Bar - synced via rAF */}
               <div 
-                className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 z-40 cursor-pointer"
+                className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 z-50 cursor-pointer"
                 onClick={handleProgressClick}
               >
                 <div 
-                  className="h-full bg-white"
+                  className="h-full bg-white will-change-[width]"
                   style={{ 
                     width: `${progress}%`,
-                    transition: 'none'
+                    transition: 'none',
+                    transitionTimingFunction: 'linear'
                   }}
                 />
               </div>
