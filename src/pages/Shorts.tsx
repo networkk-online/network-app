@@ -7,6 +7,7 @@ import { useReels } from '@/hooks/useReels';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { CommentSection } from '@/components/CommentSection';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useSavedReels } from '@/hooks/useSavedReels';
@@ -14,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import ShareMenu from '@/components/ShareMenu';
 import { LiveReelCard } from '@/components/LiveReelCard';
 import { PostOptionsDrawer } from '@/components/PostOptionsDrawer';
+import ProfileOverlayContent from '@/components/ProfileOverlayContent';
 
 // Mock live streams data
 const MOCK_LIVE_STREAMS = [
@@ -66,6 +68,7 @@ const Shorts = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [showOptionsDrawer, setShowOptionsDrawer] = useState(false);
+  const [showProfileOverlay, setShowProfileOverlay] = useState(false);
   const [progress, setProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -254,7 +257,7 @@ const Shorts = () => {
 
   const handleProfileClick = () => {
     if (currentReel?.user_id) {
-      navigate(`/profile/${currentReel.user_id}`);
+      setShowProfileOverlay(true);
     }
   };
 
@@ -544,6 +547,21 @@ const Shorts = () => {
           currentUserId={currentUserId}
         />
       )}
+
+      {/* Profile Overlay */}
+      <Sheet open={showProfileOverlay} onOpenChange={setShowProfileOverlay}>
+        <SheetContent side="bottom" className="h-[85vh] p-0 rounded-t-2xl overflow-y-auto">
+          <SheetHeader className="sr-only">
+            <SheetTitle>الملف الشخصي</SheetTitle>
+          </SheetHeader>
+          {currentReel?.user_id && showProfileOverlay && (
+            <ProfileOverlayContent 
+              profileId={currentReel.user_id} 
+              currentUserId={currentUserId}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
