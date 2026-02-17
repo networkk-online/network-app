@@ -62,67 +62,116 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
   const [isPaused, setIsPaused] = useState(false);
   const [isTypingReply, setIsTypingReply] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const progressRef = useRef(0);
+  const progressAnimRef = useRef<number>(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const currentStory = stories[currentIndex];
   const { recordView } = useStoryViews(currentStory?.id || '');
   const { isFollowing, toggleFollow } = useFollow(currentStory?.user_id || '');
 
+  const shouldPause = isPaused || isTypingReply || showMenu || showOwnMenu;
+
+  // Check ownership on story change
   useEffect(() => {
     if (!currentStory) return;
-
-    // Check if this is the current user's story
     const checkOwnership = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setIsOwnStory(user?.id === currentStory.user_id);
-      
-      // Record view if not own story and notify parent
       if (user && user.id !== currentStory.user_id) {
         recordView();
-        // Mark this specific story as viewed
         onStoryViewed?.(currentStory.id, currentStory.user_id);
       }
     };
     checkOwnership();
+  }, [currentIndex, currentStory?.id]);
 
-    // Reset progress
+  // Reset progress on story change
+  useEffect(() => {
+    progressRef.current = 0;
     setProgress(0);
-    
-    // Auto progress
-    const duration = currentStory.media_type === 'video' ? 60000 : 10000; // 60s for video, 10s for image
+  }, [currentIndex]);
+
+  // Video progress sync using rAF for video stories
+  useEffect(() => {
+    if (!currentStory || currentStory.media_type !== 'video') return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const updateVideoProgress = () => {
+      if (video && video.duration && !video.paused) {
+        const pct = (video.currentTime / video.duration) * 100;
+        progressRef.current = pct;
+        setProgress(pct);
+      }
+      progressAnimRef.current = requestAnimationFrame(updateVideoProgress);
+    };
+
+    if (!shouldPause) {
+      video.play().catch(() => {});
+      progressAnimRef.current = requestAnimationFrame(updateVideoProgress);
+    } else {
+      video.pause();
+      cancelAnimationFrame(progressAnimRef.current);
+    }
+
+    return () => cancelAnimationFrame(progressAnimRef.current);
+  }, [currentIndex, currentStory?.media_type, shouldPause]);
+
+  // Image progress using interval (preserves position on pause)
+  useEffect(() => {
+    if (!currentStory || currentStory.media_type === 'video') return;
+
+    if (shouldPause) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+
+    const duration = 10000; // 10s for images
     const interval = 50;
     const increment = (interval / duration) * 100;
 
-    const shouldPause = isPaused || isTypingReply || showMenu || showOwnMenu;
-
-    // Pause/resume video when state changes
-    if (videoRef.current) {
-      if (shouldPause) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play().catch(() => {});
-      }
-    }
-
-    if (shouldPause) return; // Don't start timer if paused
-
-    const timer = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          if (currentIndex < stories.length - 1) {
-            onNext();
-          } else if (isOwnStory) {
-            navigate('/create-story');
-          } else {
-            onClose();
-          }
-          return 100;
+    timerRef.current = setInterval(() => {
+      progressRef.current += increment;
+      if (progressRef.current >= 100) {
+        progressRef.current = 100;
+        setProgress(100);
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (currentIndex < stories.length - 1) {
+          onNext();
+        } else if (isOwnStory) {
+          navigate('/create-story');
+        } else {
+          onClose();
         }
-        return prev + increment;
-      });
+        return;
+      }
+      setProgress(progressRef.current);
     }, interval);
 
-    return () => clearInterval(timer);
-  }, [currentIndex, currentStory, isPaused, isTypingReply, showMenu, showOwnMenu]);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [currentIndex, currentStory?.media_type, shouldPause, isOwnStory]);
+
+  // Handle video ending (non-loop: advance to next)
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || currentStory?.media_type !== 'video') return;
+
+    const onEnded = () => {
+      setProgress(100);
+      if (currentIndex < stories.length - 1) {
+        onNext();
+      } else if (isOwnStory) {
+        navigate('/create-story');
+      } else {
+        onClose();
+      }
+    };
+
+    video.addEventListener('ended', onEnded);
+    return () => video.removeEventListener('ended', onEnded);
+  }, [currentIndex, currentStory?.media_type, isOwnStory]);
 
   if (!currentStory) return null;
 
@@ -191,13 +240,15 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
   return (
     <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
       {/* Progress bars */}
-      <div className="absolute top-0 left-0 right-0 flex space-x-1 p-2 z-10">
+      <div className="absolute top-0 left-0 right-0 flex space-x-1 p-2 z-10" style={{ padding: '8px' }}>
         {stories.map((_, idx) => (
           <div key={idx} className="flex-1 h-0.5 bg-gray-600 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-white transition-all duration-100"
+              className="h-full bg-white will-change-[width]"
               style={{ 
-                width: idx === currentIndex ? `${progress}%` : idx < currentIndex ? '100%' : '0%'
+                width: idx === currentIndex ? `${progress}%` : idx < currentIndex ? '100%' : '0%',
+                transition: 'none',
+                transitionTimingFunction: 'linear'
               }}
             />
           </div>
@@ -510,7 +561,6 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
             src={currentStory.media_url}
             className="max-h-full max-w-full object-contain"
             autoPlay
-            loop
             playsInline
           />
         ) : (
