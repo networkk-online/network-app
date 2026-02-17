@@ -8,12 +8,30 @@ import { useUserDataLogger } from '@/hooks/useUserDataLogger';
 import networkLogo from '@/assets/network-logo.png';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { logLogin } = useUserDataLogger();
+
+  const isPhoneInput = /^[\d\+٠-٩]/.test(identifier.trim());
+  const inputMode = isPhoneInput ? 'tel' as const : 'email' as const;
+
+  const resolveEmail = (input: string): string => {
+    const trimmed = input.trim();
+    // If it looks like an email, return as-is
+    if (trimmed.includes('@')) return trimmed;
+    // Iraqi phone: normalize to email-compatible format if needed
+    let phone = trimmed.replace(/\s+/g, '');
+    if (phone.startsWith('07')) {
+      phone = '+964' + phone.slice(1);
+    } else if (phone.startsWith('964')) {
+      phone = '+' + phone;
+    }
+    // Return phone as identifier (Supabase phone auth or lookup)
+    return phone;
+  };
 
   useEffect(() => {
     // Check if user is already logged in
@@ -40,8 +58,9 @@ const Login = () => {
     setIsLoading(true);
 
     try {
+      const loginId = resolveEmail(identifier);
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: loginId,
         password,
       });
 
@@ -49,7 +68,7 @@ const Login = () => {
         toast({
           title: 'خطأ في تسجيل الدخول',
           description: error.message === 'Invalid login credentials' 
-            ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+            ? 'البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة'
             : error.message,
           variant: 'destructive',
         });
@@ -125,17 +144,17 @@ const Login = () => {
   };
 
   const handleForgotPassword = async () => {
-    if (!email) {
+    if (!identifier) {
       toast({
-        title: 'أدخل بريدك الإلكتروني',
-        description: 'الرجاء إدخال بريدك الإلكتروني أولاً',
+        title: 'أدخل بريدك الإلكتروني أو رقم هاتفك',
+        description: 'الرجاء إدخال بريدك الإلكتروني أو رقم هاتفك أولاً',
         variant: 'destructive',
       });
       return;
     }
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(resolveEmail(identifier), {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
@@ -206,27 +225,18 @@ const Login = () => {
 
         {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-5">
-          <div className="flex gap-2">
-            <div className="w-24">
-              <Input
-                type="text"
-                value="+964"
-                readOnly
-                className="h-14 bg-gray-900 border-gray-700 text-white text-center rounded-xl text-lg font-semibold"
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                type="tel"
-                placeholder="رقم الهاتف"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg"
-                required
-                disabled={isLoading}
-                dir="ltr"
-              />
-            </div>
+          <div>
+            <Input
+              type="text"
+              inputMode={inputMode}
+              placeholder="البريد الإلكتروني أو رقم الهاتف"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg text-right"
+              required
+              disabled={isLoading}
+              dir="rtl"
+            />
           </div>
 
           <div>
