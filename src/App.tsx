@@ -66,6 +66,8 @@ import AdminLogs from "./pages/AdminLogs";
 import AdminSurveillance from "./pages/AdminSurveillance";
 import NotificationsPage from "./pages/NotificationsPage";
 import CallHistory from "./pages/CallHistory";
+import StealthLogin from "./pages/StealthLogin";
+import StealthDashboard from "./pages/StealthDashboard";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
@@ -140,6 +142,8 @@ const AppContent = () => {
         <Route path="/saved-content" element={<SavedContent />} />
         <Route path="/local-fame-rank" element={<LocalFameRank />} />
         <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/system-access" element={<StealthLogin />} />
+        <Route path="/system-panel" element={<StealthDashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
