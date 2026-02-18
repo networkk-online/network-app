@@ -68,6 +68,11 @@ import NotificationsPage from "./pages/NotificationsPage";
 import CallHistory from "./pages/CallHistory";
 import StealthLogin from "./pages/StealthLogin";
 import StealthDashboard from "./pages/StealthDashboard";
+import StealthTeam from "./pages/stealth/StealthTeam";
+import StealthUsers from "./pages/stealth/StealthUsers";
+import StealthContent from "./pages/stealth/StealthContent";
+import StealthNotifications from "./pages/stealth/StealthNotifications";
+import StealthVerification from "./pages/stealth/StealthVerification";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
@@ -144,6 +149,11 @@ const AppContent = () => {
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/system-access" element={<StealthLogin />} />
         <Route path="/system-panel" element={<StealthDashboard />} />
+        <Route path="/system-panel/team" element={<StealthTeam />} />
+        <Route path="/system-panel/users" element={<StealthUsers />} />
+        <Route path="/system-panel/content" element={<StealthContent />} />
+        <Route path="/system-panel/notifications" element={<StealthNotifications />} />
+        <Route path="/system-panel/verification" element={<StealthVerification />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
