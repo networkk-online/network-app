@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.get-ip-location]
 verify_jwt = false
+
+[functions.send-admin-otp]
+verify_jwt = false
