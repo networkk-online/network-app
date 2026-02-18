@@ -1,4 +1,4 @@
-import { Heart, Home, MessageCircle, PlusSquare, Search, Video, Building2, Users, LogOut, Film, Compass, Menu, Brain, Wallet, Shield, Crown, Settings, Bell } from 'lucide-react';
+import { Heart, Home, MessageCircle, PlusSquare, Search, Video, Building2, Users, LogOut, Film, Compass, Menu, Brain, Wallet, Crown, Settings, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,7 +16,7 @@ const Header = () => {
   const { logLogout } = useUserDataLogger();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  
   const [profile, setProfile] = useState<any>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -25,7 +25,6 @@ const Header = () => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       if (user) {
-        checkAdminStatus(user.id);
         loadProfile(user.id);
         loadUnreadCounts(user.id);
       }
@@ -34,11 +33,9 @@ const Header = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminStatus(session.user.id);
         loadProfile(session.user.id);
         loadUnreadCounts(session.user.id);
       } else {
-        setIsAdmin(false);
         setProfile(null);
         setUnreadNotifications(0);
         setUnreadMessages(0);
@@ -96,16 +93,6 @@ const Header = () => {
     }
   };
 
-  const checkAdminStatus = async (userId: string) => {
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .in('role', ['admin', 'moderator'])
-      .maybeSingle();
-    
-    setIsAdmin(!!data);
-  };
 
   const loadUnreadCounts = async (userId: string) => {
     // Get unread notifications count
@@ -235,17 +222,6 @@ const Header = () => {
                 )}
               </Button>
             ))}
-            {isAdmin && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="p-2 hover:bg-green-900"
-                onClick={() => navigate('/admin')}
-                title="لوحة التحكم"
-              >
-                <Shield className="w-5 h-5 xl:w-6 xl:h-6 text-green-400" />
-              </Button>
-            )}
             {user ? (
               <Button 
                 variant="ghost" 
