@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Post from '@/components/Post';
+import FloatingWheelIcon from '@/components/FloatingWheelIcon';
 import StoryCircle from '@/components/StoryCircle';
 import StoryViewer from '@/components/StoryViewer';
 import Advertisement from '@/components/Advertisement';
@@ -204,6 +205,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-black">
       <Header />
+      <FloatingWheelIcon />
       
       <main className="pt-16 sm:pt-20 pb-24">
         <div className="desktop-layout">
