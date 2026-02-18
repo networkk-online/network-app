@@ -52,7 +52,7 @@ const Header = () => {
     if (!user) return;
 
     const notificationsChannel = supabase
-      .channel('notifications-changes')
+      .channel('header-notifications-badge')
       .on(
         'postgres_changes',
         {
@@ -66,7 +66,7 @@ const Header = () => {
       .subscribe();
 
     const messagesChannel = supabase
-      .channel('messages-changes')
+      .channel('header-messages-badge')
       .on(
         'postgres_changes',
         {

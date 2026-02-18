@@ -210,6 +210,13 @@ export const useMessages = (conversationId?: string) => {
         .eq('conversation_id', convId)
         .neq('sender_id', currentUser.id)
         .eq('is_read', false);
+
+      // Update last_read_at so badge counts clear in Header/BottomNav
+      await supabase
+        .from('conversation_participants')
+        .update({ last_read_at: new Date().toISOString() })
+        .eq('conversation_id', convId)
+        .eq('user_id', currentUser.id);
     } catch (error) {
       console.error('Error loading messages:', error);
     }
@@ -249,6 +256,13 @@ export const useMessages = (conversationId?: string) => {
                 .from('messages')
                 .update({ is_read: true })
                 .eq('id', newMessage.id);
+              
+              // Update last_read_at for badge clearing
+              await supabase
+                .from('conversation_participants')
+                .update({ last_read_at: new Date().toISOString() })
+                .eq('conversation_id', convId)
+                .eq('user_id', currentUser.id);
             }
           }
         }
