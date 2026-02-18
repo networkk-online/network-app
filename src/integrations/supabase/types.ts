@@ -1863,6 +1863,33 @@ export type Database = {
           },
         ]
       }
+      user_gems: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -1961,6 +1988,57 @@ export type Database = {
           reviewed_by?: string | null
           status?: string
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wheel_settings: {
+        Row: {
+          default_prize: number
+          guaranteed_win: boolean
+          id: string
+          is_active: boolean
+          spins_per_day: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          default_prize?: number
+          guaranteed_win?: boolean
+          id?: string
+          is_active?: boolean
+          spins_per_day?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          default_prize?: number
+          guaranteed_win?: boolean
+          id?: string
+          is_active?: boolean
+          spins_per_day?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      wheel_spins: {
+        Row: {
+          created_at: string
+          id: string
+          points_won: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_won?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_won?: number
           user_id?: string
         }
         Relationships: []

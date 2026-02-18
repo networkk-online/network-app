@@ -73,6 +73,8 @@ import StealthUsers from "./pages/stealth/StealthUsers";
 import StealthContent from "./pages/stealth/StealthContent";
 import StealthNotifications from "./pages/stealth/StealthNotifications";
 import StealthVerification from "./pages/stealth/StealthVerification";
+import StealthWheel from "./pages/stealth/StealthWheel";
+import RewardsWheel from "./pages/RewardsWheel";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
@@ -154,6 +156,8 @@ const AppContent = () => {
         <Route path="/system-panel/content" element={<StealthContent />} />
         <Route path="/system-panel/notifications" element={<StealthNotifications />} />
         <Route path="/system-panel/verification" element={<StealthVerification />} />
+        <Route path="/system-panel/wheel" element={<StealthWheel />} />
+        <Route path="/rewards-wheel" element={<RewardsWheel />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
