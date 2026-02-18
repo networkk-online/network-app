@@ -645,28 +645,36 @@ const Withdraw = () => {
           </Card>
 
           {/* Recent Withdrawals */}
-          <Card className="bg-gray-900 border-gray-700 mt-6">
+          <Card className="mt-6 border-border/30 overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, rgba(20,20,30,0.9) 0%, rgba(10,10,15,0.95) 100%)',
+              backdropFilter: 'blur(20px)',
+            }}
+          >
             <CardHeader>
-              <CardTitle className="text-white text-sm">عمليات السحب الأخيرة</CardTitle>
+              <CardTitle className="text-foreground text-sm flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                عمليات السحب الأخيرة
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                { amount: 500, method: 'PayPal', status: 'مكتمل', date: '2024-01-15' },
-                { amount: 250, method: 'Bitcoin', status: 'قيد المعالجة', date: '2024-01-10' }
-              ].map((withdrawal, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
-                  <div>
-                    <p className="text-white font-medium">${withdrawal.amount}</p>
-                    <p className="text-xs text-gray-400">{withdrawal.method} • {withdrawal.date}</p>
-                  </div>
-                  <Badge 
-                    variant={withdrawal.status === 'مكتمل' ? 'default' : 'secondary'}
-                    className={withdrawal.status === 'مكتمل' ? 'bg-green-600' : 'bg-yellow-600'}
-                  >
-                    {withdrawal.status}
-                  </Badge>
+            <CardContent>
+              {/* Empty State - Professional */}
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))',
+                    border: '1px solid hsl(var(--primary) / 0.2)',
+                  }}
+                >
+                  <Wallet className="w-7 h-7 text-primary/60" />
                 </div>
-              ))}
+                <p className="text-sm text-foreground/80 font-medium mb-1">
+                  لا توجد عمليات سحب حالياً
+                </p>
+                <p className="text-xs text-muted-foreground max-w-[240px] leading-relaxed">
+                  ابدأ بجمع الجواهر والأرباح لتكون أول الفائزين! 💎
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
