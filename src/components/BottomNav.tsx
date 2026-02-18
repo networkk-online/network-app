@@ -47,7 +47,7 @@ const BottomNav = () => {
     if (!user) return;
 
     const notificationsChannel = supabase
-      .channel('notifications-changes')
+      .channel('bottomnav-notifications-badge')
       .on(
         'postgres_changes',
         {
@@ -61,7 +61,7 @@ const BottomNav = () => {
       .subscribe();
 
     const messagesChannel = supabase
-      .channel('messages-changes')
+      .channel('bottomnav-messages-badge')
       .on(
         'postgres_changes',
         {

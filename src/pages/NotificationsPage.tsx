@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
@@ -87,6 +88,13 @@ const NotificationItem = ({
 const NotificationsPage = () => {
   const navigate = useNavigate();
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications();
+
+  // Auto-mark all notifications as read when page opens
+  useEffect(() => {
+    if (!loading && unreadCount > 0) {
+      markAllAsRead();
+    }
+  }, [loading]);
 
   return (
     <div className="min-h-screen bg-background">
