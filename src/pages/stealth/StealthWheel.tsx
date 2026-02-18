@@ -4,8 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Gem, Settings, BarChart3 } from 'lucide-react';
+import { Gem, Settings, BarChart3, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const StealthWheel = () => {
@@ -95,6 +96,17 @@ const StealthWheel = () => {
     }
   };
 
+  const archiveAllSpins = async () => {
+    if (!confirm('هل تريد تصفير جميع سجلات الدورات؟ لا يمكن التراجع.')) return;
+    const { error } = await supabase.from('wheel_spins').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    if (error) {
+      toast.error('فشل التصفير');
+    } else {
+      toast.success('تم تصفير سجل الدورات بنجاح');
+      loadData();
+    }
+  };
+
   return (
     <StealthLayout onRefresh={loadData}>
       <h1 className="text-lg font-mono text-[#00ff41] uppercase tracking-wider mb-6">
@@ -170,6 +182,17 @@ const StealthWheel = () => {
               checked={settings?.is_active || false}
               onCheckedChange={toggleActive}
             />
+          </div>
+          <div className="flex items-center justify-between py-2 border-t border-[#1a1a1a] mt-2 pt-4">
+            <div>
+              <p className="text-sm font-mono text-gray-300">Archive / Clear History</p>
+              <p className="text-xs font-mono text-gray-600">Reset all spin records</p>
+            </div>
+            <Button size="sm" variant="destructive" onClick={archiveAllSpins}
+              className="gap-1.5 text-xs font-mono">
+              <Trash2 className="w-3.5 h-3.5" />
+              Clear All
+            </Button>
           </div>
         </CardContent>
       </Card>
