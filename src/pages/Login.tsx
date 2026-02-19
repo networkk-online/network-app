@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserDataLogger } from '@/hooks/useUserDataLogger';
+import { Loader2 } from 'lucide-react';
 import networkLogo from '@/assets/network-logo.png';
 
 const Login = () => {
@@ -16,35 +17,59 @@ const Login = () => {
   const { logLogin } = useUserDataLogger();
 
   const isPhoneInput = /^[\d\+٠-٩]/.test(identifier.trim());
-  const inputMode = isPhoneInput ? 'tel' as const : 'email' as const;
+  const isEmailInput = identifier.trim().includes('@');
+  const isUsernameInput = !isPhoneInput && !isEmailInput && identifier.trim().length > 0;
+  const inputMode = isPhoneInput ? 'tel' as const : 'text' as const;
 
-  const resolveEmail = (input: string): string => {
+  const resolveEmail = async (input: string): Promise<string | null> => {
     const trimmed = input.trim();
-    // If it looks like an email, return as-is
+
+    // Email - return as-is
     if (trimmed.includes('@')) return trimmed;
-    // Iraqi phone: normalize to email-compatible format if needed
-    let phone = trimmed.replace(/\s+/g, '');
-    if (phone.startsWith('07')) {
-      phone = '+964' + phone.slice(1);
-    } else if (phone.startsWith('964')) {
-      phone = '+' + phone;
+
+    // Phone number
+    if (/^[\d\+٠-٩]/.test(trimmed)) {
+      let phone = trimmed.replace(/\s+/g, '');
+      if (phone.startsWith('07')) {
+        phone = '+964' + phone.slice(1);
+      } else if (phone.startsWith('964')) {
+        phone = '+' + phone;
+      }
+      return phone;
     }
-    // Return phone as identifier (Supabase phone auth or lookup)
-    return phone;
+
+    // Username - lookup email via edge function
+    try {
+      const { data, error } = await supabase.functions.invoke('lookup-username', {
+        body: { username: trimmed.toLowerCase() },
+      });
+
+      if (error || !data?.email) {
+        toast({
+          title: 'خطأ',
+          description: 'اسم المستخدم غير موجود',
+          variant: 'destructive',
+        });
+        return null;
+      }
+      return data.email;
+    } catch {
+      toast({
+        title: 'خطأ',
+        description: 'تعذر البحث عن اسم المستخدم',
+        variant: 'destructive',
+      });
+      return null;
+    }
   };
 
   useEffect(() => {
-    // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate('/');
-      }
+      if (session) navigate('/');
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && event === 'SIGNED_IN') {
-        // تسجيل بيانات الدخول في الخلفية
         logLogin(session.user.id);
         navigate('/');
       }
@@ -58,17 +83,22 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const loginId = resolveEmail(identifier);
+      const loginEmail = await resolveEmail(identifier);
+      if (!loginEmail) {
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginId,
+        email: loginEmail,
         password,
       });
 
       if (error) {
         toast({
           title: 'خطأ في تسجيل الدخول',
-          description: error.message === 'Invalid login credentials' 
-            ? 'البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة'
+          description: error.message === 'Invalid login credentials'
+            ? 'البيانات غير صحيحة. تحقق من اسم المستخدم/البريد وكلمة المرور'
             : error.message,
           variant: 'destructive',
         });
@@ -76,18 +106,11 @@ const Login = () => {
       }
 
       if (data.session) {
-        toast({
-          title: 'تم تسجيل الدخول بنجاح',
-          description: 'مرحباً بك مجدداً!',
-        });
+        toast({ title: 'تم تسجيل الدخول بنجاح', description: 'مرحباً بك مجدداً!' });
         navigate('/');
       }
-    } catch (error) {
-      toast({
-        title: 'خطأ',
-        description: 'حدث خطأ أثناء تسجيل الدخول',
-        variant: 'destructive',
-      });
+    } catch {
+      toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -97,24 +120,11 @@ const Login = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
+        options: { redirectTo: `${window.location.origin}/` },
       });
-
-      if (error) {
-        toast({
-          title: 'خطأ',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'خطأ',
-        description: 'حدث خطأ أثناء تسجيل الدخول بجوجل',
-        variant: 'destructive',
-      });
+      if (error) toast({ title: 'خطأ', description: error.message, variant: 'destructive' });
+    } catch {
+      toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول بجوجل', variant: 'destructive' });
     }
   };
 
@@ -122,61 +132,35 @@ const Login = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
+        options: { redirectTo: `${window.location.origin}/` },
       });
-
-      if (error) {
-        toast({
-          title: 'خطأ',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'خطأ',
-        description: 'حدث خطأ أثناء تسجيل الدخول بـ Apple',
-        variant: 'destructive',
-      });
+      if (error) toast({ title: 'خطأ', description: error.message, variant: 'destructive' });
+    } catch {
+      toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول بـ Apple', variant: 'destructive' });
     }
   };
 
   const handleForgotPassword = async () => {
     if (!identifier) {
-      toast({
-        title: 'أدخل بريدك الإلكتروني أو رقم هاتفك',
-        description: 'الرجاء إدخال بريدك الإلكتروني أو رقم هاتفك أولاً',
-        variant: 'destructive',
-      });
+      toast({ title: 'تنبيه', description: 'أدخل بريدك الإلكتروني أو اسم المستخدم أولاً', variant: 'destructive' });
       return;
     }
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resolveEmail(identifier), {
+      const email = await resolveEmail(identifier);
+      if (!email) return;
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {
-        toast({
-          title: 'خطأ',
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast({ title: 'خطأ', description: error.message, variant: 'destructive' });
         return;
       }
-
-      toast({
-        title: 'تم إرسال رابط إعادة التعيين',
-        description: 'تفقد بريدك الإلكتروني',
-      });
-    } catch (error) {
-      toast({
-        title: 'خطأ',
-        description: 'حدث خطأ أثناء إعادة تعيين كلمة المرور',
-        variant: 'destructive',
-      });
+      toast({ title: 'تم إرسال رابط إعادة التعيين', description: 'تفقد بريدك الإلكتروني' });
+    } catch {
+      toast({ title: 'خطأ', description: 'حدث خطأ أثناء إعادة تعيين كلمة المرور', variant: 'destructive' });
     }
   };
 
@@ -187,14 +171,10 @@ const Login = () => {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-green-400/15 rounded-full blur-2xl animate-pulse delay-1000"></div>
         <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-green-600/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
-        
-        {/* Floating particles */}
         <div className="absolute top-10 left-10 w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
         <div className="absolute top-20 right-20 w-1 h-1 bg-green-300 rounded-full animate-bounce delay-500"></div>
         <div className="absolute bottom-20 left-20 w-3 h-3 bg-green-500 rounded-full animate-bounce delay-1000"></div>
         <div className="absolute bottom-10 right-10 w-1 h-1 bg-green-400 rounded-full animate-bounce delay-1500"></div>
-        
-        {/* App-specific Emojis */}
         <div className="absolute top-16 left-1/4 text-2xl animate-bounce delay-300">❤️</div>
         <div className="absolute top-32 right-1/3 text-xl animate-bounce delay-700">💬</div>
         <div className="absolute top-1/2 left-16 text-lg animate-bounce delay-1200">📱</div>
@@ -205,19 +185,13 @@ const Login = () => {
         <div className="absolute bottom-16 left-1/2 text-lg animate-bounce delay-1400">🚀</div>
         <div className="absolute top-20 left-2/3 text-xl animate-bounce delay-600">💫</div>
         <div className="absolute bottom-40 right-1/3 text-lg animate-bounce delay-1800">🎯</div>
-        
-        {/* Grid overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.1)_1px,transparent_1px)] bg-[length:50px_50px] opacity-30"></div>
       </div>
       <div className="w-full max-w-md z-10 relative backdrop-blur-sm bg-black/20 rounded-2xl border border-green-500/20 p-8 shadow-2xl shadow-green-500/10">
         {/* Logo */}
         <div className="text-center mb-12">
           <div className="w-32 h-32 mx-auto mb-8 relative">
-            <img 
-              src={networkLogo} 
-              alt="Network Logo" 
-              className="w-full h-full object-contain"
-            />
+            <img src={networkLogo} alt="Network Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">أهلاً بكم في العالم الجديد</h1>
           <p className="text-green-400 text-lg">تسجيل الدخول</p>
@@ -229,7 +203,7 @@ const Login = () => {
             <Input
               type="text"
               inputMode={inputMode}
-              placeholder="البريد الإلكتروني أو رقم الهاتف"
+              placeholder="اسم المستخدم أو البريد الإلكتروني أو رقم الهاتف"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               className="h-14 bg-gray-900 border-gray-700 text-white placeholder-gray-400 rounded-xl text-lg text-right"
@@ -237,6 +211,9 @@ const Login = () => {
               disabled={isLoading}
               dir="rtl"
             />
+            {isUsernameInput && (
+              <p className="text-green-400/70 text-xs mt-1 text-right">سيتم البحث باسم المستخدم</p>
+            )}
           </div>
 
           <div>
@@ -252,11 +229,7 @@ const Login = () => {
           </div>
 
           <div className="text-center">
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              className="text-gray-400 hover:text-white transition-colors text-sm"
-            >
+            <button type="button" onClick={handleForgotPassword} className="text-gray-400 hover:text-white transition-colors text-sm">
               نسيت كلمة المرور؟
             </button>
           </div>
@@ -266,7 +239,12 @@ const Login = () => {
             className="w-full h-14 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold text-lg rounded-xl shadow-lg shadow-green-500/25"
             disabled={isLoading}
           >
-            {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                جاري تسجيل الدخول...
+              </span>
+            ) : 'تسجيل الدخول'}
           </Button>
 
           <Button
@@ -283,13 +261,7 @@ const Login = () => {
           </div>
 
           <div className="flex gap-3">
-            <Button
-              type="button"
-              onClick={handleGoogleSignIn}
-              variant="outline"
-              className="flex-1 h-12 bg-transparent border-gray-700 text-white hover:bg-gray-900 rounded-xl"
-              disabled={isLoading}
-            >
+            <Button type="button" onClick={handleGoogleSignIn} variant="outline" className="flex-1 h-12 bg-transparent border-gray-700 text-white hover:bg-gray-900 rounded-xl" disabled={isLoading}>
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -298,13 +270,7 @@ const Login = () => {
               </svg>
             </Button>
 
-            <Button
-              type="button"
-              onClick={handleAppleSignIn}
-              variant="outline"
-              className="flex-1 h-12 bg-transparent border-gray-700 text-white hover:bg-gray-900 rounded-xl"
-              disabled={isLoading}
-            >
+            <Button type="button" onClick={handleAppleSignIn} variant="outline" className="flex-1 h-12 bg-transparent border-gray-700 text-white hover:bg-gray-900 rounded-xl" disabled={isLoading}>
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
               </svg>
