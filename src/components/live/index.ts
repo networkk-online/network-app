@@ -6,3 +6,6 @@ export { GiftPanel } from './GiftPanel';
 export { LiveComments } from './LiveComments';
 export type { LiveComment } from './LiveComments';
 export { TopGiftersBar } from './TopGiftersBar';
+export { DailyVideoGrid } from './DailyVideoGrid';
+export { JoinRequestPanel } from './JoinRequestPanel';
+export { LiveRoomsList } from './LiveRoomsList';

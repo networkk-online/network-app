@@ -682,6 +682,83 @@ export type Database = {
           },
         ]
       }
+      live_join_requests: {
+        Row: {
+          created_at: string
+          id: string
+          room_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          room_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          room_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_join_requests_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "live_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_rooms: {
+        Row: {
+          created_at: string
+          daily_room_name: string
+          daily_room_url: string
+          ended_at: string | null
+          host_id: string
+          id: string
+          max_participants: number | null
+          status: string
+          title: string | null
+          updated_at: string
+          viewer_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          daily_room_name: string
+          daily_room_url: string
+          ended_at?: string | null
+          host_id: string
+          id?: string
+          max_participants?: number | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+          viewer_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          daily_room_name?: string
+          daily_room_url?: string
+          ended_at?: string | null
+          host_id?: string
+          id?: string
+          max_participants?: number | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+          viewer_count?: number | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string | null
