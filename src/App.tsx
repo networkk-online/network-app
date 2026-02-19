@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useNativeApp } from "@/hooks/useNativeApp";
 import { ChimeCallProvider } from "@/components/ChimeCallProvider";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Explore from "./pages/Explore";
 import Broadcast from "./pages/Broadcast";
@@ -170,9 +171,11 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ChimeCallProvider>
-          <AppContent />
-        </ChimeCallProvider>
+        <ErrorBoundary>
+          <ChimeCallProvider>
+            <AppContent />
+          </ChimeCallProvider>
+        </ErrorBoundary>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -320,7 +320,7 @@ const Shorts = () => {
         </div>
       </div>
 
-      {/* Video Container */}
+      {/* Video Container - Snap Scrolling */}
       <div 
         ref={containerRef}
         className="relative w-full h-full overflow-hidden"
@@ -332,7 +332,7 @@ const Shorts = () => {
           className="relative w-full h-full flex items-center justify-center bg-black"
           style={{
             transform: `translateY(${translateY}px)`,
-            transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+            transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
           }}
         >
           {currentItem?.type === 'live' && currentLive ? (
@@ -344,11 +344,11 @@ const Shorts = () => {
             />
           ) : currentReel ? (
             <>
-              {/* Video Player */}
+              {/* Video Player with fade-in */}
               <video
                 ref={videoRef}
                 src={currentReel.video_url}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain animate-fade-in"
                 loop
                 playsInline
                 muted={isMuted}
