@@ -24,7 +24,9 @@ const GIFTS: GiftItem[] = [
   { id: 'star', name: 'نجمة', icon: '⭐', price: 10, color: '#ffd32a' },
   { id: 'crown', name: 'تاج', icon: '👑', price: 50, color: '#f9ca24' },
   { id: 'diamond', name: 'ماسة', icon: '💎', price: 100, color: '#70a1ff' },
-  { id: 'lion', name: 'أسد', icon: '🦁', price: 200, color: '#ff9f43' },
+  { id: 'lion', name: 'أسد الملك', icon: '🦁', price: 500, color: '#ffd700' },
+  { id: 'whale', name: 'الحوت', icon: '🐋', price: 1000, color: '#00d4ff' },
+  { id: 'supercar', name: 'سوبركار', icon: '🏎️', price: 2000, color: '#ff8c00' },
   { id: 'rocket', name: 'صاروخ', icon: '🚀', price: 500, color: '#5f27cd' },
   { id: 'galaxy', name: 'مجرة', icon: '🌌', price: 1000, color: '#341f97' },
 ];
