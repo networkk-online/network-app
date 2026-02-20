@@ -547,3 +547,25 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
+
+/* PWA Standalone Mode - Hide browser-like elements */
+@media all and (display-mode: standalone) {
+  /* Disable text selection for native feel */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
+  }
+
+  /* Allow text selection in inputs/textareas */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* Hide any external link indicators */
+  a[target="_blank"]::after {
+    display: none !important;
+  }
+}

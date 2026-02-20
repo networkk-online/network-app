@@ -1,0 +1,28 @@
+{
+  "name": "Network - نيتورك",
+  "short_name": "Network",
+  "description": "تطبيق تواصل اجتماعي عصري يجمع بين الإبداع والربح والتفاعل",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/lovable-uploads/4688e176-6443-4ddf-9b37-c6363c50aa10.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/4688e176-6443-4ddf-9b37-c6363c50aa10.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social"],
+  "prefer_related_applications": false
+}
