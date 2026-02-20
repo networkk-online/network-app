@@ -126,16 +126,32 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
             سحب
           </Button>
           <Button size="sm" variant="outline" onClick={() => setShowTransfer(true)}
-            className="h-10 text-xs font-medium gap-1.5 border-border/30 bg-muted/10 hover:bg-muted/20">
+            className="h-10 text-xs font-medium gap-1.5 border-border/30 bg-muted/10 hover:bg-[hsl(210,100%,50%)]/10 hover:border-[hsl(210,100%,60%)]/40 transition-all"
+            style={{ '--tw-shadow': 'none' } as React.CSSProperties}
+            onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 15px rgba(59,130,246,0.2)'}
+            onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+          >
             <ArrowRightLeft className="w-3.5 h-3.5" />
             تحويل
           </Button>
           <Button size="sm" variant="outline" onClick={() => setShowTopUp(true)}
-            className="h-10 text-xs font-medium gap-1.5 border-border/30 bg-muted/10 hover:bg-muted/20">
+            className="h-10 text-xs font-medium gap-1.5 border-border/30 bg-muted/10 hover:bg-[#ffd700]/10 hover:border-[#ffd700]/40 transition-all"
+            onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 15px rgba(255,215,0,0.2)'}
+            onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+          >
             <Plus className="w-3.5 h-3.5" />
             تعبئة
           </Button>
         </div>
+
+        {/* Transaction History Link */}
+        <button
+          onClick={() => navigate('/transactions')}
+          className="w-full mt-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/10 hover:bg-muted/20 transition-all flex items-center justify-center gap-1.5"
+        >
+          <TrendingUp className="w-3.5 h-3.5" />
+          سجل العمليات
+        </button>
       </div>
 
       <TopUpModal isOpen={showTopUp} onClose={() => setShowTopUp(false)} />
