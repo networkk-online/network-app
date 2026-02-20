@@ -3,6 +3,8 @@ import { Wallet, TrendingUp, Eye, EyeOff, Gem, Coins, ArrowDownToLine, ArrowRigh
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import TopUpModal from './TopUpModal';
+import TransferModal from './TransferModal';
 
 interface WalletCardProps {
   balance: number;
@@ -14,6 +16,8 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
   const navigate = useNavigate();
   const [hidden, setHidden] = useState(false);
   const [gems, setGems] = useState(0);
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(false);
 
   useEffect(() => {
     const loadGems = async () => {
@@ -121,18 +125,21 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
             <ArrowDownToLine className="w-3.5 h-3.5" />
             سحب
           </Button>
-          <Button size="sm" variant="outline"
+          <Button size="sm" variant="outline" onClick={() => setShowTransfer(true)}
             className="h-10 text-xs font-medium gap-1.5 border-border/30 bg-muted/10 hover:bg-muted/20">
             <ArrowRightLeft className="w-3.5 h-3.5" />
             تحويل
           </Button>
-          <Button size="sm" variant="outline"
+          <Button size="sm" variant="outline" onClick={() => setShowTopUp(true)}
             className="h-10 text-xs font-medium gap-1.5 border-border/30 bg-muted/10 hover:bg-muted/20">
             <Plus className="w-3.5 h-3.5" />
             تعبئة
           </Button>
         </div>
       </div>
+
+      <TopUpModal isOpen={showTopUp} onClose={() => setShowTopUp(false)} />
+      <TransferModal isOpen={showTransfer} onClose={() => setShowTransfer(false)} currentBalance={balance} />
     </div>
   );
 };

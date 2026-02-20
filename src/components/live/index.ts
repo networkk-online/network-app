@@ -10,3 +10,5 @@ export { DailyVideoGrid } from './DailyVideoGrid';
 export { JoinRequestPanel } from './JoinRequestPanel';
 export { LiveRoomsList } from './LiveRoomsList';
 export { GiftComboEngine } from './GiftComboEngine';
+export { GrandGiftAnimationEngine } from './GrandGiftAnimation';
+export type { GrandGift, GrandGiftType } from './GrandGiftAnimation';

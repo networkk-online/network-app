@@ -23,7 +23,9 @@ import {
   TopGiftersBar,
   PKBattle,
   GiftComboEngine,
+  GrandGiftAnimationEngine,
   type Gift as GiftType,
+  type GrandGift,
   type LiveComment
 } from './live';
 import { PremiumShareSheet } from './PremiumShareSheet';
@@ -65,6 +67,7 @@ export const TikTokLiveOverlay = ({
   const [gifts, setGifts] = useState<GiftType[]>([]);
   const [pinnedComment, setPinnedComment] = useState<LiveComment | null>(null);
   const [showPK, setShowPK] = useState(false);
+  const [grandGifts, setGrandGifts] = useState<GrandGift[]>([]);
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
   const [topGifters] = useState([
@@ -81,13 +84,23 @@ export const TikTokLiveOverlay = ({
   };
 
   const handleSendGift = (giftType: string, amount: number) => {
-    const newGift: GiftType = {
-      id: Date.now().toString(),
-      username: 'أنت',
-      giftType: giftType as GiftType['giftType'],
-      amount
-    };
-    setGifts(prev => [...prev, newGift]);
+    // Check for grand gifts
+    if (['lion', 'whale', 'supercar'].includes(giftType)) {
+      const grandGift: GrandGift = {
+        id: Date.now().toString(),
+        senderName: 'أنت',
+        giftType: giftType as GrandGift['giftType'],
+      };
+      setGrandGifts(prev => [...prev, grandGift]);
+    } else {
+      const newGift: GiftType = {
+        id: Date.now().toString(),
+        username: 'أنت',
+        giftType: giftType as GiftType['giftType'],
+        amount
+      };
+      setGifts(prev => [...prev, newGift]);
+    }
     onSendGift?.(giftType, amount);
     if (navigator.vibrate) {
       navigator.vibrate([50, 30, 50]);
@@ -217,6 +230,12 @@ export const TikTokLiveOverlay = ({
 
       {/* Flying Hearts */}
       <FlyingHearts />
+
+      {/* Grand Gift Animation Engine */}
+      <GrandGiftAnimationEngine
+        gifts={grandGifts}
+        onGiftComplete={(id) => setGrandGifts(prev => prev.filter(g => g.id !== id))}
+      />
 
       {/* Gift Combo Engine */}
       <GiftComboEngine onSendGift={onSendGift} />
