@@ -22,6 +22,7 @@ import {
   LiveComments, 
   TopGiftersBar,
   PKBattle,
+  GiftComboEngine,
   type Gift as GiftType,
   type LiveComment
 } from './live';
@@ -216,6 +217,9 @@ export const TikTokLiveOverlay = ({
 
       {/* Flying Hearts */}
       <FlyingHearts />
+
+      {/* Gift Combo Engine */}
+      <GiftComboEngine onSendGift={onSendGift} />
 
       {/* ═══ TWITCH-STYLE CHAT — Bottom Left ═══ */}
       <div className="absolute bottom-20 left-0 right-20 max-h-[35%] pointer-events-auto px-3">

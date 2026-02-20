@@ -9,3 +9,4 @@ export { TopGiftersBar } from './TopGiftersBar';
 export { DailyVideoGrid } from './DailyVideoGrid';
 export { JoinRequestPanel } from './JoinRequestPanel';
 export { LiveRoomsList } from './LiveRoomsList';
+export { GiftComboEngine } from './GiftComboEngine';

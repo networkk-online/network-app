@@ -76,6 +76,9 @@ import StealthNotifications from "./pages/stealth/StealthNotifications";
 import StealthVerification from "./pages/stealth/StealthVerification";
 import StealthWheel from "./pages/stealth/StealthWheel";
 import RewardsWheel from "./pages/RewardsWheel";
+import RedeemGiftCard from "./pages/RedeemGiftCard";
+import AdminGiftCodes from "./pages/AdminGiftCodes";
+import CoinStore from "./pages/CoinStore";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
@@ -159,6 +162,9 @@ const AppContent = () => {
         <Route path="/system-panel/verification" element={<StealthVerification />} />
         <Route path="/system-panel/wheel" element={<StealthWheel />} />
         <Route path="/rewards-wheel" element={<RewardsWheel />} />
+        <Route path="/redeem" element={<RedeemGiftCard />} />
+        <Route path="/admin/gift-codes" element={<AdminGiftCodes />} />
+        <Route path="/store" element={<CoinStore />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

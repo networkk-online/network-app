@@ -364,6 +364,38 @@ export type Database = {
         }
         Relationships: []
       }
+      combo_leaderboard: {
+        Row: {
+          created_at: string
+          id: string
+          max_combo: number
+          room_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_combo?: number
+          room_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_combo?: number
+          room_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "combo_leaderboard_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "live_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           content: string
@@ -587,6 +619,66 @@ export type Database = {
           follower_id?: string
           following_id?: string
           id?: string
+        }
+        Relationships: []
+      }
+      gift_codes: {
+        Row: {
+          code: string
+          coin_amount: number
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          redeemed_at: string | null
+          redeemed_by: string | null
+          status: string
+        }
+        Insert: {
+          code: string
+          coin_amount: number
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          status?: string
+        }
+        Update: {
+          code?: string
+          coin_amount?: number
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      gift_redemptions: {
+        Row: {
+          code: string
+          coin_amount: number
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          coin_amount: number
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          coin_amount?: number
+          created_at?: string
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }
