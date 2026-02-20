@@ -79,6 +79,7 @@ import RewardsWheel from "./pages/RewardsWheel";
 import RedeemGiftCard from "./pages/RedeemGiftCard";
 import AdminGiftCodes from "./pages/AdminGiftCodes";
 import CoinStore from "./pages/CoinStore";
+import TransactionHistory from "./pages/TransactionHistory";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
@@ -165,6 +166,7 @@ const AppContent = () => {
         <Route path="/redeem" element={<RedeemGiftCard />} />
         <Route path="/admin/gift-codes" element={<AdminGiftCodes />} />
         <Route path="/store" element={<CoinStore />} />
+        <Route path="/transactions" element={<TransactionHistory />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
