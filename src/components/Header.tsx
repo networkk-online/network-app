@@ -95,14 +95,6 @@ const Header = () => {
     navigate('/login');
   };
 
-  const userData = {
-    username: user?.user_metadata?.username || 'your_username',
-    displayName: user?.user_metadata?.full_name || 'Your Name',
-    avatar: profile?.avatar_url || user?.user_metadata?.avatar_url || '/default-avatar.jpg',
-    followers: 1248, following: 567, posts: 127,
-    bio: 'Content Creator | Digital Artist\nEarning through creativity 💚\nJoin the Network revolution!'
-  };
-
   const navigationItems = [
     { icon: MessageCircle, label: 'الرسائل', path: '/messages', showBadge: true },
     { icon: Video, label: 'البث', path: '/broadcast' },
@@ -110,7 +102,8 @@ const Header = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-strong safe-area-top">
+    <header className="fixed top-0 left-0 right-0 z-50 safe-area-top bg-black/70 backdrop-blur-[30px] border-b border-white/[0.04]"
+            style={{ boxShadow: '0 4px 30px rgba(0,0,0,0.5)' }}>
       <div className="container-responsive px-4 py-2.5">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -118,7 +111,10 @@ const Header = () => {
             <div className="w-7 h-7 sm:w-8 sm:h-8">
               <img src={logo} alt="Network Logo" className="w-full h-full object-contain" />
             </div>
-            <h1 className="text-lg sm:text-xl font-bold neon-text tracking-tight">Network</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight"
+                style={{ textShadow: '0 0 20px hsla(144, 90%, 33%, 0.2)' }}>
+              Network
+            </h1>
           </div>
 
           {/* Search — Desktop */}
@@ -126,25 +122,25 @@ const Header = () => {
             className="hidden md:flex items-center glass-input px-4 py-2 w-48 lg:w-64 cursor-pointer"
             onClick={() => navigate('/search')}
           >
-            <Search className="w-4 h-4 text-muted-foreground mr-2" strokeWidth={1.5} />
-            <input type="text" readOnly placeholder="بحث..." className="bg-transparent text-foreground placeholder-muted-foreground outline-none flex-1 text-sm" />
+            <Search className="w-4 h-4 text-white/30 mr-2" strokeWidth={1.4} />
+            <input type="text" readOnly placeholder="بحث..." className="bg-transparent text-foreground placeholder-white/25 outline-none flex-1 text-sm" />
           </div>
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/5 relative interactive-element" onClick={() => navigate('/notifications')}>
-              <Bell className="w-5 h-5" strokeWidth={1.5} />
+            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/notifications')}>
+              <Bell className="w-5 h-5 text-white/60" strokeWidth={1.4} />
               {unreadNotifications > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-xs border-0 rounded-full">
+                <Badge className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-[10px] border-0 rounded-full">
                   {unreadNotifications > 99 ? '99+' : unreadNotifications}
                 </Badge>
               )}
             </Button>
             {navigationItems.map((item, index) => (
-              <Button key={index} variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/5 relative interactive-element" onClick={() => navigate(item.path)}>
-                <item.icon className="w-5 h-5" strokeWidth={1.5} />
+              <Button key={index} variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate(item.path)}>
+                <item.icon className="w-5 h-5 text-white/60" strokeWidth={1.4} />
                 {item.showBadge && unreadMessages > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-xs border-0 rounded-full">
+                  <Badge className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-[10px] border-0 rounded-full">
                     {unreadMessages > 99 ? '99+' : unreadMessages}
                   </Badge>
                 )}
@@ -152,29 +148,29 @@ const Header = () => {
             ))}
             {user ? (
               <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-destructive/10 interactive-element" onClick={handleLogout}>
-                <LogOut className="w-5 h-5 text-destructive" strokeWidth={1.5} />
+                <LogOut className="w-5 h-5 text-destructive/70" strokeWidth={1.4} />
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/5 interactive-element" onClick={() => navigate('/login')}>
-                <LogOut className="w-5 h-5" strokeWidth={1.5} />
+              <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/[0.04] interactive-element" onClick={() => navigate('/login')}>
+                <LogOut className="w-5 h-5 text-white/60" strokeWidth={1.4} />
               </Button>
             )}
           </div>
 
           {/* Mobile Nav */}
           <div className="flex lg:hidden items-center gap-1">
-            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/5 relative interactive-element" onClick={() => navigate('/notifications')}>
-              <Bell className="w-5 h-5" strokeWidth={1.5} />
+            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/notifications')}>
+              <Bell className="w-5 h-5 text-white/60" strokeWidth={1.4} />
               {unreadNotifications > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-xs border-0 rounded-full">
+                <Badge className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-[10px] border-0 rounded-full">
                   {unreadNotifications > 99 ? '99+' : unreadNotifications}
                 </Badge>
               )}
             </Button>
-            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/5 relative interactive-element" onClick={() => navigate('/messages')}>
-              <MessageCircle className="w-5 h-5" strokeWidth={1.5} />
+            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/messages')}>
+              <MessageCircle className="w-5 h-5 text-white/60" strokeWidth={1.4} />
               {unreadMessages > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-xs border-0 rounded-full">
+                <Badge className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-[10px] border-0 rounded-full">
                   {unreadMessages > 99 ? '99+' : unreadMessages}
                 </Badge>
               )}
