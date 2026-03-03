@@ -82,6 +82,9 @@ import AdminGiftCodes from "./pages/AdminGiftCodes";
 import CoinStore from "./pages/CoinStore";
 import TransactionHistory from "./pages/TransactionHistory";
 import Recharge from "./pages/Recharge";
+import NetworkTV from "./pages/NetworkTV";
+import VideoPlayer from "./pages/VideoPlayer";
+import CreatorStudio from "./pages/CreatorStudio";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
@@ -171,6 +174,9 @@ const AppContent = () => {
         <Route path="/store" element={<CoinStore />} />
         <Route path="/transactions" element={<TransactionHistory />} />
         <Route path="/recharge" element={<Recharge />} />
+        <Route path="/network-tv" element={<NetworkTV />} />
+        <Route path="/watch/:videoId" element={<VideoPlayer />} />
+        <Route path="/creator-studio" element={<CreatorStudio />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
