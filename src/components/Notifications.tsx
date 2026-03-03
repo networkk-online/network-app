@@ -23,51 +23,40 @@ const NotificationItem = ({
   
   const getMessage = () => {
     switch (notification.type) {
-      case 'like':
-        return `أعجب ${actorName} بمنشورك`;
-      case 'comment':
-        return `علق ${actorName}: ${notification.content?.slice(0, 50)}${notification.content && notification.content.length > 50 ? '...' : ''}`;
-      case 'follow':
-        return `بدأ ${actorName} بمتابعتك`;
-      default:
-        return 'إشعار جديد';
+      case 'like': return `أعجب ${actorName} بمنشورك`;
+      case 'comment': return `علق ${actorName}: ${notification.content?.slice(0, 50)}${notification.content && notification.content.length > 50 ? '...' : ''}`;
+      case 'follow': return `بدأ ${actorName} بمتابعتك`;
+      default: return 'إشعار جديد';
     }
   };
 
   const handleClick = () => {
-    if (!notification.is_read) {
-      onMarkAsRead(notification.id);
-    }
-    // Navigate to post if available
-    if (notification.post_id) {
-      navigate('/');
-    }
+    if (!notification.is_read) onMarkAsRead(notification.id);
+    if (notification.post_id) navigate('/');
   };
 
   return (
     <div
       onClick={handleClick}
-      className={`p-3 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border last:border-0 ${
-        !notification.is_read ? 'bg-accent/20' : ''
+      className={`px-4 py-3 cursor-pointer transition-all duration-200 hover:bg-white/[0.03] ${
+        !notification.is_read ? 'bg-white/[0.02]' : ''
       }`}
     >
       <div className="flex items-start gap-3">
         <img
           src={notification.actor?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
           alt={actorName}
-          className="w-10 h-10 rounded-full object-cover"
+          className="w-10 h-10 rounded-full object-cover ring-[1px] ring-white/[0.06]"
         />
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-foreground">{getMessage()}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {formatDistanceToNow(new Date(notification.created_at), { 
-              addSuffix: true,
-              locale: ar 
-            })}
+          <p className="text-sm text-white/75">{getMessage()}</p>
+          <p className="text-[11px] text-white/25 mt-0.5">
+            {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: ar })}
           </p>
         </div>
         {!notification.is_read && (
-          <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+          <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2"
+               style={{ boxShadow: '0 0 6px hsla(144, 90%, 33%, 0.5)' }} />
         )}
       </div>
     </div>
@@ -80,46 +69,35 @@ export const Notifications = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-6 h-6" />
+        <Button variant="ghost" size="icon" className="relative hover:bg-white/[0.04]">
+          <Bell className="w-5 h-5 text-white/60" strokeWidth={1.4} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+            <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium"
+                  style={{ boxShadow: '0 0 8px hsla(144, 90%, 33%, 0.4)' }}>
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">الإشعارات</h3>
+      <PopoverContent className="w-80 p-0 bg-black/90 backdrop-blur-[35px] border-white/[0.08] rounded-2xl overflow-hidden" align="end"
+                       style={{ boxShadow: '0 16px 48px rgba(0,0,0,0.6), inset 0 1px 0 0 rgba(255,255,255,0.04)' }}>
+        <div className="flex items-center justify-between p-4 border-b border-white/[0.04]">
+          <h3 className="font-semibold text-white/90 text-sm">الإشعارات</h3>
           {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={markAllAsRead}
-              className="text-xs h-auto py-1 px-2"
-            >
+            <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-[11px] h-auto py-1 px-2 text-primary/60 hover:text-primary hover:bg-white/[0.03]">
               تحديد الكل كمقروء
             </Button>
           )}
         </div>
         <ScrollArea className="h-[400px]">
           {loading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              جاري التحميل...
-            </div>
+            <div className="p-8 text-center text-white/20 text-sm">جاري التحميل...</div>
           ) : notifications.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              لا توجد إشعارات
-            </div>
+            <div className="p-8 text-center text-white/15 text-sm">لا توجد إشعارات</div>
           ) : (
-            <div>
+            <div className="divide-y divide-white/[0.03]">
               {notifications.map((notification) => (
-                <NotificationItem
-                  key={notification.id}
-                  notification={notification}
-                  onMarkAsRead={markAsRead}
-                />
+                <NotificationItem key={notification.id} notification={notification} onMarkAsRead={markAsRead} />
               ))}
             </div>
           )}

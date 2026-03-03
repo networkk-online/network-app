@@ -144,7 +144,7 @@ export const ChatWindow = ({
               animate={{ opacity: 1, y: 0 }}
               className="flex justify-center mb-4"
             >
-              <span className="text-xs text-muted-foreground bg-white/5 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10">
+              <span className="text-[11px] text-white/25 bg-white/[0.03] backdrop-blur-md px-3 py-1 rounded-full border border-white/[0.05]">
                 {formatDateHeader(date)}
               </span>
             </motion.div>
@@ -182,7 +182,7 @@ export const ChatWindow = ({
       </div>
 
       {/* Instagram-style Input Area */}
-      <div className="glass-strong border-t border-white/10">
+      <div className="bg-black/80 backdrop-blur-[30px] border-t border-white/[0.04]">
         <GlassInput
           value={messageText}
           onChange={setMessageText}
