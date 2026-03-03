@@ -38,7 +38,7 @@ export const VideoEditor = ({ videoUrl, onApplyFilters }: VideoEditorProps) => {
     ctx.fillStyle = 'white';
     ctx.font = 'bold 24px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText('Network', canvas.width - 20, canvas.height - 20);
+    ctx.fillText('networkk.online', canvas.width - 20, canvas.height - 20);
     ctx.restore();
   };
 
