@@ -60,6 +60,7 @@ import CreateStory from "./pages/CreateStory";
 import CreateReel from "./pages/CreateReel";
 import SavedPosts from "./pages/SavedPosts";
 import PostView from "./pages/PostView";
+import ExploreFeed from "./pages/ExploreFeed";
 import SavedContent from "./pages/SavedContent";
 import LocalFameRank from "./pages/LocalFameRank";
 import VerificationRequests from "./pages/VerificationRequests";
@@ -96,6 +97,7 @@ const AppContent = () => {
         <Route path="/welcome" element={<SplashScreen />} />
         <Route path="/" element={<Index />} />
         <Route path="/explore" element={<Explore />} />
+        <Route path="/explore/feed/:postId" element={<ExploreFeed />} />
         <Route path="/broadcast" element={<Broadcast />} />
         <Route path="/business" element={<BusinessAccount />} />
         <Route path="/pages" element={<Pages />} />
