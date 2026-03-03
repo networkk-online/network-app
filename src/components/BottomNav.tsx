@@ -141,7 +141,7 @@ const BottomNav = () => {
           animate={{ y: 0 }}
           exit={{ y: 100 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-border safe-area-bottom"
+          className="fixed bottom-0 left-0 right-0 z-50 glass-strong rounded-t-3xl safe-area-bottom"
         >
           <div className="flex items-center justify-around px-2 py-3">
             {navItems.map((item) => {
@@ -155,12 +155,12 @@ const BottomNav = () => {
               className="flex flex-col items-center justify-center min-w-[60px] group relative"
             >
               <Icon 
-                className={`w-7 h-7 transition-colors ${
+                className={`w-7 h-7 transition-all duration-300 ${
                   active 
-                    ? 'text-primary' 
-                    : 'text-white group-hover:text-primary'
+                    ? 'text-primary nav-glow' 
+                    : 'text-white/70 group-hover:text-primary'
                 }`}
-                strokeWidth={active ? 2.5 : 2}
+                strokeWidth={active ? 2.5 : 1.5}
               />
             </button>
           );

@@ -203,7 +203,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen">
       <Header />
       <FloatingWheelIcon />
       
@@ -211,7 +211,7 @@ const Index = () => {
         <div className="desktop-layout">
           <div className="container-responsive mobile-padding">
             {/* Stories */}
-            <div className="border-b border-gray-800 pb-4 mb-6">
+            <div className="border-b border-white/10 pb-4 mb-6">
               {storiesLoading ? (
                 <StoriesRowSkeleton count={6} />
               ) : (

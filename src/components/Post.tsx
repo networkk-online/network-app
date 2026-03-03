@@ -332,7 +332,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   };
 
   return (
-    <div className="bg-black border border-gray-800 rounded-lg mb-6 overflow-hidden">
+    <div className="glass-card mb-6 overflow-hidden">
       {/* Post Header */}
       <div className="flex items-center justify-between p-4">
         <div 
@@ -517,7 +517,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         )}
 
         {/* Add Comment */}
-        <div className="pt-3 border-t border-gray-800">
+        <div className="pt-3 border-t border-white/10">
           {showVoiceRecorder ? (
             <VoiceRecorder 
               onRecordingComplete={handleVoiceComment}

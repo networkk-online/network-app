@@ -418,7 +418,7 @@ const Profile = () => {
   };
   if (loading) {
     return (
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-black/40">
         <Header />
         <main className="pt-20 pb-8">
           <div className="text-center text-gray-500">
@@ -442,7 +442,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen">
       <Header />
       
       <main className="pt-16 sm:pt-20 pb-28">
