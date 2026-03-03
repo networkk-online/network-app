@@ -1,4 +1,4 @@
-import { Camera, Plus } from 'lucide-react';
+import { Camera } from 'lucide-react';
 
 interface StoryCircleProps {
   username: string;
@@ -11,40 +11,39 @@ interface StoryCircleProps {
 }
 
 const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, hasViewed = false, onClick, onCameraClick }: StoryCircleProps) => {
-  const getBorderStyle = () => {
-    if (!hasStory) return 'p-0.5 bg-gray-700';
-    if (hasViewed) return 'p-0.5 bg-gray-500'; // رمادي بعد المشاهدة
-    return 'p-0.5 bg-gradient-to-tr from-orange-400 via-orange-500 to-orange-600'; // برتقالي قبل المشاهدة
+  const getRingClass = () => {
+    if (!hasStory) return 'story-ring-none';
+    if (hasViewed) return 'story-ring-viewed';
+    return 'story-ring-active';
   };
 
   return (
-    <div className="flex flex-col items-center space-y-1">
-      <div className="relative cursor-pointer" onClick={onClick}>
-        <div className={`${getBorderStyle()} rounded-full`}>
-          <div className="bg-black p-0.5 rounded-full">
+    <div className="flex flex-col items-center space-y-1.5">
+      <div className="relative cursor-pointer group" onClick={onClick}>
+        <div className={`${getRingClass()} p-[2.5px] rounded-full transition-transform duration-300 group-hover:scale-105 group-active:scale-95`}>
+          <div className="bg-background p-[2px] rounded-full">
             <img 
               src={avatar}
               alt={username}
-              className="w-16 h-16 rounded-full object-cover border-2 border-black"
+              className="w-[66px] h-[66px] rounded-full object-cover"
             />
           </div>
         </div>
         
-        {/* زر الكاميرا للقصة الخاصة - أسفل يمين الدائرة */}
         {isOwn && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onCameraClick?.();
             }}
-            className="absolute -bottom-1 -right-1 bg-primary hover:bg-primary/80 rounded-full p-1.5 border-2 border-black transition-colors"
+            className="absolute -bottom-0.5 -right-0.5 bg-primary hover:bg-primary/80 rounded-full p-1.5 border-2 border-background transition-all duration-200 hover:scale-110 active:scale-90 shadow-lg shadow-primary/30"
           >
-            <Camera className="w-4 h-4 text-primary-foreground" />
+            <Camera className="w-3.5 h-3.5 text-primary-foreground" />
           </button>
         )}
       </div>
       
-      <span className="text-xs text-gray-300 max-w-[70px] truncate">
+      <span className="text-[11px] text-muted-foreground max-w-[72px] truncate font-medium">
         {isOwn ? 'قصتك' : username}
       </span>
     </div>

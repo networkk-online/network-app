@@ -211,7 +211,7 @@ const Index = () => {
         <div className="desktop-layout">
           <div className="container-responsive mobile-padding">
             {/* Stories */}
-            <div className="border-b border-white/10 pb-4 mb-6">
+            <div className="border-b border-white/[0.06] pb-4 mb-6">
               {storiesLoading ? (
                 <StoriesRowSkeleton count={6} />
               ) : (
@@ -308,7 +308,7 @@ const Index = () => {
                 <>
                   <div className="text-center py-4 mb-4">
                     <p className="text-primary text-sm font-medium">✨ محتوى مقترح لك</p>
-                    <p className="text-gray-500 text-xs">تابع أشخاص لرؤية منشوراتهم هنا</p>
+                    <p className="text-muted-foreground text-xs">تابع أشخاص لرؤية منشوراتهم هنا</p>
                   </div>
                   {featuredPosts.map((post, index) => (
                     <div key={post.id}>
@@ -319,7 +319,7 @@ const Index = () => {
                 </>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 text-sm">لا توجد منشورات بعد</p>
+                  <p className="text-muted-foreground text-sm">لا توجد منشورات بعد</p>
                 </div>
               )}
             </div>

@@ -332,43 +332,42 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   };
 
   return (
-    <div className="glass-card mb-6 overflow-hidden">
+    <div className="glass-card mb-6">
       {/* Post Header */}
       <div className="flex items-center justify-between p-4">
         <div 
-          className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+          className="flex items-center gap-3 cursor-pointer group"
           onClick={() => navigate(`/profile/${userId}`)}
         >
           <img 
             src={userAvatar} 
             alt={username}
-            className="w-10 h-10 rounded-full object-cover border-2 border-green-500"
+            className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/40 transition-all group-hover:ring-primary/70"
           />
           <div>
-            <div className="flex items-center gap-1">
-              <p className="font-semibold neon-text">{username}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="font-semibold text-foreground text-sm">{username}</p>
               {isVerified && <VerifiedBadge size="sm" />}
             </div>
-            <div className="flex items-center space-x-2 text-xs text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{timeAgo}</span>
-              <span>•</span>
-              <span className="text-green-400">+${walletEarnings.toFixed(2)}</span>
+              <span className="text-primary/80">+${walletEarnings.toFixed(2)}</span>
             </div>
           </div>
         </div>
         <Button
           variant="ghost"
           size="sm"
-          className="p-1 hover:bg-transparent"
+          className="p-1.5 rounded-full hover:bg-white/5 interactive-element"
           onClick={() => setShowOptionsDrawer(true)}
         >
-          <MoreHorizontal className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+          <MoreHorizontal className="w-5 h-5 text-muted-foreground" strokeWidth={1.5} />
         </Button>
       </div>
 
       {/* Post Content */}
       {voiceUrl ? (
-        <div className="p-6 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+        <div className="p-6 flex items-center justify-center glass-dark mx-4 my-2 rounded-3xl">
           <VoiceMessage 
             audioUrl={voiceUrl}
             duration={voiceDuration || 0}
@@ -376,120 +375,112 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           />
         </div>
       ) : image ? (
-        <div className="relative">
+        <div className="relative mx-4 my-2 rounded-3xl overflow-hidden">
           <img 
             src={image} 
             alt="Post content"
             className="w-full h-96 object-cover"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/5 pointer-events-none" />
         </div>
       ) : null}
 
       {/* Post Actions */}
-      <div className="p-4">
+      <div className="px-5 pb-4 pt-3 relative z-10">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-3">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-0 hover:bg-transparent group"
+              className="p-0 hover:bg-transparent interactive-element"
               onClick={handleLike}
             >
               <Heart 
                 className={`w-6 h-6 transition-all duration-300 ${
                   isLiked 
-                    ? 'fill-red-500 text-red-500 animate-pulse scale-110' 
-                    : 'text-white hover:text-red-400 group-hover:scale-110'
+                    ? 'fill-destructive text-destructive scale-110' 
+                    : 'text-foreground/70 hover:text-destructive'
                 }`} 
+                strokeWidth={1.5}
               />
             </Button>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-0 hover:bg-transparent group"
+              className="p-0 hover:bg-transparent interactive-element"
               onClick={() => setShowCommentsModal(true)}
             >
-              <MessageCircle className="w-6 h-6 hover:text-blue-400 transition-all duration-200 group-hover:scale-110" />
+              <MessageCircle className="w-6 h-6 text-foreground/70 hover:text-accent transition-colors" strokeWidth={1.5} />
             </Button>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-0 hover:bg-transparent group"
+              className="p-0 hover:bg-transparent interactive-element"
               onClick={handleRepost}
               disabled={repostLoading}
             >
               <Repeat2 
-                className={`w-6 h-6 transition-all duration-200 group-hover:scale-110 ${
-                  isReposted 
-                    ? 'text-green-500' 
-                    : 'text-white hover:text-green-400'
+                className={`w-6 h-6 transition-all duration-200 ${
+                  isReposted ? 'text-primary' : 'text-foreground/70 hover:text-primary'
                 } ${repostLoading ? 'opacity-50' : ''}`} 
+                strokeWidth={1.5}
               />
             </Button>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-0 hover:bg-transparent group"
+              className="p-0 hover:bg-transparent interactive-element"
               onClick={() => setShowShareMenu(true)}
             >
-              <Send className="w-6 h-6 hover:text-green-400 transition-all duration-200 group-hover:scale-110" />
+              <Send className="w-6 h-6 text-foreground/70 hover:text-primary transition-colors" strokeWidth={1.5} />
             </Button>
-            {/* Tip Button */}
             {currentUser?.id !== userId && (
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-0 hover:bg-transparent group"
+                className="p-0 hover:bg-transparent interactive-element"
                 onClick={() => setShowTipDialog(true)}
               >
-                <DollarSign className="w-6 h-6 text-green-400 hover:text-green-300 transition-all duration-200 group-hover:scale-110" />
+                <DollarSign className="w-6 h-6 text-primary/80 hover:text-primary transition-colors" strokeWidth={1.5} />
               </Button>
             )}
           </div>
           <Button
             variant="ghost" 
             size="sm" 
-            className="p-0 hover:bg-transparent group"
+            className="p-0 hover:bg-transparent interactive-element"
             onClick={handleSave}
             disabled={saveLoading}
           >
             <Bookmark 
-              className={`w-6 h-6 transition-all duration-200 group-hover:scale-110 ${
+              className={`w-6 h-6 transition-all duration-200 ${
                 isSaved 
-                  ? 'fill-yellow-400 text-yellow-400' 
-                  : 'hover:text-yellow-400'
+                  ? 'fill-accent text-accent' 
+                  : 'text-foreground/70 hover:text-accent'
               }`} 
+              strokeWidth={1.5}
             />
           </Button>
         </div>
 
-        {/* Enhanced Likes and Reposts Count */}
+        {/* Likes & Reposts */}
         <div className="flex items-center gap-4 mb-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex -space-x-1">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-r from-pink-400 to-red-400 border border-white"></div>
-              <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 border border-white"></div>
-              <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-400 to-teal-400 border border-white"></div>
-            </div>
-            <p className="font-semibold text-white">
-              <span className="bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
-                {likeCount.toLocaleString()}
-              </span>
-              <span className="text-gray-300 ml-1">إعجاب</span>
-            </p>
-          </div>
+          <p className="text-sm font-semibold text-foreground">
+            <span className="text-primary">{likeCount.toLocaleString()}</span>
+            <span className="text-muted-foreground ml-1">إعجاب</span>
+          </p>
           {repostCount > 0 && (
-            <p className="font-semibold text-white">
-              <span className="text-green-400">{repostCount.toLocaleString()}</span>
-              <span className="text-gray-300 ml-1">إعادة نشر</span>
+            <p className="text-sm font-semibold text-foreground">
+              <span className="text-primary">{repostCount.toLocaleString()}</span>
+              <span className="text-muted-foreground ml-1">إعادة نشر</span>
             </p>
           )}
         </div>
 
         {/* Caption */}
         <div className="mb-2">
-          <span className="font-semibold neon-text mr-2">{username}</span>
-          <span className="text-white">{caption}</span>
+          <span className="font-semibold text-foreground text-sm mr-2">{username}</span>
+          <span className="text-foreground/90 text-sm">{caption}</span>
         </div>
 
         {/* Comments Section */}
@@ -497,7 +488,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           <div className="mb-3">
             <button 
               onClick={() => setShowComments(!showComments)}
-              className="text-gray-400 text-sm hover:text-gray-300"
+              className="text-muted-foreground text-sm hover:text-foreground/80 transition-colors"
             >
               عرض جميع التعليقات ({commentsCount})
             </button>
@@ -505,10 +496,10 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               <div className="mt-2 space-y-2">
                 {comments.map((c) => (
                   <div key={c.id} className="text-sm">
-                    <span className="font-semibold neon-text mr-2">
+                    <span className="font-semibold text-foreground mr-2">
                       {c.profiles?.username || c.profiles?.full_name || 'مستخدم'}
                     </span>
-                    <span className="text-white">{c.content}</span>
+                    <span className="text-foreground/80">{c.content}</span>
                   </div>
                 ))}
               </div>
@@ -517,40 +508,38 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         )}
 
         {/* Add Comment */}
-        <div className="pt-3 border-t border-white/10">
+        <div className="pt-3 border-t border-white/[0.06]">
           {showVoiceRecorder ? (
             <VoiceRecorder 
               onRecordingComplete={handleVoiceComment}
               maxDuration={60}
             />
           ) : (
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-3">
               <input 
                 type="text" 
                 placeholder="أضف تعليق..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !isSubmitting) {
-                    handleComment();
-                  }
+                  if (e.key === 'Enter' && !isSubmitting) handleComment();
                 }}
                 disabled={isSubmitting}
-                className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none text-sm"
+                className="flex-1 bg-transparent text-foreground placeholder-muted-foreground outline-none text-sm"
               />
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-gray-400 hover:text-green-400 p-0"
+                className="text-muted-foreground hover:text-primary p-0 interactive-element"
                 onClick={() => setShowVoiceRecorder(true)}
                 disabled={isSubmitting}
               >
-                <Mic className="w-5 h-5" />
+                <Mic className="w-5 h-5" strokeWidth={1.5} />
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-green-400 hover:text-green-300 text-sm font-semibold p-0"
+                className="text-primary hover:text-primary/80 text-sm font-semibold p-0"
                 onClick={handleComment}
                 disabled={!comment.trim() || isSubmitting}
               >
