@@ -332,7 +332,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   };
 
   return (
-    <div className="glass-card mb-6">
+    <div className="glass-card mb-5">
       {/* Post Header */}
       <div className="flex items-center justify-between p-4">
         <div 
@@ -342,32 +342,32 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           <img 
             src={userAvatar} 
             alt={username}
-            className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/40 transition-all group-hover:ring-primary/70"
+            className="w-10 h-10 rounded-full object-cover ring-[1.5px] ring-white/10 transition-all group-hover:ring-white/20"
           />
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="font-semibold text-foreground text-sm">{username}</p>
+              <p className="font-semibold text-white/95 text-sm tracking-wide">{username}</p>
               {isVerified && <VerifiedBadge size="sm" />}
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs text-white/35">
               <span>{timeAgo}</span>
-              <span className="text-primary/80">+${walletEarnings.toFixed(2)}</span>
+              <span className="text-primary/60">+${walletEarnings.toFixed(2)}</span>
             </div>
           </div>
         </div>
         <Button
           variant="ghost"
           size="sm"
-          className="p-1.5 rounded-full hover:bg-white/5 interactive-element"
+          className="p-1.5 rounded-full hover:bg-white/[0.04] interactive-element"
           onClick={() => setShowOptionsDrawer(true)}
         >
-          <MoreHorizontal className="w-5 h-5 text-muted-foreground" strokeWidth={1.5} />
+          <MoreHorizontal className="w-5 h-5 text-white/30" strokeWidth={1.4} />
         </Button>
       </div>
 
       {/* Post Content */}
       {voiceUrl ? (
-        <div className="p-6 flex items-center justify-center glass-dark mx-4 my-2 rounded-3xl">
+        <div className="p-6 flex items-center justify-center mx-4 my-2 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
           <VoiceMessage 
             audioUrl={voiceUrl}
             duration={voiceDuration || 0}
@@ -375,20 +375,23 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           />
         </div>
       ) : image ? (
-        <div className="relative mx-4 my-2 rounded-3xl overflow-hidden">
+        <div className="relative mx-4 my-2 rounded-2xl overflow-hidden">
           <img 
             src={image} 
             alt="Post content"
             className="w-full h-96 object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+          {/* Glass edge overlay */}
+          <div className="absolute inset-0 pointer-events-none rounded-2xl" 
+               style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)' }} />
         </div>
       ) : null}
 
       {/* Post Actions */}
       <div className="px-5 pb-4 pt-3 relative z-10">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3.5">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -396,12 +399,12 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               onClick={handleLike}
             >
               <Heart 
-                className={`w-6 h-6 transition-all duration-300 ${
+                className={`w-[22px] h-[22px] transition-all duration-300 ${
                   isLiked 
                     ? 'fill-destructive text-destructive scale-110' 
-                    : 'text-foreground/70 hover:text-destructive'
+                    : 'text-white/50 hover:text-destructive'
                 }`} 
-                strokeWidth={1.5}
+                strokeWidth={1.4}
               />
             </Button>
             <Button 
@@ -410,7 +413,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               className="p-0 hover:bg-transparent interactive-element"
               onClick={() => setShowCommentsModal(true)}
             >
-              <MessageCircle className="w-6 h-6 text-foreground/70 hover:text-accent transition-colors" strokeWidth={1.5} />
+              <MessageCircle className="w-[22px] h-[22px] text-white/50 hover:text-white/80 transition-colors" strokeWidth={1.4} />
             </Button>
             <Button 
               variant="ghost" 
@@ -420,10 +423,10 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               disabled={repostLoading}
             >
               <Repeat2 
-                className={`w-6 h-6 transition-all duration-200 ${
-                  isReposted ? 'text-primary' : 'text-foreground/70 hover:text-primary'
+                className={`w-[22px] h-[22px] transition-all duration-200 ${
+                  isReposted ? 'text-primary' : 'text-white/50 hover:text-primary'
                 } ${repostLoading ? 'opacity-50' : ''}`} 
-                strokeWidth={1.5}
+                strokeWidth={1.4}
               />
             </Button>
             <Button 
@@ -432,7 +435,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               className="p-0 hover:bg-transparent interactive-element"
               onClick={() => setShowShareMenu(true)}
             >
-              <Send className="w-6 h-6 text-foreground/70 hover:text-primary transition-colors" strokeWidth={1.5} />
+              <Send className="w-[22px] h-[22px] text-white/50 hover:text-primary transition-colors" strokeWidth={1.4} />
             </Button>
             {currentUser?.id !== userId && (
               <Button 
@@ -441,7 +444,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
                 className="p-0 hover:bg-transparent interactive-element"
                 onClick={() => setShowTipDialog(true)}
               >
-                <DollarSign className="w-6 h-6 text-primary/80 hover:text-primary transition-colors" strokeWidth={1.5} />
+                <DollarSign className="w-[22px] h-[22px] text-primary/50 hover:text-primary transition-colors" strokeWidth={1.4} />
               </Button>
             )}
           </div>
@@ -453,34 +456,34 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
             disabled={saveLoading}
           >
             <Bookmark 
-              className={`w-6 h-6 transition-all duration-200 ${
+              className={`w-[22px] h-[22px] transition-all duration-200 ${
                 isSaved 
-                  ? 'fill-accent text-accent' 
-                  : 'text-foreground/70 hover:text-accent'
+                  ? 'fill-white/80 text-white/80' 
+                  : 'text-white/50 hover:text-white/80'
               }`} 
-              strokeWidth={1.5}
+              strokeWidth={1.4}
             />
           </Button>
         </div>
 
         {/* Likes & Reposts */}
         <div className="flex items-center gap-4 mb-2">
-          <p className="text-sm font-semibold text-foreground">
-            <span className="text-primary">{likeCount.toLocaleString()}</span>
-            <span className="text-muted-foreground ml-1">إعجاب</span>
+          <p className="text-sm font-medium">
+            <span className="text-white/90">{likeCount.toLocaleString()}</span>
+            <span className="text-white/30 ml-1">إعجاب</span>
           </p>
           {repostCount > 0 && (
-            <p className="text-sm font-semibold text-foreground">
-              <span className="text-primary">{repostCount.toLocaleString()}</span>
-              <span className="text-muted-foreground ml-1">إعادة نشر</span>
+            <p className="text-sm font-medium">
+              <span className="text-white/90">{repostCount.toLocaleString()}</span>
+              <span className="text-white/30 ml-1">إعادة نشر</span>
             </p>
           )}
         </div>
 
         {/* Caption */}
         <div className="mb-2">
-          <span className="font-semibold text-foreground text-sm mr-2">{username}</span>
-          <span className="text-foreground/90 text-sm">{caption}</span>
+          <span className="font-semibold text-white/90 text-sm mr-2">{username}</span>
+          <span className="text-white/60 text-sm">{caption}</span>
         </div>
 
         {/* Comments Section */}
@@ -508,7 +511,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         )}
 
         {/* Add Comment */}
-        <div className="pt-3 border-t border-white/[0.06]">
+        <div className="pt-3 border-t border-white/[0.04]">
           {showVoiceRecorder ? (
             <VoiceRecorder 
               onRecordingComplete={handleVoiceComment}
@@ -525,7 +528,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
                   if (e.key === 'Enter' && !isSubmitting) handleComment();
                 }}
                 disabled={isSubmitting}
-                className="flex-1 bg-transparent text-foreground placeholder-muted-foreground outline-none text-sm"
+                className="flex-1 bg-transparent text-white/80 placeholder-white/20 outline-none text-sm"
               />
               <Button 
                 variant="ghost" 
@@ -534,7 +537,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
                 onClick={() => setShowVoiceRecorder(true)}
                 disabled={isSubmitting}
               >
-                <Mic className="w-5 h-5" strokeWidth={1.5} />
+                <Mic className="w-5 h-5 text-white/30" strokeWidth={1.4} />
               </Button>
               <Button 
                 variant="ghost" 

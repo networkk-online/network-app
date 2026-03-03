@@ -211,7 +211,7 @@ const Index = () => {
         <div className="desktop-layout">
           <div className="container-responsive mobile-padding">
             {/* Stories */}
-            <div className="border-b border-white/[0.06] pb-4 mb-6">
+            <div className="border-b border-white/[0.04] pb-4 mb-6">
               {storiesLoading ? (
                 <StoriesRowSkeleton count={6} />
               ) : (
@@ -260,7 +260,7 @@ const Index = () => {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Film className="w-5 h-5 text-primary" />
-                    <h2 className="text-white font-semibold">ريلز</h2>
+                    <h2 className="text-white/90 font-semibold text-sm tracking-wide">ريلز</h2>
                   </div>
                   <button 
                     onClick={() => navigate('/shorts')}
