@@ -156,7 +156,7 @@ const Header = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-gray-800">
+    <header className="fixed top-0 left-0 right-0 z-50 glass-strong rounded-b-2xl">
       <div className="container-responsive px-3 sm:px-4 py-2 sm:py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -173,7 +173,7 @@ const Header = () => {
 
           {/* Search Bar - Hidden on mobile, visible on tablet+ */}
           <div 
-            className="hidden md:flex items-center bg-gray-900 rounded-lg px-3 py-2 w-48 lg:w-64 cursor-pointer hover:bg-gray-800 transition-colors"
+            className="hidden md:flex items-center glass-input rounded-2xl px-3 py-2 w-48 lg:w-64 cursor-pointer hover:border-white/20 transition-colors"
             onClick={() => navigate('/search')}
           >
             <Search className="w-4 h-4 text-gray-400 mr-2" />

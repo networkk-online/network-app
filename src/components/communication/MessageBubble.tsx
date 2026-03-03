@@ -58,10 +58,10 @@ export const MessageBubble = ({
             ) : mediaType === 'voice' ? (
               <div 
                 className={cn(
-                  'flex items-center gap-3 px-4 py-3 rounded-[22px]',
+                  'flex items-center gap-3 px-4 py-3 rounded-[22px] backdrop-blur-xl',
                   isOwn
-                    ? 'bg-gradient-to-br from-[#833AB4] via-[#C13584] to-[#E1306C]'
-                    : 'bg-[#262626]'
+                    ? 'bg-gradient-to-br from-blue-500/60 to-purple-500/60 border border-white/20'
+                    : 'bg-white/10 border border-white/15'
                 )}
               >
                 <motion.button 
@@ -111,10 +111,10 @@ export const MessageBubble = ({
         {content && (
           <motion.div
             className={cn(
-              'rounded-[22px] px-4 py-2.5 shadow-md max-w-full',
+              'rounded-[22px] px-4 py-2.5 max-w-full',
               isOwn
-                ? 'bg-gradient-to-br from-[#833AB4] via-[#C13584] to-[#E1306C] text-white'
-                : 'bg-[#262626] text-white'
+                ? 'bg-gradient-to-br from-blue-500/70 to-purple-500/70 backdrop-blur-xl border border-white/20 text-white shadow-lg shadow-blue-500/20'
+                : 'bg-white/10 backdrop-blur-xl border border-white/15 text-white shadow-lg'
             )}
           >
             <p className="text-[15px] leading-relaxed break-words">{content}</p>
