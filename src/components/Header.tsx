@@ -109,11 +109,11 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-7 h-7 sm:w-8 sm:h-8">
-              <img src={logo} alt="Network Logo" className="w-full h-full object-contain" />
+              <img src={logo} alt="networkk.online Logo" className="w-full h-full object-contain" />
             </div>
-            <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight"
+            <h1 className="text-sm sm:text-lg font-bold text-foreground tracking-tight"
                 style={{ textShadow: '0 0 20px hsla(144, 90%, 33%, 0.2)' }}>
-              Network
+              networkk.online
             </h1>
           </div>
 
