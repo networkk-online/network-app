@@ -8,7 +8,6 @@ import {
   LogOut, Tv, ChevronDown
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import nCinemaLogo from '@/assets/n-cinema-logo.png';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -30,11 +29,11 @@ const categories = [
 
 const sidebarItems = [
   { id: 'home', label: 'الرئيسية', icon: Home, path: '/network-tv' },
-  { id: 'explore', label: 'استكشاف', icon: Compass, path: '/network-tv' },
+  { id: 'explore', label: 'استكشاف', icon: Compass, path: '/explore' },
   { id: 'trending', label: 'الرائج', icon: TrendingUp, path: '/network-tv' },
   { id: 'history', label: 'السجل', icon: History, path: '/network-tv' },
-  { id: 'liked', label: 'المعجب بها', icon: ThumbsUp, path: '/network-tv' },
-  { id: 'playlists', label: 'قوائم التشغيل', icon: ListVideo, path: '/network-tv' },
+  { id: 'liked', label: 'المعجب بها', icon: ThumbsUp, path: '/saved' },
+  { id: 'playlists', label: 'قوائم التشغيل', icon: ListVideo, path: '/saved' },
   { id: 'studio', label: 'الاستوديو', icon: BarChart3, path: '/creator-studio' },
   { id: 'settings', label: 'الإعدادات', icon: Settings, path: '/settings' },
 ];
@@ -64,6 +63,41 @@ const timeAgo = (date: string) => {
   if (days < 30) return `منذ ${days} يوم`;
   const months = Math.floor(days / 30);
   return `منذ ${months} شهر`;
+};
+
+/* ───── White Neon Brand Text ───── */
+const NeonBrand = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
+  const textSize = size === 'lg' ? 'text-2xl' : size === 'md' ? 'text-base' : 'text-sm';
+  return (
+    <h1 className={`${textSize} font-bold tracking-tight select-none`}>
+      <motion.span
+        className="text-foreground"
+        animate={{
+          textShadow: [
+            '0 0 7px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.2)',
+            '0 0 12px rgba(255,255,255,0.6), 0 0 25px rgba(255,255,255,0.3)',
+            '0 0 7px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.2)',
+          ],
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        Networkk
+      </motion.span>
+      <motion.span
+        className="text-foreground ml-1.5"
+        animate={{
+          textShadow: [
+            '0 0 7px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.2)',
+            '0 0 12px rgba(255,255,255,0.6), 0 0 25px rgba(255,255,255,0.3)',
+            '0 0 7px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.2)',
+          ],
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+      >
+        Cinema
+      </motion.span>
+    </h1>
+  );
 };
 
 /* ───── Hero Featured Slider ───── */
@@ -101,48 +135,33 @@ const HeroSlider = ({ videos, profiles, onSelect }: { videos: any[]; profiles: M
             </div>
           )}
           <div className="absolute inset-0" style={{ background: 'linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%)' }} />
-
           <div className="absolute bottom-0 left-0 right-0 p-6 z-10" dir="rtl">
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-1 rounded-md bg-primary/20 text-primary text-[10px] font-bold uppercase tracking-wider border border-primary/30">
-                ★ رائج
-              </span>
+              <span className="px-2.5 py-1 rounded-md bg-primary/20 text-primary text-[10px] font-bold uppercase tracking-wider border border-primary/30">★ رائج</span>
             </div>
-            <h2 className="text-foreground text-xl sm:text-2xl font-bold leading-tight line-clamp-2 max-w-xl">
-              {video.title}
-            </h2>
+            <h2 className="text-foreground text-xl sm:text-2xl font-bold leading-tight line-clamp-2 max-w-xl">{video.title}</h2>
             <div className="flex items-center gap-3 mt-3">
               <Avatar className="w-8 h-8 ring-1 ring-white/20">
                 <AvatarImage src={profile?.avatar_url} />
-                <AvatarFallback className="bg-white/[0.08] text-foreground text-xs">
-                  {(profile?.full_name || 'م')[0]}
-                </AvatarFallback>
+                <AvatarFallback className="bg-white/[0.08] text-foreground text-xs">{(profile?.full_name || 'م')[0]}</AvatarFallback>
               </Avatar>
               <span className="text-foreground/70 text-xs font-medium">{profile?.full_name || profile?.username || 'مبدع'}</span>
               <span className="text-foreground/30 text-[10px]">•</span>
-              <span className="text-foreground/40 text-[10px] flex items-center gap-1">
-                <Eye className="w-3 h-3" /> {formatViews(video.views_count || 0)} مشاهدة
-              </span>
+              <span className="text-foreground/40 text-[10px] flex items-center gap-1"><Eye className="w-3 h-3" /> {formatViews(video.views_count || 0)} مشاهدة</span>
             </div>
           </div>
-
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-            <div className="w-16 h-16 rounded-full bg-white/[0.08] backdrop-blur-2xl border border-white/[0.15] flex items-center justify-center"
-                 style={{ boxShadow: '0 0 40px rgba(0,0,0,0.4)' }}>
+            <div className="w-16 h-16 rounded-full bg-white/[0.08] backdrop-blur-2xl border border-white/[0.15] flex items-center justify-center" style={{ boxShadow: '0 0 40px rgba(0,0,0,0.4)' }}>
               <Play className="w-7 h-7 text-foreground fill-white ml-1" />
             </div>
           </div>
         </motion.div>
       </AnimatePresence>
-
       {videos.length > 1 && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
           {videos.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => { setCurrent(i); clearInterval(timerRef.current!); }}
-              className={`h-1 rounded-full transition-all duration-500 ${i === current ? 'w-6 bg-primary' : 'w-1.5 bg-white/20'}`}
-            />
+            <button key={i} onClick={() => { setCurrent(i); clearInterval(timerRef.current!); }}
+              className={`h-1 rounded-full transition-all duration-500 ${i === current ? 'w-6 bg-primary' : 'w-1.5 bg-white/20'}`} />
           ))}
         </div>
       )}
@@ -168,7 +187,7 @@ const GlassShimmer = () => (
   </div>
 );
 
-/* ───── Video Card (YouTube-style) ───── */
+/* ───── Video Card ───── */
 const VideoCard = ({ video, profile, onClick }: { video: any; profile: any; onClick: () => void }) => {
   const [hovered, setHovered] = useState(false);
   const isEarner = (video.views_count || 0) > 500;
@@ -177,6 +196,7 @@ const VideoCard = ({ video, profile, onClick }: { video: any; profile: any; onCl
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
+      whileTap={{ scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
@@ -194,9 +214,7 @@ const VideoCard = ({ video, profile, onClick }: { video: any; profile: any; onCl
         )}
         <div className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'}`} />
         {video.duration > 0 && (
-          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-[11px] text-foreground/90 font-medium z-10">
-            {formatDuration(video.duration)}
-          </div>
+          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-[11px] text-foreground/90 font-medium z-10">{formatDuration(video.duration)}</div>
         )}
         {isEarner && (
           <div className="absolute top-2 left-2 z-10">
@@ -230,27 +248,26 @@ const VideoCard = ({ video, profile, onClick }: { video: any; profile: any; onCl
   );
 };
 
-/* ───── Sidebar (Desktop) ───── */
-const CinemaSidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) => {
-  const navigate = useNavigate();
-
+/* ───── Sidebar ───── */
+const CinemaSidebar = ({ collapsed, activeId, onSelect }: { collapsed: boolean; activeId: string; onSelect: (item: typeof sidebarItems[0]) => void }) => {
   return (
     <div
-      className={`hidden lg:flex flex-col fixed top-[56px] right-0 bottom-0 z-40 transition-all duration-300 ${
-        collapsed ? 'w-[72px]' : 'w-[220px]'
-      } bg-black/40 backdrop-blur-2xl border-l border-white/[0.06]`}
+      className={`hidden lg:flex flex-col fixed top-[56px] right-0 bottom-0 z-40 transition-all duration-300 ${collapsed ? 'w-[72px]' : 'w-[220px]'} bg-black/40 backdrop-blur-2xl border-l border-white/[0.06]`}
       dir="rtl"
     >
       <div className="flex-1 py-3 overflow-y-auto scrollbar-hide">
         {sidebarItems.map(item => (
-          <button
+          <motion.button
             key={item.id}
-            onClick={() => navigate(item.path)}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/[0.04] ${collapsed ? 'justify-center' : ''}`}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onSelect(item)}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${collapsed ? 'justify-center' : ''} ${
+              activeId === item.id ? 'bg-primary/10 text-primary border-r-2 border-primary' : 'text-foreground/60 hover:bg-white/[0.04]'
+            }`}
           >
-            <item.icon className="w-5 h-5 text-foreground/60 flex-shrink-0" strokeWidth={1.5} />
-            {!collapsed && <span className="text-foreground/70">{item.label}</span>}
-          </button>
+            <item.icon className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
+            {!collapsed && <span>{item.label}</span>}
+          </motion.button>
         ))}
       </div>
     </div>
@@ -260,11 +277,6 @@ const CinemaSidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: 
 /* ───── Profile Dropdown ───── */
 const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: () => void }) => {
   const navigate = useNavigate();
-
-  const handleStudioSwitch = () => {
-    onClose();
-    navigate('/creator-studio');
-  };
 
   return (
     <>
@@ -278,32 +290,23 @@ const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: 
         style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 1px rgba(255,255,255,0.1) inset' }}
         dir="rtl"
       >
-        {/* User Info */}
         <div className="p-4 border-b border-white/[0.06]">
           <div className="flex items-center gap-3">
             <Avatar className="w-12 h-12 ring-2 ring-primary/30">
               <AvatarImage src={userProfile?.avatar_url} />
-              <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
-                {(userProfile?.full_name || 'U')[0]}
-              </AvatarFallback>
+              <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">{(userProfile?.full_name || 'U')[0]}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
               <p className="text-foreground font-semibold text-sm truncate">{userProfile?.full_name || 'المستخدم'}</p>
               <p className="text-muted-foreground text-[11px] truncate">@{userProfile?.username || 'user'}</p>
               {userProfile?.is_verified && (
-                <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-primary font-medium">
-                  <Star className="w-3 h-3 fill-primary" /> موثق
-                </span>
+                <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-primary font-medium"><Star className="w-3 h-3 fill-primary" /> موثق</span>
               )}
             </div>
           </div>
         </div>
-
-        {/* Cinema Studio Switch Button */}
         <div className="p-3">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={handleStudioSwitch}
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { onClose(); navigate('/creator-studio'); }}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all group"
             style={{ boxShadow: '0 0 20px hsla(144,90%,33%,0.08)' }}
           >
@@ -317,25 +320,25 @@ const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: 
             <ArrowRight className="w-4 h-4 text-primary/40 rotate-180" />
           </motion.button>
         </div>
-
-        {/* Menu Items */}
         <div className="px-2 pb-2 space-y-0.5">
-          <button onClick={() => { onClose(); navigate('/profile'); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors">
-            <User className="w-4 h-4" strokeWidth={1.5} />
-            <span>ملفك الشخصي</span>
-          </button>
-          <button onClick={() => { onClose(); navigate('/creator-studio'); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors">
-            <BarChart3 className="w-4 h-4" strokeWidth={1.5} />
-            <span>استوديو المبدعين</span>
-          </button>
-          <button onClick={() => { onClose(); navigate('/settings'); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors">
-            <Settings className="w-4 h-4" strokeWidth={1.5} />
-            <span>الإعدادات</span>
-          </button>
-          <button onClick={() => { onClose(); navigate('/'); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive/70 hover:bg-destructive/10 transition-colors">
-            <LogOut className="w-4 h-4" strokeWidth={1.5} />
-            <span>العودة للشبكة</span>
-          </button>
+          {[
+            { label: 'ملفك الشخصي', icon: User, path: '/profile' },
+            { label: 'استوديو المبدعين', icon: BarChart3, path: '/creator-studio' },
+            { label: 'الإعدادات', icon: Settings, path: '/settings' },
+          ].map(item => (
+            <motion.button key={item.path} whileTap={{ scale: 0.97 }}
+              onClick={() => { onClose(); navigate(item.path); }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors"
+            >
+              <item.icon className="w-4 h-4" strokeWidth={1.5} /><span>{item.label}</span>
+            </motion.button>
+          ))}
+          <motion.button whileTap={{ scale: 0.97 }}
+            onClick={() => { onClose(); navigate('/'); }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive/70 hover:bg-destructive/10 transition-colors"
+          >
+            <LogOut className="w-4 h-4" strokeWidth={1.5} /><span>العودة للشبكة</span>
+          </motion.button>
         </div>
       </motion.div>
     </>
@@ -358,6 +361,7 @@ const NetworkTV = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [activeSidebarId, setActiveSidebarId] = useState('home');
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -438,6 +442,15 @@ const NetworkTV = () => {
     return () => observer.disconnect();
   }, [videos.length, hasMore, loadingMore, loading, fetchVideos]);
 
+  const handleSidebarSelect = (item: typeof sidebarItems[0]) => {
+    setActiveSidebarId(item.id);
+    if (item.id === 'trending') {
+      setActiveCategory('trending');
+    } else {
+      navigate(item.path);
+    }
+  };
+
   return (
     <motion.div
       initial={{ scale: 1.1, opacity: 0 }}
@@ -445,7 +458,7 @@ const NetworkTV = () => {
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="min-h-screen bg-background"
     >
-      {/* Cinema Curtain with N Logo */}
+      {/* Cinema Curtain */}
       <AnimatePresence>
         {!entered && (
           <motion.div
@@ -455,18 +468,8 @@ const NetworkTV = () => {
             style={{ transformOrigin: 'top' }}
           >
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} className="text-center">
-              <motion.img
-                src={nCinemaLogo}
-                alt="Networkk Cinema"
-                className="w-24 h-24 mx-auto mb-2 object-contain"
-                animate={{ filter: ['drop-shadow(0 0 12px hsla(144,90%,33%,0.4))', 'drop-shadow(0 0 24px hsla(144,90%,33%,0.7))', 'drop-shadow(0 0 12px hsla(144,90%,33%,0.4))'] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <p className="text-sm font-semibold mt-2">
-                <span className="text-foreground">Networkk</span>{' '}
-                <span className="text-primary">Cinema</span>
-              </p>
-              <div className="mt-3 w-28 h-0.5 mx-auto rounded-full bg-white/5 overflow-hidden">
+              <NeonBrand size="lg" />
+              <div className="mt-4 w-28 h-0.5 mx-auto rounded-full bg-white/5 overflow-hidden">
                 <motion.div className="h-full bg-primary/40 rounded-full" initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ duration: 0.4 }} />
               </div>
               <p className="text-muted-foreground text-[10px] mt-2">Syncing your Network Identity...</p>
@@ -475,94 +478,55 @@ const NetworkTV = () => {
         )}
       </AnimatePresence>
 
-      {/* ═══ YouTube-style Top Header ═══ */}
+      {/* ═══ Top Header ═══ */}
       <header className="sticky top-0 z-50 h-14 bg-black/40 backdrop-blur-2xl border-b border-white/[0.05] flex items-center px-4 gap-3">
-        {/* Right side: Menu + Logo */}
         <div className="flex items-center gap-3 flex-1" dir="rtl">
-          <button
+          <motion.button whileTap={{ scale: 0.9 }}
             onClick={() => setSidebarCollapsed(p => !p)}
             className="hidden lg:flex w-9 h-9 rounded-full items-center justify-center hover:bg-white/[0.06] transition-colors"
           >
             <Menu className="w-5 h-5 text-foreground/60" strokeWidth={1.5} />
-          </button>
-
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => navigate(-1)}
-            className="lg:hidden w-9 h-9 rounded-full bg-white/[0.04] flex items-center justify-center"
-          >
+          </motion.button>
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate(-1)} className="lg:hidden w-9 h-9 rounded-full bg-white/[0.04] flex items-center justify-center">
             <ArrowRight className="w-5 h-5 text-foreground/60" strokeWidth={1.4} />
           </motion.button>
 
-          {/* N Cinema Logo — centered brand */}
-          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/network-tv')}>
-            <motion.img
-              src={nCinemaLogo}
-              alt="N Cinema"
-              className="w-9 h-9 object-contain flex-shrink-0"
-              animate={{ filter: ['drop-shadow(0 0 6px hsla(144,90%,33%,0.3))', 'drop-shadow(0 0 14px hsla(144,90%,33%,0.6))', 'drop-shadow(0 0 6px hsla(144,90%,33%,0.3))'] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <h1 className="text-base font-bold tracking-tight select-none">
-              <span className="text-foreground">Networ</span><span className="text-foreground">k</span>
-              <motion.span
-                className="text-primary"
-                animate={{ textShadow: ['0 0 8px hsla(144,90%,33%,0.3)', '0 0 16px hsla(144,90%,33%,0.6)', '0 0 8px hsla(144,90%,33%,0.3)'] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >k</motion.span>
-              <span className="text-primary ml-1.5 font-semibold">Cinema</span>
-            </h1>
+          {/* White Neon Brand (no logo) */}
+          <div className="cursor-pointer" onClick={() => navigate('/network-tv')}>
+            <NeonBrand />
           </div>
         </div>
 
-        {/* Center: Search bar (desktop) */}
+        {/* Search */}
         <div className="hidden sm:flex items-center max-w-md w-full">
           <div className="flex items-center w-full bg-white/[0.04] border border-white/[0.08] rounded-full overflow-hidden">
-            <input
-              type="text"
-              placeholder="ابحث في Networkk Cinema..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none flex-1 px-4 py-2"
-              dir="rtl"
-            />
-            <button className="px-4 py-2 bg-white/[0.06] border-r border-white/[0.08] hover:bg-white/[0.1] transition-colors">
+            <input type="text" placeholder="ابحث في Networkk Cinema..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none flex-1 px-4 py-2" dir="rtl" />
+            <motion.button whileTap={{ scale: 0.9 }} className="px-4 py-2 bg-white/[0.06] border-r border-white/[0.08] hover:bg-white/[0.1] transition-colors">
               <Search className="w-4 h-4 text-foreground/50" strokeWidth={1.5} />
-            </button>
+            </motion.button>
           </div>
         </div>
 
-        {/* Left side: Actions + Profile */}
+        {/* Actions */}
         <div className="flex items-center gap-2 relative">
-          <button
-            onClick={() => navigate('/creator-studio')}
-            className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors"
-          >
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate('/creator-studio')}
+            className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors">
             <Upload className="w-5 h-5 text-foreground/60" strokeWidth={1.5} />
-          </button>
-          <button className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors relative">
+          </motion.button>
+          <motion.button whileTap={{ scale: 0.9 }}
+            className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors relative">
             <Bell className="w-5 h-5 text-foreground/60" strokeWidth={1.5} />
-          </button>
-
-          {/* User Avatar with dropdown */}
-          <button
-            onClick={() => setShowProfileMenu(p => !p)}
-            className="ml-1 flex items-center gap-1"
-          >
+          </motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowProfileMenu(p => !p)} className="ml-1 flex items-center gap-1">
             <Avatar className="w-8 h-8 ring-1 ring-white/10 hover:ring-primary/40 transition-all">
               <AvatarImage src={userProfile?.avatar_url} />
-              <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
-                {(userProfile?.full_name || userProfile?.username || 'U')[0]}
-              </AvatarFallback>
+              <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">{(userProfile?.full_name || userProfile?.username || 'U')[0]}</AvatarFallback>
             </Avatar>
             <ChevronDown className={`w-3.5 h-3.5 text-foreground/40 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
-          </button>
-
-          {/* Profile Dropdown */}
+          </motion.button>
           <AnimatePresence>
-            {showProfileMenu && (
-              <ProfileDropdown userProfile={userProfile} onClose={() => setShowProfileMenu(false)} />
-            )}
+            {showProfileMenu && <ProfileDropdown userProfile={userProfile} onClose={() => setShowProfileMenu(false)} />}
           </AnimatePresence>
         </div>
       </header>
@@ -571,14 +535,8 @@ const NetworkTV = () => {
       <div className="sm:hidden px-4 py-2 bg-black/40 backdrop-blur-2xl border-b border-white/[0.05]">
         <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.04] border border-white/[0.06]">
           <Search className="w-4 h-4 text-muted-foreground" strokeWidth={1.4} />
-          <input
-            type="text"
-            placeholder="ابحث..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none flex-1"
-            dir="rtl"
-          />
+          <input type="text" placeholder="ابحث..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+            className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none flex-1" dir="rtl" />
         </div>
       </div>
 
@@ -586,23 +544,23 @@ const NetworkTV = () => {
       <div className="sticky top-14 z-40 bg-black/40 backdrop-blur-2xl border-b border-white/[0.05] px-4 py-2">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide" dir="rtl">
           {categories.map(cat => (
-            <button
+            <motion.button
               key={cat.id}
+              whileTap={{ scale: 0.93 }}
               onClick={() => setActiveCategory(cat.id)}
               className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                activeCategory === cat.id
-                  ? 'bg-foreground text-background'
-                  : 'bg-white/[0.06] text-foreground/70 hover:bg-white/[0.1]'
+                activeCategory === cat.id ? 'bg-foreground text-background' : 'bg-white/[0.06] text-foreground/70 hover:bg-white/[0.1]'
               }`}
             >
+              <cat.icon className="w-3.5 h-3.5" strokeWidth={1.5} />
               {cat.label}
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
 
-      {/* Desktop Sidebar */}
-      <CinemaSidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(p => !p)} />
+      {/* Sidebar */}
+      <CinemaSidebar collapsed={sidebarCollapsed} activeId={activeSidebarId} onSelect={handleSidebarSelect} />
 
       {/* Main Content */}
       <main className={`transition-all duration-300 ${!sidebarCollapsed ? 'lg:mr-[220px]' : 'lg:mr-[72px]'}`}>
@@ -610,7 +568,6 @@ const NetworkTV = () => {
           {featuredVideos.length > 0 && !searchQuery.trim() && activeCategory === 'all' && (
             <HeroSlider videos={featuredVideos} profiles={profiles} onSelect={(id) => navigate(`/watch/${id}`)} />
           )}
-
           {loading ? (
             <GlassShimmer />
           ) : videos.length === 0 ? (
@@ -625,7 +582,6 @@ const NetworkTV = () => {
               ))}
             </div>
           )}
-
           <div ref={sentinelRef} className="h-4" />
           {loadingMore && (
             <div className="flex justify-center py-8">
