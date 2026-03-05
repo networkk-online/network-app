@@ -4,7 +4,8 @@ import {
   Play, Eye, Clock, Search, ArrowRight, Film, TrendingUp, Star,
   Clapperboard, Gamepad2, GraduationCap, Award, ChevronLeft, ChevronRight,
   Menu, Bell, Upload, User, BarChart3, Settings, Home, Compass, History,
-  ThumbsUp, ListVideo, Flame, Music, Newspaper, Trophy, Radio
+  ThumbsUp, ListVideo, Flame, Music, Newspaper, Trophy, Radio,
+  LogOut, Tv, ChevronDown
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import nCinemaLogo from '@/assets/n-cinema-logo.png';
@@ -183,59 +184,37 @@ const VideoCard = ({ video, profile, onClick }: { video: any; profile: any; onCl
       className="group cursor-pointer will-change-transform"
       style={{ transform: 'translateZ(0)' }}
     >
-      {/* Thumbnail */}
       <div className="relative aspect-video rounded-xl overflow-hidden bg-white/[0.02]">
         {video.thumbnail_url ? (
-          <img
-            src={video.thumbnail_url}
-            alt={video.title}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-            loading="lazy"
-          />
+          <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]" loading="lazy" />
         ) : (
           <div className="w-full h-full bg-white/[0.03] flex items-center justify-center">
             <Play className="w-10 h-10 text-white/[0.06]" />
           </div>
         )}
-
-        {/* Hover overlay */}
         <div className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'}`} />
-
-        {/* Duration pill */}
         {video.duration > 0 && (
           <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-[11px] text-foreground/90 font-medium z-10">
             {formatDuration(video.duration)}
           </div>
         )}
-
-        {/* Earner badge */}
         {isEarner && (
           <div className="absolute top-2 left-2 z-10">
-            <div className="w-5 h-5 rounded-full flex items-center justify-center"
-                 style={{
-                   background: 'linear-gradient(135deg, #FFD700, #B8860B)',
-                   boxShadow: '0 0 6px rgba(255,215,0,0.3)',
-                 }}>
+            <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #FFD700, #B8860B)', boxShadow: '0 0 6px rgba(255,215,0,0.3)' }}>
               <Award className="w-3 h-3 text-black/80" strokeWidth={2} />
             </div>
           </div>
         )}
-
-        {/* Hover play */}
         <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'}`}>
           <div className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
             <Play className="w-5 h-5 text-foreground fill-white ml-0.5" />
           </div>
         </div>
       </div>
-
-      {/* YouTube-style info row */}
       <div className="flex gap-3 mt-3 px-0.5" dir="rtl">
         <Avatar className="w-9 h-9 flex-shrink-0 ring-[0.5px] ring-white/10">
           <AvatarImage src={profile?.avatar_url} />
-          <AvatarFallback className="bg-white/[0.06] text-foreground/60 text-xs">
-            {(profile?.full_name || 'م')[0]}
-          </AvatarFallback>
+          <AvatarFallback className="bg-white/[0.06] text-foreground/60 text-xs">{(profile?.full_name || 'م')[0]}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <h3 className="text-foreground/90 text-sm font-medium line-clamp-2 leading-snug">{video.title}</h3>
@@ -267,9 +246,7 @@ const CinemaSidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: 
           <button
             key={item.id}
             onClick={() => navigate(item.path)}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/[0.04] ${
-              collapsed ? 'justify-center' : ''
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/[0.04] ${collapsed ? 'justify-center' : ''}`}
           >
             <item.icon className="w-5 h-5 text-foreground/60 flex-shrink-0" strokeWidth={1.5} />
             {!collapsed && <span className="text-foreground/70">{item.label}</span>}
@@ -277,6 +254,91 @@ const CinemaSidebar = ({ collapsed, onToggle }: { collapsed: boolean; onToggle: 
         ))}
       </div>
     </div>
+  );
+};
+
+/* ───── Profile Dropdown ───── */
+const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: () => void }) => {
+  const navigate = useNavigate();
+
+  const handleStudioSwitch = () => {
+    onClose();
+    navigate('/creator-studio');
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[60]" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: -8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: -8 }}
+        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        className="absolute top-12 left-2 z-[70] w-72 bg-black/70 backdrop-blur-[50px] border border-white/[0.08] rounded-2xl overflow-hidden"
+        style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 1px rgba(255,255,255,0.1) inset' }}
+        dir="rtl"
+      >
+        {/* User Info */}
+        <div className="p-4 border-b border-white/[0.06]">
+          <div className="flex items-center gap-3">
+            <Avatar className="w-12 h-12 ring-2 ring-primary/30">
+              <AvatarImage src={userProfile?.avatar_url} />
+              <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
+                {(userProfile?.full_name || 'U')[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="text-foreground font-semibold text-sm truncate">{userProfile?.full_name || 'المستخدم'}</p>
+              <p className="text-muted-foreground text-[11px] truncate">@{userProfile?.username || 'user'}</p>
+              {userProfile?.is_verified && (
+                <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-primary font-medium">
+                  <Star className="w-3 h-3 fill-primary" /> موثق
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Cinema Studio Switch Button */}
+        <div className="p-3">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleStudioSwitch}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all group"
+            style={{ boxShadow: '0 0 20px hsla(144,90%,33%,0.08)' }}
+          >
+            <div className="w-9 h-9 rounded-lg bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+              <Tv className="w-5 h-5 text-primary" strokeWidth={1.5} />
+            </div>
+            <div className="text-right flex-1">
+              <p className="text-primary text-sm font-semibold">التبديل إلى Cinema Studio</p>
+              <p className="text-primary/60 text-[10px]">إدارة قناتك ومحتواك</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-primary/40 rotate-180" />
+          </motion.button>
+        </div>
+
+        {/* Menu Items */}
+        <div className="px-2 pb-2 space-y-0.5">
+          <button onClick={() => { onClose(); navigate('/profile'); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors">
+            <User className="w-4 h-4" strokeWidth={1.5} />
+            <span>ملفك الشخصي</span>
+          </button>
+          <button onClick={() => { onClose(); navigate('/creator-studio'); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors">
+            <BarChart3 className="w-4 h-4" strokeWidth={1.5} />
+            <span>استوديو المبدعين</span>
+          </button>
+          <button onClick={() => { onClose(); navigate('/settings'); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors">
+            <Settings className="w-4 h-4" strokeWidth={1.5} />
+            <span>الإعدادات</span>
+          </button>
+          <button onClick={() => { onClose(); navigate('/'); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive/70 hover:bg-destructive/10 transition-colors">
+            <LogOut className="w-4 h-4" strokeWidth={1.5} />
+            <span>العودة للشبكة</span>
+          </button>
+        </div>
+      </motion.div>
+    </>
   );
 };
 
@@ -295,6 +357,7 @@ const NetworkTV = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -302,17 +365,12 @@ const NetworkTV = () => {
     return () => clearTimeout(t);
   }, []);
 
-  // Load current user profile
   useEffect(() => {
     const loadUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setCurrentUser(user);
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
         if (profile) setUserProfile(profile);
       }
     };
@@ -321,10 +379,7 @@ const NetworkTV = () => {
 
   const loadProfiles = useCallback(async (userIds: string[]) => {
     if (userIds.length === 0) return;
-    const { data: profs } = await supabase
-      .from('profiles')
-      .select('id, username, full_name, avatar_url, is_verified')
-      .in('id', userIds);
+    const { data: profs } = await supabase.from('profiles').select('id, username, full_name, avatar_url, is_verified').in('id', userIds);
     if (profs) {
       setProfiles(prev => {
         const next = new Map(prev);
@@ -338,12 +393,7 @@ const NetworkTV = () => {
     if (offset === 0) setLoading(true);
     else setLoadingMore(true);
     try {
-      let query = supabase
-        .from('videos')
-        .select('*')
-        .eq('is_published', true)
-        .order('created_at', { ascending: false })
-        .range(offset, offset + PAGE_SIZE - 1);
+      let query = supabase.from('videos').select('*').eq('is_published', true).order('created_at', { ascending: false }).range(offset, offset + PAGE_SIZE - 1);
       if (activeCategory !== 'all') query = query.eq('category', activeCategory);
       if (searchQuery.trim()) query = query.ilike('title', `%${searchQuery}%`);
       const { data, error } = await query;
@@ -362,12 +412,7 @@ const NetworkTV = () => {
 
   useEffect(() => {
     const fetchFeatured = async () => {
-      const { data } = await supabase
-        .from('videos')
-        .select('*')
-        .eq('is_published', true)
-        .order('views_count', { ascending: false })
-        .limit(5);
+      const { data } = await supabase.from('videos').select('*').eq('is_published', true).order('views_count', { ascending: false }).limit(5);
       if (data && data.length > 0) {
         setFeaturedVideos(data);
         const ids = [...new Set(data.map(v => v.user_id))];
@@ -417,9 +462,14 @@ const NetworkTV = () => {
                 animate={{ filter: ['drop-shadow(0 0 12px hsla(144,90%,33%,0.4))', 'drop-shadow(0 0 24px hsla(144,90%,33%,0.7))', 'drop-shadow(0 0 12px hsla(144,90%,33%,0.4))'] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
+              <p className="text-sm font-semibold mt-2">
+                <span className="text-foreground">Networkk</span>{' '}
+                <span className="text-primary">Cinema</span>
+              </p>
               <div className="mt-3 w-28 h-0.5 mx-auto rounded-full bg-white/5 overflow-hidden">
                 <motion.div className="h-full bg-primary/40 rounded-full" initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ duration: 0.4 }} />
               </div>
+              <p className="text-muted-foreground text-[10px] mt-2">Syncing your Network Identity...</p>
             </motion.div>
           </motion.div>
         )}
@@ -436,7 +486,6 @@ const NetworkTV = () => {
             <Menu className="w-5 h-5 text-foreground/60" strokeWidth={1.5} />
           </button>
 
-          {/* Back button (mobile) */}
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => navigate(-1)}
@@ -445,20 +494,25 @@ const NetworkTV = () => {
             <ArrowRight className="w-5 h-5 text-foreground/60" strokeWidth={1.4} />
           </motion.button>
 
-          {/* N Cinema Logo */}
-          <motion.img
-            src={nCinemaLogo}
-            alt="N Cinema"
-            className="w-9 h-9 object-contain flex-shrink-0"
-            animate={{ filter: ['drop-shadow(0 0 6px hsla(144,90%,33%,0.3))', 'drop-shadow(0 0 14px hsla(144,90%,33%,0.6))', 'drop-shadow(0 0 6px hsla(144,90%,33%,0.3))'] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          {/* Brand text */}
-          <h1 className="text-base font-bold tracking-tight select-none">
-            <span className="text-foreground">Networ</span><span className="text-foreground">k</span><span className="text-primary">k</span>
-            <span className="text-primary ml-1.5 font-semibold">Cinema</span>
-          </h1>
+          {/* N Cinema Logo — centered brand */}
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/network-tv')}>
+            <motion.img
+              src={nCinemaLogo}
+              alt="N Cinema"
+              className="w-9 h-9 object-contain flex-shrink-0"
+              animate={{ filter: ['drop-shadow(0 0 6px hsla(144,90%,33%,0.3))', 'drop-shadow(0 0 14px hsla(144,90%,33%,0.6))', 'drop-shadow(0 0 6px hsla(144,90%,33%,0.3))'] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <h1 className="text-base font-bold tracking-tight select-none">
+              <span className="text-foreground">Networ</span><span className="text-foreground">k</span>
+              <motion.span
+                className="text-primary"
+                animate={{ textShadow: ['0 0 8px hsla(144,90%,33%,0.3)', '0 0 16px hsla(144,90%,33%,0.6)', '0 0 8px hsla(144,90%,33%,0.3)'] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >k</motion.span>
+              <span className="text-primary ml-1.5 font-semibold">Cinema</span>
+            </h1>
+          </div>
         </div>
 
         {/* Center: Search bar (desktop) */}
@@ -479,7 +533,7 @@ const NetworkTV = () => {
         </div>
 
         {/* Left side: Actions + Profile */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 relative">
           <button
             onClick={() => navigate('/creator-studio')}
             className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors"
@@ -490,15 +544,26 @@ const NetworkTV = () => {
             <Bell className="w-5 h-5 text-foreground/60" strokeWidth={1.5} />
           </button>
 
-          {/* User Avatar (synced) */}
-          <button onClick={() => navigate('/profile')} className="ml-1">
+          {/* User Avatar with dropdown */}
+          <button
+            onClick={() => setShowProfileMenu(p => !p)}
+            className="ml-1 flex items-center gap-1"
+          >
             <Avatar className="w-8 h-8 ring-1 ring-white/10 hover:ring-primary/40 transition-all">
               <AvatarImage src={userProfile?.avatar_url} />
               <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
                 {(userProfile?.full_name || userProfile?.username || 'U')[0]}
               </AvatarFallback>
             </Avatar>
+            <ChevronDown className={`w-3.5 h-3.5 text-foreground/40 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
           </button>
+
+          {/* Profile Dropdown */}
+          <AnimatePresence>
+            {showProfileMenu && (
+              <ProfileDropdown userProfile={userProfile} onClose={() => setShowProfileMenu(false)} />
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
@@ -517,7 +582,7 @@ const NetworkTV = () => {
         </div>
       </div>
 
-      {/* Category chips (YouTube filter style) */}
+      {/* Category chips */}
       <div className="sticky top-14 z-40 bg-black/40 backdrop-blur-2xl border-b border-white/[0.05] px-4 py-2">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide" dir="rtl">
           {categories.map(cat => (
@@ -542,16 +607,10 @@ const NetworkTV = () => {
       {/* Main Content */}
       <main className={`transition-all duration-300 ${!sidebarCollapsed ? 'lg:mr-[220px]' : 'lg:mr-[72px]'}`}>
         <div className="px-4 pb-28 pt-4 max-w-7xl mx-auto space-y-6">
-          {/* Hero Slider */}
           {featuredVideos.length > 0 && !searchQuery.trim() && activeCategory === 'all' && (
-            <HeroSlider
-              videos={featuredVideos}
-              profiles={profiles}
-              onSelect={(id) => navigate(`/watch/${id}`)}
-            />
+            <HeroSlider videos={featuredVideos} profiles={profiles} onSelect={(id) => navigate(`/watch/${id}`)} />
           )}
 
-          {/* Video Grid */}
           {loading ? (
             <GlassShimmer />
           ) : videos.length === 0 ? (
@@ -562,12 +621,7 @@ const NetworkTV = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8">
               {videos.map(video => (
-                <VideoCard
-                  key={video.id}
-                  video={video}
-                  profile={profiles.get(video.user_id)}
-                  onClick={() => navigate(`/watch/${video.id}`)}
-                />
+                <VideoCard key={video.id} video={video} profile={profiles.get(video.user_id)} onClick={() => navigate(`/watch/${video.id}`)} />
               ))}
             </div>
           )}
