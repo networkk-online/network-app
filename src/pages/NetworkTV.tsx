@@ -7,6 +7,7 @@ import {
   ThumbsUp, ListVideo, Flame, Music, Newspaper, Trophy, Radio
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import nCinemaLogo from '@/assets/n-cinema-logo.png';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -399,26 +400,25 @@ const NetworkTV = () => {
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="min-h-screen bg-background"
     >
-      {/* Cinema Curtain */}
+      {/* Cinema Curtain with N Logo */}
       <AnimatePresence>
         {!entered && (
           <motion.div
             className="fixed inset-0 z-[100] bg-background flex items-center justify-center"
             exit={{ scaleY: 0 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             style={{ transformOrigin: 'top' }}
           >
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-              <div className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center"
-                   style={{
-                     background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)',
-                     border: '0.5px solid rgba(255,255,255,0.1)',
-                   }}>
-                <div className="w-2.5 h-2.5 rounded-full bg-primary" style={{ boxShadow: '0 0 12px hsla(144,90%,33%,0.6)' }} />
-              </div>
-              <p className="text-muted-foreground text-xs tracking-[0.3em]">NETWORKK CINEMA</p>
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} className="text-center">
+              <motion.img
+                src={nCinemaLogo}
+                alt="Networkk Cinema"
+                className="w-24 h-24 mx-auto mb-2 object-contain"
+                animate={{ filter: ['drop-shadow(0 0 12px hsla(144,90%,33%,0.4))', 'drop-shadow(0 0 24px hsla(144,90%,33%,0.7))', 'drop-shadow(0 0 12px hsla(144,90%,33%,0.4))'] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
               <div className="mt-3 w-28 h-0.5 mx-auto rounded-full bg-white/5 overflow-hidden">
-                <motion.div className="h-full bg-primary/40 rounded-full" initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ duration: 0.35 }} />
+                <motion.div className="h-full bg-primary/40 rounded-full" initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ duration: 0.4 }} />
               </div>
             </motion.div>
           </motion.div>
@@ -445,21 +445,18 @@ const NetworkTV = () => {
             <ArrowRight className="w-5 h-5 text-foreground/60" strokeWidth={1.4} />
           </motion.button>
 
-          {/* Liquid Lens icon */}
-          <div className="relative w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-               style={{
-                 background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)',
-                 border: '0.5px solid rgba(255,255,255,0.1)',
-                 boxShadow: '0 0 10px rgba(8,160,69,0.12)',
-               }}>
-            <div className="w-2 h-2 rounded-full bg-primary" style={{ boxShadow: '0 0 8px hsla(144,90%,33%,0.6)' }} />
-          </div>
+          {/* N Cinema Logo */}
+          <motion.img
+            src={nCinemaLogo}
+            alt="N Cinema"
+            className="w-9 h-9 object-contain flex-shrink-0"
+            animate={{ filter: ['drop-shadow(0 0 6px hsla(144,90%,33%,0.3))', 'drop-shadow(0 0 14px hsla(144,90%,33%,0.6))', 'drop-shadow(0 0 6px hsla(144,90%,33%,0.3))'] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          />
 
-          {/* Brand */}
+          {/* Brand text */}
           <h1 className="text-base font-bold tracking-tight select-none">
-            <span className="text-foreground">Networ</span>
-            <span className="text-foreground">k</span>
-            <span className="text-primary">k</span>
+            <span className="text-foreground">Networ</span><span className="text-foreground">k</span><span className="text-primary">k</span>
             <span className="text-primary ml-1.5 font-semibold">Cinema</span>
           </h1>
         </div>

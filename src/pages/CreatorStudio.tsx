@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
+import nCinemaLogo from '@/assets/n-cinema-logo.png';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   ChartContainer, ChartTooltip, ChartTooltipContent
@@ -162,10 +163,17 @@ const CreatorStudio = () => {
         </nav>
 
         {/* Brand */}
-        <div className="p-4 border-t border-white/[0.06]">
-          <p className="text-[10px] text-muted-foreground">
-            <span className="text-foreground/60">Networkk</span>{' '}
-            <span className="text-primary">Cinema</span>{' '}
+        <div className="p-4 border-t border-white/[0.06] flex items-center gap-2">
+          <motion.img
+            src={nCinemaLogo}
+            alt="N Cinema"
+            className="w-7 h-7 object-contain"
+            animate={{ filter: ['drop-shadow(0 0 4px hsla(144,90%,33%,0.3))', 'drop-shadow(0 0 10px hsla(144,90%,33%,0.5))', 'drop-shadow(0 0 4px hsla(144,90%,33%,0.3))'] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <p className="text-[11px]">
+            <span className="text-foreground/60 font-medium">Networkk</span>{' '}
+            <span className="text-primary font-semibold">Cinema</span>{' '}
             <span className="text-muted-foreground">Studio</span>
           </p>
         </div>
