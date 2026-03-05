@@ -325,68 +325,108 @@ const DesktopSidebar = ({ collapsed, activeId, onSelect }: { collapsed: boolean;
   </aside>
 );
 
-/* ───── Profile Dropdown ───── */
-const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: () => void }) => {
+/* ───── Profile Menu Content (shared) ───── */
+const ProfileMenuContent = ({ userProfile, onClose }: { userProfile: any; onClose: () => void }) => {
   const navigate = useNavigate();
   return (
+    <div dir="rtl">
+      {/* Neon Brand Header */}
+      <div className="px-4 pt-4 pb-3 border-b border-white/[0.06]">
+        <NeonBrand size="sm" />
+      </div>
+
+      {/* User Info */}
+      <div className="p-4 border-b border-white/[0.06]">
+        <div className="flex items-center gap-3">
+          <Avatar className="w-12 h-12 ring-2 ring-primary/30 flex-shrink-0">
+            <AvatarImage src={userProfile?.avatar_url} />
+            <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">{(userProfile?.full_name || 'U')[0]}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="text-foreground font-semibold text-sm">{userProfile?.full_name || 'المستخدم'}</p>
+            <p className="text-muted-foreground text-[11px] truncate">@{userProfile?.username || 'user'}</p>
+            {userProfile?.is_verified && (
+              <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-primary font-medium"><Star className="w-3 h-3 fill-primary" /> موثق</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Studio Switcher */}
+      <div className="p-3">
+        <motion.button whileTap={{ scale: 0.95 }} onClick={() => { onClose(); navigate('/creator-studio'); }}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all group"
+          style={{ boxShadow: '0 0 20px hsla(144,90%,33%,0.08)' }}>
+          <div className="w-9 h-9 rounded-lg bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors flex-shrink-0">
+            <Tv className="w-5 h-5 text-primary" strokeWidth={1.5} />
+          </div>
+          <div className="text-right flex-1 min-w-0">
+            <p className="text-primary text-sm font-semibold">التبديل إلى Cinema Studio</p>
+            <p className="text-primary/60 text-[10px]">إدارة قناتك ومحتواك</p>
+          </div>
+          <ArrowRight className="w-4 h-4 text-primary/40 rotate-180 flex-shrink-0" />
+        </motion.button>
+      </div>
+
+      {/* Links */}
+      <div className="px-2 pb-3 space-y-0.5">
+        {[
+          { label: 'ملفك الشخصي', icon: User, path: '/profile' },
+          { label: 'استوديو المبدعين', icon: BarChart3, path: '/creator-studio' },
+          { label: 'الإعدادات', icon: Settings, path: '/settings' },
+        ].map(item => (
+          <motion.button key={item.path} whileTap={{ scale: 0.97 }}
+            onClick={() => { onClose(); navigate(item.path); }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors">
+            <item.icon className="w-4 h-4 flex-shrink-0" strokeWidth={1.5} /><span>{item.label}</span>
+          </motion.button>
+        ))}
+        <motion.button whileTap={{ scale: 0.97 }}
+          onClick={() => { onClose(); navigate('/'); }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive/70 hover:bg-destructive/10 transition-colors">
+          <LogOut className="w-4 h-4 flex-shrink-0" strokeWidth={1.5} /><span>العودة للشبكة</span>
+        </motion.button>
+      </div>
+    </div>
+  );
+};
+
+/* ───── Profile Menu (responsive: dropdown on desktop, bottom sheet on mobile) ───── */
+const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: () => void }) => {
+  return (
     <>
-      <div className="fixed inset-0 z-[60]" onClick={onClose} />
+      {/* Backdrop */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[90] bg-black/50" onClick={onClose} />
+
+      {/* Desktop: dropdown */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: -8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: -8 }}
         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute top-12 left-2 z-[70] w-72 bg-background/90 backdrop-blur-[50px] border border-white/[0.08] rounded-2xl overflow-hidden"
-        style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.7)' }}
-        dir="rtl"
+        className="hidden sm:block fixed top-14 left-4 z-[100] min-w-[300px] max-w-[340px] bg-black/80 backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden"
+        style={{ boxShadow: '0 25px 60px rgba(0,0,0,0.8), 0 0 1px rgba(255,255,255,0.1) inset' }}
       >
-        <div className="p-4 border-b border-white/[0.06]">
-          <div className="flex items-center gap-3">
-            <Avatar className="w-12 h-12 ring-2 ring-primary/30">
-              <AvatarImage src={userProfile?.avatar_url} />
-              <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">{(userProfile?.full_name || 'U')[0]}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="text-foreground font-semibold text-sm truncate">{userProfile?.full_name || 'المستخدم'}</p>
-              <p className="text-muted-foreground text-[11px] truncate">@{userProfile?.username || 'user'}</p>
-              {userProfile?.is_verified && (
-                <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-primary font-medium"><Star className="w-3 h-3 fill-primary" /> موثق</span>
-              )}
-            </div>
-          </div>
+        <ProfileMenuContent userProfile={userProfile} onClose={onClose} />
+      </motion.div>
+
+      {/* Mobile: bottom sheet */}
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="sm:hidden fixed inset-x-0 bottom-0 z-[100] bg-black/90 backdrop-blur-xl border-t border-white/[0.08] rounded-t-2xl overflow-hidden max-h-[85vh] overflow-y-auto"
+        style={{ boxShadow: '0 -10px 40px rgba(0,0,0,0.6)' }}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full bg-white/20" />
         </div>
-        <div className="p-3">
-          <motion.button whileTap={{ scale: 0.95 }} onClick={() => { onClose(); navigate('/creator-studio'); }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all group"
-            style={{ boxShadow: '0 0 20px hsla(144,90%,33%,0.08)' }}>
-            <div className="w-9 h-9 rounded-lg bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
-              <Tv className="w-5 h-5 text-primary" strokeWidth={1.5} />
-            </div>
-            <div className="text-right flex-1">
-              <p className="text-primary text-sm font-semibold">التبديل إلى Cinema Studio</p>
-              <p className="text-primary/60 text-[10px]">إدارة قناتك ومحتواك</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-primary/40 rotate-180" />
-          </motion.button>
-        </div>
-        <div className="px-2 pb-2 space-y-0.5">
-          {[
-            { label: 'ملفك الشخصي', icon: User, path: '/profile' },
-            { label: 'استوديو المبدعين', icon: BarChart3, path: '/creator-studio' },
-            { label: 'الإعدادات', icon: Settings, path: '/settings' },
-          ].map(item => (
-            <motion.button key={item.path} whileTap={{ scale: 0.97 }}
-              onClick={() => { onClose(); navigate(item.path); }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors">
-              <item.icon className="w-4 h-4" strokeWidth={1.5} /><span>{item.label}</span>
-            </motion.button>
-          ))}
-          <motion.button whileTap={{ scale: 0.97 }}
-            onClick={() => { onClose(); navigate('/'); }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive/70 hover:bg-destructive/10 transition-colors">
-            <LogOut className="w-4 h-4" strokeWidth={1.5} /><span>العودة للشبكة</span>
-          </motion.button>
-        </div>
+        <ProfileMenuContent userProfile={userProfile} onClose={onClose} />
+        {/* Safe area padding */}
+        <div className="h-6" />
       </motion.div>
     </>
   );
