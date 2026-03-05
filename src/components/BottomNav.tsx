@@ -1,4 +1,4 @@
-import { Home, PlusSquare, Film, User, Trophy, Compass, Tv } from 'lucide-react';
+import { Home, PlusSquare, Film, User, Trophy, Compass, Clapperboard } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useState, useEffect } from 'react';
@@ -38,7 +38,7 @@ const BottomNav = () => {
   const navItems = [
     { icon: Home, label: 'الرئيسية', path: '/' },
     { icon: Compass, label: 'استكشف', path: '/explore' },
-    { icon: Tv, label: 'Network TV', path: '/network-tv' },
+    { icon: Clapperboard, label: 'سينما', path: '/network-tv' },
     { icon: Film, label: 'ريلز', path: '/shorts' },
     { icon: PlusSquare, label: 'إنشاء', path: '/create-post' },
   ];

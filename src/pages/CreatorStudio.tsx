@@ -50,7 +50,7 @@ const CreatorStudio = () => {
             <ArrowRight className="w-5 h-5 text-white/70" strokeWidth={1.4} />
           </motion.button>
           <TrendingUp className="w-5 h-5 text-primary" strokeWidth={1.4} />
-          <h1 className="text-foreground text-base font-semibold">استوديو المبدعين</h1>
+          <h1 className="text-foreground text-base font-semibold">Networkk Cinema Studio</h1>
         </div>
       </div>
 

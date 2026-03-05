@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Eye, Clock, Search, ArrowRight, Film, TrendingUp, Star, Tv, Gamepad2, GraduationCap, Clapperboard, Award, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
+import { Play, Eye, Clock, Search, ArrowRight, Film, TrendingUp, Star, Clapperboard, Gamepad2, GraduationCap, Award, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const PAGE_SIZE = 12;
 
 const categories = [
-  { id: 'all', label: 'الكل', icon: Tv },
+  { id: 'all', label: 'الكل', icon: Clapperboard },
   { id: 'trending', label: 'رائج', icon: TrendingUp },
   { id: 'movies', label: 'أفلام', icon: Clapperboard },
   { id: 'tech', label: 'تكنولوجيا', icon: Star },
@@ -380,6 +380,40 @@ const NetworkTV = () => {
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       className="min-h-screen bg-[#000000]"
     >
+      {/* Cinema Curtain Reveal */}
+      <AnimatePresence>
+        {!entered && (
+          <motion.div
+            className="fixed inset-0 z-[100] bg-[#000000] flex items-center justify-center"
+            exit={{ scaleY: 0 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: 'top' }}
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center"
+            >
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+                   style={{
+                     background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)',
+                     border: '0.5px solid rgba(255,255,255,0.1)',
+                   }}>
+                <div className="w-3 h-3 rounded-full bg-primary" style={{ boxShadow: '0 0 12px hsla(144,90%,33%,0.6)' }} />
+              </div>
+              <p className="text-white/40 text-xs tracking-widest">NETWORKK CINEMA</p>
+              <div className="mt-4 w-32 h-0.5 mx-auto rounded-full bg-white/5 overflow-hidden">
+                <motion.div
+                  className="h-full bg-primary/40 rounded-full"
+                  initial={{ width: '0%' }}
+                  animate={{ width: '100%' }}
+                  transition={{ duration: 0.4 }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-[35px] border-b border-white/[0.05]">
         <div className="flex items-center gap-3 px-4 h-13 py-3">
@@ -390,8 +424,18 @@ const NetworkTV = () => {
           >
             <ArrowRight className="w-5 h-5 text-white/60" strokeWidth={1.4} />
           </motion.button>
-          <Tv className="w-5 h-5 text-primary" strokeWidth={1.5} />
-          <h1 className="text-white/90 text-base font-semibold tracking-tight">Network TV</h1>
+          {/* Liquid Lens Cinema Icon */}
+          <div className="relative w-8 h-8 rounded-full flex items-center justify-center"
+               style={{
+                 background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 70%)',
+                 border: '0.5px solid rgba(255,255,255,0.12)',
+                 boxShadow: '0 0 12px rgba(8,160,69,0.15), inset 0 0 8px rgba(255,255,255,0.05)',
+               }}>
+            <div className="w-2 h-2 rounded-full bg-primary" style={{ boxShadow: '0 0 8px hsla(144,90%,33%,0.6), 0 0 2px hsla(144,90%,33%,0.9)' }} />
+          </div>
+          <h1 className="text-white/90 text-base font-semibold tracking-tight">
+            Networ<span className="text-white/90">k</span><span className="text-primary animate-pulse">k</span> Cinema
+          </h1>
           <span className="text-white/20 text-[10px] font-light ml-1">networkk.online</span>
         </div>
 
@@ -448,7 +492,7 @@ const NetworkTV = () => {
           <GlassShimmer />
         ) : videos.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <Tv className="w-14 h-14 text-white/[0.06]" strokeWidth={0.8} />
+            <Clapperboard className="w-14 h-14 text-white/[0.06]" strokeWidth={0.8} />
             <p className="text-white/25 text-sm">لا توجد فيديوهات حالياً</p>
           </div>
         ) : (

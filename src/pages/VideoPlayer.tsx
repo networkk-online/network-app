@@ -126,6 +126,7 @@ const VideoPlayer = () => {
               <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate(-1)} className="glass-btn w-9 h-9 flex items-center justify-center">
                 <ArrowRight className="w-5 h-5 text-white/70" strokeWidth={1.4} />
               </motion.button>
+              <span className="text-white/30 text-[9px] tracking-wider mr-2">NETWORKK CINEMA</span>
               <h1 className="text-foreground text-sm font-medium line-clamp-1 flex-1" dir="rtl">{video.title}</h1>
             </div>
           </motion.div>
@@ -239,11 +240,16 @@ const VideoPlayer = () => {
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
-                  className="glass-btn px-4 py-2 flex items-center gap-1.5 text-xs text-primary"
-                  style={{ boxShadow: '0 0 16px hsla(144, 90%, 33%, 0.15), 0 0 4px hsla(144, 90%, 33%, 0.3)' }}
+                  className="glass-btn px-4 py-2 flex items-center gap-1.5 text-xs"
+                  style={{ 
+                    background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(184,134,11,0.08))',
+                    border: '0.5px solid rgba(255,215,0,0.25)',
+                    boxShadow: '0 0 16px rgba(255,215,0,0.1), 0 0 4px rgba(255,215,0,0.2)',
+                    color: '#FFD700',
+                  }}
                 >
                   <Gift className="w-4 h-4" strokeWidth={1.4} />
-                  دعم المبدع
+                  دعم المبدع ★
                 </motion.button>
               </div>
             </div>
@@ -259,8 +265,13 @@ const VideoPlayer = () => {
                 <p className="text-foreground text-sm font-medium">{profile?.full_name || profile?.username || 'مبدع'}</p>
                 <p className="text-muted-foreground text-xs">{profile?.followers_count || 0} متابع</p>
               </div>
-              <motion.button whileTap={{ scale: 0.95 }} className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                متابعة
+              <motion.button whileTap={{ scale: 0.95 }} className="px-4 py-2 rounded-full text-xs font-medium"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(144,80%,28%))',
+                  color: 'white',
+                  boxShadow: '0 0 16px hsla(144,90%,33%,0.25)',
+                }}>
+                اشتراك
               </motion.button>
             </div>
 
