@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Play, Eye, Clock, Search, ArrowRight, Film, TrendingUp, Star,
-  Clapperboard, Gamepad2, GraduationCap, Award, ChevronLeft, ChevronRight,
-  Menu, Bell, Upload, User, BarChart3, Settings, Home, Compass, History,
+  Clapperboard, Gamepad2, GraduationCap, Award, Menu, X,
+  Bell, Upload, User, BarChart3, Settings, Home, Compass, History,
   ThumbsUp, ListVideo, Flame, Music, Newspaper, Trophy, Radio,
   LogOut, Tv, ChevronDown
 } from 'lucide-react';
@@ -32,8 +32,8 @@ const sidebarItems = [
   { id: 'explore', label: 'استكشاف', icon: Compass, path: '/explore' },
   { id: 'trending', label: 'الرائج', icon: TrendingUp, path: '/network-tv' },
   { id: 'history', label: 'السجل', icon: History, path: '/network-tv' },
-  { id: 'liked', label: 'المعجب بها', icon: ThumbsUp, path: '/saved' },
-  { id: 'playlists', label: 'قوائم التشغيل', icon: ListVideo, path: '/saved' },
+  { id: 'liked', label: 'المعجب بها', icon: ThumbsUp, path: '/saved-content' },
+  { id: 'playlists', label: 'قوائم التشغيل', icon: ListVideo, path: '/saved-content' },
   { id: 'studio', label: 'الاستوديو', icon: BarChart3, path: '/creator-studio' },
   { id: 'settings', label: 'الإعدادات', icon: Settings, path: '/settings' },
 ];
@@ -69,7 +69,7 @@ const timeAgo = (date: string) => {
 const NeonBrand = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
   const textSize = size === 'lg' ? 'text-2xl' : size === 'md' ? 'text-base' : 'text-sm';
   return (
-    <h1 className={`${textSize} font-bold tracking-tight select-none`}>
+    <h1 className={`${textSize} font-bold tracking-tight select-none whitespace-nowrap`}>
       <motion.span
         className="text-foreground"
         animate={{
@@ -116,7 +116,7 @@ const HeroSlider = ({ videos, profiles, onSelect }: { videos: any[]; profiles: M
   const profile = profiles.get(video?.user_id);
 
   return (
-    <div className="relative w-full aspect-[21/9] overflow-hidden rounded-2xl mx-auto">
+    <div className="relative w-full aspect-video sm:aspect-[21/9] overflow-hidden rounded-2xl mx-auto">
       <AnimatePresence mode="wait">
         <motion.div
           key={video.id}
@@ -135,13 +135,13 @@ const HeroSlider = ({ videos, profiles, onSelect }: { videos: any[]; profiles: M
             </div>
           )}
           <div className="absolute inset-0" style={{ background: 'linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%)' }} />
-          <div className="absolute bottom-0 left-0 right-0 p-6 z-10" dir="rtl">
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 z-10" dir="rtl">
             <div className="flex items-center gap-2 mb-2">
               <span className="px-2.5 py-1 rounded-md bg-primary/20 text-primary text-[10px] font-bold uppercase tracking-wider border border-primary/30">★ رائج</span>
             </div>
-            <h2 className="text-foreground text-xl sm:text-2xl font-bold leading-tight line-clamp-2 max-w-xl">{video.title}</h2>
+            <h2 className="text-foreground text-lg sm:text-2xl font-bold leading-tight line-clamp-2 max-w-xl">{video.title}</h2>
             <div className="flex items-center gap-3 mt-3">
-              <Avatar className="w-8 h-8 ring-1 ring-white/20">
+              <Avatar className="w-7 h-7 sm:w-8 sm:h-8 ring-1 ring-white/20">
                 <AvatarImage src={profile?.avatar_url} />
                 <AvatarFallback className="bg-white/[0.08] text-foreground text-xs">{(profile?.full_name || 'م')[0]}</AvatarFallback>
               </Avatar>
@@ -151,8 +151,8 @@ const HeroSlider = ({ videos, profiles, onSelect }: { videos: any[]; profiles: M
             </div>
           </div>
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-            <div className="w-16 h-16 rounded-full bg-white/[0.08] backdrop-blur-2xl border border-white/[0.15] flex items-center justify-center" style={{ boxShadow: '0 0 40px rgba(0,0,0,0.4)' }}>
-              <Play className="w-7 h-7 text-foreground fill-white ml-1" />
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/[0.08] backdrop-blur-2xl border border-white/[0.15] flex items-center justify-center" style={{ boxShadow: '0 0 40px rgba(0,0,0,0.4)' }}>
+              <Play className="w-6 h-6 sm:w-7 sm:h-7 text-foreground fill-white ml-1" />
             </div>
           </div>
         </motion.div>
@@ -171,8 +171,8 @@ const HeroSlider = ({ videos, profiles, onSelect }: { videos: any[]; profiles: M
 
 /* ───── Shimmer Skeleton ───── */
 const GlassShimmer = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    {[...Array(9)].map((_, i) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    {[...Array(8)].map((_, i) => (
       <div key={i} className="rounded-xl overflow-hidden">
         <Skeleton className="w-full aspect-video bg-white/[0.03] rounded-xl" />
         <div className="flex gap-3 mt-3 px-1">
@@ -202,7 +202,6 @@ const VideoCard = ({ video, profile, onClick }: { video: any; profile: any; onCl
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="group cursor-pointer will-change-transform"
-      style={{ transform: 'translateZ(0)' }}
     >
       <div className="relative aspect-video rounded-xl overflow-hidden bg-white/[0.02]">
         {video.thumbnail_url ? (
@@ -248,36 +247,87 @@ const VideoCard = ({ video, profile, onClick }: { video: any; profile: any; onCl
   );
 };
 
-/* ───── Sidebar ───── */
-const CinemaSidebar = ({ collapsed, activeId, onSelect }: { collapsed: boolean; activeId: string; onSelect: (item: typeof sidebarItems[0]) => void }) => {
-  return (
-    <div
-      className={`hidden lg:flex flex-col fixed top-[56px] right-0 bottom-0 z-40 transition-all duration-300 ${collapsed ? 'w-[72px]' : 'w-[220px]'} bg-black/40 backdrop-blur-2xl border-l border-white/[0.06]`}
-      dir="rtl"
-    >
-      <div className="flex-1 py-3 overflow-y-auto scrollbar-hide">
-        {sidebarItems.map(item => (
-          <motion.button
-            key={item.id}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onSelect(item)}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${collapsed ? 'justify-center' : ''} ${
-              activeId === item.id ? 'bg-primary/10 text-primary border-r-2 border-primary' : 'text-foreground/60 hover:bg-white/[0.04]'
-            }`}
-          >
-            <item.icon className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
-            {!collapsed && <span>{item.label}</span>}
-          </motion.button>
-        ))}
-      </div>
+/* ───── Mobile Sidebar Drawer ───── */
+const MobileSidebar = ({ open, onClose, activeId, onSelect, userProfile }: {
+  open: boolean; onClose: () => void; activeId: string; onSelect: (item: typeof sidebarItems[0]) => void; userProfile: any;
+}) => (
+  <AnimatePresence>
+    {open && (
+      <>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 z-[70]" onClick={onClose} />
+        <motion.div
+          initial={{ x: 300 }}
+          animate={{ x: 0 }}
+          exit={{ x: 300 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="fixed top-0 right-0 bottom-0 w-[260px] bg-background/95 backdrop-blur-2xl border-l border-white/[0.06] z-[80] flex flex-col"
+          dir="rtl"
+        >
+          <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
+            <NeonBrand size="sm" />
+            <motion.button whileTap={{ scale: 0.9 }} onClick={onClose}
+              className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center">
+              <X className="w-4 h-4 text-foreground/60" />
+            </motion.button>
+          </div>
+
+          {userProfile && (
+            <div className="p-4 border-b border-white/[0.06]">
+              <div className="flex items-center gap-3">
+                <Avatar className="w-10 h-10 ring-2 ring-primary/30">
+                  <AvatarImage src={userProfile?.avatar_url} />
+                  <AvatarFallback className="bg-primary/20 text-primary font-bold">{(userProfile?.full_name || 'U')[0]}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground text-sm font-semibold truncate">{userProfile?.full_name || 'المستخدم'}</p>
+                  <p className="text-muted-foreground text-[10px] truncate">@{userProfile?.username || 'user'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <nav className="flex-1 py-2 overflow-y-auto">
+            {sidebarItems.map(item => (
+              <motion.button key={item.id} whileTap={{ scale: 0.95 }}
+                onClick={() => { onSelect(item); onClose(); }}
+                className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-colors ${
+                  activeId === item.id ? 'bg-primary/10 text-primary border-r-2 border-primary' : 'text-foreground/60 hover:bg-white/[0.04]'
+                }`}>
+                <item.icon className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
+                <span>{item.label}</span>
+              </motion.button>
+            ))}
+          </nav>
+        </motion.div>
+      </>
+    )}
+  </AnimatePresence>
+);
+
+/* ───── Desktop Sidebar ───── */
+const DesktopSidebar = ({ collapsed, activeId, onSelect }: { collapsed: boolean; activeId: string; onSelect: (item: typeof sidebarItems[0]) => void }) => (
+  <aside
+    className={`hidden lg:flex flex-col fixed top-14 right-0 bottom-0 z-30 transition-all duration-300 ${collapsed ? 'w-[72px]' : 'w-[200px]'} bg-background/80 backdrop-blur-2xl border-l border-white/[0.06]`}
+    dir="rtl"
+  >
+    <div className="flex-1 py-3 overflow-y-auto scrollbar-hide">
+      {sidebarItems.map(item => (
+        <motion.button key={item.id} whileTap={{ scale: 0.95 }} onClick={() => onSelect(item)}
+          className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${collapsed ? 'justify-center' : ''} ${
+            activeId === item.id ? 'bg-primary/10 text-primary border-r-2 border-primary' : 'text-foreground/60 hover:bg-white/[0.04]'
+          }`}>
+          <item.icon className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
+          {!collapsed && <span>{item.label}</span>}
+        </motion.button>
+      ))}
     </div>
-  );
-};
+  </aside>
+);
 
 /* ───── Profile Dropdown ───── */
 const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: () => void }) => {
   const navigate = useNavigate();
-
   return (
     <>
       <div className="fixed inset-0 z-[60]" onClick={onClose} />
@@ -286,8 +336,8 @@ const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: 
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: -8 }}
         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute top-12 left-2 z-[70] w-72 bg-black/70 backdrop-blur-[50px] border border-white/[0.08] rounded-2xl overflow-hidden"
-        style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 1px rgba(255,255,255,0.1) inset' }}
+        className="absolute top-12 left-2 z-[70] w-72 bg-background/90 backdrop-blur-[50px] border border-white/[0.08] rounded-2xl overflow-hidden"
+        style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.7)' }}
         dir="rtl"
       >
         <div className="p-4 border-b border-white/[0.06]">
@@ -308,8 +358,7 @@ const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: 
         <div className="p-3">
           <motion.button whileTap={{ scale: 0.95 }} onClick={() => { onClose(); navigate('/creator-studio'); }}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all group"
-            style={{ boxShadow: '0 0 20px hsla(144,90%,33%,0.08)' }}
-          >
+            style={{ boxShadow: '0 0 20px hsla(144,90%,33%,0.08)' }}>
             <div className="w-9 h-9 rounded-lg bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
               <Tv className="w-5 h-5 text-primary" strokeWidth={1.5} />
             </div>
@@ -328,15 +377,13 @@ const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: 
           ].map(item => (
             <motion.button key={item.path} whileTap={{ scale: 0.97 }}
               onClick={() => { onClose(); navigate(item.path); }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors"
-            >
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-foreground/70 hover:bg-white/[0.04] transition-colors">
               <item.icon className="w-4 h-4" strokeWidth={1.5} /><span>{item.label}</span>
             </motion.button>
           ))}
           <motion.button whileTap={{ scale: 0.97 }}
             onClick={() => { onClose(); navigate('/'); }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive/70 hover:bg-destructive/10 transition-colors"
-          >
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive/70 hover:bg-destructive/10 transition-colors">
             <LogOut className="w-4 h-4" strokeWidth={1.5} /><span>العودة للشبكة</span>
           </motion.button>
         </div>
@@ -345,7 +392,9 @@ const ProfileDropdown = ({ userProfile, onClose }: { userProfile: any; onClose: 
   );
 };
 
-/* ───── Main Page ───── */
+/* ═══════════════════════════════════════════════ */
+/* ═══ Main Page ═══ */
+/* ═══════════════════════════════════════════════ */
 const NetworkTV = () => {
   const navigate = useNavigate();
   const [videos, setVideos] = useState<any[]>([]);
@@ -358,6 +407,7 @@ const NetworkTV = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [entered, setEntered] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -451,11 +501,14 @@ const NetworkTV = () => {
     }
   };
 
+  /* Compute main content margin for desktop sidebar */
+  const mainMargin = sidebarCollapsed ? 'lg:mr-[72px]' : 'lg:mr-[200px]';
+
   return (
     <motion.div
-      initial={{ scale: 1.1, opacity: 0 }}
+      initial={{ scale: 1.05, opacity: 0 }}
       animate={entered ? { scale: 1, opacity: 1 } : {}}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className="min-h-screen bg-background"
     >
       {/* Cinema Curtain */}
@@ -478,52 +531,64 @@ const NetworkTV = () => {
         )}
       </AnimatePresence>
 
+      {/* Mobile Sidebar Drawer */}
+      <MobileSidebar
+        open={mobileSidebarOpen}
+        onClose={() => setMobileSidebarOpen(false)}
+        activeId={activeSidebarId}
+        onSelect={handleSidebarSelect}
+        userProfile={userProfile}
+      />
+
       {/* ═══ Top Header ═══ */}
-      <header className="sticky top-0 z-50 h-14 bg-black/40 backdrop-blur-2xl border-b border-white/[0.05] flex items-center px-4 gap-3">
-        <div className="flex items-center gap-3 flex-1" dir="rtl">
+      <header className="sticky top-0 z-50 h-14 bg-background/80 backdrop-blur-2xl border-b border-white/[0.05] flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0" dir="rtl">
+          {/* Desktop: sidebar toggle */}
           <motion.button whileTap={{ scale: 0.9 }}
             onClick={() => setSidebarCollapsed(p => !p)}
-            className="hidden lg:flex w-9 h-9 rounded-full items-center justify-center hover:bg-white/[0.06] transition-colors"
-          >
+            className="hidden lg:flex w-9 h-9 rounded-full items-center justify-center hover:bg-white/[0.06] transition-colors flex-shrink-0">
             <Menu className="w-5 h-5 text-foreground/60" strokeWidth={1.5} />
           </motion.button>
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate(-1)} className="lg:hidden w-9 h-9 rounded-full bg-white/[0.04] flex items-center justify-center">
-            <ArrowRight className="w-5 h-5 text-foreground/60" strokeWidth={1.4} />
+          {/* Mobile: hamburger */}
+          <motion.button whileTap={{ scale: 0.9 }}
+            onClick={() => setMobileSidebarOpen(true)}
+            className="lg:hidden w-9 h-9 rounded-full bg-white/[0.04] flex items-center justify-center flex-shrink-0">
+            <Menu className="w-5 h-5 text-foreground/60" strokeWidth={1.5} />
           </motion.button>
 
-          {/* White Neon Brand (no logo) */}
-          <div className="cursor-pointer" onClick={() => navigate('/network-tv')}>
+          {/* White Neon Brand */}
+          <div className="cursor-pointer min-w-0 flex-shrink-0" onClick={() => navigate('/network-tv')}>
             <NeonBrand />
           </div>
         </div>
 
-        {/* Search */}
-        <div className="hidden sm:flex items-center max-w-md w-full">
+        {/* Search - hidden on mobile, shown inline */}
+        <div className="hidden sm:flex items-center max-w-md w-full flex-shrink">
           <div className="flex items-center w-full bg-white/[0.04] border border-white/[0.08] rounded-full overflow-hidden">
             <input type="text" placeholder="ابحث في Networkk Cinema..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none flex-1 px-4 py-2" dir="rtl" />
-            <motion.button whileTap={{ scale: 0.9 }} className="px-4 py-2 bg-white/[0.06] border-r border-white/[0.08] hover:bg-white/[0.1] transition-colors">
+            <motion.button whileTap={{ scale: 0.9 }} className="px-3 py-2 bg-white/[0.06] border-r border-white/[0.08] hover:bg-white/[0.1] transition-colors">
               <Search className="w-4 h-4 text-foreground/50" strokeWidth={1.5} />
             </motion.button>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 relative">
+        <div className="flex items-center gap-1 sm:gap-2 relative flex-shrink-0">
           <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate('/creator-studio')}
-            className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors">
-            <Upload className="w-5 h-5 text-foreground/60" strokeWidth={1.5} />
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors">
+            <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-foreground/60" strokeWidth={1.5} />
           </motion.button>
           <motion.button whileTap={{ scale: 0.9 }}
-            className="w-9 h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors relative">
-            <Bell className="w-5 h-5 text-foreground/60" strokeWidth={1.5} />
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors relative">
+            <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-foreground/60" strokeWidth={1.5} />
           </motion.button>
-          <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowProfileMenu(p => !p)} className="ml-1 flex items-center gap-1">
-            <Avatar className="w-8 h-8 ring-1 ring-white/10 hover:ring-primary/40 transition-all">
+          <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowProfileMenu(p => !p)} className="flex items-center gap-1">
+            <Avatar className="w-7 h-7 sm:w-8 sm:h-8 ring-1 ring-white/10 hover:ring-primary/40 transition-all">
               <AvatarImage src={userProfile?.avatar_url} />
               <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">{(userProfile?.full_name || userProfile?.username || 'U')[0]}</AvatarFallback>
             </Avatar>
-            <ChevronDown className={`w-3.5 h-3.5 text-foreground/40 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3 h-3 text-foreground/40 transition-transform hidden sm:block ${showProfileMenu ? 'rotate-180' : ''}`} />
           </motion.button>
           <AnimatePresence>
             {showProfileMenu && <ProfileDropdown userProfile={userProfile} onClose={() => setShowProfileMenu(false)} />}
@@ -532,23 +597,23 @@ const NetworkTV = () => {
       </header>
 
       {/* Mobile search */}
-      <div className="sm:hidden px-4 py-2 bg-black/40 backdrop-blur-2xl border-b border-white/[0.05]">
+      <div className="sm:hidden px-3 py-2 bg-background/80 backdrop-blur-2xl border-b border-white/[0.05]">
         <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.04] border border-white/[0.06]">
-          <Search className="w-4 h-4 text-muted-foreground" strokeWidth={1.4} />
+          <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" strokeWidth={1.4} />
           <input type="text" placeholder="ابحث..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-            className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none flex-1" dir="rtl" />
+            className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none flex-1 min-w-0" dir="rtl" />
         </div>
       </div>
 
       {/* Category chips */}
-      <div className="sticky top-14 z-40 bg-black/40 backdrop-blur-2xl border-b border-white/[0.05] px-4 py-2">
+      <div className="sticky top-14 z-40 bg-background/80 backdrop-blur-2xl border-b border-white/[0.05] px-3 sm:px-4 py-2">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide" dir="rtl">
           {categories.map(cat => (
             <motion.button
               key={cat.id}
               whileTap={{ scale: 0.93 }}
               onClick={() => setActiveCategory(cat.id)}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                 activeCategory === cat.id ? 'bg-foreground text-background' : 'bg-white/[0.06] text-foreground/70 hover:bg-white/[0.1]'
               }`}
             >
@@ -559,12 +624,12 @@ const NetworkTV = () => {
         </div>
       </div>
 
-      {/* Sidebar */}
-      <CinemaSidebar collapsed={sidebarCollapsed} activeId={activeSidebarId} onSelect={handleSidebarSelect} />
+      {/* Desktop Sidebar */}
+      <DesktopSidebar collapsed={sidebarCollapsed} activeId={activeSidebarId} onSelect={handleSidebarSelect} />
 
       {/* Main Content */}
-      <main className={`transition-all duration-300 ${!sidebarCollapsed ? 'lg:mr-[220px]' : 'lg:mr-[72px]'}`}>
-        <div className="px-4 pb-28 pt-4 max-w-7xl mx-auto space-y-6">
+      <main className={`transition-all duration-300 ${mainMargin}`}>
+        <div className="px-3 sm:px-4 pb-28 pt-4 max-w-[1400px] mx-auto space-y-6">
           {featuredVideos.length > 0 && !searchQuery.trim() && activeCategory === 'all' && (
             <HeroSlider videos={featuredVideos} profiles={profiles} onSelect={(id) => navigate(`/watch/${id}`)} />
           )}
@@ -576,7 +641,7 @@ const NetworkTV = () => {
               <p className="text-muted-foreground text-sm">لا توجد فيديوهات حالياً</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
               {videos.map(video => (
                 <VideoCard key={video.id} video={video} profile={profiles.get(video.user_id)} onClick={() => navigate(`/watch/${video.id}`)} />
               ))}
