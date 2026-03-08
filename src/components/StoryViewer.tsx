@@ -70,7 +70,21 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
   const { recordView } = useStoryViews(currentStory?.id || '');
   const { isFollowing, toggleFollow } = useFollow(currentStory?.user_id || '');
 
+  // Dialogs should NOT pause story progress — only menus and typing should
   const shouldPause = isPaused || isTypingReply || showMenu || showOwnMenu;
+  
+  // Audio ref for background music continuity
+  const audioContextRef = useRef<AudioContext | null>(null);
+  
+  // Ensure AudioContext stays alive across overlay state changes
+  useEffect(() => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    return () => {
+      // Don't close on unmount of overlays — only on full viewer close
+    };
+  }, []);
 
   // Check ownership on story change
   useEffect(() => {
