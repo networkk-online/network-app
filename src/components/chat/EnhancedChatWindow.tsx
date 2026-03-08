@@ -365,8 +365,6 @@ export const EnhancedChatWindow = ({
                           ...springConfig,
                           delay: Math.min(index * 0.03, 0.15)
                         }}
-                        layout="position"
-                        layoutId={message.id}
                       >
                         <EnhancedMessageBubble
                           replyTo={(() => {
