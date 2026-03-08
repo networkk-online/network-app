@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical, Star, AtSign, MoreHorizontal, Share2, Facebook, Twitter, Instagram, Link, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -69,7 +70,21 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
   const { recordView } = useStoryViews(currentStory?.id || '');
   const { isFollowing, toggleFollow } = useFollow(currentStory?.user_id || '');
 
+  // Dialogs should NOT pause story progress — only menus and typing should
   const shouldPause = isPaused || isTypingReply || showMenu || showOwnMenu;
+  
+  // Audio ref for background music continuity
+  const audioContextRef = useRef<AudioContext | null>(null);
+  
+  // Ensure AudioContext stays alive across overlay state changes
+  useEffect(() => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    return () => {
+      // Don't close on unmount of overlays — only on full viewer close
+    };
+  }, []);
 
   // Check ownership on story change
   useEffect(() => {
@@ -889,4 +904,4 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
   );
 };
 
-export default StoryViewer;
+export default memo(StoryViewer);
