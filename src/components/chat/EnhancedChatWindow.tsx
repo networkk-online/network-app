@@ -96,17 +96,31 @@ export const EnhancedChatWindow = ({
 
   const isOtherUserTyping = typingUsers.length > 0;
 
+  const prevMessageCountRef = useRef(messages.length);
+  const isReactionUpdateRef = useRef(false);
+
   // Stable scroll position on new messages (prevent layout shift)
+  // Only scroll on NEW messages, not on reaction/read updates
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
+    const newCount = messages.length;
+    const prevCount = prevMessageCountRef.current;
+    prevMessageCountRef.current = newCount;
+
+    // If message count didn't change, it's a reaction/read update — don't scroll
+    if (newCount === prevCount) {
+      isReactionUpdateRef.current = true;
+      return;
+    }
+    isReactionUpdateRef.current = false;
+
     const currentScrollHeight = container.scrollHeight;
     const scrollDiff = currentScrollHeight - prevScrollHeightRef.current;
     
-    // Only auto-scroll if user is at the bottom
+    // Only auto-scroll if user is at the bottom AND it's a new message
     if (isAtBottom && scrollDiff > 0) {
-      // Smooth scroll to bottom
       requestAnimationFrame(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       });
