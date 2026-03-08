@@ -904,4 +904,4 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
   );
 };
 
-export default StoryViewer;
+export default memo(StoryViewer);
