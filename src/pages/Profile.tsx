@@ -72,9 +72,45 @@ const Profile = () => {
         await loadReels(targetUserId);
         await loadHighlights(targetUserId);
         await loadReposts(targetUserId);
+        await loadUserTweets(targetUserId);
       }
     } catch (error) {
       console.error('Error checking user:', error);
+    }
+  };
+
+  const loadUserTweets = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('tweets')
+        .select('*')
+        .eq('user_id', userId)
+        .is('parent_id', null)
+        .order('created_at', { ascending: false });
+      if (!error && data) {
+        // Fetch profile
+        const { data: prof } = await supabase.from('profiles').select('id, username, full_name, avatar_url, is_verified').eq('id', userId).single();
+        setUserTweets(data.map((t: any) => ({ ...t, profile: prof })));
+      }
+    } catch (e) { console.error('Error loading tweets:', e); }
+  };
+
+  const handleDeleteTweet = async (tweetId: string) => {
+    const { error } = await supabase.from('tweets').delete().eq('id', tweetId);
+    if (!error) {
+      setUserTweets(prev => prev.filter(t => t.id !== tweetId));
+      toast({ title: 'تم الحذف', description: 'تم حذف التغريدة بنجاح' });
+    }
+  };
+
+  const handleEditTweet = async (tweetId: string) => {
+    if (!editContent.trim()) return;
+    const { error } = await supabase.from('tweets').update({ content: editContent.trim() }).eq('id', tweetId);
+    if (!error) {
+      setUserTweets(prev => prev.map(t => t.id === tweetId ? { ...t, content: editContent.trim() } : t));
+      setEditingTweet(null);
+      setEditContent('');
+      toast({ title: 'تم التعديل', description: 'تم تعديل التغريدة بنجاح' });
     }
   };
 
