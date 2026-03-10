@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Camera, MapPin, Calendar, BadgeCheck, MoreHorizontal, Share2, Copy, Check, Link as LinkIcon, Instagram, Twitter, Youtube, EyeOff, UserX } from 'lucide-react';
+import { Camera, MapPin, Calendar, BadgeCheck, MoreHorizontal, Share2, Copy, Check, Link as LinkIcon, Instagram, Twitter, Youtube, EyeOff, UserX, Globe, Info } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
