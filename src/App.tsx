@@ -178,6 +178,7 @@ const AppContent = () => {
         <Route path="/network-tv" element={<NetworkTV />} />
         <Route path="/watch/:videoId" element={<VideoPlayer />} />
         <Route path="/creator-studio" element={<CreatorStudio />} />
+        <Route path="/tweets" element={<Tweets />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
