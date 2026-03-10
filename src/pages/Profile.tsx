@@ -28,7 +28,10 @@ const Profile = () => {
   const [userReels, setUserReels] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [todayEarnings, setTodayEarnings] = useState(0);
-  const [activeTab, setActiveTab] = useState<'posts' | 'reels' | 'saved' | 'stats' | 'wallet'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'reels' | 'saved' | 'stats' | 'wallet' | 'tweets'>('posts');
+  const [userTweets, setUserTweets] = useState<any[]>([]);
+  const [editingTweet, setEditingTweet] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [highlights, setHighlights] = useState<any[]>([]);
   const [showCreateHighlight, setShowCreateHighlight] = useState(false);
