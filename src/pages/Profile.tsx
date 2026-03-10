@@ -5,7 +5,8 @@ import UserProfile from '@/components/UserProfile';
 import WalletCard from '@/components/WalletCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, MessageCircle, Bookmark, Wallet, Plus, Play, Eye, Repeat2 } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Wallet, Plus, Play, Eye, Repeat2, Feather, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { HighlightCircle } from '@/components/HighlightCircle';
 import { CreateHighlightDialog } from '@/components/CreateHighlightDialog';
@@ -27,7 +28,10 @@ const Profile = () => {
   const [userReels, setUserReels] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [todayEarnings, setTodayEarnings] = useState(0);
-  const [activeTab, setActiveTab] = useState<'posts' | 'reels' | 'saved' | 'stats' | 'wallet'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'reels' | 'saved' | 'stats' | 'wallet' | 'tweets'>('posts');
+  const [userTweets, setUserTweets] = useState<any[]>([]);
+  const [editingTweet, setEditingTweet] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [highlights, setHighlights] = useState<any[]>([]);
   const [showCreateHighlight, setShowCreateHighlight] = useState(false);
@@ -68,9 +72,45 @@ const Profile = () => {
         await loadReels(targetUserId);
         await loadHighlights(targetUserId);
         await loadReposts(targetUserId);
+        await loadUserTweets(targetUserId);
       }
     } catch (error) {
       console.error('Error checking user:', error);
+    }
+  };
+
+  const loadUserTweets = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('tweets')
+        .select('*')
+        .eq('user_id', userId)
+        .is('parent_id', null)
+        .order('created_at', { ascending: false });
+      if (!error && data) {
+        // Fetch profile
+        const { data: prof } = await supabase.from('profiles').select('id, username, full_name, avatar_url, is_verified').eq('id', userId).single();
+        setUserTweets(data.map((t: any) => ({ ...t, profile: prof })));
+      }
+    } catch (e) { console.error('Error loading tweets:', e); }
+  };
+
+  const handleDeleteTweet = async (tweetId: string) => {
+    const { error } = await supabase.from('tweets').delete().eq('id', tweetId);
+    if (!error) {
+      setUserTweets(prev => prev.filter(t => t.id !== tweetId));
+      toast({ title: 'تم الحذف', description: 'تم حذف التغريدة بنجاح' });
+    }
+  };
+
+  const handleEditTweet = async (tweetId: string) => {
+    if (!editContent.trim()) return;
+    const { error } = await supabase.from('tweets').update({ content: editContent.trim() }).eq('id', tweetId);
+    if (!error) {
+      setUserTweets(prev => prev.map(t => t.id === tweetId ? { ...t, content: editContent.trim() } : t));
+      setEditingTweet(null);
+      setEditContent('');
+      toast({ title: 'تم التعديل', description: 'تم تعديل التغريدة بنجاح' });
     }
   };
 
@@ -532,6 +572,25 @@ const Profile = () => {
                 )}
               </button>
               <button
+                onClick={() => setActiveTab('tweets')}
+                className={`flex-1 min-w-[80px] py-3 text-center font-semibold transition-colors relative whitespace-nowrap flex items-center justify-center gap-2 ${
+                  activeTab === 'tweets'
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Feather className="w-4 h-4" />
+                تغريداتي
+                {userTweets.length > 0 && (
+                  <span className="bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px]">
+                    {userTweets.length}
+                  </span>
+                )}
+                {activeTab === 'tweets' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                )}
+              </button>
+              <button
                 onClick={() => setActiveTab('reels')}
                 className={`flex-1 min-w-[80px] py-3 text-center font-semibold transition-colors relative whitespace-nowrap flex items-center justify-center gap-2 ${
                   activeTab === 'reels'
@@ -663,6 +722,105 @@ const Profile = () => {
               </div>
             )}
             
+            {/* My Tweets Tab */}
+            {activeTab === 'tweets' && (
+              <div className="mt-6 sm:mt-8 space-y-3">
+                {userTweets.length > 0 ? (
+                  userTweets.map(tweet => (
+                    <div key={tweet.id} className="bg-white/[0.03] backdrop-blur-md border border-white/[0.06] rounded-2xl p-4 hover:bg-white/[0.06] transition-all">
+                      <div className="flex gap-3">
+                        <img
+                          src={tweet.profile?.avatar_url || '/default-avatar.jpg'}
+                          className="w-10 h-10 rounded-full border border-white/10 object-cover shrink-0"
+                          alt=""
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-foreground font-semibold text-sm truncate">
+                                {tweet.profile?.full_name || tweet.profile?.username || 'مستخدم'}
+                              </span>
+                              <span className="text-muted-foreground text-xs">
+                                · {getTimeAgo(tweet.created_at)}
+                              </span>
+                            </div>
+                            {isOwnProfile && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button className="p-1.5 rounded-full hover:bg-white/[0.08] transition-colors">
+                                    <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-card border-white/[0.08]">
+                                  <DropdownMenuItem
+                                    onClick={() => { setEditingTweet(tweet.id); setEditContent(tweet.content); }}
+                                    className="text-foreground hover:bg-white/[0.06] cursor-pointer"
+                                  >
+                                    <Pencil className="w-4 h-4 ml-2" /> تعديل
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeleteTweet(tweet.id)}
+                                    className="text-destructive hover:bg-destructive/10 cursor-pointer"
+                                  >
+                                    <Trash2 className="w-4 h-4 ml-2" /> حذف
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
+
+                          {editingTweet === tweet.id ? (
+                            <div className="mt-2 space-y-2">
+                              <textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value.slice(0, 280))}
+                                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl p-2.5 text-sm text-foreground resize-none min-h-[80px] focus:outline-none focus:border-primary/50"
+                                dir="auto"
+                              />
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground">{280 - editContent.length}</span>
+                                <div className="flex gap-2">
+                                  <button onClick={() => setEditingTweet(null)} className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-full border border-white/[0.08]">إلغاء</button>
+                                  <button onClick={() => handleEditTweet(tweet.id)} className="text-xs text-primary-foreground bg-primary hover:bg-primary/80 px-3 py-1.5 rounded-full font-medium">حفظ</button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-foreground/90 text-sm mt-1.5 leading-relaxed whitespace-pre-wrap break-words" dir="auto">
+                              {tweet.content.split(/(#\S+)/g).map((part: string, i: number) =>
+                                part.startsWith('#') ? (
+                                  <span key={i} className="text-primary font-medium">{part}</span>
+                                ) : part
+                              )}
+                            </p>
+                          )}
+
+                          <div className="flex items-center gap-6 mt-3 text-muted-foreground text-xs">
+                            <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5" /> {tweet.likes_count || 0}</span>
+                            <span className="flex items-center gap-1"><MessageCircle className="w-3.5 h-3.5" /> {tweet.replies_count || 0}</span>
+                            <span className="flex items-center gap-1"><Repeat2 className="w-3.5 h-3.5" /> {tweet.retweets_count || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <Feather className="w-10 h-10 text-primary/30 mx-auto mb-3" />
+                    <p className="text-muted-foreground text-sm">لا توجد تغريدات بعد</p>
+                    {isOwnProfile && (
+                      <button
+                        onClick={() => navigate('/tweets')}
+                        className="mt-3 text-primary text-sm hover:underline"
+                      >
+                        اذهب لكتابة أول تغريدة ←
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Posts Grid - Responsive */}
             {activeTab === 'posts' && (
               <div className="grid grid-cols-3 gap-0.5 sm:gap-1 lg:gap-2 mt-6 sm:mt-8">
@@ -818,5 +976,13 @@ const Profile = () => {
     </div>
   );
 };
+
+function getTimeAgo(dateString: string) {
+  const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+  if (seconds < 60) return 'الآن';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}د`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}س`;
+  return `${Math.floor(seconds / 86400)}ي`;
+}
 
 export default Profile;
