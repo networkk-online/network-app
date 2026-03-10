@@ -13,7 +13,7 @@ import { useStories } from '@/hooks/useStories';
 import { useReels } from '@/hooks/useReels';
 import LocalFameRankSection from '@/components/LocalFameRankSection';
 import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
-import { Film } from 'lucide-react';
+import { Film, Feather } from 'lucide-react';
 
 const Index = () => {
   const { toast } = useToast();
