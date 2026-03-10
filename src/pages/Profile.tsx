@@ -572,6 +572,25 @@ const Profile = () => {
                 )}
               </button>
               <button
+                onClick={() => setActiveTab('tweets')}
+                className={`flex-1 min-w-[80px] py-3 text-center font-semibold transition-colors relative whitespace-nowrap flex items-center justify-center gap-2 ${
+                  activeTab === 'tweets'
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Feather className="w-4 h-4" />
+                تغريداتي
+                {userTweets.length > 0 && (
+                  <span className="bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px]">
+                    {userTweets.length}
+                  </span>
+                )}
+                {activeTab === 'tweets' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                )}
+              </button>
+              <button
                 onClick={() => setActiveTab('reels')}
                 className={`flex-1 min-w-[80px] py-3 text-center font-semibold transition-colors relative whitespace-nowrap flex items-center justify-center gap-2 ${
                   activeTab === 'reels'
