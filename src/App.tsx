@@ -85,6 +85,7 @@ import Recharge from "./pages/Recharge";
 import NetworkTV from "./pages/NetworkTV";
 import VideoPlayer from "./pages/VideoPlayer";
 import CreatorStudio from "./pages/CreatorStudio";
+import Tweets from "./pages/Tweets";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
@@ -177,6 +178,7 @@ const AppContent = () => {
         <Route path="/network-tv" element={<NetworkTV />} />
         <Route path="/watch/:videoId" element={<VideoPlayer />} />
         <Route path="/creator-studio" element={<CreatorStudio />} />
+        <Route path="/tweets" element={<Tweets />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
