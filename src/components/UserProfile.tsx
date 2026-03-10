@@ -987,43 +987,47 @@ const UserProfile = ({
             </div>
           </div>
 
-          {/* Account Metadata */}
-          <div className="space-y-3 mt-4 p-4 rounded-xl bg-card/50 border border-border/30">
-            <h4 className="text-sm font-semibold text-muted-foreground mb-3">معلومات الحساب</h4>
-            
-            {location && (
-              <div className="flex items-center gap-3 rtl:flex-row">
-                <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
-                <span className="text-sm text-foreground/80">{location}</span>
-              </div>
-            )}
-
-            {joinedDate && (
-              <div className="flex items-center gap-3 rtl:flex-row">
-                <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
-                <span className="text-sm text-foreground/80">
-                  انضم {new Date(joinedDate).toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' })}
-                </span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-3 rtl:flex-row">
-              <Info className="h-4 w-4 text-primary flex-shrink-0" />
-              <span className="text-sm text-foreground/80">الحساب موجود في العراق</span>
-            </div>
-
-            <div className="flex items-center gap-3 rtl:flex-row">
-              <BadgeCheck className="h-4 w-4 text-primary flex-shrink-0" />
-              <span className="text-sm text-foreground/80">
-                {isVerified ? 'موثق' : 'غير موثق'}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 rtl:flex-row">
-              <Globe className="h-4 w-4 text-primary flex-shrink-0" />
-              <span className="text-sm text-foreground/80">متصل عبر Network App</span>
-            </div>
-          </div>
+          {/* Account Metadata Trigger */}
+          {joinedDate && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="flex items-center gap-2 mt-3 text-sm text-muted-foreground hover:text-primary transition-colors active:scale-95">
+                  <Calendar className="h-4 w-4 text-primary" />
+                  <span>انضم {new Date(joinedDate).toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' })}</span>
+                  <Info className="h-3.5 w-3.5 text-primary/60" />
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-sm bg-black/90 backdrop-blur-xl border border-primary/30 shadow-[0_0_30px_rgba(25,224,91,0.1)]">
+                <DialogHeader>
+                  <DialogTitle className="text-foreground text-center">معلومات الحساب</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-2">
+                  {location && (
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10"><MapPin className="h-4 w-4 text-primary" /></div>
+                      <div><p className="text-xs text-muted-foreground">الموقع</p><p className="text-sm text-foreground">{location}</p></div>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10"><Calendar className="h-4 w-4 text-primary" /></div>
+                    <div><p className="text-xs text-muted-foreground">تاريخ الانضمام</p><p className="text-sm text-foreground">انضم {new Date(joinedDate).toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' })}</p></div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10"><Info className="h-4 w-4 text-primary" /></div>
+                    <div><p className="text-xs text-muted-foreground">أصل الحساب</p><p className="text-sm text-foreground">الحساب موجود في العراق</p></div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10"><BadgeCheck className="h-4 w-4 text-primary" /></div>
+                    <div><p className="text-xs text-muted-foreground">حالة التوثيق</p><p className="text-sm text-foreground">{isVerified ? 'موثق ✓' : 'غير موثق'}</p></div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10"><Globe className="h-4 w-4 text-primary" /></div>
+                    <div><p className="text-xs text-muted-foreground">متصل عبر</p><p className="text-sm text-foreground">Network App</p></div>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
 
           {/* Close Friends and Settings for Own Profile */}
           {isOwnProfile && (
