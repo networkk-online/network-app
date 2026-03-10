@@ -987,20 +987,42 @@ const UserProfile = ({
             </div>
           </div>
 
-          {/* Additional Info */}
-          <div className="space-y-2 text-sm text-muted-foreground">
+          {/* Account Metadata */}
+          <div className="space-y-3 mt-4 p-4 rounded-xl bg-card/50 border border-border/30">
+            <h4 className="text-sm font-semibold text-muted-foreground mb-3">معلومات الحساب</h4>
+            
             {location && (
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <span>{location}</span>
+              <div className="flex items-center gap-3 rtl:flex-row">
+                <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+                <span className="text-sm text-foreground/80">{location}</span>
               </div>
             )}
+
             {joinedDate && (
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span>انضم {joinedDate}</span>
+              <div className="flex items-center gap-3 rtl:flex-row">
+                <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
+                <span className="text-sm text-foreground/80">
+                  انضم {new Date(joinedDate).toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' })}
+                </span>
               </div>
             )}
+
+            <div className="flex items-center gap-3 rtl:flex-row">
+              <Info className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-sm text-foreground/80">الحساب موجود في العراق</span>
+            </div>
+
+            <div className="flex items-center gap-3 rtl:flex-row">
+              <BadgeCheck className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-sm text-foreground/80">
+                {isVerified ? 'موثق' : 'غير موثق'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 rtl:flex-row">
+              <Globe className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-sm text-foreground/80">متصل عبر Network App</span>
+            </div>
           </div>
 
           {/* Close Friends and Settings for Own Profile */}
