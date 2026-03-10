@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import BackButton from '@/components/BackButton';
-import VerifiedBadge from '@/components/VerifiedBadge';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 
 const MAX_CHARS = 280;
 
