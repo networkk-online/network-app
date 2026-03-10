@@ -722,6 +722,105 @@ const Profile = () => {
               </div>
             )}
             
+            {/* My Tweets Tab */}
+            {activeTab === 'tweets' && (
+              <div className="mt-6 sm:mt-8 space-y-3">
+                {userTweets.length > 0 ? (
+                  userTweets.map(tweet => (
+                    <div key={tweet.id} className="bg-white/[0.03] backdrop-blur-md border border-white/[0.06] rounded-2xl p-4 hover:bg-white/[0.06] transition-all">
+                      <div className="flex gap-3">
+                        <img
+                          src={tweet.profile?.avatar_url || '/default-avatar.jpg'}
+                          className="w-10 h-10 rounded-full border border-white/10 object-cover shrink-0"
+                          alt=""
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-foreground font-semibold text-sm truncate">
+                                {tweet.profile?.full_name || tweet.profile?.username || 'مستخدم'}
+                              </span>
+                              <span className="text-muted-foreground text-xs">
+                                · {getTimeAgo(tweet.created_at)}
+                              </span>
+                            </div>
+                            {isOwnProfile && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button className="p-1.5 rounded-full hover:bg-white/[0.08] transition-colors">
+                                    <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-card border-white/[0.08]">
+                                  <DropdownMenuItem
+                                    onClick={() => { setEditingTweet(tweet.id); setEditContent(tweet.content); }}
+                                    className="text-foreground hover:bg-white/[0.06] cursor-pointer"
+                                  >
+                                    <Pencil className="w-4 h-4 ml-2" /> تعديل
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeleteTweet(tweet.id)}
+                                    className="text-destructive hover:bg-destructive/10 cursor-pointer"
+                                  >
+                                    <Trash2 className="w-4 h-4 ml-2" /> حذف
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
+
+                          {editingTweet === tweet.id ? (
+                            <div className="mt-2 space-y-2">
+                              <textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value.slice(0, 280))}
+                                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl p-2.5 text-sm text-foreground resize-none min-h-[80px] focus:outline-none focus:border-primary/50"
+                                dir="auto"
+                              />
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground">{280 - editContent.length}</span>
+                                <div className="flex gap-2">
+                                  <button onClick={() => setEditingTweet(null)} className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-full border border-white/[0.08]">إلغاء</button>
+                                  <button onClick={() => handleEditTweet(tweet.id)} className="text-xs text-primary-foreground bg-primary hover:bg-primary/80 px-3 py-1.5 rounded-full font-medium">حفظ</button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-foreground/90 text-sm mt-1.5 leading-relaxed whitespace-pre-wrap break-words" dir="auto">
+                              {tweet.content.split(/(#\S+)/g).map((part: string, i: number) =>
+                                part.startsWith('#') ? (
+                                  <span key={i} className="text-primary font-medium">{part}</span>
+                                ) : part
+                              )}
+                            </p>
+                          )}
+
+                          <div className="flex items-center gap-6 mt-3 text-muted-foreground text-xs">
+                            <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5" /> {tweet.likes_count || 0}</span>
+                            <span className="flex items-center gap-1"><MessageCircle className="w-3.5 h-3.5" /> {tweet.replies_count || 0}</span>
+                            <span className="flex items-center gap-1"><Repeat2 className="w-3.5 h-3.5" /> {tweet.retweets_count || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <Feather className="w-10 h-10 text-primary/30 mx-auto mb-3" />
+                    <p className="text-muted-foreground text-sm">لا توجد تغريدات بعد</p>
+                    {isOwnProfile && (
+                      <button
+                        onClick={() => navigate('/tweets')}
+                        className="mt-3 text-primary text-sm hover:underline"
+                      >
+                        اذهب لكتابة أول تغريدة ←
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Posts Grid - Responsive */}
             {activeTab === 'posts' && (
               <div className="grid grid-cols-3 gap-0.5 sm:gap-1 lg:gap-2 mt-6 sm:mt-8">
