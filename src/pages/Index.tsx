@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Post from '@/components/Post';
@@ -13,7 +14,7 @@ import { useStories } from '@/hooks/useStories';
 import { useReels } from '@/hooks/useReels';
 import LocalFameRankSection from '@/components/LocalFameRankSection';
 import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
-import { Film } from 'lucide-react';
+import { Film, Feather } from 'lucide-react';
 
 const Index = () => {
   const { toast } = useToast();
@@ -252,6 +253,28 @@ const Index = () => {
                   })}
                 </div>
               )}
+            </div>
+
+            {/* Tweets Section Link */}
+            <div className="mb-6">
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate('/tweets')}
+                className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/[0.03] backdrop-blur-md border border-white/[0.06] hover:bg-white/[0.06] transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Feather className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="text-right">
+                    <h3 className="text-foreground font-semibold text-sm">التغريدات</h3>
+                    <p className="text-muted-foreground text-xs">شارك أفكارك مع الجميع</p>
+                  </div>
+                </div>
+                <span className="text-primary text-sm group-hover:translate-x-[-4px] transition-transform">←</span>
+              </motion.button>
             </div>
 
             {/* Feed Reels Section */}
