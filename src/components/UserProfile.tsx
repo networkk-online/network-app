@@ -626,7 +626,7 @@ const UserProfile = ({
           </div>
 
           {/* Display Name with Verification Badge */}
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-1">
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{displayName}</h2>
             {isVerified && (
               <div className="relative">
@@ -634,6 +634,14 @@ const UserProfile = ({
               </div>
             )}
           </div>
+
+          {/* Affiliation Badge */}
+          {affiliatedCompanyId && (
+            <div className="mb-3">
+              <AffiliationBadge companyId={affiliatedCompanyId} />
+            </div>
+          )}
+          {!affiliatedCompanyId && <div className="mb-3" />}
 
           {/* Action Buttons */}
           {isOwnProfile ? (
