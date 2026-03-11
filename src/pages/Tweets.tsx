@@ -144,7 +144,7 @@ const TweetCard = ({
               className="flex items-center gap-1.5 text-muted-foreground hover:text-[hsl(var(--primary))] transition-colors group/btn"
             >
               <MessageCircle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
-              <span className="text-xs">{tweet.replies_count || ''}</span>
+              <span className="text-xs">{tweet.replies_count ? formatNumber(tweet.replies_count) : ''}</span>
             </motion.button>
 
             <motion.button
