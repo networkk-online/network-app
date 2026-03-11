@@ -6,6 +6,7 @@ import WalletCard from '@/components/WalletCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Heart, MessageCircle, Bookmark, Wallet, Plus, Play, Eye, Repeat2, Feather, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import WalletTransactionHistory from '@/components/WalletTransactionHistory';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { HighlightCircle } from '@/components/HighlightCircle';
