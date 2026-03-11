@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserDataLogger } from '@/hooks/useUserDataLogger';
@@ -13,6 +13,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isAddAccount = searchParams.get('add_account') === 'true';
   const { toast } = useToast();
   const { logLogin } = useUserDataLogger();
 
@@ -38,12 +40,17 @@ const Login = () => {
   };
 
   useEffect(() => {
+    // If adding account, sign out current session first (tokens are saved by useAccountSwitcher)
+    if (isAddAccount) {
+      supabase.auth.signOut();
+      return;
+    }
     supabase.auth.getSession().then(({ data: { session } }) => { if (session) navigate('/'); });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && event === 'SIGNED_IN') { logLogin(session.user.id); navigate('/'); }
     });
     return () => subscription.unsubscribe();
-  }, [navigate, logLogin]);
+  }, [navigate, logLogin, isAddAccount]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
