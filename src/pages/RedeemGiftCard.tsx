@@ -12,7 +12,7 @@ const RedeemGiftCard = () => {
   const [code, setCode] = useState(['', '', '']);
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [redeemResult, setRedeemResult] = useState<{ success: boolean; amount?: number } | null>(null);
+  const [redeemResult, setRedeemResult] = useState<{ success: boolean; amount?: number; newBalance?: number } | null>(null);
   const [history, setHistory] = useState<Array<{ code: string; coin_amount: number; created_at: string }>>([]);
 
   useEffect(() => {
