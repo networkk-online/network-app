@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Gift, CreditCard, Smartphone, ShieldCheck, HelpCircle } from 'lucide-react';
+import { X, Gift, CreditCard, Smartphone, ShieldCheck, HelpCircle, Upload, Camera, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import visaLogo from '@/assets/visa-logo.png';
 import mastercardLogo from '@/assets/mastercard-logo.jpg';
+import zaincashLogo from '@/assets/zaincash-logo.jpg';
 
 const EXCHANGE_RATE = 1500;
 
