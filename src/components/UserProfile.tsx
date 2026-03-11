@@ -65,6 +65,7 @@ interface UserProfileProps {
   isVerified?: boolean;
   website?: string;
   socialLinks?: SocialLinks;
+  affiliatedCompanyId?: string | null;
 }
 
 // Animated Number Component
