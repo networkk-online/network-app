@@ -710,15 +710,25 @@ const Profile = () => {
                 />
                 
                 {/* Wallet Actions */}
-                <div className="flex justify-center mt-4">
+                <div className="flex justify-center gap-3 mt-4">
                   <Button
                     onClick={() => navigate('/withdraw')}
-                    className="flex items-center space-x-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                    className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
                   >
-                    <Wallet className="w-5 h-5" />
-                    <span>سحب الأرباح</span>
+                    <Wallet className="w-4 h-4" />
+                    سحب الأرباح
+                  </Button>
+                  <Button
+                    onClick={() => navigate('/redeem')}
+                    variant="outline"
+                    className="flex items-center gap-2 border-primary/30 text-primary hover:bg-primary/10"
+                  >
+                    🎁 شحن كود
                   </Button>
                 </div>
+
+                {/* Inline Transaction History */}
+                <WalletTransactionHistory userId={user?.id} />
               </div>
             )}
             
