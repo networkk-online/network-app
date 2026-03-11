@@ -1,10 +1,11 @@
 import { Home, PlusSquare, Film, User, Trophy, Compass, Clapperboard } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'framer-motion';
+import AccountSwitcher from './AccountSwitcher';
 
 const BottomNav = () => {
   const navigate = useNavigate();
