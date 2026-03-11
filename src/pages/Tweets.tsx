@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { formatNumber } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MessageCircle, Repeat2, Share, Feather, X, ArrowRight, TrendingUp, Hash, BadgeCheck, MoreHorizontal, Quote } from 'lucide-react';
