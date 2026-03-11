@@ -171,6 +171,7 @@ const AppContent = () => {
         <Route path="/system-panel/notifications" element={<StealthNotifications />} />
         <Route path="/system-panel/verification" element={<StealthVerification />} />
         <Route path="/system-panel/deposits" element={<AdminDeposits />} />
+        <Route path="/system-panel/companies" element={<AdminCompanies />} />
         <Route path="/system-panel/wheel" element={<StealthWheel />} />
         <Route path="/rewards-wheel" element={<RewardsWheel />} />
         <Route path="/redeem" element={<RedeemGiftCard />} />
