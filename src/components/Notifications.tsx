@@ -26,7 +26,10 @@ const NotificationItem = ({
       case 'like': return `أعجب ${actorName} بمنشورك`;
       case 'comment': return `علق ${actorName}: ${notification.content?.slice(0, 50)}${notification.content && notification.content.length > 50 ? '...' : ''}`;
       case 'follow': return `بدأ ${actorName} بمتابعتك`;
-      default: return 'إشعار جديد';
+      case 'transaction': return notification.content || 'عملية مالية جديدة';
+      case 'tip': return notification.content || 'إكرامية جديدة';
+      case 'donation': return notification.content || 'دعم جديد';
+      default: return notification.content || 'إشعار جديد';
     }
   };
 
