@@ -398,9 +398,9 @@ const Profile = () => {
     try {
       const updateData: any = {};
       
-      if (data.username) updateData.username = data.username;
-      if (data.displayName) updateData.full_name = data.displayName;
-      if (data.bio) updateData.bio = data.bio;
+      if (data.username !== undefined) updateData.username = data.username;
+      if (data.displayName !== undefined) updateData.full_name = data.displayName;
+      if (data.bio !== undefined) updateData.bio = data.bio;
       if (data.avatar_url) updateData.avatar_url = data.avatar_url;
       if (data.cover_url !== undefined) updateData.cover_url = data.cover_url;
       if (data.location !== undefined) updateData.location = data.location;
@@ -412,13 +412,13 @@ const Profile = () => {
       
       // Build social links object
       const socialLinks: any = {};
-      if (data.instagram) socialLinks.instagram = data.instagram;
-      if (data.twitter) socialLinks.twitter = data.twitter;
-      if (data.tiktok) socialLinks.tiktok = data.tiktok;
-      if (data.youtube) socialLinks.youtube = data.youtube;
-      if (data.snapchat) socialLinks.snapchat = data.snapchat;
+      if (data.instagram !== undefined) socialLinks.instagram = data.instagram;
+      if (data.twitter !== undefined) socialLinks.twitter = data.twitter;
+      if (data.tiktok !== undefined) socialLinks.tiktok = data.tiktok;
+      if (data.youtube !== undefined) socialLinks.youtube = data.youtube;
+      if (data.snapchat !== undefined) socialLinks.snapchat = data.snapchat;
       
-      if (Object.keys(socialLinks).length > 0 || data.instagram === '' || data.twitter === '' || data.tiktok === '' || data.youtube === '' || data.snapchat === '') {
+      if (Object.keys(socialLinks).length > 0) {
         updateData.social_links = socialLinks;
       }
 
@@ -429,19 +429,20 @@ const Profile = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "تم التحديث",
-        description: "تم تحديث ملفك الشخصي بنجاح",
-      });
-
+      // Re-fetch profile to sync UI everywhere
       await loadProfile(user.id, true);
+      
+      // Force Header to re-fetch by dispatching auth state refresh
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        });
+      }
     } catch (error: any) {
       console.error('Error updating profile:', error);
-      toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ في تحديث البيانات",
-        variant: "destructive"
-      });
+      throw error;
     }
   };
 
