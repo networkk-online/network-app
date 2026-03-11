@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserDataLogger } from '@/hooks/useUserDataLogger';
@@ -13,6 +13,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isAddAccount = searchParams.get('add_account') === 'true';
   const { toast } = useToast();
   const { logLogin } = useUserDataLogger();
 
@@ -38,12 +40,17 @@ const Login = () => {
   };
 
   useEffect(() => {
+    // If adding account, sign out current session first (tokens are saved by useAccountSwitcher)
+    if (isAddAccount) {
+      supabase.auth.signOut();
+      return;
+    }
     supabase.auth.getSession().then(({ data: { session } }) => { if (session) navigate('/'); });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && event === 'SIGNED_IN') { logLogin(session.user.id); navigate('/'); }
     });
     return () => subscription.unsubscribe();
-  }, [navigate, logLogin]);
+  }, [navigate, logLogin, isAddAccount]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +60,26 @@ const Login = () => {
       if (!loginEmail) { setIsLoading(false); return; }
       const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
       if (error) { toast({ title: 'خطأ في تسجيل الدخول', description: error.message === 'Invalid login credentials' ? 'البيانات غير صحيحة. تحقق من اسم المستخدم/البريد وكلمة المرور' : error.message, variant: 'destructive' }); return; }
-      if (data.session) { toast({ title: 'تم تسجيل الدخول بنجاح', description: 'مرحباً بك مجدداً!' }); navigate('/'); }
+      if (data.session) {
+        // Save new session to account switcher storage
+        const { data: profile } = await supabase.from('profiles').select('username, full_name, avatar_url').eq('id', data.session.user.id).maybeSingle();
+        const stored = JSON.parse(localStorage.getItem('network_linked_accounts') || '[]');
+        const filtered = stored.filter((a: any) => a.id !== data.session!.user.id);
+        filtered.push({
+          id: data.session.user.id,
+          email: data.session.user.email,
+          username: profile?.username || null,
+          full_name: profile?.full_name || null,
+          avatar_url: profile?.avatar_url || null,
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+        localStorage.setItem('network_linked_accounts', JSON.stringify(filtered));
+
+        toast({ title: isAddAccount ? 'تم إضافة الحساب ✅' : 'تم تسجيل الدخول بنجاح', description: isAddAccount ? 'يمكنك التبديل بين حساباتك الآن' : 'مرحباً بك مجدداً!' });
+        logLogin(data.session.user.id);
+        navigate('/profile');
+      }
     } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' }); }
     finally { setIsLoading(false); }
   };
