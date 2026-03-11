@@ -111,6 +111,11 @@ const TweetCard = ({
               @{tweet.profile?.username || 'user'} · {timeAgo}
             </span>
           </div>
+          {affiliation && (
+            <div className="mt-0.5">
+              <AffiliationBadge companyId={affiliation.id} size="sm" />
+            </div>
+          )}
 
           {/* Content */}
           <p className="text-foreground/90 text-sm mt-1.5 leading-relaxed whitespace-pre-wrap break-words" dir="auto">
