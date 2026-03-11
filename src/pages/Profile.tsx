@@ -395,55 +395,43 @@ const Profile = () => {
   const handleProfileUpdate = async (data: any) => {
     if (!user) return;
 
-    try {
-      const updateData: any = {};
-      
-      if (data.username !== undefined) updateData.username = data.username;
-      if (data.displayName !== undefined) updateData.full_name = data.displayName;
-      if (data.bio !== undefined) updateData.bio = data.bio;
-      if (data.avatar_url) updateData.avatar_url = data.avatar_url;
-      if (data.cover_url !== undefined) updateData.cover_url = data.cover_url;
-      if (data.location !== undefined) updateData.location = data.location;
-      if (data.school !== undefined) updateData.school = data.school;
-      if (data.profession !== undefined) updateData.profession = data.profession;
-      if (data.gender !== undefined) updateData.gender = data.gender;
-      if (data.birthDate !== undefined) updateData.birth_date = data.birthDate;
-      if (data.website !== undefined) updateData.website = data.website;
-      
-      // Build social links object
-      const socialLinks: any = {};
-      if (data.instagram !== undefined) socialLinks.instagram = data.instagram;
-      if (data.twitter !== undefined) socialLinks.twitter = data.twitter;
-      if (data.tiktok !== undefined) socialLinks.tiktok = data.tiktok;
-      if (data.youtube !== undefined) socialLinks.youtube = data.youtube;
-      if (data.snapchat !== undefined) socialLinks.snapchat = data.snapchat;
-      
-      if (Object.keys(socialLinks).length > 0) {
-        updateData.social_links = socialLinks;
-      }
-
-      const { error } = await supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      // Re-fetch profile to sync UI everywhere
-      await loadProfile(user.id, true);
-      
-      // Force Header to re-fetch by dispatching auth state refresh
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        await supabase.auth.setSession({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-        });
-      }
-    } catch (error: any) {
-      console.error('Error updating profile:', error);
-      throw error;
+    const updateData: any = {};
+    
+    if (data.username) updateData.username = data.username;
+    if (data.displayName) updateData.full_name = data.displayName;
+    if (data.bio !== undefined) updateData.bio = data.bio || null;
+    if (data.avatar_url) updateData.avatar_url = data.avatar_url;
+    if (data.cover_url !== undefined) updateData.cover_url = data.cover_url;
+    if (data.location !== undefined) updateData.location = data.location || null;
+    if (data.school !== undefined) updateData.school = data.school || null;
+    if (data.profession !== undefined) updateData.profession = data.profession || null;
+    if (data.gender !== undefined) updateData.gender = data.gender || null;
+    if (data.birthDate !== undefined) updateData.birth_date = data.birthDate || null;
+    if (data.website !== undefined) updateData.website = data.website || null;
+    
+    // Build social links object
+    const socialLinks: any = {};
+    if (data.instagram) socialLinks.instagram = data.instagram;
+    if (data.twitter) socialLinks.twitter = data.twitter;
+    if (data.tiktok) socialLinks.tiktok = data.tiktok;
+    if (data.youtube) socialLinks.youtube = data.youtube;
+    if (data.snapchat) socialLinks.snapchat = data.snapchat;
+    
+    if (Object.keys(socialLinks).length > 0 || data.instagram === '' || data.twitter === '' || data.tiktok === '' || data.youtube === '' || data.snapchat === '') {
+      updateData.social_links = socialLinks;
     }
+
+    if (Object.keys(updateData).length === 0) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(updateData)
+      .eq('id', user.id);
+
+    if (error) throw error;
+
+    // Re-fetch profile to sync UI everywhere
+    await loadProfile(user.id, true);
   };
 
   // Get stories for profile user
