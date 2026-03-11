@@ -166,7 +166,7 @@ const TweetCard = ({
               }`}
             >
               <Heart className={`w-4 h-4 group-hover/btn:scale-110 transition-transform ${isLiked ? 'fill-current' : ''}`} />
-              <span className="text-xs">{tweet.likes_count || ''}</span>
+              <span className="text-xs">{tweet.likes_count ? formatNumber(tweet.likes_count) : ''}</span>
             </motion.button>
 
             <motion.button

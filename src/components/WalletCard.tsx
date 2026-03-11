@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatNumber } from '@/lib/utils';
 import { Wallet, TrendingUp, Eye, EyeOff, Gem, Coins, ArrowDownToLine, ArrowRightLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';

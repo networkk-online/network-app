@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { formatNumber } from '@/lib/utils';
 import { Camera, MapPin, Calendar, BadgeCheck, MoreHorizontal, Share2, Copy, Check, Link as LinkIcon, Instagram, Twitter, Youtube, EyeOff, UserX, Globe, Info } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
