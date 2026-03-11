@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  Activity, Users, Shield, Video, Bell, Search, BadgeCheck,
+  Activity, Users, Shield, Video, Bell, Search, BadgeCheck, Building2,
   LogOut, RefreshCw, ChevronLeft, ChevronRight, LayoutDashboard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
