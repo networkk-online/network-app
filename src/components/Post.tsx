@@ -352,6 +352,9 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               <p className="font-semibold text-white/95 text-sm tracking-wide">{username}</p>
               {isVerified && <VerifiedBadge size="sm" />}
             </div>
+            {affiliation && (
+              <AffiliationBadge companyId={affiliation.id} size="sm" />
+            )}
             <div className="flex items-center gap-2 text-xs text-white/35">
               <span>{timeAgo}</span>
               <span className="text-primary/60">+${walletEarnings.toFixed(2)}</span>
