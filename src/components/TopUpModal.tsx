@@ -28,12 +28,20 @@ interface TopUpModalProps {
 
 const TopUpModal = ({ isOpen, onClose }: TopUpModalProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedPkg, setSelectedPkg] = useState<number | null>(null);
   const [redeemCode, setRedeemCode] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCVV, setCardCVV] = useState('');
   const [showGuide, setShowGuide] = useState(false);
+  // Manual deposit state
+  const [depositAmount, setDepositAmount] = useState('');
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [depositSubmitting, setDepositSubmitting] = useState(false);
+  const [depositSuccess, setDepositSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatCode = (value: string) => {
     const clean = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 12);
