@@ -72,7 +72,8 @@ interface UserProfileProps {
 // Animated Number Component
 const AnimatedNumber = ({ value, delay = 0 }: { value: number; delay?: number }) => {
   const count = useCountUp({ end: value, duration: 800, delay });
-  return <p className="text-xl sm:text-2xl font-bold text-foreground">{count}</p>;
+  return <p className="text-xl sm:text-2xl font-bold text-foreground">{formatNumber(count)}</p>;
+
 };
 
 const UserProfile = ({
