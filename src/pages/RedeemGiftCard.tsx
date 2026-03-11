@@ -12,7 +12,7 @@ const RedeemGiftCard = () => {
   const [code, setCode] = useState(['', '', '']);
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [redeemResult, setRedeemResult] = useState<{ success: boolean; amount?: number } | null>(null);
+  const [redeemResult, setRedeemResult] = useState<{ success: boolean; amount?: number; newBalance?: number } | null>(null);
   const [history, setHistory] = useState<Array<{ code: string; coin_amount: number; created_at: string }>>([]);
 
   useEffect(() => {
@@ -113,16 +113,33 @@ const RedeemGiftCard = () => {
       coin_amount: giftCode.coin_amount,
     });
 
-    setRedeemResult({ success: true, amount: giftCode.coin_amount });
+    // Record transaction
+    const { data: currentFinance } = await supabase
+      .from('user_finances')
+      .select('balance')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    await supabase.from('transactions').insert({
+      user_id: user.id,
+      admin_id: user.id,
+      amount: giftCode.coin_amount,
+      type: 'topup',
+      status: 'completed',
+      notes: 'شحن كود هدية - ' + fullCode,
+    });
+
+    const newBalance = (currentFinance?.balance ? Number(currentFinance.balance) : 0) + giftCode.coin_amount;
+    setRedeemResult({ success: true, amount: giftCode.coin_amount, newBalance });
     setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 3000);
+    setTimeout(() => setShowConfetti(false), 4000);
     setCode(['', '', '']);
     loadHistory();
     setIsRedeeming(false);
   };
 
   // Confetti particles
-  const confettiColors = ['#00f0ff', '#ff0080', '#ffd700', '#08A045', '#a855f7'];
+  const confettiColors = ['#08A045', '#00ff41', '#0f0', '#22c55e', '#4ade80'];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -199,28 +216,40 @@ const RedeemGiftCard = () => {
         <AnimatePresence>
           {redeemResult && (
             <motion.div
-              initial={{ scale: 0.8, opacity: 0, y: 10 }}
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className={`mt-4 p-4 rounded-2xl flex items-center gap-3 ${
+              className={`mt-4 p-5 rounded-2xl ${
                 redeemResult.success
-                  ? 'bg-emerald-500/10 border border-emerald-500/30'
+                  ? 'bg-primary/5 border border-primary/30'
                   : 'bg-red-500/10 border border-red-500/30'
               }`}
+              style={redeemResult.success ? { boxShadow: '0 0 30px hsla(var(--primary) / 0.15)' } : undefined}
             >
               {redeemResult.success ? (
-                <>
-                  <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-                  <div>
-                    <p className="font-bold text-emerald-400">تم الاسترداد بنجاح! 🎉</p>
-                    <p className="text-sm text-emerald-300/70">+{redeemResult.amount} عملة مضافة لرصيدك</p>
+                <div className="text-center space-y-2">
+                  <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center" style={{ boxShadow: '0 0 20px hsla(var(--primary) / 0.3)' }}>
+                    <CheckCircle2 className="w-8 h-8 text-primary" />
                   </div>
-                </>
+                  <p className="font-black text-primary text-lg">تم الشحن بنجاح! 🚀</p>
+                  <p className="text-sm text-foreground/70">
+                    تمت إضافة <span className="font-bold text-primary">+{redeemResult.amount}</span> إلى محفظتك
+                  </p>
+                  {redeemResult.newBalance !== undefined && (
+                    <p className="text-xs text-muted-foreground">رصيدك الجديد: <span className="font-bold text-foreground">{redeemResult.newBalance?.toLocaleString()}</span></p>
+                  )}
+                  <Button
+                    onClick={() => { setRedeemResult(null); navigate('/profile'); }}
+                    className="mt-3 rounded-2xl px-6"
+                  >
+                    تم ✓
+                  </Button>
+                </div>
               ) : (
-                <>
+                <div className="flex items-center gap-3">
                   <XCircle className="w-6 h-6 text-red-400" />
                   <p className="font-bold text-red-400">الكود غير صالح أو مُستخدم</p>
-                </>
+                </div>
               )}
             </motion.div>
           )}

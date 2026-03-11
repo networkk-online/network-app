@@ -12,6 +12,7 @@ const navItems = [
   { title: 'Team', path: '/system-panel/team', icon: Shield },
   { title: 'Users', path: '/system-panel/users', icon: Users },
   { title: 'Content', path: '/system-panel/content', icon: Video },
+  { title: 'Deposits', path: '/system-panel/deposits', icon: Activity },
   { title: 'Notifications', path: '/system-panel/notifications', icon: Bell },
   { title: 'Verification', path: '/system-panel/verification', icon: BadgeCheck },
 ];

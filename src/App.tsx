@@ -85,6 +85,7 @@ import Recharge from "./pages/Recharge";
 import NetworkTV from "./pages/NetworkTV";
 import VideoPlayer from "./pages/VideoPlayer";
 import CreatorStudio from "./pages/CreatorStudio";
+import AdminDeposits from "./pages/AdminDeposits";
 import Tweets from "./pages/Tweets";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
@@ -168,6 +169,7 @@ const AppContent = () => {
         <Route path="/system-panel/content" element={<StealthContent />} />
         <Route path="/system-panel/notifications" element={<StealthNotifications />} />
         <Route path="/system-panel/verification" element={<StealthVerification />} />
+        <Route path="/system-panel/deposits" element={<AdminDeposits />} />
         <Route path="/system-panel/wheel" element={<StealthWheel />} />
         <Route path="/rewards-wheel" element={<RewardsWheel />} />
         <Route path="/redeem" element={<RedeemGiftCard />} />
