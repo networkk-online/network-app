@@ -155,7 +155,7 @@ const TweetCard = ({
               }`}
             >
               <Repeat2 className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
-              <span className="text-xs">{tweet.retweets_count || ''}</span>
+              <span className="text-xs">{tweet.retweets_count ? formatNumber(tweet.retweets_count) : ''}</span>
             </motion.button>
 
             <motion.button
