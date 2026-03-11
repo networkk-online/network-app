@@ -139,7 +139,7 @@ const RedeemGiftCard = () => {
   };
 
   // Confetti particles
-  const confettiColors = ['#00f0ff', '#ff0080', '#ffd700', '#08A045', '#a855f7'];
+  const confettiColors = ['#08A045', '#00ff41', '#0f0', '#22c55e', '#4ade80'];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
