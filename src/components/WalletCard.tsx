@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatNumber } from '@/lib/utils';
 import { Wallet, TrendingUp, Eye, EyeOff, Gem, Coins, ArrowDownToLine, ArrowRightLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -100,7 +101,7 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
               <span className="text-[10px] font-medium text-primary">الجواهر</span>
             </div>
             <p className="text-lg font-bold text-foreground">
-              {hidden ? '••••' : gems.toLocaleString()}
+              {hidden ? '••••' : formatNumber(gems)}
             </p>
             <p className="text-[10px] text-muted-foreground">≈ ${gemsToUsd}</p>
           </div>

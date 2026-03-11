@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { formatNumber } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MessageCircle, Repeat2, Share, Feather, X, ArrowRight, TrendingUp, Hash, BadgeCheck, MoreHorizontal, Quote } from 'lucide-react';
@@ -143,7 +144,7 @@ const TweetCard = ({
               className="flex items-center gap-1.5 text-muted-foreground hover:text-[hsl(var(--primary))] transition-colors group/btn"
             >
               <MessageCircle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
-              <span className="text-xs">{tweet.replies_count || ''}</span>
+              <span className="text-xs">{tweet.replies_count ? formatNumber(tweet.replies_count) : ''}</span>
             </motion.button>
 
             <motion.button
@@ -154,7 +155,7 @@ const TweetCard = ({
               }`}
             >
               <Repeat2 className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
-              <span className="text-xs">{tweet.retweets_count || ''}</span>
+              <span className="text-xs">{tweet.retweets_count ? formatNumber(tweet.retweets_count) : ''}</span>
             </motion.button>
 
             <motion.button
@@ -165,7 +166,7 @@ const TweetCard = ({
               }`}
             >
               <Heart className={`w-4 h-4 group-hover/btn:scale-110 transition-transform ${isLiked ? 'fill-current' : ''}`} />
-              <span className="text-xs">{tweet.likes_count || ''}</span>
+              <span className="text-xs">{tweet.likes_count ? formatNumber(tweet.likes_count) : ''}</span>
             </motion.button>
 
             <motion.button
