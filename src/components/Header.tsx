@@ -21,23 +21,26 @@ const Header = () => {
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    const loadCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
         loadProfile(user.id);
         loadUnreadCounts(user.id);
       }
-    });
+    };
+    loadCurrentUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        loadProfile(session.user.id);
-        loadUnreadCounts(session.user.id);
-      } else {
-        setProfile(null);
-        setUnreadNotifications(0);
-        setUnreadMessages(0);
+      const newUser = session?.user ?? null;
+      setUser(newUser);
+      // Clear old data immediately to prevent stale display
+      setProfile(null);
+      setUnreadNotifications(0);
+      setUnreadMessages(0);
+      if (newUser) {
+        loadProfile(newUser.id);
+        loadUnreadCounts(newUser.id);
       }
     });
 
