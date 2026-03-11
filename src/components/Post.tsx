@@ -52,6 +52,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   const [showTipDialog, setShowTipDialog] = useState(false);
   const { isSaved, loading: saveLoading, toggleSave } = useSavedPosts(id);
   const { isReposted, repostCount, loading: repostLoading, toggleRepost } = useRepost(id);
+  const affiliation = useAffiliation(userId);
 
   useEffect(() => {
     checkUser();
