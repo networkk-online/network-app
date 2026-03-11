@@ -94,9 +94,21 @@ const BottomNav = () => {
                 );
               })}
 
-              {/* Profile Avatar */}
+              {/* Profile Avatar — tap to navigate, long-press to switch */}
               <motion.button
                 onClick={() => navigate('/profile')}
+                onTouchStart={() => {
+                  longPressTimer.current = setTimeout(() => {
+                    setShowSwitcher(true);
+                    if (navigator.vibrate) navigator.vibrate(20);
+                  }, 500);
+                }}
+                onTouchEnd={() => { if (longPressTimer.current) clearTimeout(longPressTimer.current); }}
+                onMouseDown={() => {
+                  longPressTimer.current = setTimeout(() => setShowSwitcher(true), 500);
+                }}
+                onMouseUp={() => { if (longPressTimer.current) clearTimeout(longPressTimer.current); }}
+                onMouseLeave={() => { if (longPressTimer.current) clearTimeout(longPressTimer.current); }}
                 whileHover={{ scale: 1.12 }}
                 whileTap={{ scale: 0.88 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 20 }}
@@ -123,11 +135,24 @@ const BottomNav = () => {
                 ) : (
                   <User className={`w-[22px] h-[22px] ${isActive('/profile') ? 'text-primary' : 'text-white/40'}`} strokeWidth={1.4} />
                 )}
+                {/* Multi-account dot indicator */}
+                {(() => {
+                  try {
+                    const stored = JSON.parse(localStorage.getItem('network_linked_accounts') || '[]');
+                    if (stored.length > 1) return (
+                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" style={{ boxShadow: '0 0 6px hsl(var(--primary) / 0.6)' }} />
+                    );
+                  } catch {}
+                  return null;
+                })()}
               </motion.button>
             </div>
           </div>
         </motion.nav>
       )}
+
+      {/* Account Switcher Popup */}
+      <AccountSwitcher isOpen={showSwitcher} onClose={() => setShowSwitcher(false)} anchorPosition="bottom-nav" />
     </AnimatePresence>
   );
 };
