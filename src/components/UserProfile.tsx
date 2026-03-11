@@ -20,6 +20,7 @@ import { BlockButton } from '@/components/BlockButton';
 import { ReportDialog } from '@/components/ReportDialog';
 import { ImageCropDialog } from '@/components/ImageCropDialog';
 import CallButtons from '@/components/CallButtons';
+import AffiliationBadge from '@/components/AffiliationBadge';
 
 // Social media icons
 const TikTokIcon = () => (
@@ -65,6 +66,7 @@ interface UserProfileProps {
   isVerified?: boolean;
   website?: string;
   socialLinks?: SocialLinks;
+  affiliatedCompanyId?: string | null;
 }
 
 // Animated Number Component
@@ -94,7 +96,8 @@ const UserProfile = ({
   gender,
   isVerified = false,
   website,
-  socialLinks = {}
+  socialLinks = {},
+  affiliatedCompanyId
 }: UserProfileProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -623,7 +626,7 @@ const UserProfile = ({
           </div>
 
           {/* Display Name with Verification Badge */}
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-1">
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{displayName}</h2>
             {isVerified && (
               <div className="relative">
@@ -631,6 +634,14 @@ const UserProfile = ({
               </div>
             )}
           </div>
+
+          {/* Affiliation Badge */}
+          {affiliatedCompanyId && (
+            <div className="mb-3">
+              <AffiliationBadge companyId={affiliatedCompanyId} />
+            </div>
+          )}
+          {!affiliatedCompanyId && <div className="mb-3" />}
 
           {/* Action Buttons */}
           {isOwnProfile ? (

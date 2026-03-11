@@ -444,6 +444,71 @@ export type Database = {
           },
         ]
       }
+      companies: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          owner_id: string
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          owner_id: string
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          owner_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      company_affiliation_requests: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          reviewed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_affiliation_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -1187,6 +1252,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          affiliated_company_id: string | null
           avatar_url: string | null
           bio: string | null
           birth_date: string | null
@@ -1216,6 +1282,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          affiliated_company_id?: string | null
           avatar_url?: string | null
           bio?: string | null
           birth_date?: string | null
@@ -1245,6 +1312,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          affiliated_company_id?: string | null
           avatar_url?: string | null
           bio?: string | null
           birth_date?: string | null
@@ -1273,7 +1341,15 @@ export type Database = {
           username?: string | null
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_affiliated_company_id_fkey"
+            columns: ["affiliated_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       public_stories: {
         Row: {

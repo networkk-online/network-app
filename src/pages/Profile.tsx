@@ -502,6 +502,7 @@ const Profile = () => {
               isOwnProfile={isOwnProfile}
               website={profile?.website}
               socialLinks={profile?.social_links as any}
+              affiliatedCompanyId={profile?.affiliated_company_id}
             />
             
             {/* Story and Highlights Section */}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  Activity, Users, Shield, Video, Bell, Search, BadgeCheck,
+  Activity, Users, Shield, Video, Bell, Search, BadgeCheck, Building2,
   LogOut, RefreshCw, ChevronLeft, ChevronRight, LayoutDashboard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ const navItems = [
   { title: 'Users', path: '/system-panel/users', icon: Users },
   { title: 'Content', path: '/system-panel/content', icon: Video },
   { title: 'Deposits', path: '/system-panel/deposits', icon: Activity },
+  { title: 'Companies', path: '/system-panel/companies', icon: Building2 },
   { title: 'Notifications', path: '/system-panel/notifications', icon: Bell },
   { title: 'Verification', path: '/system-panel/verification', icon: BadgeCheck },
 ];

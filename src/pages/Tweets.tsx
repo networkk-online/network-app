@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Skeleton } from '@/components/ui/skeleton';
 import BackButton from '@/components/BackButton';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
+import AffiliationBadge from '@/components/AffiliationBadge';
+import { useAffiliation } from '@/hooks/useAffiliation';
 
 const MAX_CHARS = 280;
 
@@ -67,6 +69,7 @@ const TweetCard = ({
 }) => {
   const navigate = useNavigate();
   const timeAgo = getTimeAgo(tweet.created_at);
+  const affiliation = useAffiliation(tweet.user_id);
 
   // Highlight hashtags with neon green
   const renderContent = (text: string) => {
@@ -108,6 +111,11 @@ const TweetCard = ({
               @{tweet.profile?.username || 'user'} · {timeAgo}
             </span>
           </div>
+          {affiliation && (
+            <div className="mt-0.5">
+              <AffiliationBadge companyId={affiliation.id} size="sm" />
+            </div>
+          )}
 
           {/* Content */}
           <p className="text-foreground/90 text-sm mt-1.5 leading-relaxed whitespace-pre-wrap break-words" dir="auto">
