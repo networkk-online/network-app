@@ -20,6 +20,7 @@ import { BlockButton } from '@/components/BlockButton';
 import { ReportDialog } from '@/components/ReportDialog';
 import { ImageCropDialog } from '@/components/ImageCropDialog';
 import CallButtons from '@/components/CallButtons';
+import AffiliationBadge from '@/components/AffiliationBadge';
 
 // Social media icons
 const TikTokIcon = () => (
