@@ -95,7 +95,8 @@ const UserProfile = ({
   gender,
   isVerified = false,
   website,
-  socialLinks = {}
+  socialLinks = {},
+  affiliatedCompanyId
 }: UserProfileProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
