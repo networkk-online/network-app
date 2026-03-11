@@ -113,9 +113,26 @@ const RedeemGiftCard = () => {
       coin_amount: giftCode.coin_amount,
     });
 
-    setRedeemResult({ success: true, amount: giftCode.coin_amount });
+    // Record transaction
+    const { data: currentFinance } = await supabase
+      .from('user_finances')
+      .select('balance')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    await supabase.from('transactions').insert({
+      user_id: user.id,
+      admin_id: user.id,
+      amount: giftCode.coin_amount,
+      type: 'topup',
+      status: 'completed',
+      notes: 'شحن كود هدية - ' + fullCode,
+    });
+
+    const newBalance = (currentFinance?.balance ? Number(currentFinance.balance) : 0) + giftCode.coin_amount;
+    setRedeemResult({ success: true, amount: giftCode.coin_amount, newBalance });
     setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 3000);
+    setTimeout(() => setShowConfetti(false), 4000);
     setCode(['', '', '']);
     loadHistory();
     setIsRedeeming(false);
