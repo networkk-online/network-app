@@ -165,17 +165,116 @@ const TopUpModal = ({ isOpen, onClose }: TopUpModalProps) => {
             </div>
 
             {/* Tabs */}
-            <Tabs defaultValue="card" className="px-4 pb-6">
-              <TabsList className="w-full grid grid-cols-2 h-11 rounded-xl bg-muted/20 border border-border/20 p-1 mb-4">
-                <TabsTrigger value="card" className="rounded-lg text-xs font-bold data-[state=active]:bg-foreground/10 data-[state=active]:text-foreground gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5" />
-                  الدفع الإلكتروني
+            <Tabs defaultValue="manual" className="px-4 pb-6">
+              <TabsList className="w-full grid grid-cols-3 h-11 rounded-xl bg-muted/20 border border-border/20 p-1 mb-4">
+                <TabsTrigger value="manual" className="rounded-lg text-[10px] font-bold data-[state=active]:bg-primary/15 data-[state=active]:text-primary gap-1">
+                  <Smartphone className="w-3.5 h-3.5" />
+                  تحويل يدوي
                 </TabsTrigger>
-                <TabsTrigger value="code" className="rounded-lg text-xs font-bold data-[state=active]:bg-foreground/10 data-[state=active]:text-foreground gap-1.5">
+                <TabsTrigger value="card" className="rounded-lg text-[10px] font-bold data-[state=active]:bg-foreground/10 data-[state=active]:text-foreground gap-1">
+                  <CreditCard className="w-3.5 h-3.5" />
+                  بطاقة دفع
+                </TabsTrigger>
+                <TabsTrigger value="code" className="rounded-lg text-[10px] font-bold data-[state=active]:bg-foreground/10 data-[state=active]:text-foreground gap-1">
                   <Gift className="w-3.5 h-3.5" />
-                  بطاقة شحن
+                  كود شحن
                 </TabsTrigger>
               </TabsList>
+
+              {/* ═══ Tab 0: Manual Deposit ═══ */}
+              <TabsContent value="manual" className="mt-0">
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleReceiptSelect} />
+                
+                {depositSuccess ? (
+                  <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center py-8">
+                    <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center mb-4">
+                      <CheckCircle2 className="w-8 h-8 text-primary" />
+                    </div>
+                    <h4 className="font-bold text-foreground text-lg mb-1">تم إرسال الطلب!</h4>
+                    <p className="text-xs text-muted-foreground text-center">سيتم مراجعة وصلك وإضافة الرصيد تلقائياً</p>
+                  </motion.div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Payment Instructions */}
+                    <div className="rounded-xl p-3.5" style={{
+                      background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.03))',
+                      border: '1px solid hsl(var(--primary) / 0.15)',
+                    }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src={zaincashLogo} alt="ZainCash" className="w-6 h-6 rounded-md object-cover" />
+                        <span className="text-xs font-bold text-foreground">تعليمات التحويل</span>
+                      </div>
+                      <div className="space-y-1.5 text-[11px] text-muted-foreground">
+                        <p>1. أرسل المبلغ عبر <span className="text-primary font-bold">زين كاش</span> إلى:</p>
+                        <p className="font-mono text-foreground text-sm text-center py-1.5 bg-background/30 rounded-lg select-all" dir="ltr">0780 000 0000</p>
+                        <p>2. التقط صورة للوصل أدناه</p>
+                        <p>3. سيتم إضافة الرصيد خلال دقائق ✅</p>
+                      </div>
+                    </div>
+
+                    {/* Amount Input */}
+                    <div>
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">المبلغ (IQD)</label>
+                      <Input
+                        type="number"
+                        value={depositAmount}
+                        onChange={(e) => setDepositAmount(e.target.value)}
+                        placeholder="مثال: 25000"
+                        className="font-mono text-center text-lg bg-background/50 border-border/30 h-12 rounded-xl"
+                        dir="ltr"
+                        min={1000}
+                      />
+                      <div className="flex gap-2 mt-2">
+                        {[5000, 10000, 25000, 50000].map(amt => (
+                          <button key={amt} onClick={() => setDepositAmount(String(amt))}
+                            className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                              depositAmount === String(amt)
+                                ? 'bg-primary/15 text-primary border border-primary/30'
+                                : 'bg-muted/10 text-muted-foreground border border-border/20 hover:border-border/40'
+                            }`}>
+                            {amt.toLocaleString()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Receipt Upload */}
+                    <div>
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block">وصل التحويل</label>
+                      {receiptPreview ? (
+                        <div className="relative rounded-xl overflow-hidden border border-primary/30">
+                          <img src={receiptPreview} alt="Receipt" className="w-full max-h-48 object-cover" />
+                          <button onClick={() => { setReceiptFile(null); setReceiptPreview(null); }}
+                            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center">
+                            <X className="w-4 h-4 text-white" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => fileInputRef.current?.click()}
+                          className="w-full py-6 rounded-xl border-2 border-dashed border-border/30 hover:border-primary/40 transition-colors flex flex-col items-center gap-2 bg-muted/5">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Camera className="w-5 h-5 text-primary" />
+                          </div>
+                          <span className="text-xs text-muted-foreground">انقر لرفع صورة الوصل</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Submit */}
+                    <Button
+                      onClick={handleDepositSubmit}
+                      disabled={!depositAmount || !receiptFile || depositSubmitting || Number(depositAmount) < 1000}
+                      className="w-full h-12 rounded-2xl font-bold text-base disabled:opacity-40"
+                      style={{
+                        background: depositAmount && receiptFile ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))' : undefined,
+                        boxShadow: depositAmount && receiptFile ? '0 0 20px hsl(var(--primary) / 0.25)' : undefined,
+                      }}
+                    >
+                      {depositSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'إرسال طلب الشحن'}
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
 
               {/* ═══ Tab 1: Card Payment ═══ */}
               <TabsContent value="card" className="mt-0">
