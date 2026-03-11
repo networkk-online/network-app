@@ -67,6 +67,66 @@ const TopUpModal = ({ isOpen, onClose }: TopUpModalProps) => {
     navigate('/redeem');
   };
 
+  const handleReceiptSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'الملف كبير جداً', description: 'الحد الأقصى 5 ميغابايت', variant: 'destructive' });
+      return;
+    }
+    setReceiptFile(file);
+    setReceiptPreview(URL.createObjectURL(file));
+  };
+
+  const handleDepositSubmit = async () => {
+    if (!depositAmount || !receiptFile) return;
+    const amount = Number(depositAmount);
+    if (isNaN(amount) || amount < 1000) {
+      toast({ title: 'مبلغ غير صالح', description: 'الحد الأدنى 1,000 IQD', variant: 'destructive' });
+      return;
+    }
+
+    setDepositSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Upload receipt
+      const ext = receiptFile.name.split('.').pop();
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('deposit-receipts')
+        .upload(path, receiptFile);
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('deposit-receipts')
+        .getPublicUrl(path);
+
+      // Create deposit record
+      const { error: insertError } = await supabase
+        .from('deposits')
+        .insert({ user_id: user.id, amount, receipt_url: publicUrl });
+      if (insertError) throw insertError;
+
+      setDepositSuccess(true);
+      toast({ title: 'تم إرسال الطلب ✅', description: 'سيتم مراجعة وصلك خلال دقائق' });
+
+      setTimeout(() => {
+        setDepositAmount('');
+        setReceiptFile(null);
+        setReceiptPreview(null);
+        setDepositSuccess(false);
+        onClose();
+      }, 2500);
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'حدث خطأ', variant: 'destructive' });
+    } finally {
+      setDepositSubmitting(false);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
