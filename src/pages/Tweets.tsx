@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Skeleton } from '@/components/ui/skeleton';
 import BackButton from '@/components/BackButton';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
+import AffiliationBadge from '@/components/AffiliationBadge';
+import { useAffiliation } from '@/hooks/useAffiliation';
 
 const MAX_CHARS = 280;
 
