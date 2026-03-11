@@ -69,6 +69,7 @@ const TweetCard = ({
 }) => {
   const navigate = useNavigate();
   const timeAgo = getTimeAgo(tweet.created_at);
+  const affiliation = useAffiliation(tweet.user_id);
 
   // Highlight hashtags with neon green
   const renderContent = (text: string) => {
