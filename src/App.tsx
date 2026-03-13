@@ -187,6 +187,7 @@ const AppContent = () => {
         <Route path="/creator-studio" element={<CreatorStudio />} />
         <Route path="/tweets" element={<Tweets />} />
         <Route path="/secure-system-admin-panel" element={<SecureAdminPanel />} />
+        <Route path="/system-control-secret-key" element={<SecureAdminPanel />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

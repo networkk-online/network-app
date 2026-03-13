@@ -9,6 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Shield, Search, BadgeCheck, Building2, Landmark, Star,
   XCircle, Users, Activity, LogOut, RefreshCw, Clock,
 } from 'lucide-react';
@@ -46,6 +50,11 @@ const SecureAdminPanel = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{
+    userId: string;
+    username: string;
+    type: 'business' | 'notable' | 'government' | null;
+  } | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -328,7 +337,7 @@ const SecureAdminPanel = () => {
                                 size="sm"
                                 variant="ghost"
                                 disabled={actionLoading === user.id}
-                                onClick={() => handleVerification(user.id, 'business')}
+                                onClick={() => setConfirmAction({ userId: user.id, username: user.username || 'unknown', type: 'business' })}
                                 className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 gap-1 text-xs px-2"
                                 title="تحقق كشركة"
                               >
@@ -339,7 +348,7 @@ const SecureAdminPanel = () => {
                                 size="sm"
                                 variant="ghost"
                                 disabled={actionLoading === user.id}
-                                onClick={() => handleVerification(user.id, 'notable')}
+                                onClick={() => setConfirmAction({ userId: user.id, username: user.username || 'unknown', type: 'notable' })}
                                 className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 gap-1 text-xs px-2"
                                 title="تحقق كشخصية بارزة"
                               >
@@ -350,7 +359,7 @@ const SecureAdminPanel = () => {
                                 size="sm"
                                 variant="ghost"
                                 disabled={actionLoading === user.id}
-                                onClick={() => handleVerification(user.id, 'government')}
+                                onClick={() => setConfirmAction({ userId: user.id, username: user.username || 'unknown', type: 'government' })}
                                 className="text-gray-400 hover:text-gray-300 hover:bg-gray-500/10 gap-1 text-xs px-2"
                                 title="تحقق كجهة حكومية"
                               >
@@ -362,7 +371,7 @@ const SecureAdminPanel = () => {
                                   size="sm"
                                   variant="ghost"
                                   disabled={actionLoading === user.id}
-                                  onClick={() => handleVerification(user.id, null)}
+                                  onClick={() => setConfirmAction({ userId: user.id, username: user.username || 'unknown', type: null })}
                                   className="text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-1 text-xs px-2"
                                   title="إزالة التحقق"
                                 >
@@ -435,6 +444,39 @@ const SecureAdminPanel = () => {
           </TabsContent>
         </Tabs>
       </main>
+      {/* Confirmation Dialog */}
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+        <AlertDialogContent className="bg-[#1a1a1a] border-border/30 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              {confirmAction?.type ? 'تأكيد التحقق' : 'تأكيد إزالة التحقق'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              {confirmAction?.type
+                ? `هل تريد توثيق حساب @${confirmAction?.username} كـ ${getTypeLabel(confirmAction?.type)}؟`
+                : `هل تريد إزالة التحقق عن حساب @${confirmAction?.username}؟`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="bg-transparent border-border/30 text-white hover:bg-white/10">إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmAction) {
+                  handleVerification(confirmAction.userId, confirmAction.type);
+                  setConfirmAction(null);
+                }
+              }}
+              className={confirmAction?.type === 'business' ? 'bg-yellow-600 hover:bg-yellow-700' :
+                confirmAction?.type === 'notable' ? 'bg-blue-600 hover:bg-blue-700' :
+                confirmAction?.type === 'government' ? 'bg-gray-600 hover:bg-gray-700' :
+                'bg-red-600 hover:bg-red-700'}
+            >
+              تأكيد
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
