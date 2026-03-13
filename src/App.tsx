@@ -91,6 +91,7 @@ import AdminCompanies from "./pages/AdminCompanies";
 import Tweets from "./pages/Tweets";
 import SecureAdminPanel from "./pages/SecureAdminPanel";
 import ControlPanel from "./pages/ControlPanel";
+import AdminControl from "./pages/AdminControl";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
