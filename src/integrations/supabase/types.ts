@@ -2362,6 +2362,36 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_logs: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          target_user_id: string
+          verification_type: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          target_user_id: string
+          verification_type?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          target_user_id?: string
+          verification_type?: string | null
+        }
+        Relationships: []
+      }
       verification_requests: {
         Row: {
           created_at: string | null
