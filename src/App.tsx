@@ -91,6 +91,7 @@ import AdminCompanies from "./pages/AdminCompanies";
 import Tweets from "./pages/Tweets";
 import SecureAdminPanel from "./pages/SecureAdminPanel";
 import ControlPanel from "./pages/ControlPanel";
+import AdminControl from "./pages/AdminControl";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
@@ -188,6 +189,7 @@ const AppContent = () => {
         <Route path="/watch/:videoId" element={<VideoPlayer />} />
         <Route path="/creator-studio" element={<CreatorStudio />} />
         <Route path="/tweets" element={<Tweets />} />
+        <Route path="/admin-control" element={<AdminControl />} />
         <Route path="/secure-system-admin-panel" element={<SecureAdminPanel />} />
         <Route path="/system-control-secret-key" element={<SecureAdminPanel />} />
         <Route path="*" element={<NotFound />} />
