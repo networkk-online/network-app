@@ -50,6 +50,11 @@ const SecureAdminPanel = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{
+    userId: string;
+    username: string;
+    type: 'business' | 'notable' | 'government' | null;
+  } | null>(null);
 
   useEffect(() => {
     checkAuth();
