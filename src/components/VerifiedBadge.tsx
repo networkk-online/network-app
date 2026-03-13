@@ -56,7 +56,7 @@ export const VerifiedBadge = ({ className, size = 'md', username, userId, verifi
     if (propType) { setVType(propType); return; }
     if (!userId) return;
 
-    const fetch = async () => {
+    const fetchType = async () => {
       const { data } = await supabase
         .from('profiles')
         .select('verification_type')
@@ -64,7 +64,22 @@ export const VerifiedBadge = ({ className, size = 'md', username, userId, verifi
         .maybeSingle();
       if (data?.verification_type) setVType(data.verification_type as VerificationType);
     };
-    fetch();
+    fetchType();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel(`profile-verification-${userId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
+        (payload) => {
+          const newType = payload.new.verification_type as VerificationType | null;
+          setVType(newType);
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [userId, propType]);
 
   const type: VerificationType = vType || 'notable';
