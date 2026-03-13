@@ -94,6 +94,7 @@ import ControlPanel from "./pages/ControlPanel";
 import AdminControl from "./pages/AdminControl";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
+import FloatingAdminButton from "./components/FloatingAdminButton";
 
 const queryClient = new QueryClient();
 
