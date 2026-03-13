@@ -121,7 +121,7 @@ const AppContent = () => {
         <Route path="/quick-reply" element={<QuickReply />} />
         <Route path="/withdraw" element={<Withdraw />} />
         <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={<SecureAdminPanel />} />
         <Route path="/admin-control-panel-secret" element={<SecretAdminAccess />} />
         <Route path="/admin/staff" element={<ManageStaff />} />
         <Route path="/admin/users" element={<ManageUsers />} />
