@@ -123,6 +123,7 @@ const AppContent = () => {
         <Route path="/withdraw" element={<Withdraw />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin" element={<SecureAdminPanel />} />
+        <Route path="/control-panel" element={<ControlPanel />} />
         <Route path="/admin-control-panel-secret" element={<SecretAdminAccess />} />
         <Route path="/admin/staff" element={<ManageStaff />} />
         <Route path="/admin/users" element={<ManageUsers />} />
