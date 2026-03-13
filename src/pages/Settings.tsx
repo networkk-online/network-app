@@ -9,7 +9,7 @@ import {
   ArrowRight, Briefcase, BarChart3, CreditCard, Lock, Users, Ban, MapPin, 
   MessageCircle, AtSign, MessageSquare, Share2, UserX, Type, VolumeX, Settings2,
   ChevronLeft, Download, Accessibility, Globe, Monitor, UserCheck, BriefcaseBusiness,
-  Shield, UserCog, Bell, LogOut, Radio, Phone, Video
+  Shield, UserCog, Bell, LogOut, Radio, Phone, Video, Moon, BellRing
 } from 'lucide-react';
 
 interface SettingItemProps {

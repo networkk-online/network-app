@@ -924,8 +924,7 @@ const UserProfile = ({
 
           {/* Bio Section */}
           <div className="mb-4">
-            <h3 className="text-lg font-bold text-foreground mb-2">الوصف</h3>
-            <p className="text-muted-foreground whitespace-pre-wrap text-2xl font-bold leading-relaxed">{bio}</p>
+            <p className="text-sm text-muted-foreground/70 whitespace-pre-wrap leading-relaxed line-clamp-3">{bio}</p>
           </div>
             
           {/* Social Links - مباشرة تحت الوصف */}
