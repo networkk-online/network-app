@@ -337,7 +337,7 @@ const SecureAdminPanel = () => {
                                 size="sm"
                                 variant="ghost"
                                 disabled={actionLoading === user.id}
-                                onClick={() => handleVerification(user.id, 'business')}
+                                onClick={() => setConfirmAction({ userId: user.id, username: user.username || 'unknown', type: 'business' })}
                                 className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 gap-1 text-xs px-2"
                                 title="تحقق كشركة"
                               >
@@ -348,7 +348,7 @@ const SecureAdminPanel = () => {
                                 size="sm"
                                 variant="ghost"
                                 disabled={actionLoading === user.id}
-                                onClick={() => handleVerification(user.id, 'notable')}
+                                onClick={() => setConfirmAction({ userId: user.id, username: user.username || 'unknown', type: 'notable' })}
                                 className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 gap-1 text-xs px-2"
                                 title="تحقق كشخصية بارزة"
                               >
@@ -359,7 +359,7 @@ const SecureAdminPanel = () => {
                                 size="sm"
                                 variant="ghost"
                                 disabled={actionLoading === user.id}
-                                onClick={() => handleVerification(user.id, 'government')}
+                                onClick={() => setConfirmAction({ userId: user.id, username: user.username || 'unknown', type: 'government' })}
                                 className="text-gray-400 hover:text-gray-300 hover:bg-gray-500/10 gap-1 text-xs px-2"
                                 title="تحقق كجهة حكومية"
                               >
@@ -371,7 +371,7 @@ const SecureAdminPanel = () => {
                                   size="sm"
                                   variant="ghost"
                                   disabled={actionLoading === user.id}
-                                  onClick={() => handleVerification(user.id, null)}
+                                  onClick={() => setConfirmAction({ userId: user.id, username: user.username || 'unknown', type: null })}
                                   className="text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-1 text-xs px-2"
                                   title="إزالة التحقق"
                                 >
