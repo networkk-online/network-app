@@ -9,7 +9,7 @@ import {
   ArrowRight, Briefcase, BarChart3, CreditCard, Lock, Users, Ban, MapPin, 
   MessageCircle, AtSign, MessageSquare, Share2, UserX, Type, VolumeX, Settings2,
   ChevronLeft, Download, Accessibility, Globe, Monitor, UserCheck, BriefcaseBusiness,
-  Shield, UserCog, Bell, LogOut, Radio, Phone, Video
+  Shield, UserCog, Bell, LogOut, Radio, Phone, Video, Moon, BellRing
 } from 'lucide-react';
 
 interface SettingItemProps {
@@ -60,12 +60,19 @@ const Settings = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('theme') !== 'light';
+  });
+  const [pushEnabled, setPushEnabled] = useState(() => {
+    return localStorage.getItem('push_notifications') !== 'false';
+  });
   
-  const [settings, setSettings] = useState({
+  const settings_defaults = {
     likes_enabled: true, comments_enabled: true, notifications_enabled: true,
     likes_notifications: true, comments_notifications: true, follows_notifications: true,
     allow_messages_from_non_friends: true, auto_backup_enabled: false,
-  });
+  };
+  const [settings, setSettings] = useState(settings_defaults);
 
   useEffect(() => { checkAuth(); }, []);
 
@@ -98,6 +105,33 @@ const Settings = () => {
       try { await supabase.from('user_settings').upsert({ user_id: userId, ...settings, [key]: value }); }
       catch (error) { console.error('Error saving setting:', error); }
     }
+  };
+
+  const handleDarkModeToggle = (value: boolean) => {
+    setDarkMode(value);
+    const root = document.documentElement;
+    if (value) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  const handlePushToggle = async (value: boolean) => {
+    setPushEnabled(value);
+    localStorage.setItem('push_notifications', value ? 'true' : 'false');
+    if (value && 'Notification' in window) {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        setPushEnabled(false);
+        localStorage.setItem('push_notifications', 'false');
+        toast({ title: 'تم الرفض', description: 'لم يتم منح إذن الإشعارات من المتصفح', variant: 'destructive' });
+        return;
+      }
+    }
+    toast({ title: value ? 'تم التفعيل' : 'تم الإيقاف', description: value ? 'سيتم إرسال إشعارات الدفع' : 'تم إيقاف إشعارات الدفع' });
   };
 
   const handleLogout = async () => {
@@ -164,6 +198,11 @@ const Settings = () => {
 
             <SettingSection title="الإشعارات">
               <SettingItem icon={<Bell className="w-4 h-4" strokeWidth={1.4} />} title="إعدادات الإشعارات" onClick={() => navigate('/settings/notifications')} />
+              <SettingItem icon={<BellRing className="w-4 h-4" strokeWidth={1.4} />} title="إشعارات الدفع" subtitle="تلقي إشعارات فورية على جهازك" hasSwitch switchValue={pushEnabled} onSwitchChange={handlePushToggle} />
+            </SettingSection>
+
+            <SettingSection title="المظهر">
+              <SettingItem icon={<Moon className="w-4 h-4" strokeWidth={1.4} />} title="الوضع الداكن" subtitle="تبديل بين المظهر الفاتح والداكن" hasSwitch switchValue={darkMode} onSwitchChange={handleDarkModeToggle} />
             </SettingSection>
 
             <SettingSection title="تطبيقك ووسائطك">
