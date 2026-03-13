@@ -63,15 +63,21 @@ const SecureAdminPanel = () => {
   const checkAuth = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate('/'); return; }
+      console.log('[AdminGuard] Current user:', user?.id, user?.email);
+      if (!user) { console.log('[AdminGuard] No user found, redirecting...'); navigate('/'); return; }
 
-      const { data: roles } = await supabase
+      const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin');
+        .eq('user_id', user.id);
 
-      if (!roles || roles.length === 0) {
+      console.log('[AdminGuard] All roles for user:', roles, 'Error:', rolesError);
+
+      const isAdmin = roles?.some(r => r.role === 'admin');
+      console.log('[AdminGuard] Is admin?', isAdmin);
+
+      if (!isAdmin) {
+        console.log('[AdminGuard] Not admin, redirecting to home...');
         navigate('/');
         return;
       }
