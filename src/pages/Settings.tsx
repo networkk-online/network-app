@@ -107,6 +107,33 @@ const Settings = () => {
     }
   };
 
+  const handleDarkModeToggle = (value: boolean) => {
+    setDarkMode(value);
+    const root = document.documentElement;
+    if (value) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  const handlePushToggle = async (value: boolean) => {
+    setPushEnabled(value);
+    localStorage.setItem('push_notifications', value ? 'true' : 'false');
+    if (value && 'Notification' in window) {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        setPushEnabled(false);
+        localStorage.setItem('push_notifications', 'false');
+        toast({ title: 'تم الرفض', description: 'لم يتم منح إذن الإشعارات من المتصفح', variant: 'destructive' });
+        return;
+      }
+    }
+    toast({ title: value ? 'تم التفعيل' : 'تم الإيقاف', description: value ? 'سيتم إرسال إشعارات الدفع' : 'تم إيقاف إشعارات الدفع' });
+  };
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
