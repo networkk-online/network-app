@@ -82,7 +82,17 @@ const AdminDataTab = ({ currentUserId }: Props) => {
       const table = tableMap[deleteTarget.type];
       if (!table) return;
 
-      const { error } = await supabase.from(table).delete().eq('id', deleteTarget.id);
+      let error: any = null;
+      if (deleteTarget.type === 'post') {
+        const res = await supabase.from('posts').delete().eq('id', deleteTarget.id);
+        error = res.error;
+      } else if (deleteTarget.type === 'reel') {
+        const res = await supabase.from('reels').delete().eq('id', deleteTarget.id);
+        error = res.error;
+      } else if (deleteTarget.type === 'comment') {
+        const res = await supabase.from('comments').delete().eq('id', deleteTarget.id);
+        error = res.error;
+      }
       if (error) throw error;
 
       // Log the action
