@@ -203,34 +203,9 @@ const Index = () => {
     return `${Math.floor(seconds / 86400)} ي`;
   };
 
-  const [adminDebug, setAdminDebug] = useState<{ loggedIn: boolean; isAdmin: boolean; checked: boolean }>({ loggedIn: false, isAdmin: false, checked: false });
-
-  useEffect(() => {
-    const checkAdmin = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setAdminDebug({ loggedIn: false, isAdmin: false, checked: true }); return; }
-      const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
-      const isAdmin = roles?.some(r => r.role === 'admin') || false;
-      setAdminDebug({ loggedIn: true, isAdmin, checked: true });
-    };
-    checkAdmin();
-  }, []);
 
   return (
     <div className="min-h-screen">
-      {/* Debug Banner */}
-      {adminDebug.checked && (
-        <div className={`fixed top-0 left-0 right-0 z-[100] px-4 py-2 text-xs font-mono flex items-center justify-between ${adminDebug.isAdmin ? 'bg-green-600 text-white' : 'bg-yellow-500 text-black'}`}>
-          <span>
-            🔍 DEBUG: Logged in: {adminDebug.loggedIn ? '✅' : '❌'} | Admin role: {adminDebug.isAdmin ? '✅' : '❌'} | Route /control-panel: Active
-          </span>
-          {adminDebug.isAdmin && (
-            <button onClick={() => navigate('/control-panel')} className="bg-white/20 px-3 py-1 rounded font-bold hover:bg-white/30">
-              Go to Admin →
-            </button>
-          )}
-        </div>
-      )}
       <Header />
       <FloatingWheelIcon />
       
