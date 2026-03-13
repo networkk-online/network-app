@@ -19,6 +19,7 @@ const AdminAuthGuard = ({ children }: AdminAuthGuardProps) => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { navigate('/'); return; }
 
+        // Check admin role OR email-based bypass
         const { data: roles } = await supabase
           .from('user_roles')
           .select('role')
