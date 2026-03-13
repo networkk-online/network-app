@@ -90,6 +90,7 @@ import AdminDeposits from "./pages/AdminDeposits";
 import AdminCompanies from "./pages/AdminCompanies";
 import Tweets from "./pages/Tweets";
 import SecureAdminPanel from "./pages/SecureAdminPanel";
+import ControlPanel from "./pages/ControlPanel";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
@@ -122,6 +123,7 @@ const AppContent = () => {
         <Route path="/withdraw" element={<Withdraw />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin" element={<SecureAdminPanel />} />
+        <Route path="/control-panel" element={<ControlPanel />} />
         <Route path="/admin-control-panel-secret" element={<SecretAdminAccess />} />
         <Route path="/admin/staff" element={<ManageStaff />} />
         <Route path="/admin/users" element={<ManageUsers />} />
