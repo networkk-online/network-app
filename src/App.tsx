@@ -14,6 +14,7 @@ import Pages from "./pages/Pages";
 import Shorts from "./pages/Shorts";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import VerifyOtp from "./pages/VerifyOtp";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import AITools from "./pages/AITools";
@@ -110,6 +111,7 @@ const AppContent = () => {
         <Route path="/shorts" element={<Shorts />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/:userId" element={<Profile />} />
