@@ -74,7 +74,7 @@ const SignUp = () => {
         options: { emailRedirectTo: `${window.location.origin}/`, data: { username: username.trim().toLowerCase(), full_name: fullName, phone_number: fullPhoneNumber } },
       });
       if (error) { toast({ title: 'خطأ في التسجيل', description: error.message === 'User already registered' ? 'هذا البريد الإلكتروني مسجل بالفعل' : error.message, variant: 'destructive' }); return; }
-      if (data.user) { toast({ title: 'تم إنشاء الحساب بنجاح', description: 'مرحباً بك في نيتورك!' }); navigate('/'); }
+      if (data.user) { toast({ title: 'تم إرسال رمز التحقق', description: 'تفقد بريدك الإلكتروني لإدخال رمز التحقق' }); navigate(`/verify-otp?email=${encodeURIComponent(email)}`); }
     } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء إنشاء الحساب', variant: 'destructive' }); }
     finally { setIsLoading(false); }
   };
