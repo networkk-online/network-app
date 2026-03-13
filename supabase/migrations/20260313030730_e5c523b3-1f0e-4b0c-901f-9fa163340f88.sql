@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS verification_type text DEFAULT NULL CHECK (verification_type IN ('business', 'notable', 'government'));

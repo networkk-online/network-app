@@ -1279,6 +1279,7 @@ export type Database = {
           social_links: Json | null
           updated_at: string
           username: string | null
+          verification_type: string | null
           website: string | null
         }
         Insert: {
@@ -1309,6 +1310,7 @@ export type Database = {
           social_links?: Json | null
           updated_at?: string
           username?: string | null
+          verification_type?: string | null
           website?: string | null
         }
         Update: {
@@ -1339,6 +1341,7 @@ export type Database = {
           social_links?: Json | null
           updated_at?: string
           username?: string | null
+          verification_type?: string | null
           website?: string | null
         }
         Relationships: [
