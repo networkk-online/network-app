@@ -104,6 +104,7 @@ const AppContent = () => {
   return (
     <>
       <BottomNav />
+      <FloatingAdminButton />
       <Routes>
         <Route path="/welcome" element={<SplashScreen />} />
         <Route path="/" element={<Index />} />
