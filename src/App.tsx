@@ -89,6 +89,7 @@ import CreatorStudio from "./pages/CreatorStudio";
 import AdminDeposits from "./pages/AdminDeposits";
 import AdminCompanies from "./pages/AdminCompanies";
 import Tweets from "./pages/Tweets";
+import SecureAdminPanel from "./pages/SecureAdminPanel";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 
