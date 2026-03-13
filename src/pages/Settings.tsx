@@ -198,6 +198,11 @@ const Settings = () => {
 
             <SettingSection title="الإشعارات">
               <SettingItem icon={<Bell className="w-4 h-4" strokeWidth={1.4} />} title="إعدادات الإشعارات" onClick={() => navigate('/settings/notifications')} />
+              <SettingItem icon={<BellRing className="w-4 h-4" strokeWidth={1.4} />} title="إشعارات الدفع" subtitle="تلقي إشعارات فورية على جهازك" hasSwitch switchValue={pushEnabled} onSwitchChange={handlePushToggle} />
+            </SettingSection>
+
+            <SettingSection title="المظهر">
+              <SettingItem icon={<Moon className="w-4 h-4" strokeWidth={1.4} />} title="الوضع الداكن" subtitle="تبديل بين المظهر الفاتح والداكن" hasSwitch switchValue={darkMode} onSwitchChange={handleDarkModeToggle} />
             </SettingSection>
 
             <SettingSection title="تطبيقك ووسائطك">
