@@ -60,12 +60,19 @@ const Settings = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('theme') !== 'light';
+  });
+  const [pushEnabled, setPushEnabled] = useState(() => {
+    return localStorage.getItem('push_notifications') !== 'false';
+  });
   
-  const [settings, setSettings] = useState({
+  const settings_defaults = {
     likes_enabled: true, comments_enabled: true, notifications_enabled: true,
     likes_notifications: true, comments_notifications: true, follows_notifications: true,
     allow_messages_from_non_friends: true, auto_backup_enabled: false,
-  });
+  };
+  const [settings, setSettings] = useState(settings_defaults);
 
   useEffect(() => { checkAuth(); }, []);
 
