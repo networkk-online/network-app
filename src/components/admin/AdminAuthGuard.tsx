@@ -19,14 +19,23 @@ const AdminAuthGuard = ({ children }: AdminAuthGuardProps) => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { navigate('/'); return; }
 
-        // Check admin role OR email-based bypass
+        // Check username-based admin access OR role-based
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single();
+
+        const isAdminByUsername = profile?.username === '11556zzaa';
+
         const { data: roles } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id);
 
-        const isAdmin = roles?.some(r => r.role === 'admin');
-        if (!isAdmin) { navigate('/'); return; }
+        const isAdminByRole = roles?.some(r => r.role === 'admin');
+
+        if (!isAdminByUsername && !isAdminByRole) { navigate('/'); return; }
 
         setCurrentUserId(user.id);
         setAuthorized(true);
