@@ -444,6 +444,39 @@ const SecureAdminPanel = () => {
           </TabsContent>
         </Tabs>
       </main>
+      {/* Confirmation Dialog */}
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+        <AlertDialogContent className="bg-[#1a1a1a] border-border/30 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              {confirmAction?.type ? 'تأكيد التحقق' : 'تأكيد إزالة التحقق'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              {confirmAction?.type
+                ? `هل تريد توثيق حساب @${confirmAction?.username} كـ ${getTypeLabel(confirmAction?.type)}؟`
+                : `هل تريد إزالة التحقق عن حساب @${confirmAction?.username}؟`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="bg-transparent border-border/30 text-white hover:bg-white/10">إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmAction) {
+                  handleVerification(confirmAction.userId, confirmAction.type);
+                  setConfirmAction(null);
+                }
+              }}
+              className={confirmAction?.type === 'business' ? 'bg-yellow-600 hover:bg-yellow-700' :
+                confirmAction?.type === 'notable' ? 'bg-blue-600 hover:bg-blue-700' :
+                confirmAction?.type === 'government' ? 'bg-gray-600 hover:bg-gray-700' :
+                'bg-red-600 hover:bg-red-700'}
+            >
+              تأكيد
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
