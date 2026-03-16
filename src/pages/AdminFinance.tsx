@@ -149,7 +149,7 @@ const AdminFinance = () => {
   };
 
   const handlePasswordCheck = () => {
-    if (securityPassword === 'network2025admin') {
+    if (securityPassword === '123456') {
       setPasswordVerified(true);
     } else {
       toast.error('كلمة المرور غير صحيحة');
