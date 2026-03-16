@@ -103,7 +103,7 @@ const AdminFinance = () => {
 
   const handleApprove = async (id: string, type: 'deposit' | 'withdrawal') => {
     const table = type === 'deposit' ? 'deposits' : 'withdrawals';
-    const { error } = await supabase.from(table).update({
+    const { error } = await (supabase.from(table as any) as any).update({
       status: 'approved',
       reviewed_at: new Date().toISOString()
     }).eq('id', id);
