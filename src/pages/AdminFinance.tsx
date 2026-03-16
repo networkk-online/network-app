@@ -122,7 +122,7 @@ const AdminFinance = () => {
       return;
     }
     const table = rejectDialog.type === 'deposit' ? 'deposits' : 'withdrawals';
-    const { error } = await supabase.from(table).update({
+    const { error } = await (supabase.from(table as any) as any).update({
       status: 'rejected',
       reject_reason: rejectReason,
       reviewed_at: new Date().toISOString()
