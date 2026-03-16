@@ -70,13 +70,15 @@ const AdminFinance = () => {
     setLoading(true);
     const [depositsRes, withdrawalsRes] = await Promise.all([
       supabase.from('deposits').select('*').order('created_at', { ascending: false }),
-      supabase.from('withdrawals').select('*').order('created_at', { ascending: false })
+      supabase.from('withdrawals' as any).select('*').order('created_at', { ascending: false })
     ]);
 
-    // Fetch profiles for all user IDs
+    const depositsData = (depositsRes.data || []) as any[];
+    const withdrawalsData = (withdrawalsRes.data || []) as any[];
+
     const allUserIds = [
-      ...(depositsRes.data || []).map(d => d.user_id),
-      ...(withdrawalsRes.data || []).map(w => w.user_id)
+      ...depositsData.map((d: any) => d.user_id),
+      ...withdrawalsData.map((w: any) => w.user_id)
     ].filter((v, i, a) => a.indexOf(v) === i);
 
     const { data: profiles } = await supabase
@@ -86,12 +88,12 @@ const AdminFinance = () => {
 
     const profileMap = new Map((profiles || []).map(p => [p.id, p]));
 
-    setDeposits((depositsRes.data || []).map(d => ({
+    setDeposits(depositsData.map((d: any) => ({
       ...d,
       profile: profileMap.get(d.user_id) || { full_name: null, username: null }
     })));
 
-    setWithdrawals((withdrawalsRes.data || []).map(w => ({
+    setWithdrawals(withdrawalsData.map((w: any) => ({
       ...w,
       profile: profileMap.get(w.user_id) || { full_name: null, username: null }
     })));
