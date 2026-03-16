@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useNativeApp } from "@/hooks/useNativeApp";
+import useFinanceNotifications from "@/hooks/useFinanceNotifications";
 import { ChimeCallProvider } from "@/components/ChimeCallProvider";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
@@ -92,6 +93,7 @@ import Tweets from "./pages/Tweets";
 import SecureAdminPanel from "./pages/SecureAdminPanel";
 import ControlPanel from "./pages/ControlPanel";
 import AdminControl from "./pages/AdminControl";
+import AdminFinance from "./pages/AdminFinance";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 import FloatingAdminButton from "./components/FloatingAdminButton";
@@ -100,6 +102,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   useNativeApp();
+  useFinanceNotifications();
   
   return (
     <>
@@ -192,6 +195,7 @@ const AppContent = () => {
         <Route path="/creator-studio" element={<CreatorStudio />} />
         <Route path="/tweets" element={<Tweets />} />
         <Route path="/admin-control" element={<AdminControl />} />
+        <Route path="/admin-networkk-online" element={<AdminFinance />} />
         <Route path="/secure-system-admin-panel" element={<SecureAdminPanel />} />
         <Route path="/system-control-secret-key" element={<SecureAdminPanel />} />
         <Route path="*" element={<NotFound />} />

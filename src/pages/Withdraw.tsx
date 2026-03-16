@@ -318,7 +318,7 @@ const Withdraw = () => {
     }
   ];
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     if (!selectedMethod || !amount) {
       toast({
         title: "خطأ",
@@ -349,26 +349,67 @@ const Withdraw = () => {
       return;
     }
 
-    toast({
-      title: "تم إرسال طلب السحب",
-      description: `سيتم معالجة طلب سحب $${amount} خلال ${selectedMethodData!.processingTime}`,
-    });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    // Reset form
-    setAmount('');
-    setSelectedMethod('');
-    setAccountDetails({
-      email: '',
-      accountNumber: '',
-      routingNumber: '',
-      walletAddress: '',
-      phoneNumber: '',
-      cardNumber: '',
-      cardHolder: '',
-      expiryDate: '',
-      qiCardNumber: '',
-      zainCashNumber: ''
-    });
+      // Determine phone/card based on method
+      const isPhoneMethod = ['zaincash', 'qicard'].includes(selectedMethod);
+      const isCardMethod = ['visa', 'mastercard'].includes(selectedMethod);
+      const phoneNum = isPhoneMethod ? (selectedMethod === 'zaincash' ? accountDetails.zainCashNumber : accountDetails.qiCardNumber) : null;
+      const cardNum = isCardMethod ? accountDetails.cardNumber : null;
+
+      // Security: check for duplicate pending requests
+      if (phoneNum) {
+        const { data: existing } = await (supabase.from('withdrawals' as any) as any)
+          .select('id').eq('phone_number', phoneNum).eq('status', 'pending').maybeSingle();
+        if (existing) {
+          toast({ title: "خطأ", description: "تم تقديم طلب سابق بنفس الرقم، يرجى انتظار معالجة الطلب الحالي.", variant: "destructive" });
+          return;
+        }
+      }
+      if (cardNum) {
+        const { data: existing } = await (supabase.from('withdrawals' as any) as any)
+          .select('id').eq('card_number', cardNum).eq('status', 'pending').maybeSingle();
+        if (existing) {
+          toast({ title: "خطأ", description: "تم تقديم طلب سابق بنفس البطاقة، يرجى انتظار معالجة الطلب الحالي.", variant: "destructive" });
+          return;
+        }
+      }
+
+      const { error } = await (supabase.from('withdrawals' as any) as any).insert({
+        user_id: user.id,
+        amount: withdrawAmount,
+        payment_method: selectedMethod,
+        phone_number: phoneNum,
+        card_number: cardNum,
+        card_holder: isCardMethod ? accountDetails.cardHolder : null,
+        account_details: {
+          email: accountDetails.email,
+          accountNumber: accountDetails.accountNumber,
+          walletAddress: accountDetails.walletAddress
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "تم إرسال طلب السحب",
+        description: `سيتم معالجة طلب سحب $${amount} خلال ${selectedMethodData!.processingTime}`,
+      });
+
+      // Reset form
+      setAmount('');
+      setSelectedMethod('');
+      setAccountDetails({
+        email: '', accountNumber: '', routingNumber: '', walletAddress: '',
+        phoneNumber: '', cardNumber: '', cardHolder: '', expiryDate: '',
+        qiCardNumber: '', zainCashNumber: ''
+      });
+    } catch (error: any) {
+      console.error('Withdraw error:', error);
+      toast({ title: "خطأ", description: "حدث خطأ أثناء إرسال الطلب", variant: "destructive" });
+    }
   };
 
   const calculateFee = (method: string, amount: number) => {
