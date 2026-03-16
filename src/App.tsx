@@ -102,6 +102,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   useNativeApp();
+  useFinanceNotifications();
   
   return (
     <>
