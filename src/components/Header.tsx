@@ -133,6 +133,20 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
             </h1>
           </div>
 
+          {/* Post Size Toggle */}
+          {onPostSizeChange && postSize && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={cycleSize}
+              className="p-2 rounded-full hover:bg-white/[0.04] interactive-element gap-1.5"
+              title={`حجم المنشورات: ${sizeLabels[postSize]}`}
+            >
+              <LayoutGrid className="w-4 h-4 text-white/60" strokeWidth={1.4} />
+              <span className="text-[10px] text-white/50 hidden sm:inline">{sizeLabels[postSize]}</span>
+            </Button>
+          )}
+
           {/* Search — Desktop */}
           <div
             className="hidden md:flex items-center glass-input px-4 py-2 w-48 lg:w-64 cursor-pointer"
