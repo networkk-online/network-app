@@ -31,6 +31,7 @@ const Index = () => {
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   
   const { stories, loading: storiesLoading, markUserStoriesAsViewed, markStoryAsViewed } = useStories(userId);
+  const { size: postSize, setSize: setPostSize } = usePostSize();
   const { reels: feedReels, loading: reelsLoading, likedReels, toggleLike } = useReels(userId, true);
 
   useEffect(() => {
