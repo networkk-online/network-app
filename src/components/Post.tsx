@@ -350,7 +350,9 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           <img 
             src={userAvatar} 
             alt={username}
-            className="w-10 h-10 rounded-full object-cover ring-[1.5px] ring-white/10 transition-all group-hover:ring-white/20"
+            className={`rounded-full object-cover ring-[1.5px] ring-white/10 transition-all group-hover:ring-white/20 ${
+              displaySize === 'compact' ? 'w-7 h-7' : displaySize === 'large' ? 'w-12 h-12' : 'w-10 h-10'
+            }`}
           />
           <div>
             <div className="flex items-center gap-1.5">
