@@ -16,7 +16,14 @@ interface HeaderProps {
   onPostSizeChange?: (size: PostSize) => void;
 }
 
-const Header = () => {
+const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
+  const sizeLabels: Record<PostSize, string> = { compact: 'مضغوط', standard: 'عادي', large: 'كبير' };
+  const sizeOrder: PostSize[] = ['compact', 'standard', 'large'];
+  const cycleSize = () => {
+    if (!onPostSizeChange || !postSize) return;
+    const idx = sizeOrder.indexOf(postSize);
+    onPostSizeChange(sizeOrder[(idx + 1) % 3]);
+  };
   const navigate = useNavigate();
   const { toast } = useToast();
   const { logLogout } = useUserDataLogger();
