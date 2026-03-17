@@ -392,7 +392,10 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           <img 
             src={image} 
             alt="Post content"
-            className="w-full h-96 object-cover"
+            className={`w-full object-cover transition-all duration-300 ${
+              displaySize === 'compact' ? 'h-48' : displaySize === 'large' ? 'h-[500px]' : 'h-96'
+            }`}
+          />
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
           {/* Glass edge overlay */}
