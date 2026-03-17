@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useStories } from '@/hooks/useStories';
 import { useReels } from '@/hooks/useReels';
+import { usePostSize } from '@/hooks/usePostSize';
 import LocalFameRankSection from '@/components/LocalFameRankSection';
 import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
 import { Film, Feather } from 'lucide-react';
@@ -30,6 +31,7 @@ const Index = () => {
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   
   const { stories, loading: storiesLoading, markUserStoriesAsViewed, markStoryAsViewed } = useStories(userId);
+  const { size: postSize, setSize: setPostSize } = usePostSize();
   const { reels: feedReels, loading: reelsLoading, likedReels, toggleLike } = useReels(userId, true);
 
   useEffect(() => {
@@ -206,7 +208,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <Header postSize={postSize} onPostSizeChange={setPostSize} />
       <FloatingWheelIcon />
       
       <main className="pt-16 sm:pt-20 pb-24">
@@ -324,7 +326,7 @@ const Index = () => {
               ) : posts.length > 0 ? (
                 posts.map((post, index) => (
                   <div key={post.id}>
-                    <Post {...post} />
+                    <Post {...post} displaySize={postSize} />
                     {(index + 1) % 3 === 0 && <Advertisement placement="feed" className="mt-4" />}
                   </div>
                 ))
@@ -336,7 +338,7 @@ const Index = () => {
                   </div>
                   {featuredPosts.map((post, index) => (
                     <div key={post.id}>
-                      <Post {...post} />
+                      <Post {...post} displaySize={postSize} />
                       {(index + 1) % 3 === 0 && <Advertisement placement="feed" className="mt-4" />}
                     </div>
                   ))}

@@ -72,41 +72,61 @@ const Recharge = () => {
 
       {/* Coin Packages */}
       <div className="px-4 py-4">
-        {PACKAGES.map((pkg, i) => (
-          <motion.button
-            key={pkg.id}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.04 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => { if (navigator.vibrate) navigator.vibrate(15); }}
-            className="w-full flex items-center justify-between py-3.5 px-1 border-b border-border/10 last:border-0"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🪙</span>
-              <div className="text-right">
-                <p className="font-bold text-foreground text-[15px]">{pkg.coins} عملة</p>
-                <p className="text-[10px] text-muted-foreground">
-                  {(pkg.priceUSD * EXCHANGE_RATE).toLocaleString('ar-IQ')} د.ع
-                </p>
+        {PACKAGES.map((pkg, i) => {
+          const priceIQD = pkg.priceUSD * EXCHANGE_RATE;
+          const hasBonus = priceIQD >= 50000;
+          const bonusCoins = hasBonus ? Math.floor(pkg.coins * 0.05) : 0;
+          
+          return (
+            <motion.button
+              key={pkg.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.04 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => { if (navigator.vibrate) navigator.vibrate(15); }}
+              className="w-full flex items-center justify-between py-3.5 px-1 border-b border-border/10 last:border-0"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🪙</span>
+                <div className="text-right">
+                  <p className="font-bold text-foreground text-[15px]">
+                    {pkg.coins} عملة
+                    {hasBonus && <span className="text-primary text-xs mr-1">+{bonusCoins} مكافأة!</span>}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {priceIQD.toLocaleString('ar-IQ')} د.ع
+                  </p>
+                </div>
+                {pkg.popular && (
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ background: 'linear-gradient(135deg, #ffd700, #ff8c00)', color: '#000' }}>
+                    الأكثر شعبية
+                  </span>
+                )}
+                {hasBonus && !pkg.popular && (
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/20">
+                    +5% مكافأة
+                  </span>
+                )}
               </div>
-              {pkg.popular && (
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-                  style={{ background: 'linear-gradient(135deg, #ffd700, #ff8c00)', color: '#000' }}>
-                  الأكثر شعبية
-                </span>
-              )}
-            </div>
-            <div className="px-5 py-2 rounded-xl font-bold text-sm"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,165,0,0.06))',
-                border: '1px solid rgba(255,215,0,0.2)',
-                color: '#ffd700',
-              }}>
-              ${pkg.priceUSD}
-            </div>
-          </motion.button>
-        ))}
+              <div className="px-5 py-2 rounded-xl font-bold text-sm"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,165,0,0.06))',
+                  border: '1px solid rgba(255,215,0,0.2)',
+                  color: '#ffd700',
+                }}>
+                ${pkg.priceUSD}
+              </div>
+            </motion.button>
+          );
+        })}
+
+        {/* Bonus info banner */}
+        <div className="mt-3 p-3 rounded-xl border border-primary/15 bg-primary/5 flex items-center gap-2">
+          <span className="text-lg">🎁</span>
+          <p className="text-[11px] text-primary">الطلبات بقيمة 50,000 د.ع أو أكثر تحصل على مكافأة 5% إضافية!</p>
+        </div>
       </div>
 
       {/* Redeem Code Section */}

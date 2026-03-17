@@ -103,6 +103,9 @@ const AdminFinance = () => {
 
   const handleApprove = async (id: string, type: 'deposit' | 'withdrawal') => {
     const table = type === 'deposit' ? 'deposits' : 'withdrawals';
+    const items = type === 'deposit' ? deposits : withdrawals;
+    const item = items.find(i => i.id === id);
+    
     const { error } = await (supabase.from(table as any) as any).update({
       status: 'approved',
       reviewed_at: new Date().toISOString()
@@ -112,7 +115,42 @@ const AdminFinance = () => {
       toast.error('حدث خطأ أثناء الموافقة');
       return;
     }
-    toast.success('تمت الموافقة بنجاح ✅');
+
+    // Apply 5% bonus for deposits ≥ 50,000 IQD (~33.33 USD)
+    if (type === 'deposit' && item) {
+      const amountIQD = item.amount * 1500; // Convert USD to IQD
+      const bonus = amountIQD >= 50000 ? item.amount * 0.05 : 0;
+      const totalCredit = item.amount + bonus;
+      
+      // Update user balance
+      const { data: existingGems } = await supabase
+        .from('user_gems')
+        .select('balance, total_earned')
+        .eq('user_id', item.user_id)
+        .maybeSingle();
+
+      if (existingGems) {
+        await supabase.from('user_gems').update({
+          balance: existingGems.balance + totalCredit,
+          total_earned: existingGems.total_earned + totalCredit,
+        }).eq('user_id', item.user_id);
+      } else {
+        await supabase.from('user_gems').insert({
+          user_id: item.user_id,
+          balance: totalCredit,
+          total_earned: totalCredit,
+        });
+      }
+
+      if (bonus > 0) {
+        toast.success(`تمت الموافقة + مكافأة 5% (${bonus.toFixed(2)}) ✅`);
+      } else {
+        toast.success('تمت الموافقة بنجاح ✅');
+      }
+    } else {
+      toast.success('تمت الموافقة بنجاح ✅');
+    }
+    
     fetchData();
   };
 

@@ -16,6 +16,7 @@ import { PremiumShareSheet } from '@/components/PremiumShareSheet';
 import { TipDialog } from '@/components/TipDialog';
 import AffiliationBadge from '@/components/AffiliationBadge';
 import { useAffiliation } from '@/hooks/useAffiliation';
+import type { PostSize } from '@/hooks/usePostSize';
 
 
 interface PostProps {
@@ -32,9 +33,10 @@ interface PostProps {
   walletEarnings: number;
   voiceUrl?: string;
   voiceDuration?: number;
+  displaySize?: PostSize;
 }
 
-const Post = ({ id, userId, username, userAvatar, isVerified = false, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration }: PostProps) => {
+const Post = ({ id, userId, username, userAvatar, isVerified = false, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration, displaySize = 'standard' }: PostProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLiked, setIsLiked] = useState(false);
@@ -335,7 +337,10 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   };
 
   return (
-    <div className="glass-card mb-5">
+    <div className={`glass-card mb-5 transition-all duration-300 ease-in-out ${
+      displaySize === 'compact' ? 'max-w-md mx-auto text-xs' : 
+      displaySize === 'large' ? 'max-w-3xl mx-auto' : ''
+    }`}>
       {/* Post Header */}
       <div className="flex items-center justify-between p-4">
         <div 
@@ -345,7 +350,9 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           <img 
             src={userAvatar} 
             alt={username}
-            className="w-10 h-10 rounded-full object-cover ring-[1.5px] ring-white/10 transition-all group-hover:ring-white/20"
+            className={`rounded-full object-cover ring-[1.5px] ring-white/10 transition-all group-hover:ring-white/20 ${
+              displaySize === 'compact' ? 'w-7 h-7' : displaySize === 'large' ? 'w-12 h-12' : 'w-10 h-10'
+            }`}
           />
           <div>
             <div className="flex items-center gap-1.5">
@@ -385,7 +392,9 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           <img 
             src={image} 
             alt="Post content"
-            className="w-full h-96 object-cover"
+            className={`w-full object-cover transition-all duration-300 ${
+              displaySize === 'compact' ? 'h-48' : displaySize === 'large' ? 'h-[500px]' : 'h-96'
+            }`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
           {/* Glass edge overlay */}

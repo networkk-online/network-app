@@ -1,4 +1,4 @@
-import { MessageCircle, Search, Video, Settings, LogOut, Bell } from 'lucide-react';
+import { MessageCircle, Search, Video, Settings, LogOut, Bell, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,8 +9,21 @@ import { useUserDataLogger } from '@/hooks/useUserDataLogger';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import logo from '@/assets/logo.png';
 import { Badge } from '@/components/ui/badge';
+import { PostSize } from '@/hooks/usePostSize';
 
-const Header = () => {
+interface HeaderProps {
+  postSize?: PostSize;
+  onPostSizeChange?: (size: PostSize) => void;
+}
+
+const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
+  const sizeLabels: Record<PostSize, string> = { compact: 'مضغوط', standard: 'عادي', large: 'كبير' };
+  const sizeOrder: PostSize[] = ['compact', 'standard', 'large'];
+  const cycleSize = () => {
+    if (!onPostSizeChange || !postSize) return;
+    const idx = sizeOrder.indexOf(postSize);
+    onPostSizeChange(sizeOrder[(idx + 1) % 3]);
+  };
   const navigate = useNavigate();
   const { toast } = useToast();
   const { logLogout } = useUserDataLogger();
@@ -119,6 +132,20 @@ const Header = () => {
               networkk.online
             </h1>
           </div>
+
+          {/* Post Size Toggle */}
+          {onPostSizeChange && postSize && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={cycleSize}
+              className="p-2 rounded-full hover:bg-white/[0.04] interactive-element gap-1.5"
+              title={`حجم المنشورات: ${sizeLabels[postSize]}`}
+            >
+              <LayoutGrid className="w-4 h-4 text-white/60" strokeWidth={1.4} />
+              <span className="text-[10px] text-white/50 hidden sm:inline">{sizeLabels[postSize]}</span>
+            </Button>
+          )}
 
           {/* Search — Desktop */}
           <div
