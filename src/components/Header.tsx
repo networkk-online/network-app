@@ -1,4 +1,4 @@
-import { MessageCircle, Search, Video, Settings, LogOut, Bell } from 'lucide-react';
+import { MessageCircle, Search, Video, Settings, LogOut, Bell, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,6 +9,12 @@ import { useUserDataLogger } from '@/hooks/useUserDataLogger';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import logo from '@/assets/logo.png';
 import { Badge } from '@/components/ui/badge';
+import { PostSize } from '@/hooks/usePostSize';
+
+interface HeaderProps {
+  postSize?: PostSize;
+  onPostSizeChange?: (size: PostSize) => void;
+}
 
 const Header = () => {
   const navigate = useNavigate();
