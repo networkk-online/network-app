@@ -337,7 +337,10 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   };
 
   return (
-    <div className="glass-card mb-5">
+    <div className={`glass-card mb-5 transition-all duration-300 ease-in-out ${
+      displaySize === 'compact' ? 'max-w-md mx-auto text-xs' : 
+      displaySize === 'large' ? 'max-w-3xl mx-auto' : ''
+    }`}>
       {/* Post Header */}
       <div className="flex items-center justify-between p-4">
         <div 
