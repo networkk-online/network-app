@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useStories } from '@/hooks/useStories';
 import { useReels } from '@/hooks/useReels';
+import { usePostSize } from '@/hooks/usePostSize';
 import LocalFameRankSection from '@/components/LocalFameRankSection';
 import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
 import { Film, Feather } from 'lucide-react';
