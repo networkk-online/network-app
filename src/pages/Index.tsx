@@ -326,7 +326,7 @@ const Index = () => {
               ) : posts.length > 0 ? (
                 posts.map((post, index) => (
                   <div key={post.id}>
-                    <Post {...post} />
+                    <Post {...post} displaySize={postSize} />
                     {(index + 1) % 3 === 0 && <Advertisement placement="feed" className="mt-4" />}
                   </div>
                 ))
