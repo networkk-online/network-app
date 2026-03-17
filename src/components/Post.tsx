@@ -16,6 +16,7 @@ import { PremiumShareSheet } from '@/components/PremiumShareSheet';
 import { TipDialog } from '@/components/TipDialog';
 import AffiliationBadge from '@/components/AffiliationBadge';
 import { useAffiliation } from '@/hooks/useAffiliation';
+import type { PostSize } from '@/hooks/usePostSize';
 
 
 interface PostProps {
