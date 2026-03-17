@@ -396,7 +396,6 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               displaySize === 'compact' ? 'h-48' : displaySize === 'large' ? 'h-[500px]' : 'h-96'
             }`}
           />
-          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
           {/* Glass edge overlay */}
           <div className="absolute inset-0 pointer-events-none rounded-2xl" 
