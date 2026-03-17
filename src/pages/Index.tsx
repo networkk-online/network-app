@@ -208,7 +208,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <Header postSize={postSize} onPostSizeChange={setPostSize} />
       <FloatingWheelIcon />
       
       <main className="pt-16 sm:pt-20 pb-24">
