@@ -33,9 +33,10 @@ interface PostProps {
   walletEarnings: number;
   voiceUrl?: string;
   voiceDuration?: number;
+  displaySize?: PostSize;
 }
 
-const Post = ({ id, userId, username, userAvatar, isVerified = false, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration }: PostProps) => {
+const Post = ({ id, userId, username, userAvatar, isVerified = false, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration, displaySize = 'standard' }: PostProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLiked, setIsLiked] = useState(false);
