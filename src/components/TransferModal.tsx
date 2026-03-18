@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRightLeft, Search, Coins, AlertCircle, FileText, Wallet, Lock, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,10 +12,9 @@ interface TransferModalProps {
   currentBalance?: number;
 }
 
-const TRANSFER_FEE_IQD = 100;
-const TRANSFER_FEE_RATE = 0.01; // 1%
+const TRANSFER_FEE_RATE = 0.02; // 2%
 
-const TransferModal = ({ isOpen, onClose, currentBalance = 0 }: TransferModalProps) => {
+const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
   const { toast } = useToast();
   const [recipientQuery, setRecipientQuery] = useState('');
   const [recipientProfile, setRecipientProfile] = useState<any>(null);
@@ -26,11 +25,33 @@ const TransferModal = ({ isOpen, onClose, currentBalance = 0 }: TransferModalPro
   const [step, setStep] = useState<'form' | 'confirm' | 'password' | 'success'>('form');
   const [isProcessing, setIsProcessing] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [liveBalance, setLiveBalance] = useState(0);
+  const [balanceLoading, setBalanceLoading] = useState(false);
 
   const numAmount = parseFloat(amount) || 0;
   const fee = Math.max(Math.ceil(numAmount * TRANSFER_FEE_RATE), 1);
-  const total = numAmount + fee;
-  const canTransfer = recipientProfile && numAmount > 0 && total <= currentBalance;
+  const total = numAmount > 0 ? numAmount + fee : 0;
+  const canTransfer = recipientProfile && numAmount > 0 && total <= liveBalance;
+
+  // Fetch gems balance directly when modal opens
+  const fetchBalance = useCallback(async () => {
+    setBalanceLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setBalanceLoading(false); return; }
+    const { data } = await supabase
+      .from('user_gems')
+      .select('balance')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    setLiveBalance(data ? Number(data.balance) || 0 : 0);
+    setBalanceLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchBalance();
+    }
+  }, [isOpen, fetchBalance]);
 
   useEffect(() => {
     if (!recipientQuery || recipientQuery.length < 2) {
@@ -72,26 +93,26 @@ const TransferModal = ({ isOpen, onClose, currentBalance = 0 }: TransferModalPro
         return;
       }
 
-      // Get sender gems
+      // Re-check sender gems at transaction time
       const { data: senderGems } = await supabase
         .from('user_gems')
         .select('balance')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (!senderGems || senderGems.balance < total) {
-        toast({ title: 'خطأ', description: 'رصيدك غير كافٍ', variant: 'destructive' });
+      if (!senderGems || Number(senderGems.balance) < total) {
+        toast({ title: 'خطأ', description: 'رصيدك لا يكفي لتغطية مبلغ التحويل والعمولة', variant: 'destructive' });
         setIsProcessing(false);
         return;
       }
 
-      // Deduct from sender
+      // Deduct from sender (amount + fee)
       await supabase
         .from('user_gems')
-        .update({ balance: senderGems.balance - total })
+        .update({ balance: Number(senderGems.balance) - total })
         .eq('user_id', user.id);
 
-      // Add to recipient
+      // Add to recipient (only the transfer amount, not the fee)
       const { data: recipientGems } = await supabase
         .from('user_gems')
         .select('balance, total_earned')
@@ -101,7 +122,7 @@ const TransferModal = ({ isOpen, onClose, currentBalance = 0 }: TransferModalPro
       if (recipientGems) {
         await supabase
           .from('user_gems')
-          .update({ balance: recipientGems.balance + numAmount, total_earned: recipientGems.total_earned + numAmount })
+          .update({ balance: Number(recipientGems.balance) + numAmount, total_earned: Number(recipientGems.total_earned) + numAmount })
           .eq('user_id', recipientProfile.id);
       } else {
         await supabase.from('user_gems').insert({
@@ -118,7 +139,7 @@ const TransferModal = ({ isOpen, onClose, currentBalance = 0 }: TransferModalPro
         amount: numAmount,
         type: 'transfer_out',
         status: 'completed',
-        notes: `تحويل إلى ${recipientProfile.username || recipientProfile.full_name}${note ? ' - ' + note : ''} (رسوم: ${fee})`,
+        notes: `تحويل إلى ${recipientProfile.username || recipientProfile.full_name}${note ? ' - ' + note : ''} (عمولة 2%: ${fee} جوهرة)`,
       });
 
       // Record transaction for receiver
@@ -131,8 +152,26 @@ const TransferModal = ({ isOpen, onClose, currentBalance = 0 }: TransferModalPro
         notes: `تحويل من مستخدم${note ? ' - ' + note : ''}`,
       });
 
+      // Record fee as system earnings
+      await supabase.from('transactions').insert({
+        user_id: user.id,
+        admin_id: user.id,
+        amount: fee,
+        type: 'transfer_fee',
+        status: 'completed',
+        notes: `عمولة تحويل 2% من ${numAmount} جوهرة`,
+      });
+
+      // Update local balance
+      setLiveBalance(prev => prev - total);
+
       setStep('success');
       if (navigator.vibrate) navigator.vibrate([50, 30, 100]);
+
+      toast({
+        title: 'تم التحويل بنجاح ✅',
+        description: `تم تحويل ${numAmount.toLocaleString()} عملة إلى ${recipientProfile.username || recipientProfile.full_name} بنجاح`,
+      });
 
       setTimeout(() => {
         resetForm();
@@ -161,7 +200,7 @@ const TransferModal = ({ isOpen, onClose, currentBalance = 0 }: TransferModalPro
   };
 
   const setMax = () => {
-    const maxAfterFee = Math.floor(currentBalance / (1 + TRANSFER_FEE_RATE));
+    const maxAfterFee = Math.floor(liveBalance / (1 + TRANSFER_FEE_RATE));
     setAmount(String(Math.max(0, maxAfterFee)));
     if (navigator.vibrate) navigator.vibrate(15);
   };
@@ -226,7 +265,9 @@ const TransferModal = ({ isOpen, onClose, currentBalance = 0 }: TransferModalPro
                 <Wallet className="w-4 h-4 text-primary" />
                 <span className="text-xs text-muted-foreground">رصيدك المتاح</span>
               </div>
-              <span className="font-black text-foreground">{currentBalance.toLocaleString()} 💎</span>
+              <span className="font-black text-foreground">
+                {balanceLoading ? '...' : `${liveBalance.toLocaleString()} 💎`}
+              </span>
             </div>
 
             <AnimatePresence mode="wait">
@@ -272,7 +313,7 @@ const TransferModal = ({ isOpen, onClose, currentBalance = 0 }: TransferModalPro
                       <span className="font-bold text-foreground">{numAmount.toLocaleString()} عملة</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">رسوم التحويل (1%)</span>
+                      <span className="text-muted-foreground">عمولة التحويل (2%)</span>
                       <span className="font-bold text-foreground">{fee.toLocaleString()} عملة</span>
                     </div>
                     {note && (
@@ -332,14 +373,17 @@ const TransferModal = ({ isOpen, onClose, currentBalance = 0 }: TransferModalPro
                     <label className="text-xs font-medium text-muted-foreground mb-1.5 block">المبلغ</label>
                     <div className="relative">
                       <Coins className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="عدد العملات" className="pl-9 pr-16 bg-background/50 border-border/30" min={1} />
+                      <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="عدد العملات" className="pl-9 pr-16 bg-background/50 border-border/30" min={1} max={liveBalance} />
                       <button onClick={setMax} className="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-primary/15 text-primary hover:bg-primary/25 transition-colors">MAX</button>
                     </div>
                     {numAmount > 0 && (
                       <div className="flex items-center gap-1 mt-1.5">
                         <AlertCircle className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground">رسوم 1%: {fee.toLocaleString()} عملة · الإجمالي: {total.toLocaleString()} عملة</span>
+                        <span className="text-[10px] text-muted-foreground">عمولة التحويل (2%): {fee.toLocaleString()} جوهرة · الإجمالي: {total.toLocaleString()} عملة</span>
                       </div>
+                    )}
+                    {numAmount > 0 && total > liveBalance && (
+                      <p className="text-[10px] text-destructive mt-1">رصيدك لا يكفي لتغطية مبلغ التحويل والعمولة</p>
                     )}
                   </div>
 

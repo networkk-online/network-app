@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { formatNumber } from '@/lib/utils';
 import { Wallet, TrendingUp, Eye, EyeOff, Gem, Coins, ArrowDownToLine, ArrowRightLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,21 +18,39 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
   const [gems, setGems] = useState(0);
   const [showTransfer, setShowTransfer] = useState(false);
 
-  useEffect(() => {
-    const loadGems = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase
-        .from('user_gems')
-        .select('balance')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (data) setGems(data.balance);
-    };
-    loadGems();
+  const loadGems = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from('user_gems')
+      .select('balance')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (data) setGems(Number(data.balance) || 0);
   }, []);
 
+  useEffect(() => {
+    loadGems();
+
+    // Subscribe to realtime gems updates
+    const channel = supabase
+      .channel('wallet-gems-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_gems' }, () => {
+        loadGems();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [loadGems]);
+
   const gemsToUsd = (gems * 0.01).toFixed(2); // 100 gems = $1
+  const networkBalance = Number(balance) || 0;
+  const totalBalance = (gems * 0.01) + networkBalance;
+
+  const handleTransferClose = () => {
+    setShowTransfer(false);
+    loadGems(); // Refresh gems after transfer
+  };
 
   return (
     <div className="mb-6 rounded-2xl overflow-hidden" style={{
@@ -67,7 +85,7 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
         }}>
           <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">الرصيد الإجمالي</p>
           <p className="text-3xl font-bold text-foreground tracking-tight">
-            {hidden ? '••••••' : `$${balance.toFixed(2)}`}
+            {hidden ? '••••••' : `$${totalBalance.toFixed(2)}`}
           </p>
           <p className="text-xs text-primary mt-1">
             {hidden ? '•••' : `+$${todayEarnings.toFixed(2)} اليوم`}
@@ -86,7 +104,7 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
               <span className="text-[10px] font-medium" style={{ color: '#FFD700' }}>رصيد نيتورك</span>
             </div>
             <p className="text-lg font-bold text-foreground">
-              {hidden ? '••••' : `$${balance.toFixed(2)}`}
+              {hidden ? '••••' : `$${networkBalance.toFixed(2)}`}
             </p>
             <p className="text-[10px] text-muted-foreground">قابل للسحب</p>
           </div>
@@ -153,7 +171,7 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
         </button>
       </div>
 
-      <TransferModal isOpen={showTransfer} onClose={() => setShowTransfer(false)} currentBalance={balance} />
+      <TransferModal isOpen={showTransfer} onClose={handleTransferClose} />
     </div>
   );
 };
