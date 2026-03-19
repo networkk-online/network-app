@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'framer-motion';
 import AccountSwitcher from './AccountSwitcher';
+import CreateSidebar from './create/CreateSidebar';
 
 const BottomNav = () => {
   const navigate = useNavigate();
