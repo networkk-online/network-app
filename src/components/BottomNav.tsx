@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'framer-motion';
 import AccountSwitcher from './AccountSwitcher';
+import CreateSidebar from './create/CreateSidebar';
 
 const BottomNav = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const BottomNav = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [showSwitcher, setShowSwitcher] = useState(false);
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -43,7 +45,7 @@ const BottomNav = () => {
     { icon: Compass, label: 'استكشف', path: '/explore' },
     { icon: Clapperboard, label: 'سينما', path: '/network-tv' },
     { icon: Film, label: 'ريلز', path: '/shorts' },
-    { icon: PlusSquare, label: 'إنشاء', path: '/create-post' },
+    { icon: PlusSquare, label: 'إنشاء', path: '__create__' },
   ];
 
   return (
@@ -66,7 +68,7 @@ const BottomNav = () => {
                 return (
                   <motion.button
                     key={item.path}
-                    onClick={() => navigate(item.path)}
+                    onClick={() => item.path === '__create__' ? setShowCreateMenu(true) : navigate(item.path)}
                     whileHover={{ scale: 1.12 }}
                     whileTap={{ scale: 0.88 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 20 }}
@@ -153,6 +155,8 @@ const BottomNav = () => {
 
       {/* Account Switcher Popup */}
       <AccountSwitcher isOpen={showSwitcher} onClose={() => setShowSwitcher(false)} anchorPosition="bottom-nav" />
+      {/* Create Sidebar */}
+      <CreateSidebar isOpen={showCreateMenu} onClose={() => setShowCreateMenu(false)} />
     </AnimatePresence>
   );
 };
