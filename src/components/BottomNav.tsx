@@ -45,7 +45,7 @@ const BottomNav = () => {
     { icon: Compass, label: 'استكشف', path: '/explore' },
     { icon: Clapperboard, label: 'سينما', path: '/network-tv' },
     { icon: Film, label: 'ريلز', path: '/shorts' },
-    { icon: PlusSquare, label: 'إنشاء', path: '/create-post' },
+    { icon: PlusSquare, label: 'إنشاء', path: '__create__' },
   ];
 
   return (
