@@ -15,6 +15,7 @@ const BottomNav = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [showSwitcher, setShowSwitcher] = useState(false);
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
