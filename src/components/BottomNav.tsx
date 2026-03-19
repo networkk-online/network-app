@@ -68,7 +68,7 @@ const BottomNav = () => {
                 return (
                   <motion.button
                     key={item.path}
-                    onClick={() => navigate(item.path)}
+                    onClick={() => item.path === '__create__' ? setShowCreateMenu(true) : navigate(item.path)}
                     whileHover={{ scale: 1.12 }}
                     whileTap={{ scale: 0.88 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 20 }}
