@@ -1,408 +1,244 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Image, Upload, X, Loader2, Star, Copy, Radio, TrendingUp, Sparkles } from 'lucide-react';
-import Header from '@/components/Header';
+import { ArrowLeft, Image, Upload, X, Loader2, Star, Users } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { LocationPicker } from '@/components/LocationPicker';
-import { MusicPicker } from '@/components/MusicPicker';
 import { MentionPicker } from '@/components/MentionPicker';
+import MusicTrackPicker from '@/components/create/MusicTrackPicker';
+import IraqLocationPicker from '@/components/create/IraqLocationPicker';
+import AspectRatioToggle, { AspectRatio, getAspectClass } from '@/components/create/AspectRatioToggle';
+import { motion } from 'framer-motion';
 
 const CreatePost = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [content, setContent] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [imageUrl, setImageUrl] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('file');
   const [closeFriendsOnly, setCloseFriendsOnly] = useState(false);
-  const [location, setLocation] = useState<{ name: string; lat?: number; lng?: number } | null>(null);
-  const [music, setMusic] = useState<{ title: string; artist?: string; url?: string } | null>(null);
+  const [location, setLocation] = useState<{ name: string } | null>(null);
+  const [music, setMusic] = useState<{ title: string; artist?: string; url?: string; startTime?: number } | null>(null);
   const [mentions, setMentions] = useState<string[]>([]);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء اختيار صورة فقط",
-        variant: "destructive"
-      });
-      return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    const imageFiles = files.filter(f => f.type.startsWith('image/'));
+    const validFiles = imageFiles.filter(f => f.size <= 5 * 1024 * 1024);
+    if (validFiles.length < imageFiles.length) {
+      toast({ title: "تنبيه", description: "بعض الصور تجاوزت 5MB", variant: "destructive" });
     }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "خطأ",
-        description: "حجم الصورة يجب أن يكون أقل من 5 ميجابايت",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    const newFiles = [...selectedFiles, ...validFiles].slice(0, 10);
+    setSelectedFiles(newFiles);
+    setPreviewUrls(newFiles.map(f => URL.createObjectURL(f)));
   };
 
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setPreviewUrl('');
-    setImageUrl('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+  const removeImage = (idx: number) => {
+    URL.revokeObjectURL(previewUrls[idx]);
+    const newFiles = selectedFiles.filter((_, i) => i !== idx);
+    const newUrls = previewUrls.filter((_, i) => i !== idx);
+    setSelectedFiles(newFiles);
+    setPreviewUrls(newUrls);
+    if (currentImageIndex >= newFiles.length) setCurrentImageIndex(Math.max(0, newFiles.length - 1));
   };
 
   const uploadImage = async (file: File, userId: string): Promise<string | null> => {
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${Date.now()}.${fileExt}`;
-
-      const { error: uploadError, data } = await supabase.storage
-        .from('post-images')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
+      const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('post-images').upload(fileName, file, { cacheControl: '3600', upsert: false });
       if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('post-images')
-        .getPublicUrl(fileName);
-
+      const { data: { publicUrl } } = supabase.storage.from('post-images').getPublicUrl(fileName);
       return publicUrl;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Upload error:', error);
       return null;
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!content.trim()) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء كتابة محتوى المنشور",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: "الرجاء كتابة محتوى المنشور", variant: "destructive" });
       return;
     }
-
     setIsLoading(true);
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "يجب تسجيل الدخول",
-          description: "سجل دخولك أولاً لنشر منشور",
-          variant: "destructive"
-        });
-        navigate('/login');
-        return;
-      }
+      if (!user) { navigate('/login'); return; }
 
-      let finalMediaUrl = null;
-
-      // Upload file if selected
-      if (uploadMethod === 'file' && selectedFile) {
-        finalMediaUrl = await uploadImage(selectedFile, user.id);
-        if (!finalMediaUrl) {
-          toast({
-            title: "خطأ",
-            description: "فشل رفع الصورة",
-            variant: "destructive"
-          });
-          setIsLoading(false);
-          return;
-        }
+      let finalMediaUrl: string | null = null;
+      if (uploadMethod === 'file' && selectedFiles.length > 0) {
+        finalMediaUrl = await uploadImage(selectedFiles[0], user.id);
+        if (!finalMediaUrl) { toast({ title: "خطأ", description: "فشل رفع الصورة", variant: "destructive" }); setIsLoading(false); return; }
       } else if (uploadMethod === 'url' && imageUrl.trim()) {
         finalMediaUrl = imageUrl.trim();
       }
 
-      const { error } = await supabase
-        .from('posts')
-        .insert({
-          user_id: user.id,
-          content: content.trim(),
-          media_url: finalMediaUrl,
-          close_friends_only: closeFriendsOnly,
-          location: location?.name || null,
-          location_lat: location?.lat || null,
-          location_lng: location?.lng || null,
-          music_title: music?.title || null,
-          music_artist: music?.artist || null,
-          music_url: music?.url || null,
-          mentions: mentions.length > 0 ? mentions : null
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "تم النشر! ✅",
-        description: "تم نشر منشورك بنجاح",
+      const { error } = await supabase.from('posts').insert({
+        user_id: user.id,
+        content: content.trim(),
+        media_url: finalMediaUrl,
+        close_friends_only: closeFriendsOnly,
+        location: location?.name || null,
+        music_title: music?.title || null,
+        music_artist: music?.artist || null,
+        music_url: music?.url || null,
+        mentions: mentions.length > 0 ? mentions : null,
       });
-
+      if (error) throw error;
+      toast({ title: "تم النشر! ✅", description: "تم نشر منشورك بنجاح" });
       navigate('/');
     } catch (error: any) {
-      console.error('Error creating post:', error);
-      toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء النشر",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: error.message || "حدث خطأ أثناء النشر", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800">
-      <Header />
-      
-      <main className="pt-20 pb-8">
-        <div className="desktop-layout">
-          <div className="container-responsive mobile-padding max-w-2xl mx-auto">
-            <Card className="bg-gray-900 border-gray-700">
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate('/')}
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </Button>
-                  <CardTitle className="text-white text-xl">إنشاء منشور جديد</CardTitle>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                {/* Quick Action Buttons */}
-                <div className="grid grid-cols-4 gap-2 mb-6 pb-4 border-b border-gray-700">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="flex flex-col items-center gap-2 h-auto py-3 text-white hover:bg-gray-800"
-                    onClick={() => {}}
-                  >
-                    <Copy className="w-5 h-5" />
-                    <span className="text-xs">Post</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="flex flex-col items-center gap-2 h-auto py-3 text-white hover:bg-gray-800"
-                    onClick={() => navigate('/broadcast')}
-                  >
-                    <Radio className="w-5 h-5" />
-                    <span className="text-xs">Live video</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="flex flex-col items-center gap-2 h-auto py-3 text-white hover:bg-gray-800"
-                    onClick={() => navigate('/manage-ads')}
-                  >
-                    <TrendingUp className="w-5 h-5" />
-                    <span className="text-xs">Ad</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="flex flex-col items-center gap-2 h-auto py-3 text-white hover:bg-gray-800"
-                    onClick={() => navigate('/ai-tools')}
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    <span className="text-xs">AI</span>
-                  </Button>
-                </div>
+    <div className="min-h-screen bg-black">
+      {/* Top Bar */}
+      <div className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-white/[0.06]"
+        style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)' }}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white/60 hover:text-white">
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <h1 className="text-base font-bold text-foreground">منشور جديد</h1>
+        <Button
+          size="sm"
+          onClick={handleSubmit}
+          disabled={isLoading || !content.trim()}
+          className="rounded-full px-5 h-8 text-xs font-bold"
+          style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))' }}
+        >
+          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'نشر'}
+        </Button>
+      </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      محتوى المنشور
-                    </label>
-                    <Textarea
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      placeholder="ماذا تريد أن تشارك؟"
-                      className="min-h-[150px] bg-gray-800 border-gray-600 text-white placeholder-gray-500"
-                      disabled={isLoading}
-                    />
-                  </div>
+      <div className="max-w-2xl mx-auto pb-24">
+        {/* Music Track Picker */}
+        <div className="px-4 pt-4 pb-3 border-b border-white/[0.04]">
+          <MusicTrackPicker onSelect={setMusic} selected={music} />
+        </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-3">
-                      <Image className="w-4 h-4 inline mr-2" />
-                      إضافة صورة (اختياري)
-                    </label>
+        {/* Content Area */}
+        <div className="px-4 pt-4">
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="ماذا تريد أن تشارك؟ ✍️"
+            className="min-h-[120px] bg-transparent border-0 text-foreground placeholder-white/25 text-base resize-none focus-visible:ring-0 p-0"
+            disabled={isLoading}
+          />
+        </div>
 
-                    {/* Upload Method Tabs */}
-                    <div className="flex gap-2 mb-4">
-                      <Button
-                        type="button"
-                        variant={uploadMethod === 'file' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setUploadMethod('file')}
-                        disabled={isLoading}
-                        className={uploadMethod === 'file' ? 'bg-blue-600' : 'border-gray-600'}
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        رفع صورة
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={uploadMethod === 'url' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setUploadMethod('url')}
-                        disabled={isLoading}
-                        className={uploadMethod === 'url' ? 'bg-blue-600' : 'border-gray-600'}
-                      >
-                        <Image className="w-4 h-4 mr-2" />
-                        رابط صورة
-                      </Button>
+        {/* Image Section */}
+        <div className="px-4 pt-3">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex gap-2">
+              <Button type="button" variant={uploadMethod === 'file' ? 'default' : 'ghost'} size="sm"
+                onClick={() => setUploadMethod('file')}
+                className={`h-7 text-xs rounded-full gap-1 ${uploadMethod === 'file' ? '' : 'text-muted-foreground'}`}>
+                <Upload className="w-3 h-3" /> رفع
+              </Button>
+              <Button type="button" variant={uploadMethod === 'url' ? 'default' : 'ghost'} size="sm"
+                onClick={() => setUploadMethod('url')}
+                className={`h-7 text-xs rounded-full gap-1 ${uploadMethod === 'url' ? '' : 'text-muted-foreground'}`}>
+                <Image className="w-3 h-3" /> رابط
+              </Button>
+            </div>
+            {previewUrls.length > 0 && <AspectRatioToggle value={aspectRatio} onChange={setAspectRatio} />}
+          </div>
+
+          {uploadMethod === 'file' ? (
+            <>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
+              {previewUrls.length === 0 ? (
+                <motion.label
+                  htmlFor=""
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center w-full h-32 border border-dashed border-white/[0.1] rounded-2xl cursor-pointer hover:border-white/[0.2] transition-colors bg-white/[0.02]"
+                >
+                  <Upload className="w-8 h-8 text-white/20 mb-2" />
+                  <span className="text-xs text-white/30">اضغط لاختيار صور (حتى 10)</span>
+                </motion.label>
+              ) : (
+                <div className="relative">
+                  {/* Image counter badge */}
+                  {previewUrls.length > 1 && (
+                    <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-xs font-bold text-foreground"
+                      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      {currentImageIndex + 1}/{previewUrls.length}
                     </div>
-
-                    {uploadMethod === 'file' ? (
-                      <div>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileSelect}
-                          className="hidden"
-                          id="image-upload"
-                          disabled={isLoading}
-                        />
-                        
-                        {!previewUrl ? (
-                          <label
-                            htmlFor="image-upload"
-                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-gray-500 transition-colors bg-gray-800/50"
-                          >
-                            <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                            <span className="text-sm text-gray-400">اضغط لاختيار صورة</span>
-                            <span className="text-xs text-gray-500 mt-1">الحد الأقصى: 5 ميجابايت</span>
-                          </label>
-                        ) : (
-                          <div className="relative">
-                            <img
-                              src={previewUrl}
-                              alt="معاينة"
-                              className="w-full h-48 object-cover rounded-lg"
-                            />
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              className="absolute top-2 right-2"
-                              onClick={handleRemoveImage}
-                              disabled={isLoading}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <Input
-                        type="url"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="https://example.com/image.jpg"
-                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-500"
-                        disabled={isLoading}
-                      />
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                    <div className="flex items-center gap-3">
-                      <Star className="h-5 w-5 text-yellow-500" />
-                      <div>
-                        <Label htmlFor="close-friends" className="text-white font-medium">
-                          مشاركة مع الأصدقاء المقربين فقط
-                        </Label>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          سيظهر المنشور لأصدقائك المقربين فقط
-                        </p>
-                      </div>
+                  )}
+                  <img
+                    src={previewUrls[currentImageIndex]}
+                    alt="Preview"
+                    className={`w-full object-cover rounded-2xl ${getAspectClass(aspectRatio)}`}
+                  />
+                  <Button type="button" variant="destructive" size="icon"
+                    className="absolute top-3 right-3 w-8 h-8 rounded-full"
+                    onClick={() => removeImage(currentImageIndex)}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                  {/* Thumbnails */}
+                  {previewUrls.length > 1 && (
+                    <div className="flex gap-2 mt-3 overflow-x-auto scrollbar-hide">
+                      {previewUrls.map((url, i) => (
+                        <button key={i} onClick={() => setCurrentImageIndex(i)}
+                          className={`w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-colors ${
+                            i === currentImageIndex ? 'border-primary' : 'border-transparent opacity-60'
+                          }`}>
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                      <button onClick={() => fileInputRef.current?.click()}
+                        className="w-14 h-14 rounded-lg flex items-center justify-center border border-dashed border-white/[0.15] flex-shrink-0 text-white/30 hover:text-white/50">
+                        +
+                      </button>
                     </div>
-                    <Switch
-                      id="close-friends"
-                      checked={closeFriendsOnly}
-                      onCheckedChange={setCloseFriendsOnly}
-                      disabled={isLoading}
-                    />
-                  </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <Input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              className="bg-white/[0.04] border-white/[0.08] text-foreground placeholder-white/25 rounded-xl" />
+          )}
+        </div>
 
-                  <LocationPicker
-                    onLocationSelect={setLocation}
-                    onRemove={() => setLocation(null)}
-                    currentLocation={location?.name}
-                  />
+        {/* Options */}
+        <div className="px-4 pt-5 space-y-3">
+          {/* Location */}
+          <IraqLocationPicker onSelect={setLocation} selected={location?.name} />
 
-                  <MusicPicker
-                    onMusicSelect={setMusic}
-                    onRemove={() => setMusic(null)}
-                    currentMusic={music ? { title: music.title, artist: music.artist } : undefined}
-                  />
+          {/* Mentions */}
+          <MentionPicker onMentionsChange={setMentions} currentMentions={mentions} />
 
-                  <MentionPicker
-                    onMentionsChange={setMentions}
-                    currentMentions={mentions}
-                  />
-
-                  <div className="flex space-x-3">
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700"
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          جاري النشر...
-                        </>
-                      ) : (
-                        'نشر'
-                      )}
-                    </Button>
-                    
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => navigate('/')}
-                      disabled={isLoading}
-                      className="border-gray-600 text-gray-300 hover:bg-gray-800"
-                    >
-                      إلغاء
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
+          {/* Close friends */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            <div className="flex items-center gap-2.5">
+              <Star className="w-4 h-4 text-yellow-500" />
+              <Label htmlFor="close-friends-toggle" className="text-sm text-foreground">أصدقاء مقربين فقط</Label>
+            </div>
+            <Switch id="close-friends-toggle" checked={closeFriendsOnly} onCheckedChange={setCloseFriendsOnly} />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
