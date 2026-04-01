@@ -99,6 +99,8 @@ import ModeratorPortal from "./pages/ModeratorPortal";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 import FloatingAdminButton from "./components/FloatingAdminButton";
+import MaintenanceGuard from "./components/MaintenanceGuard";
+import AdminRouteBlocker from "./components/guards/AdminRouteBlocker";
 
 const queryClient = new QueryClient();
 
