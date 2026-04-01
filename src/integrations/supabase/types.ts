@@ -121,6 +121,30 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       blocked_users: {
         Row: {
           blocked_id: string
@@ -1031,6 +1055,45 @@ export type Database = {
           },
         ]
       }
+      moderator_permissions: {
+        Row: {
+          can_approve_videos: boolean
+          can_ban_users: boolean
+          can_delete_content: boolean
+          can_manage_comments: boolean
+          can_view_logs: boolean
+          can_view_reports: boolean
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_approve_videos?: boolean
+          can_ban_users?: boolean
+          can_delete_content?: boolean
+          can_manage_comments?: boolean
+          can_view_logs?: boolean
+          can_view_reports?: boolean
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_approve_videos?: boolean
+          can_ban_users?: boolean
+          can_delete_content?: boolean
+          can_manage_comments?: boolean
+          can_view_logs?: boolean
+          can_view_reports?: boolean
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       muted_callers: {
         Row: {
           created_at: string
@@ -1847,6 +1910,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      security_logs: {
+        Row: {
+          action_type: string
+          attempted_route: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type?: string
+          attempted_route: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          attempted_route?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       stories: {
         Row: {
