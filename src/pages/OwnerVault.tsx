@@ -122,6 +122,46 @@ const OwnerVault = () => {
     navigate('/');
   };
 
+  // Gift codes state
+  const [giftCodes, setGiftCodes] = useState<any[]>([]);
+  const [coinAmount, setCoinAmount] = useState('1000');
+  const [expirationDays, setExpirationDays] = useState('30');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  useEffect(() => { loadGiftCodes(); }, []);
+
+  const loadGiftCodes = async () => {
+    const { data } = await supabase.from('gift_codes').select('*').order('created_at', { ascending: false }).limit(50);
+    if (data) setGiftCodes(data);
+  };
+
+  const generateGiftCode = async () => {
+    setIsGenerating(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 12; i++) {
+      if (i > 0 && i % 4 === 0) code += '-';
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + parseInt(expirationDays));
+    await supabase.from('gift_codes').insert({
+      code, coin_amount: parseInt(coinAmount), created_by: user.id, expires_at: expiresAt.toISOString(),
+    });
+    toast({ title: '✅ تم إنشاء الكود', description: code });
+    loadGiftCodes();
+    setIsGenerating(false);
+  };
+
+  const copyCode = (code: string, id: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const permissionsList = [
     { key: 'can_ban_users', label: 'حظر المستخدمين', icon: Ban },
     { key: 'can_approve_videos', label: 'مراجعة الفيديوهات', icon: Video },
@@ -129,6 +169,7 @@ const OwnerVault = () => {
     { key: 'can_delete_content', label: 'حذف المحتوى', icon: AlertTriangle },
     { key: 'can_view_reports', label: 'عرض البلاغات', icon: Eye },
     { key: 'can_manage_comments', label: 'إدارة التعليقات', icon: MessageSquare },
+    { key: 'can_manage_gifts', label: 'إدارة الأكواد', icon: Gift },
   ];
 
   return (
