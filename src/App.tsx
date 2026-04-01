@@ -99,6 +99,8 @@ import ModeratorPortal from "./pages/ModeratorPortal";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 import FloatingAdminButton from "./components/FloatingAdminButton";
+import MaintenanceGuard from "./components/MaintenanceGuard";
+import AdminRouteBlocker from "./components/guards/AdminRouteBlocker";
 
 const queryClient = new QueryClient();
 
@@ -108,6 +110,7 @@ const AppContent = () => {
   
   return (
     <>
+      <AdminRouteBlocker />
       <BottomNav />
       <FloatingAdminButton />
       <Routes>
@@ -188,7 +191,7 @@ const AppContent = () => {
         <Route path="/system-panel/wheel" element={<StealthWheel />} />
         <Route path="/rewards-wheel" element={<RewardsWheel />} />
         <Route path="/redeem" element={<RedeemGiftCard />} />
-        <Route path="/admin/gift-codes" element={<AdminGiftCodes />} />
+        <Route path="/admin/gift-codes" element={<NotFound />} />
         <Route path="/store" element={<CoinStore />} />
         <Route path="/transactions" element={<TransactionHistory />} />
         <Route path="/recharge" element={<Recharge />} />
@@ -197,7 +200,7 @@ const AppContent = () => {
         <Route path="/creator-studio" element={<CreatorStudio />} />
         <Route path="/tweets" element={<Tweets />} />
         <Route path="/admin-control" element={<AdminControl />} />
-        <Route path="/admin-networkk-online" element={<AdminFinance />} />
+        <Route path="/admin-networkk-online" element={<NotFound />} />
         <Route path="/secure-system-admin-panel" element={<SecureAdminPanel />} />
         <Route path="/system-control-secret-key" element={<SecureAdminPanel />} />
         <Route path="/G3142-AF26-0x99" element={<OwnerVault />} />
@@ -215,9 +218,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ErrorBoundary>
-          <ChimeCallProvider>
-            <AppContent />
-          </ChimeCallProvider>
+          <MaintenanceGuard>
+            <ChimeCallProvider>
+              <AppContent />
+            </ChimeCallProvider>
+          </MaintenanceGuard>
         </ErrorBoundary>
       </BrowserRouter>
     </TooltipProvider>

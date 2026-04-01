@@ -12,8 +12,10 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Shield, Users, Activity, DollarSign, Settings, Eye, Ban,
   Video, FileText, MessageSquare, Search, Power, LogOut,
-  AlertTriangle, Clock, UserCheck, Lock
+  AlertTriangle, Clock, UserCheck, Lock, Gift, Plus, Copy, Check
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const OwnerVault = () => {
   const navigate = useNavigate();
@@ -120,6 +122,46 @@ const OwnerVault = () => {
     navigate('/');
   };
 
+  // Gift codes state
+  const [giftCodes, setGiftCodes] = useState<any[]>([]);
+  const [coinAmount, setCoinAmount] = useState('1000');
+  const [expirationDays, setExpirationDays] = useState('30');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  useEffect(() => { loadGiftCodes(); }, []);
+
+  const loadGiftCodes = async () => {
+    const { data } = await supabase.from('gift_codes').select('*').order('created_at', { ascending: false }).limit(50);
+    if (data) setGiftCodes(data);
+  };
+
+  const generateGiftCode = async () => {
+    setIsGenerating(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 12; i++) {
+      if (i > 0 && i % 4 === 0) code += '-';
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + parseInt(expirationDays));
+    await supabase.from('gift_codes').insert({
+      code, coin_amount: parseInt(coinAmount), created_by: user.id, expires_at: expiresAt.toISOString(),
+    });
+    toast({ title: '✅ تم إنشاء الكود', description: code });
+    loadGiftCodes();
+    setIsGenerating(false);
+  };
+
+  const copyCode = (code: string, id: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const permissionsList = [
     { key: 'can_ban_users', label: 'حظر المستخدمين', icon: Ban },
     { key: 'can_approve_videos', label: 'مراجعة الفيديوهات', icon: Video },
@@ -127,6 +169,7 @@ const OwnerVault = () => {
     { key: 'can_delete_content', label: 'حذف المحتوى', icon: AlertTriangle },
     { key: 'can_view_reports', label: 'عرض البلاغات', icon: Eye },
     { key: 'can_manage_comments', label: 'إدارة التعليقات', icon: MessageSquare },
+    { key: 'can_manage_gifts', label: 'إدارة الأكواد', icon: Gift },
   ];
 
   return (
@@ -199,6 +242,9 @@ const OwnerVault = () => {
                 </TabsTrigger>
                 <TabsTrigger value="security" className="data-[state=active]:bg-[#39FF14]/20 data-[state=active]:text-[#39FF14]">
                   <Eye className="h-4 w-4 mr-1" /> سجلات الأمان
+                </TabsTrigger>
+                <TabsTrigger value="gifts" className="data-[state=active]:bg-[#39FF14]/20 data-[state=active]:text-[#39FF14]">
+                  <Gift className="h-4 w-4 mr-1" /> الأكواد
                 </TabsTrigger>
                 <TabsTrigger value="settings" className="data-[state=active]:bg-[#39FF14]/20 data-[state=active]:text-[#39FF14]">
                   <Settings className="h-4 w-4 mr-1" /> الإعدادات
@@ -359,6 +405,90 @@ const OwnerVault = () => {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* Gift Codes Tab */}
+              <TabsContent value="gifts">
+                <div className="space-y-6">
+                  <Card className="bg-white/5 border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-[#39FF14] flex items-center gap-2">
+                        <Gift className="h-5 w-5" /> إنشاء كود جديد
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                          <label className="text-xs text-gray-400 mb-1 block">عدد العملات</label>
+                          <Select value={coinAmount} onValueChange={setCoinAmount}>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[100, 500, 1000, 5000, 10000].map(a => (
+                                <SelectItem key={a} value={a.toString()}>{a.toLocaleString()} 💎</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-400 mb-1 block">صلاحية (أيام)</label>
+                          <Input type="number" value={expirationDays} onChange={(e) => setExpirationDays(e.target.value)}
+                            className="bg-white/5 border-white/10 text-white" min={1} max={365} />
+                        </div>
+                      </div>
+                      <Button onClick={generateGiftCode} disabled={isGenerating}
+                        className="w-full bg-[#39FF14] text-black font-bold hover:bg-[#39FF14]/80">
+                        <Plus className="w-4 h-4 mr-2" />
+                        {isGenerating ? 'جاري الإنشاء...' : 'إنشاء كود'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white/5 border-white/10">
+                    <CardContent className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-white/10">
+                            <TableHead className="text-right text-gray-400">الكود</TableHead>
+                            <TableHead className="text-right text-gray-400">العملات</TableHead>
+                            <TableHead className="text-right text-gray-400">الحالة</TableHead>
+                            <TableHead className="text-right text-gray-400">انتهاء</TableHead>
+                            <TableHead></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {giftCodes.map((gc) => (
+                            <TableRow key={gc.id} className="border-white/10">
+                              <TableCell className="font-mono text-sm font-bold text-[#39FF14]">{gc.code}</TableCell>
+                              <TableCell className="text-white">{gc.coin_amount.toLocaleString()} 💎</TableCell>
+                              <TableCell>
+                                <Badge className={gc.status === 'active'
+                                  ? 'bg-[#39FF14]/20 text-[#39FF14] border-[#39FF14]/30'
+                                  : 'bg-white/10 text-gray-400'}>
+                                  {gc.status === 'active' ? 'نشط' : 'مُستخدم'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-xs text-gray-500">
+                                {gc.expires_at ? new Date(gc.expires_at).toLocaleDateString('ar-IQ') : '-'}
+                              </TableCell>
+                              <TableCell>
+                                <Button variant="ghost" size="icon" onClick={() => copyCode(gc.code, gc.id)}>
+                                  {copiedId === gc.id ? <Check className="w-4 h-4 text-[#39FF14]" /> : <Copy className="w-4 h-4 text-gray-400" />}
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {giftCodes.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={5} className="text-center py-8 text-gray-500">لا توجد أكواد</TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
 
               {/* Settings Tab */}
