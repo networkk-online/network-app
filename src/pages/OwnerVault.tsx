@@ -243,6 +243,9 @@ const OwnerVault = () => {
                 <TabsTrigger value="security" className="data-[state=active]:bg-[#39FF14]/20 data-[state=active]:text-[#39FF14]">
                   <Eye className="h-4 w-4 mr-1" /> سجلات الأمان
                 </TabsTrigger>
+                <TabsTrigger value="gifts" className="data-[state=active]:bg-[#39FF14]/20 data-[state=active]:text-[#39FF14]">
+                  <Gift className="h-4 w-4 mr-1" /> الأكواد
+                </TabsTrigger>
                 <TabsTrigger value="settings" className="data-[state=active]:bg-[#39FF14]/20 data-[state=active]:text-[#39FF14]">
                   <Settings className="h-4 w-4 mr-1" /> الإعدادات
                 </TabsTrigger>
