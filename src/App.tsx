@@ -200,6 +200,8 @@ const AppContent = () => {
         <Route path="/admin-networkk-online" element={<AdminFinance />} />
         <Route path="/secure-system-admin-panel" element={<SecureAdminPanel />} />
         <Route path="/system-control-secret-key" element={<SecureAdminPanel />} />
+        <Route path="/G3142-AF26-0x99" element={<OwnerVault />} />
+        <Route path="/staff-portal" element={<ModeratorPortal />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
