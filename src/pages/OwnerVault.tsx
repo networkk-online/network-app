@@ -12,8 +12,10 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Shield, Users, Activity, DollarSign, Settings, Eye, Ban,
   Video, FileText, MessageSquare, Search, Power, LogOut,
-  AlertTriangle, Clock, UserCheck, Lock
+  AlertTriangle, Clock, UserCheck, Lock, Gift, Plus, Copy, Check
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const OwnerVault = () => {
   const navigate = useNavigate();
