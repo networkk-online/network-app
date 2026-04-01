@@ -218,9 +218,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ErrorBoundary>
-          <ChimeCallProvider>
-            <AppContent />
-          </ChimeCallProvider>
+          <MaintenanceGuard>
+            <ChimeCallProvider>
+              <AppContent />
+            </ChimeCallProvider>
+          </MaintenanceGuard>
         </ErrorBoundary>
       </BrowserRouter>
     </TooltipProvider>
