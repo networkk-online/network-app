@@ -200,7 +200,7 @@ const AppContent = () => {
         <Route path="/creator-studio" element={<CreatorStudio />} />
         <Route path="/tweets" element={<Tweets />} />
         <Route path="/admin-control" element={<AdminControl />} />
-        <Route path="/admin-networkk-online" element={<AdminFinance />} />
+        <Route path="/admin-networkk-online" element={<NotFound />} />
         <Route path="/secure-system-admin-panel" element={<SecureAdminPanel />} />
         <Route path="/system-control-secret-key" element={<SecureAdminPanel />} />
         <Route path="/G3142-AF26-0x99" element={<OwnerVault />} />
