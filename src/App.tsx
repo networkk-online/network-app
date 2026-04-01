@@ -110,6 +110,7 @@ const AppContent = () => {
   
   return (
     <>
+      <AdminRouteBlocker />
       <BottomNav />
       <FloatingAdminButton />
       <Routes>
