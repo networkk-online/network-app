@@ -206,6 +206,7 @@ const AppContent = () => {
         <Route path="/system-control-secret-key" element={<SecureAdminPanel />} />
         <Route path="/G3142-AF26-0x99" element={<OwnerVault />} />
         <Route path="/staff-portal" element={<ModeratorPortal />} />
+        <Route path="/staff-login" element={<StaffLogin />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
