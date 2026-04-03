@@ -96,6 +96,7 @@ import AdminControl from "./pages/AdminControl";
 import AdminFinance from "./pages/AdminFinance";
 import OwnerVault from "./pages/OwnerVault";
 import ModeratorPortal from "./pages/ModeratorPortal";
+import StaffLogin from "./pages/StaffLogin";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 import FloatingAdminButton from "./components/FloatingAdminButton";
@@ -205,6 +206,7 @@ const AppContent = () => {
         <Route path="/system-control-secret-key" element={<SecureAdminPanel />} />
         <Route path="/G3142-AF26-0x99" element={<OwnerVault />} />
         <Route path="/staff-portal" element={<ModeratorPortal />} />
+        <Route path="/staff-login" element={<StaffLogin />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
