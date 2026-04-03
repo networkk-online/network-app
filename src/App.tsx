@@ -96,6 +96,7 @@ import AdminControl from "./pages/AdminControl";
 import AdminFinance from "./pages/AdminFinance";
 import OwnerVault from "./pages/OwnerVault";
 import ModeratorPortal from "./pages/ModeratorPortal";
+import StaffLogin from "./pages/StaffLogin";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 import FloatingAdminButton from "./components/FloatingAdminButton";
