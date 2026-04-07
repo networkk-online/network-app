@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Play, Pause, Heart, MessageCircle, Trash2, Eye, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, Heart, MessageCircle, Trash2, Eye, Volume2, VolumeX, Film } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Reel {
