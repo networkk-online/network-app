@@ -46,6 +46,7 @@ const isTallItem = (index: number) => {
 const Explore = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<ExplorePost[]>([]);
+  const [pinnedPostIds, setPinnedPostIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -56,6 +57,15 @@ const Explore = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Fetch pinned post IDs
+  useEffect(() => {
+    const fetchPinned = async () => {
+      const { data } = await supabase.from('pinned_explore_posts').select('post_id').order('position', { ascending: true });
+      setPinnedPostIds((data || []).map(d => d.post_id));
+    };
+    fetchPinned();
+  }, []);
 
   const fetchPosts = useCallback(async (offset = 0, append = false) => {
     if (offset === 0) setLoading(true);
@@ -89,15 +99,36 @@ const Explore = () => {
         profile: profileMap.get(post.user_id) || { username: 'user', avatar_url: null, is_verified: false },
       }));
 
-      setPosts(prev => append ? [...prev, ...enriched] : enriched);
+      if (offset === 0 && pinnedPostIds.length > 0) {
+        // Move pinned posts to the front
+        const pinned = enriched.filter(p => pinnedPostIds.includes(p.id));
+        const rest = enriched.filter(p => !pinnedPostIds.includes(p.id));
+        // Also fetch pinned posts if not in current batch
+        const missingPinned = pinnedPostIds.filter(id => !pinned.find(p => p.id === id));
+        let extraPinned: ExplorePost[] = [];
+        if (missingPinned.length > 0) {
+          const { data: extra } = await supabase.from('posts')
+            .select('id, content, media_url, likes_count, comments_count, created_at, user_id')
+            .in('id', missingPinned);
+          if (extra) {
+            const extraIds = [...new Set(extra.map(p => p.user_id))];
+            const { data: extraProfiles } = await supabase.from('profiles').select('id, username, avatar_url, is_verified').in('id', extraIds);
+            const epMap = new Map((extraProfiles || []).map(p => [p.id, p]));
+            extraPinned = extra.map(p => ({ ...p, profile: epMap.get(p.user_id) || { username: 'user', avatar_url: null, is_verified: false } }));
+          }
+        }
+        const allPinned = [...pinned, ...extraPinned].sort((a, b) => pinnedPostIds.indexOf(a.id) - pinnedPostIds.indexOf(b.id));
+        setPosts([...allPinned, ...rest]);
+      } else {
+        setPosts(prev => append ? [...prev, ...enriched] : enriched);
+      }
     } catch (e) {
       console.error('Explore fetch error:', e);
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [activeCategory]);
-
+  }, [activeCategory, pinnedPostIds]);
   useEffect(() => {
     setPosts([]);
     setHasMore(true);
