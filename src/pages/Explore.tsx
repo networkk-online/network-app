@@ -282,8 +282,8 @@ const Explore = () => {
       {/* Instagram 3-Column Grid */}
       <main className="pb-24">
         {loading ? (
-          <div className="grid grid-cols-3 gap-[2px]">
-            {Array.from({ length: 12 }).map((_, i) => (
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-[2px]">
+            {Array.from({ length: 15 }).map((_, i) => (
               <Skeleton
                 key={i}
                 className={`bg-white/[0.04] ${isTallItem(i) ? 'row-span-2 aspect-[1/2]' : 'aspect-square'}`}
@@ -296,7 +296,7 @@ const Explore = () => {
             <p className="text-white/30 text-sm">لا توجد منشورات بعد</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-[2px]">
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-[2px]">
             {posts.map((post, i) => {
               const tall = isTallItem(i);
               const isVideo = post.media_url?.includes('.mp4') || post.media_url?.includes('.webm') || post.media_url?.includes('.mov');
