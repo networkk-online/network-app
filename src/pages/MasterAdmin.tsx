@@ -1,0 +1,183 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Shield, LayoutDashboard, Gift, Film, Compass, Settings, LogOut, Menu, ChevronRight } from 'lucide-react';
+import MasterOverview from '@/components/master-admin/MasterOverview';
+import MasterGiftCodes from '@/components/master-admin/MasterGiftCodes';
+import MasterReelsManager from '@/components/master-admin/MasterReelsManager';
+import MasterExploreControl from '@/components/master-admin/MasterExploreControl';
+import { cn } from '@/lib/utils';
+
+const MASTER_USERNAME = 'ghaith_admin';
+const MASTER_PASSWORD = 'NeTw0rKK@2025!';
+
+const tabs = [
+  { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard },
+  { id: 'gifts', label: 'أكواد الهدايا', icon: Gift },
+  { id: 'reels', label: 'إدارة الريلز', icon: Film },
+  { id: 'explore', label: 'تحكم الاستكشاف', icon: Compass },
+  { id: 'settings', label: 'الإعدادات', icon: Settings },
+];
+
+const MasterAdmin = () => {
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    const auth = sessionStorage.getItem('master_admin_auth');
+    if (auth === 'true') setIsAuthenticated(true);
+  }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username === MASTER_USERNAME && password === MASTER_PASSWORD) {
+      sessionStorage.setItem('master_admin_auth', 'true');
+      setIsAuthenticated(true);
+      setError('');
+    } else {
+      setError('بيانات الدخول غير صحيحة');
+    }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('master_admin_auth');
+    setIsAuthenticated(false);
+    navigate('/');
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{
+          backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(57,255,20,0.15) 0%, transparent 60%)',
+        }} />
+        <div className="w-full max-w-md relative z-10">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-[#39FF14]/10 border border-[#39FF14]/20 flex items-center justify-center">
+              <Shield className="w-10 h-10 text-[#39FF14]" />
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-1">Master Control</h1>
+            <p className="text-sm text-white/30">networkk.online — Restricted Access</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4 p-6 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]">
+            <div>
+              <label className="text-xs text-white/40 mb-1.5 block">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                className="w-full h-11 px-4 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-sm outline-none focus:border-[#39FF14]/40 transition-colors"
+                autoComplete="off"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-white/40 mb-1.5 block">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full h-11 px-4 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-sm outline-none focus:border-[#39FF14]/40 transition-colors"
+              />
+            </div>
+            {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+            <button type="submit" className="w-full h-11 rounded-xl bg-[#39FF14] text-black font-bold text-sm hover:bg-[#39FF14]/80 transition-colors active:scale-[0.98]">
+              دخول النظام
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'overview': return <MasterOverview />;
+      case 'gifts': return <MasterGiftCodes />;
+      case 'reels': return <MasterReelsManager />;
+      case 'explore': return <MasterExploreControl />;
+      case 'settings':
+        return (
+          <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08]">
+            <h2 className="text-[#39FF14] font-bold mb-4">إعدادات النظام</h2>
+            <p className="text-white/40 text-sm">قريباً...</p>
+          </div>
+        );
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Background grid */}
+      <div className="fixed inset-0 opacity-[0.015] pointer-events-none" style={{
+        backgroundImage: 'linear-gradient(rgba(57,255,20,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.5) 1px, transparent 1px)',
+        backgroundSize: '60px 60px',
+      }} />
+
+      {/* Sidebar */}
+      <aside className={cn(
+        'fixed top-0 right-0 h-full z-40 transition-all duration-300 border-l border-white/[0.06]',
+        'bg-black/90 backdrop-blur-2xl',
+        sidebarOpen ? 'w-60' : 'w-16'
+      )}>
+        <div className="p-4 flex items-center justify-between border-b border-white/[0.06]">
+          {sidebarOpen && (
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-[#39FF14]" />
+              <span className="text-sm font-bold text-[#39FF14]">MASTER</span>
+            </div>
+          )}
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/40">
+            <Menu className="w-4 h-4" />
+          </button>
+        </div>
+
+        <nav className="p-2 space-y-1 mt-2">
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all',
+                  active
+                    ? 'bg-[#39FF14]/10 text-[#39FF14] border border-[#39FF14]/20'
+                    : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+                )}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                {sidebarOpen && <span>{tab.label}</span>}
+                {sidebarOpen && active && <ChevronRight className="w-3 h-3 mr-auto" />}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="absolute bottom-4 left-0 right-0 px-2">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-colors">
+            <LogOut className="w-4 h-4 shrink-0" />
+            {sidebarOpen && <span>خروج</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className={cn('transition-all duration-300 min-h-screen relative z-10', sidebarOpen ? 'mr-60' : 'mr-16')}>
+        <header className="sticky top-0 z-30 bg-black/80 backdrop-blur-xl border-b border-white/[0.06] px-6 py-4 flex items-center justify-between">
+          <h1 className="text-lg font-bold">{tabs.find(t => t.id === activeTab)?.label}</h1>
+          <span className="text-[10px] text-white/20 tracking-widest">networkk.online</span>
+        </header>
+        <div className="p-6">{renderContent()}</div>
+      </main>
+    </div>
+  );
+};
+
+export default MasterAdmin;
