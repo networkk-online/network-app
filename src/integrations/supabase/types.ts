@@ -1206,6 +1206,38 @@ export type Database = {
         }
         Relationships: []
       }
+      pinned_explore_posts: {
+        Row: {
+          created_at: string
+          id: string
+          pinned_by: string
+          position: number
+          post_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pinned_by: string
+          position: number
+          post_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pinned_by?: string
+          position?: number
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pinned_explore_posts_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_tips: {
         Row: {
           amount: number
