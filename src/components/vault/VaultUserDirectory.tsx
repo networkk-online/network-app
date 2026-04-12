@@ -54,11 +54,12 @@ const VaultUserDirectory = () => {
     }
     setResetting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       const res = await supabase.functions.invoke('admin-update-password', {
         body: { userId: resetModal.user.id, password: newPassword },
       });
-      if (res.error) throw res.error;
+      const result = res.data;
+      if (res.error) throw new Error(res.error.message || 'Network error');
+      if (!result?.ok) throw new Error(result?.error || 'Unknown error');
       toast({ title: '✅ تم تحديث كلمة المرور بنجاح للقائد غيث' });
       setResetModal({ open: false, user: null });
       setNewPassword('');
