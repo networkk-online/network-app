@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import AgoraRTC, {
   IAgoraRTCClient,
-  IAgoraRTCRemoteUser,
   ICameraVideoTrack,
   IMicrophoneAudioTrack,
 } from 'agora-rtc-sdk-ng';
@@ -40,17 +39,51 @@ export const useAgoraRoom = () => {
     return data;
   };
 
+  const updateParticipants = (client: IAgoraRTCClient) => {
+    const remoteUsers = client.remoteUsers;
+    const parts: AgoraParticipant[] = [];
+
+    if (localVideoRef.current) {
+      parts.push({
+        uid: 'local',
+        videoTrack: localVideoRef.current,
+        audioTrack: localAudioRef.current,
+        isLocal: true,
+      });
+    }
+
+    remoteUsers.forEach(user => {
+      parts.push({
+        uid: user.uid,
+        videoTrack: user.videoTrack,
+        audioTrack: user.audioTrack,
+        isLocal: false,
+      });
+    });
+
+    setParticipants(parts);
+  };
+
   const createRoom = useCallback(async (title?: string) => {
     setIsLoading(true);
     try {
+      // 1. Request camera/mic FIRST (preserves user gesture context)
+      const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks(
+        {},
+        { encoderConfig: '720p_2' }
+      );
+      localAudioRef.current = audioTrack;
+      localVideoRef.current = videoTrack;
+
+      // 2. Get credentials from edge function
       const channel = `network-live-${Date.now()}`;
       const creds = await getAgoraCredentials(channel);
 
+      // 3. Create client and join
       const client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8' });
       client.setClientRole('host');
       clientRef.current = client;
 
-      // Event handlers
       client.on('user-published', async (user, mediaType) => {
         await client.subscribe(user, mediaType);
         updateParticipants(client);
@@ -65,26 +98,25 @@ export const useAgoraRoom = () => {
         updateParticipants(client);
       });
 
-      await client.join(creds.appId, channel, creds.token, 0);
+      // In testing mode (no certificate), token is null — pass null
+      await client.join(creds.appId, channel, creds.token || null, 0);
 
-      const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks(
-        {},
-        { encoderConfig: '720p_2' }
-      );
-      localAudioRef.current = audioTrack;
-      localVideoRef.current = videoTrack;
-
+      // 4. Publish tracks
       await client.publish([audioTrack, videoTrack]);
 
       setChannelName(channel);
       setIsHost(true);
       setIsInRoom(true);
       setViewerCount(0);
-
       updateParticipants(client);
       return channel;
     } catch (err: any) {
       console.error('Agora createRoom error:', err);
+      // Clean up tracks on failure
+      localAudioRef.current?.close();
+      localVideoRef.current?.close();
+      localAudioRef.current = null;
+      localVideoRef.current = null;
       toast({ title: 'خطأ في البث', description: err.message, variant: 'destructive' });
       return null;
     } finally {
@@ -109,7 +141,7 @@ export const useAgoraRoom = () => {
       client.on('user-joined', () => updateParticipants(client));
       client.on('user-left', () => updateParticipants(client));
 
-      await client.join(creds.appId, channel, creds.token, 0);
+      await client.join(creds.appId, channel, creds.token || null, 0);
 
       setChannelName(channel);
       setIsHost(false);
@@ -161,7 +193,6 @@ export const useAgoraRoom = () => {
 
   const switchCamera = useCallback(async () => {
     if (localVideoRef.current) {
-      // Get available cameras and switch
       const cameras = await AgoraRTC.getCameras();
       if (cameras.length > 1) {
         const currentLabel = localVideoRef.current.getMediaStreamTrack().label;
@@ -171,33 +202,6 @@ export const useAgoraRoom = () => {
     }
   }, []);
 
-  const updateParticipants = (client: IAgoraRTCClient) => {
-    const remoteUsers = client.remoteUsers;
-    const parts: AgoraParticipant[] = [];
-
-    // Add local user if host
-    if (localVideoRef.current) {
-      parts.push({
-        uid: 'local',
-        videoTrack: localVideoRef.current,
-        audioTrack: localAudioRef.current,
-        isLocal: true,
-      });
-    }
-
-    remoteUsers.forEach(user => {
-      parts.push({
-        uid: user.uid,
-        videoTrack: user.videoTrack,
-        audioTrack: user.audioTrack,
-        isLocal: false,
-      });
-    });
-
-    setParticipants(parts);
-  };
-
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       localAudioRef.current?.close();
