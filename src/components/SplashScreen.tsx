@@ -115,7 +115,7 @@ const SplashScreen = () => {
         <img 
           src={networkLogo} 
           alt="Network Logo" 
-          className="w-20 h-20 object-contain"
+          className="w-20 h-20 object-contain drop-shadow-[0_0_20px_rgba(25,224,91,0.4)]"
         />
       </div>
 

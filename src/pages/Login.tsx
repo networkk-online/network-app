@@ -112,7 +112,7 @@ const Login = () => {
         {/* Logo */}
         <div className="text-center mb-10">
           <div className="w-28 h-28 mx-auto mb-6">
-            <img src={networkLogo} alt="Network Logo" className="w-full h-full object-contain" />
+            <img src={networkLogo} alt="Network Logo" className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(25,224,91,0.4)]" />
           </div>
           <h1 className="text-2xl font-bold text-white/95 mb-1 tracking-wide">أهلاً بكم في العالم الجديد</h1>
           <p className="text-primary/50 text-sm">تسجيل الدخول</p>
