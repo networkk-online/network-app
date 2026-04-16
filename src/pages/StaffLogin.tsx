@@ -152,7 +152,7 @@ const StaffLogin = () => {
         {/* Footer */}
         <div className="mt-6 text-center">
           <p className="text-gray-600 text-xs font-mono flex items-center justify-center gap-2">
-            <Shield className="w-3 h-3" />
+            <Lock className="w-3 h-3" />
             محمي بتشفير من الطرف إلى الطرف
           </p>
           <button
