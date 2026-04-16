@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useToast } from '@/hooks/use-toast';
-import { Lock, Terminal, Loader2 } from 'lucide-react';
+import { Lock, Loader2 } from 'lucide-react';
+import networkLogo from '@/assets/network-logo.png';
 
 const StealthLogin = () => {
   const navigate = useNavigate();
@@ -88,8 +89,8 @@ const StealthLogin = () => {
 
       <div className="relative w-full max-w-sm">
         {/* Terminal-style header */}
-        <div className="flex items-center gap-2 mb-8 justify-center">
-          <Terminal className="h-5 w-5 text-[#00ff41]" />
+        <div className="flex flex-col items-center gap-2 mb-8">
+          <img src={networkLogo} alt="Network Logo" className="w-14 h-14 object-contain drop-shadow-[0_0_20px_rgba(0,255,65,0.3)]" />
           <h1 className="text-lg font-mono tracking-widest text-[#00ff41] uppercase">
             System Access
           </h1>

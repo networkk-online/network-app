@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Lock, Loader2, Eye, EyeOff } from 'lucide-react';
+import networkLogo from '@/assets/network-logo.png';
 
 const StaffLogin = () => {
   const [email, setEmail] = useState('');
@@ -88,8 +89,8 @@ const StaffLogin = () => {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="mx-auto w-20 h-20 bg-[#39FF14]/10 border-2 border-[#39FF14]/30 rounded-2xl flex items-center justify-center mb-4 shadow-[0_0_40px_rgba(57,255,20,0.15)]">
-            <Shield className="w-10 h-10 text-[#39FF14]" />
+          <div className="mx-auto w-20 h-20 mb-4">
+            <img src={networkLogo} alt="Network Logo" className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(57,255,20,0.3)]" />
           </div>
           <h1 className="text-2xl font-bold text-[#39FF14] font-mono tracking-widest">STAFF PORTAL</h1>
           <p className="text-gray-500 text-sm mt-1 font-mono">AUTHORIZED PERSONNEL ONLY</p>
@@ -151,7 +152,7 @@ const StaffLogin = () => {
         {/* Footer */}
         <div className="mt-6 text-center">
           <p className="text-gray-600 text-xs font-mono flex items-center justify-center gap-2">
-            <Shield className="w-3 h-3" />
+            <Lock className="w-3 h-3" />
             محمي بتشفير من الطرف إلى الطرف
           </p>
           <button

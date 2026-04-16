@@ -98,7 +98,7 @@ const SignUp = () => {
            style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 0 rgba(255,255,255,0.06)' }}>
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-4">
-            <img src={networkLogo} alt="Network Logo" className="w-full h-full object-contain" />
+            <img src={networkLogo} alt="Network Logo" className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(25,224,91,0.4)]" />
           </div>
           <h1 className="text-2xl font-bold text-white/95 mb-1 tracking-wide">إنشاء حساب</h1>
         </div>
