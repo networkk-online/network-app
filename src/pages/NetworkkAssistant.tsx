@@ -1,6 +1,6 @@
 import { NetworkkAssistantChat } from '@/components/NetworkkAssistantChat';
-import { Header } from '@/components/Header';
-import { BottomNav } from '@/components/BottomNav';
+import Header from '@/components/Header';
+import BottomNav from '@/components/BottomNav';
 
 const NetworkkAssistant = () => {
   return (

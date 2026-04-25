@@ -44,7 +44,7 @@ export const NetworkkAssistantChat = () => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <h2 className="font-bold text-foreground truncate">NETWORKK Assistant</h2>
-            <VerifiedBadge type="government" size="sm" />
+            <VerifiedBadge verificationType="government" size="sm" />
           </div>
           <p className="text-xs text-muted-foreground">🟢 Online • AI FinTech Assistant • 24/7</p>
         </div>
