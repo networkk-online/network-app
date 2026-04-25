@@ -10,7 +10,7 @@ const corsHeaders = {
 async function hmacSha256(key: ArrayBuffer | Uint8Array, message: string): Promise<ArrayBuffer> {
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
-    key,
+    key as any,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
@@ -119,8 +119,8 @@ async function batchWriteToDynamoDB(
         errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${errorText}`);
       }
     } catch (error) {
-      console.error(`Batch write exception: ${error.message}`);
-      errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message}`);
+      console.error(`Batch write exception: ${(error as Error).message}`);
+      errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${(error as Error).message}`);
     }
   }
 
@@ -331,7 +331,7 @@ serve(async (req) => {
       JSON.stringify({
         success: false,
         error: 'حدث خطأ أثناء المزامنة',
-        details: error.message
+        details: (error as Error).message
       }),
       { 
         status: 500,

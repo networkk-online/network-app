@@ -42,9 +42,9 @@ async function signRequest(
 
   const stringToSign = `${algorithm}\n${amzDate}\n${credentialScope}\n${requestHash}`;
 
-  async function hmacSha256(key: ArrayBuffer, data: string): Promise<ArrayBuffer> {
+  async function hmacSha256(key: ArrayBuffer | Uint8Array, data: string): Promise<ArrayBuffer> {
     const cryptoKey = await crypto.subtle.importKey(
-      'raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+      'raw', key as any, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
     );
     return await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(data));
   }
@@ -123,7 +123,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error fetching logs:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: (error as Error).message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

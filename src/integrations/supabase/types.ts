@@ -166,6 +166,72 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_config: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      bot_knowledge_base: {
+        Row: {
+          answer_ar: string
+          answer_en: string
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          keywords: string[] | null
+          priority: number | null
+          question_ar: string
+          question_en: string
+          updated_at: string
+        }
+        Insert: {
+          answer_ar: string
+          answer_en: string
+          category: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[] | null
+          priority?: number | null
+          question_ar: string
+          question_en: string
+          updated_at?: string
+        }
+        Update: {
+          answer_ar?: string
+          answer_en?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[] | null
+          priority?: number | null
+          question_ar?: string
+          question_en?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       broadcast_donations: {
         Row: {
           amount: number
@@ -2185,6 +2251,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          context: Json | null
+          created_at: string
+          id: string
+          question: string
+          resolution: string | null
+          resolved_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          context?: Json | null
+          created_at?: string
+          id?: string
+          question: string
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          context?: Json | null
+          created_at?: string
+          id?: string
+          question?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      system_messages: {
+        Row: {
+          content: string
+          created_at: string
+          event_type: string
+          id: string
+          is_from_bot: boolean
+          is_read: boolean
+          metadata: Json | null
+          severity: string
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          event_type: string
+          id?: string
+          is_from_bot?: boolean
+          is_read?: boolean
+          metadata?: Json | null
+          severity?: string
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          is_from_bot?: boolean
+          is_read?: boolean
+          metadata?: Json | null
+          severity?: string
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       transactions: {
         Row: {
