@@ -101,7 +101,7 @@ serve(async (req) => {
     async function hmacSha256(key: ArrayBuffer | Uint8Array, message: string): Promise<ArrayBuffer> {
       const cryptoKey = await crypto.subtle.importKey(
         'raw',
-        key,
+        key as any,
         { name: 'HMAC', hash: 'SHA-256' },
         false,
         ['sign']
@@ -179,7 +179,7 @@ serve(async (req) => {
       JSON.stringify({
         success: false,
         error: 'حدث خطأ أثناء اختبار الاتصال',
-        details: error.message
+        details: (error as Error).message
       }),
       { 
         status: 500,
