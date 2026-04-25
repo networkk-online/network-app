@@ -37,7 +37,8 @@ async function signRequest(method: string, url: string, body: string, region: st
   const stringToSign = `${algorithm}\n${amzDate}\n${credentialScope}\n${canonicalRequestHashHex}`;
   
   async function hmacSha256(key: ArrayBuffer, message: string): Promise<ArrayBuffer> {
-    const cryptoKey = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  async function hmacSha256(key: ArrayBuffer | Uint8Array, message: string): Promise<ArrayBuffer> {
+    const cryptoKey = await crypto.subtle.importKey('raw', key as any, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
     return await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(message));
   }
   
