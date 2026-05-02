@@ -1479,6 +1479,7 @@ export type Database = {
           gender: string | null
           id: string
           is_business_account: boolean | null
+          is_suspended: boolean
           is_verified: boolean | null
           location: string | null
           phone_country_code: string | null
@@ -1510,6 +1511,7 @@ export type Database = {
           gender?: string | null
           id: string
           is_business_account?: boolean | null
+          is_suspended?: boolean
           is_verified?: boolean | null
           location?: string | null
           phone_country_code?: string | null
@@ -1541,6 +1543,7 @@ export type Database = {
           gender?: string | null
           id?: string
           is_business_account?: boolean | null
+          is_suspended?: boolean
           is_verified?: boolean | null
           location?: string | null
           phone_country_code?: string | null
