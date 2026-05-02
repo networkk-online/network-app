@@ -1042,6 +1042,54 @@ export type Database = {
         }
         Relationships: []
       }
+      login_history: {
+        Row: {
+          city: string | null
+          country: string | null
+          country_code: string | null
+          created_at: string
+          device_label: string | null
+          id: string
+          ip_address: string | null
+          is_new_device: boolean
+          is_new_ip: boolean
+          isp: string | null
+          user_agent: string | null
+          user_agent_hash: string | null
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          device_label?: string | null
+          id?: string
+          ip_address?: string | null
+          is_new_device?: boolean
+          is_new_ip?: boolean
+          isp?: string | null
+          user_agent?: string | null
+          user_agent_hash?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          device_label?: string | null
+          id?: string
+          ip_address?: string | null
+          is_new_device?: boolean
+          is_new_ip?: boolean
+          isp?: string | null
+          user_agent?: string | null
+          user_agent_hash?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string | null
