@@ -11,6 +11,13 @@ export const logUserAction = async (action: 'login' | 'logout', userId?: string)
     }).catch((error) => {
       console.error('Background logging failed:', error);
     });
+
+    // تتبع الدخول من IP/جهاز جديد وإرسال تنبيه أمني
+    if (action === 'login') {
+      supabase.functions.invoke('track-login', { body: {} }).catch((error) => {
+        console.error('Login tracking failed:', error);
+      });
+    }
   } catch (error) {
     // لا نريد أن يؤثر الخطأ على تجربة المستخدم
     console.error('Failed to log user action:', error);
