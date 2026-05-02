@@ -16,6 +16,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { NETWORKK_BOT_ID, useNetworkkBot } from '@/hooks/useNetworkkBot';
+import networkkBotIcon from '@/assets/networkk-assistant-bot.jpg';
 
 interface ConversationListProps {
   conversations: Conversation[];
