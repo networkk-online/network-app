@@ -17,6 +17,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import VerifyOtp from "./pages/VerifyOtp";
 import Messages from "./pages/Messages";
+import NetworkkAssistant from "./pages/NetworkkAssistant";
 import Profile from "./pages/Profile";
 import AITools from "./pages/AITools";
 import CreatePost from "./pages/CreatePost";
