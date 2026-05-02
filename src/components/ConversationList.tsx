@@ -36,7 +36,10 @@ export const ConversationList = ({
   onRefresh
 }: ConversationListProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { unreadCount: botUnread, messages: botMessages } = useNetworkkBot();
   const [swipedId, setSwipedId] = useState<string | null>(null);
+  const lastBotMsg = botMessages[botMessages.length - 1];
 
   const handlePin = async (conversationId: string, isPinned: boolean) => {
     try {
