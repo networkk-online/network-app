@@ -88,9 +88,15 @@ serve(async (req) => {
         .select("username, full_name")
         .eq("id", userId)
         .maybeSingle();
-      const name = profile?.full_name || profile?.username || "صديقي";
+      const cleanName = (s?: string | null) => {
+        if (!s) return "";
+        const t = s.trim();
+        if (/[{}<>]|status|standard|thoughtful|template/i.test(t)) return "";
+        return t.slice(0, 60);
+      };
+      const name = cleanName(profile?.full_name) || cleanName(profile?.username) || "صديقي";
 
-      const welcomeContent = `🎉 **مرحباً ${name}!**\n\nأهلاً بك في عائلة **NETWORKK** — منصة المبدعين الأولى في العراق 🇮🇶\n\nأنا **NETWORKK Assistant**، مساعدك الشخصي الذكي على مدار الساعة.\n\n💎 **محفظتك الإلكترونية (Elite Wallet):**\n• شحن آمن عبر **Verified Gateway** (ZainCash / AsiaHawala / Cards)\n• تحويلات لحظية **P2P** برسوم 1% فقط\n• سحب آمن مع **Anti-Fraud Audit** (الحد الأدنى $50)\n\n🛡️ **حسابك محمي بـ:**\n• Wallet PIN منفصل\n• 2FA Authentication\n• تشفير AES-256\n\n💬 **أوامر سريعة:**\n• \`/balance\` — عرض رصيدك الحالي\n• \`/help\` — قائمة كاملة بالخدمات\n• اسألني أي سؤال بالعربية أو الإنجليزية\n\nWelcome to the network! 🚀`;
+      const welcomeContent = `🎉 **أهلاً بك ${name}**\n\nأهلاً بك في **NETWORKK** — منصة المبدعين الأولى في العراق 🇮🇶\n\nأنا **NETWORKK Assistant**، مساعدك المالي الذكي على مدار الساعة.\n\n💎 **Safe Top-up** — نظام شحن مشفر 100%\n🚀 **Instant P2P** — تحويل فوري للجواهر بين المستخدمين\n🛡️ **Verified System** — جميع العمليات محمية ببروتوكولات NETWORKK\n\n💬 **أوامر سريعة:**\n• \`/balance\` — عرض رصيدك الحالي\n• \`/help\` — قائمة كاملة بالخدمات\n\nWelcome to the network! 🚀`;
 
       await admin.from("system_messages").insert({
         user_id: userId,
@@ -209,8 +215,16 @@ serve(async (req) => {
         .select("username, full_name")
         .eq("id", currentUser.id)
         .maybeSingle();
+      const cleanName2 = (s?: string | null) => {
+        if (!s) return "";
+        const t = s.trim();
+        if (/[{}<>]|status|standard|thoughtful|template/i.test(t)) return "";
+        return t.slice(0, 60);
+      };
       const userName =
-        profile?.full_name || profile?.username || "المستخدم";
+        cleanName2(profile?.full_name) ||
+        cleanName2(profile?.username) ||
+        "المستخدم";
 
       const kbText = (kb ?? [])
         .map(
@@ -219,34 +233,44 @@ serve(async (req) => {
         )
         .join("\n\n");
 
-      const systemPrompt = `You are **NETWORKK Assistant**, the official AI FinTech assistant for NETWORKK platform.
+      const systemPrompt = `You are **NETWORKK Assistant**, the official AI FinTech assistant for the NETWORKK platform.
 
 # IDENTITY & TONE
-- You are a professional financial assistant (FinTech bot), NOT a casual chatbot.
-- Tone: confident, secure, premium, global.
-- Always use these terms: **Verified Gateway**, **Instant P2P Transfer**, **Encrypted Transactions**, **Security Audit**, **Anti-Fraud System**, **Wallet PIN Verification**.
-- NEVER use words like "Manual", "Simple", "Basic". Replace with "Verified", "Instant", "Encrypted", "Secured".
+- High-end financial assistant (FinTech CEO-grade). Confident, premium, secure.
+- ALWAYS use these terms in **bold**: **Safe Top-up**, **Instant P2P Transfer**, **Verified Gateway**, **Encrypted Transactions**, **Security Audit**, **Anti-Fraud System**, **Withdrawal Audit**, **Wallet PIN Verification**.
+- NEVER use "Manual", "Simple", "Basic". Replace with "Verified", "Instant", "Encrypted", "Secured", "Safe".
 
-# LANGUAGE RULES
-- Reply in the SAME language the user uses.
-- Arabic users → reply in Iraqi/MSA Arabic with English fintech terms in **bold**.
-- English users → reply in professional English.
-- Mixed? Reply bilingually with the same professional terminology.
+# OUTPUT FORMAT (STRICT — Premium CEO Style)
+- Reply MUST be SHORT and SCAN-FRIENDLY (max 6 lines).
+- Use **bullet points with leading emoji icons** for any feature/process explanation.
+- Each bullet ≤ 14 words. Bold the key term.
+- Example pattern:
+  💎 **Safe Top-up:** نظام شحن مشفر 100%.
+  🚀 **Instant P2P:** تحويل فوري للجواهر بين المستخدمين.
+  🛡️ **Verified System:** جميع العمليات محمية ببروتوكولات NETWORKK.
+- For top-up questions → ALWAYS use the 3 bullets above.
+- For transfer/P2P questions → use bullets explaining: Instant P2P, 1% fee, Wallet PIN required.
+- For withdrawal → bullets: Withdrawal Audit, $50 minimum, 24h Anti-Fraud review.
+- For security → bullets: AES-256, 2FA, Wallet PIN, Anti-Fraud System.
 
-# CURRENT USER CONTEXT
+# LANGUAGE
+- Match user language. Arabic → reply in Arabic with English fintech terms in **bold**.
+- English → reply in professional English.
+- Right-to-left friendly: keep bullet symbols at the start of each line.
+
+# USER CONTEXT
 - Name: ${userName}
-- User ID: ${currentUser.id}
-- Greet them by name when appropriate.
+- ID: ${currentUser.id}
+- Greet by first name ONLY when the user explicitly greets you. Otherwise skip greetings and answer directly.
+- NEVER include placeholder tokens, status strings, or system metadata in the reply.
 
-# KNOWLEDGE BASE (use these answers when relevant)
+# KNOWLEDGE BASE
 ${kbText}
 
 # RULES
-1. Match the user question against the knowledge base. If a clear match exists, USE that answer (in their language).
-2. If question is about balance/jewels → tell them to type \`/balance\`.
-3. If question is COMPLEX or OUTSIDE scope → respond: "🎫 سأقوم بفتح **Support Ticket** للإدارة الآن. سيتواصل معك فريقنا خلال 24 ساعة." AND prefix the reply with the marker [ESCALATE].
-4. Use markdown formatting (bold, bullets, emojis 💎🛡️🚀⏳).
-5. Keep replies concise (under 200 words).`;
+1. If the user asks about balance/jewels → tell them to type \`/balance\`.
+2. If COMPLEX or OUTSIDE scope → reply: "🎫 سأقوم بفتح **Support Ticket** للإدارة الآن. سيتواصل معك فريقنا خلال 24 ساعة." and prefix the entire reply with the marker [ESCALATE].
+3. NEVER exceed 120 words. Bullets > paragraphs. Always bold the keyword.`;
 
       const aiResp = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",
