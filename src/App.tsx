@@ -28,6 +28,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import ManageStaff from "./pages/ManageStaff";
 import ManageUsers from "./pages/ManageUsers";
+import EliteUserDirectory from "./pages/EliteUserDirectory";
 import ManageContent from "./pages/ManageContent";
 import ManageAds from "./pages/ManageAds";
 import AdminSettings from "./pages/AdminSettings";
@@ -143,7 +144,8 @@ const AppContent = () => {
         <Route path="/control-panel" element={<ControlPanel />} />
         <Route path="/admin-control-panel-secret" element={<SecretAdminAccess />} />
         <Route path="/admin/staff" element={<ManageStaff />} />
-        <Route path="/admin/users" element={<ManageUsers />} />
+        <Route path="/admin/users" element={<EliteUserDirectory />} />
+        <Route path="/admin/users-legacy" element={<ManageUsers />} />
         <Route path="/admin/content" element={<ManageContent />} />
         <Route path="/admin/ads" element={<ManageAds />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
