@@ -202,7 +202,45 @@ export const ConversationList = ({
 
   return (
     <div className="divide-y divide-white/5">
-      {visibleConversations.map((conv) => {
+      {/* Pinned NETWORKK Assistant Bot - always at top */}
+      <button
+        onClick={() => navigate('/networkk-assistant')}
+        className="w-full p-4 flex items-center gap-3 transition-all duration-200 hover:bg-white/5 bg-gradient-to-r from-emerald-500/5 to-transparent"
+      >
+        <div className="relative shrink-0">
+          <Avatar className="w-14 h-14 border-2 border-emerald-500/40 shadow-[0_0_20px_rgba(8,160,69,0.4)]">
+            <AvatarImage src={networkkBotIcon} alt="NETWORKK Assistant" />
+            <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white text-lg font-bold">N</AvatarFallback>
+          </Avatar>
+          <motion.div
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-2 border-background"
+          />
+        </div>
+        <div className="flex-1 min-w-0 text-right">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Pin className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              <p className="font-semibold text-sm truncate text-foreground">NETWORKK Assistant</p>
+              <VerifiedBadge size="sm" />
+            </div>
+            <span className="text-xs text-emerald-400 shrink-0 mr-2">رسمي</span>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <p className={`text-sm truncate ${botUnread > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+              {lastBotMsg?.content?.split('\n')[0] || 'مساعدك المالي الآمن — اكتب /balance أو /help'}
+            </p>
+            {botUnread > 0 && (
+              <Badge className="bg-emerald-500 text-white text-xs px-2 h-5 min-w-[20px] flex items-center justify-center">
+                {botUnread}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </button>
+
+      {visibleConversations.filter(c => c.id !== NETWORKK_BOT_ID).map((conv) => {
         const otherUser = conv.participants?.[0];
         const isSelected = conv.id === selectedConversationId;
         const hasUnread = (conv.unread_count || 0) > 0;
