@@ -17,6 +17,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import VerifyOtp from "./pages/VerifyOtp";
 import Messages from "./pages/Messages";
+import NetworkkAssistant from "./pages/NetworkkAssistant";
 import Profile from "./pages/Profile";
 import AITools from "./pages/AITools";
 import CreatePost from "./pages/CreatePost";
@@ -128,6 +129,9 @@ const AppContent = () => {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/messages" element={<Messages />} />
+        <Route path="/networkk-assistant" element={<NetworkkAssistant />} />
+        <Route path="/chat/assistant" element={<NetworkkAssistant />} />
+        <Route path="/chat/:id" element={<NetworkkAssistant />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/:userId" element={<Profile />} />
         <Route path="/ai-tools" element={<AITools />} />
