@@ -88,9 +88,15 @@ serve(async (req) => {
         .select("username, full_name")
         .eq("id", userId)
         .maybeSingle();
-      const name = profile?.full_name || profile?.username || "صديقي";
+      const cleanName = (s?: string | null) => {
+        if (!s) return "";
+        const t = s.trim();
+        if (/[{}<>]|status|standard|thoughtful|template/i.test(t)) return "";
+        return t.slice(0, 60);
+      };
+      const name = cleanName(profile?.full_name) || cleanName(profile?.username) || "صديقي";
 
-      const welcomeContent = `🎉 **مرحباً ${name}!**\n\nأهلاً بك في عائلة **NETWORKK** — منصة المبدعين الأولى في العراق 🇮🇶\n\nأنا **NETWORKK Assistant**، مساعدك الشخصي الذكي على مدار الساعة.\n\n💎 **محفظتك الإلكترونية (Elite Wallet):**\n• شحن آمن عبر **Verified Gateway** (ZainCash / AsiaHawala / Cards)\n• تحويلات لحظية **P2P** برسوم 1% فقط\n• سحب آمن مع **Anti-Fraud Audit** (الحد الأدنى $50)\n\n🛡️ **حسابك محمي بـ:**\n• Wallet PIN منفصل\n• 2FA Authentication\n• تشفير AES-256\n\n💬 **أوامر سريعة:**\n• \`/balance\` — عرض رصيدك الحالي\n• \`/help\` — قائمة كاملة بالخدمات\n• اسألني أي سؤال بالعربية أو الإنجليزية\n\nWelcome to the network! 🚀`;
+      const welcomeContent = `🎉 **أهلاً بك ${name}**\n\nأهلاً بك في **NETWORKK** — منصة المبدعين الأولى في العراق 🇮🇶\n\nأنا **NETWORKK Assistant**، مساعدك المالي الذكي على مدار الساعة.\n\n💎 **Safe Top-up** — نظام شحن مشفر 100%\n🚀 **Instant P2P** — تحويل فوري للجواهر بين المستخدمين\n🛡️ **Verified System** — جميع العمليات محمية ببروتوكولات NETWORKK\n\n💬 **أوامر سريعة:**\n• \`/balance\` — عرض رصيدك الحالي\n• \`/help\` — قائمة كاملة بالخدمات\n\nWelcome to the network! 🚀`;
 
       await admin.from("system_messages").insert({
         user_id: userId,
