@@ -1485,6 +1485,7 @@ export type Database = {
           full_name: string | null
           gender: string | null
           id: string
+          is_banned: boolean
           is_business_account: boolean | null
           is_suspended: boolean
           is_verified: boolean | null
@@ -1517,6 +1518,7 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           id: string
+          is_banned?: boolean
           is_business_account?: boolean | null
           is_suspended?: boolean
           is_verified?: boolean | null
@@ -1549,6 +1551,7 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           id?: string
+          is_banned?: boolean
           is_business_account?: boolean | null
           is_suspended?: boolean
           is_verified?: boolean | null
