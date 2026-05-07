@@ -98,21 +98,43 @@ const VaultUserDirectory = () => {
   };
 
   const sendNotification = async () => {
-    if (!notifyModal.user || !notifyText.trim()) return;
+    if (!notifyText.trim() || (!notifyModal.user && !notifyAll)) return;
     setSending(true);
     try {
       const { data: { user: me } } = await supabase.auth.getUser();
       if (!me) throw new Error('Not authenticated');
-      const { error } = await supabase.from('notifications').insert({
-        user_id: notifyModal.user.id,
-        actor_id: me.id,
-        type: 'system',
-        content: notifyText.trim(),
-      });
-      if (error) throw error;
-      toast({ title: '✅ تم إرسال الإشعار' });
+      const payload = JSON.stringify({ title: notifyTitle.trim() || 'إشعار من الإدارة', body: notifyText.trim() });
+
+      if (notifyAll) {
+        // Page through all profiles and bulk insert
+        const { data: allUsers, error: fetchErr } = await supabase.from('profiles').select('id');
+        if (fetchErr) throw fetchErr;
+        const rows = (allUsers || []).map(u => ({
+          user_id: u.id,
+          actor_id: me.id,
+          type: 'system',
+          content: payload,
+        }));
+        // Insert in chunks of 500
+        for (let i = 0; i < rows.length; i += 500) {
+          const { error } = await supabase.from('notifications').insert(rows.slice(i, i + 500));
+          if (error) throw error;
+        }
+        toast({ title: '✅ تم البث للجميع', description: `${rows.length} مستخدم` });
+      } else {
+        const { error } = await supabase.from('notifications').insert({
+          user_id: notifyModal.user.id,
+          actor_id: me.id,
+          type: 'system',
+          content: payload,
+        });
+        if (error) throw error;
+        toast({ title: '✅ تم إرسال الإشعار' });
+      }
       setNotifyModal({ open: false, user: null });
+      setNotifyTitle('');
       setNotifyText('');
+      setNotifyAll(false);
     } catch (e: any) {
       toast({ title: '❌ فشل الإرسال', description: e.message, variant: 'destructive' });
     } finally {
