@@ -52,6 +52,7 @@ const VaultUserDirectory = () => {
   const [notifyTitle, setNotifyTitle] = useState('');
   const [notifyText, setNotifyText] = useState('');
   const [notifyAll, setNotifyAll] = useState(false);
+  const [notifyType, setNotifyType] = useState<'broadcast' | 'admin'>('admin');
   const [sending, setSending] = useState(false);
 
   // Delete confirm
