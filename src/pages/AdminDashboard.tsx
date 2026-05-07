@@ -85,13 +85,7 @@ const AdminDashboard = () => {
 
   const checkAuthorization = async () => {
     try {
-      const pinAuthenticated = sessionStorage.getItem('admin_authenticated');
-      if (pinAuthenticated === 'true') {
-        setIsAuthorized(true);
-        setLoading(false);
-        return;
-      }
-
+      // SECURITY: never trust client-side sessionStorage flags. Always verify role server-side.
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {

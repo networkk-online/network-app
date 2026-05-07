@@ -32,13 +32,6 @@ const AdminLogs = () => {
   }, []);
 
   const checkAuthorization = async () => {
-    const isAdminAuth = sessionStorage.getItem('admin_authenticated');
-    if (isAdminAuth === 'true') {
-      setAuthorized(true);
-      fetchLogs();
-      return;
-    }
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate('/admin-login');

@@ -82,13 +82,6 @@ const AdminSurveillance = () => {
   }, []);
 
   const checkAuthorization = async () => {
-    const isAdminAuth = sessionStorage.getItem('admin_authenticated');
-    if (isAdminAuth === 'true') {
-      setAuthorized(true);
-      setLoading(false);
-      return;
-    }
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate('/admin-login');
