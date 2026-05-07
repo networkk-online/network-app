@@ -104,6 +104,8 @@ import MasterControlDashboard from "./pages/MasterControlDashboard";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 import FloatingAdminButton from "./components/FloatingAdminButton";
+import InstallPWAButton from "./components/InstallPWAButton";
+// ... keep existing code
 import MaintenanceGuard from "./components/MaintenanceGuard";
 import AdminRouteBlocker from "./components/guards/AdminRouteBlocker";
 
