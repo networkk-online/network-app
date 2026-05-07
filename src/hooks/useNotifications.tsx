@@ -6,7 +6,7 @@ export interface Notification {
   id: string;
   user_id: string;
   actor_id: string;
-  type: 'like' | 'comment' | 'follow' | 'transaction' | 'tip' | 'donation';
+  type: 'like' | 'comment' | 'follow' | 'transaction' | 'tip' | 'donation' | 'system';
   post_id?: string;
   comment_id?: string;
   content?: string;
