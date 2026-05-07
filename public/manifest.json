@@ -1,8 +1,9 @@
 {
-  "name": "networkk.online - نيتورك",
-  "short_name": "networkk.online",
+  "name": "Networkk Online",
+  "short_name": "Networkk",
   "description": "تطبيق تواصل اجتماعي عصري يجمع بين الإبداع والربح والتفاعل",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",
