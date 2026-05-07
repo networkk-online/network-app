@@ -290,7 +290,7 @@ const VaultUserDirectory = () => {
                           variant="ghost" size="icon"
                           className="h-7 w-7 text-gray-500 hover:text-cyan-400"
                           title="إرسال إشعار"
-                          onClick={() => { setNotifyModal({ open: true, user: u }); setNotifyText(''); }}
+                          onClick={() => { setNotifyAll(false); setNotifyTitle(''); setNotifyText(''); setNotifyModal({ open: true, user: u }); }}
                         >
                           <Bell className="h-3.5 w-3.5" />
                         </Button>
