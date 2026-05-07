@@ -6,7 +6,7 @@ export interface Notification {
   id: string;
   user_id: string;
   actor_id: string;
-  type: 'like' | 'comment' | 'follow' | 'transaction' | 'tip' | 'donation';
+  type: 'like' | 'comment' | 'follow' | 'transaction' | 'tip' | 'donation' | 'system';
   post_id?: string;
   comment_id?: string;
   content?: string;
@@ -91,6 +91,7 @@ export const useNotifications = () => {
 
             // Show toast notification
             const actorName = data.actor?.username || data.actor?.full_name || 'شخص ما';
+            let title = 'إشعار جديد';
             let message = '';
             switch (data.type) {
               case 'like': message = `أعجب ${actorName} بمنشورك`; break;
@@ -99,11 +100,19 @@ export const useNotifications = () => {
               case 'transaction': message = data.content || 'عملية مالية جديدة'; break;
               case 'tip': message = data.content || 'إكرامية جديدة'; break;
               case 'donation': message = data.content || 'دعم جديد'; break;
+              case 'system': {
+                try {
+                  const parsed = JSON.parse(data.content || '{}');
+                  title = parsed.title || 'إشعار من الإدارة';
+                  message = parsed.body || data.content || '';
+                } catch { message = data.content || 'إشعار من الإدارة'; }
+                break;
+              }
               default: message = data.content || 'إشعار جديد';
             }
             
             toast({
-              title: "إشعار جديد",
+              title,
               description: message,
             });
           }

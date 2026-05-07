@@ -49,7 +49,9 @@ const VaultUserDirectory = () => {
 
   // Notify modal
   const [notifyModal, setNotifyModal] = useState<{ open: boolean; user: any | null }>({ open: false, user: null });
+  const [notifyTitle, setNotifyTitle] = useState('');
   const [notifyText, setNotifyText] = useState('');
+  const [notifyAll, setNotifyAll] = useState(false);
   const [sending, setSending] = useState(false);
 
   // Delete confirm
@@ -96,21 +98,43 @@ const VaultUserDirectory = () => {
   };
 
   const sendNotification = async () => {
-    if (!notifyModal.user || !notifyText.trim()) return;
+    if (!notifyText.trim() || (!notifyModal.user && !notifyAll)) return;
     setSending(true);
     try {
       const { data: { user: me } } = await supabase.auth.getUser();
       if (!me) throw new Error('Not authenticated');
-      const { error } = await supabase.from('notifications').insert({
-        user_id: notifyModal.user.id,
-        actor_id: me.id,
-        type: 'system',
-        content: notifyText.trim(),
-      });
-      if (error) throw error;
-      toast({ title: '✅ تم إرسال الإشعار' });
+      const payload = JSON.stringify({ title: notifyTitle.trim() || 'إشعار من الإدارة', body: notifyText.trim() });
+
+      if (notifyAll) {
+        // Page through all profiles and bulk insert
+        const { data: allUsers, error: fetchErr } = await supabase.from('profiles').select('id');
+        if (fetchErr) throw fetchErr;
+        const rows = (allUsers || []).map(u => ({
+          user_id: u.id,
+          actor_id: me.id,
+          type: 'system',
+          content: payload,
+        }));
+        // Insert in chunks of 500
+        for (let i = 0; i < rows.length; i += 500) {
+          const { error } = await supabase.from('notifications').insert(rows.slice(i, i + 500));
+          if (error) throw error;
+        }
+        toast({ title: '✅ تم البث للجميع', description: `${rows.length} مستخدم` });
+      } else {
+        const { error } = await supabase.from('notifications').insert({
+          user_id: notifyModal.user.id,
+          actor_id: me.id,
+          type: 'system',
+          content: payload,
+        });
+        if (error) throw error;
+        toast({ title: '✅ تم إرسال الإشعار' });
+      }
       setNotifyModal({ open: false, user: null });
+      setNotifyTitle('');
       setNotifyText('');
+      setNotifyAll(false);
     } catch (e: any) {
       toast({ title: '❌ فشل الإرسال', description: e.message, variant: 'destructive' });
     } finally {
@@ -181,6 +205,12 @@ const VaultUserDirectory = () => {
             className="bg-white/5 border-white/10 text-white pr-10"
           />
         </div>
+        <Button
+          onClick={() => { setNotifyAll(true); setNotifyModal({ open: true, user: null }); }}
+          className="shrink-0 bg-[#39FF14]/10 border border-[#39FF14]/30 text-[#39FF14] hover:bg-[#39FF14]/20"
+        >
+          <Bell className="h-4 w-4 mr-2" /> بث للجميع
+        </Button>
         <Badge variant="outline" className="text-[#39FF14] border-[#39FF14]/30 shrink-0">
           <Users className="h-3 w-3 mr-1" /> {total}
         </Badge>
@@ -260,7 +290,7 @@ const VaultUserDirectory = () => {
                           variant="ghost" size="icon"
                           className="h-7 w-7 text-gray-500 hover:text-cyan-400"
                           title="إرسال إشعار"
-                          onClick={() => { setNotifyModal({ open: true, user: u }); setNotifyText(''); }}
+                          onClick={() => { setNotifyAll(false); setNotifyTitle(''); setNotifyText(''); setNotifyModal({ open: true, user: u }); }}
                         >
                           <Bell className="h-3.5 w-3.5" />
                         </Button>
@@ -345,28 +375,43 @@ const VaultUserDirectory = () => {
       </Dialog>
 
       {/* Notify */}
-      <Dialog open={notifyModal.open} onOpenChange={(open) => { if (!open) setNotifyModal({ open: false, user: null }); }}>
-        <DialogContent className="bg-black/95 border border-cyan-400/20 text-white max-w-md">
+      <Dialog open={notifyModal.open} onOpenChange={(open) => { if (!open) { setNotifyModal({ open: false, user: null }); setNotifyAll(false); } }}>
+        <DialogContent className="bg-black/95 border border-[#39FF14]/30 text-white max-w-md backdrop-blur-2xl"
+          style={{ boxShadow: '0 0 40px rgba(57,255,20,0.15), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
           <DialogHeader>
-            <DialogTitle className="text-cyan-400 flex items-center gap-2 text-base">
-              <Bell className="h-5 w-5" /> إشعار مباشر
+            <DialogTitle className="text-[#39FF14] flex items-center gap-2 text-base">
+              <Bell className="h-5 w-5" /> {notifyAll ? 'بث إشعار للجميع' : 'إشعار مباشر'}
             </DialogTitle>
             <DialogDescription className="text-white/40 text-xs">
-              إلى @{notifyModal.user?.username || 'N/A'}
+              {notifyAll ? 'سيُرسل لكافة المستخدمين' : `إلى @${notifyModal.user?.username || 'N/A'}`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 pt-2">
+            <Input
+              placeholder="عنوان الإشعار"
+              value={notifyTitle}
+              onChange={(e) => setNotifyTitle(e.target.value)}
+              maxLength={80}
+              className="bg-white/5 border-white/10 text-white"
+            />
             <Textarea
-              placeholder="نص الإشعار..."
+              placeholder="نص الرسالة..."
               value={notifyText}
               onChange={(e) => setNotifyText(e.target.value)}
               rows={4}
+              maxLength={500}
               className="bg-white/5 border-white/10 text-white"
             />
+            {!notifyAll && (
+              <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
+                <input type="checkbox" checked={notifyAll} onChange={(e) => setNotifyAll(e.target.checked)} className="accent-[#39FF14]" />
+                إرسال للجميع بدلاً من هذا المستخدم
+              </label>
+            )}
             <Button onClick={sendNotification} disabled={sending || !notifyText.trim()}
-              className="w-full bg-cyan-400/10 border border-cyan-400/30 text-cyan-300 hover:bg-cyan-400/20">
+              className="w-full bg-[#39FF14]/15 border border-[#39FF14]/40 text-[#39FF14] hover:bg-[#39FF14]/25">
               {sending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
-              إرسال
+              {notifyAll ? 'بث الآن' : 'إرسال'}
             </Button>
           </div>
         </DialogContent>
