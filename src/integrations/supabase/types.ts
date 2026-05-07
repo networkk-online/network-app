@@ -745,6 +745,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "donation_replies_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "broadcast_donations_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "donation_replies_donor_user_id_fkey"
             columns: ["donor_user_id"]
             isOneToOne: false
@@ -2920,13 +2927,64 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      broadcast_donations_public: {
+        Row: {
+          amount: number | null
+          broadcast_id: string | null
+          created_at: string | null
+          creator_user_id: string | null
+          donor_user_id: string | null
+          id: string | null
+          message: string | null
+        }
+        Insert: {
+          amount?: number | null
+          broadcast_id?: string | null
+          created_at?: string | null
+          creator_user_id?: string | null
+          donor_user_id?: string | null
+          id?: string | null
+          message?: string | null
+        }
+        Update: {
+          amount?: number | null
+          broadcast_id?: string | null
+          created_at?: string | null
+          creator_user_id?: string | null
+          donor_user_id?: string | null
+          id?: string | null
+          message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_donations_creator_user_id_fkey"
+            columns: ["creator_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_donations_donor_user_id_fkey"
+            columns: ["donor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       calculate_fame_score: { Args: { user_id: string }; Returns: number }
       can_add_participant_to_conversation: {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
+      }
+      get_my_phone: {
+        Args: never
+        Returns: {
+          phone_country_code: string
+          phone_number: string
+        }[]
       }
       get_user_conversation_ids: {
         Args: { p_user_id: string }
