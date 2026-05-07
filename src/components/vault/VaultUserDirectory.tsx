@@ -205,6 +205,12 @@ const VaultUserDirectory = () => {
             className="bg-white/5 border-white/10 text-white pr-10"
           />
         </div>
+        <Button
+          onClick={() => { setNotifyAll(true); setNotifyModal({ open: true, user: null }); }}
+          className="shrink-0 bg-[#39FF14]/10 border border-[#39FF14]/30 text-[#39FF14] hover:bg-[#39FF14]/20"
+        >
+          <Bell className="h-4 w-4 mr-2" /> بث للجميع
+        </Button>
         <Badge variant="outline" className="text-[#39FF14] border-[#39FF14]/30 shrink-0">
           <Users className="h-3 w-3 mr-1" /> {total}
         </Badge>
