@@ -64,7 +64,12 @@ const SignUp = () => {
     if (username.length < 3) { toast({ title: 'خطأ', description: 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل', variant: 'destructive' }); return; }
     if (!/^[a-zA-Z0-9_]+$/.test(username)) { toast({ title: 'خطأ', description: 'اسم المستخدم يجب أن يحتوي على حروف إنجليزية وأرقام و _ فقط', variant: 'destructive' }); return; }
     if (password !== confirmPassword) { toast({ title: 'خطأ', description: 'كلمات المرور غير متطابقة', variant: 'destructive' }); return; }
-    if (password.length < 6) { toast({ title: 'خطأ', description: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', variant: 'destructive' }); return; }
+    if (password.length < 8) { toast({ title: 'خطأ', description: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل', variant: 'destructive' }); return; }
+    if (password.length > 100) { toast({ title: 'خطأ', description: 'كلمة المرور طويلة جداً', variant: 'destructive' }); return; }
+    if (username.length > 30) { toast({ title: 'خطأ', description: 'اسم المستخدم طويل جداً', variant: 'destructive' }); return; }
+    if (fullName && fullName.trim().length > 100) { toast({ title: 'خطأ', description: 'الاسم الكامل طويل جداً', variant: 'destructive' }); return; }
+    if (phoneNumber && !/^[0-9]{7,15}$/.test(phoneNumber)) { toast({ title: 'خطأ', description: 'رقم الهاتف غير صالح', variant: 'destructive' }); return; }
+    if (email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast({ title: 'خطأ', description: 'البريد الإلكتروني غير صالح', variant: 'destructive' }); return; }
 
     setIsLoading(true);
     try {
