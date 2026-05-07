@@ -69,17 +69,18 @@ const SignUp = () => {
     if (username.length > 30) { toast({ title: 'خطأ', description: 'اسم المستخدم طويل جداً', variant: 'destructive' }); return; }
     if (fullName && fullName.trim().length > 100) { toast({ title: 'خطأ', description: 'الاسم الكامل طويل جداً', variant: 'destructive' }); return; }
     if (phoneNumber && !/^[0-9]{7,15}$/.test(phoneNumber)) { toast({ title: 'خطأ', description: 'رقم الهاتف غير صالح', variant: 'destructive' }); return; }
-    if (email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast({ title: 'خطأ', description: 'البريد الإلكتروني غير صالح', variant: 'destructive' }); return; }
+    const cleanEmail = email.trim().toLowerCase();
+    if (cleanEmail.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) { toast({ title: 'خطأ', description: 'البريد الإلكتروني غير صالح', variant: 'destructive' }); return; }
 
     setIsLoading(true);
     try {
       const fullPhoneNumber = phoneNumber ? `${countryCode}${phoneNumber}` : '';
       const { data, error } = await supabase.auth.signUp({
-        email, password,
+        email: cleanEmail, password,
         options: { emailRedirectTo: `${window.location.origin}/`, data: { username: username.trim().toLowerCase(), full_name: fullName, phone_number: fullPhoneNumber, phone_country_code: countryCode } },
       });
       if (error) { toast({ title: 'خطأ في التسجيل', description: error.message === 'User already registered' ? 'هذا البريد الإلكتروني مسجل بالفعل' : error.message, variant: 'destructive' }); return; }
-      if (data.user) { toast({ title: 'تم إرسال رمز التحقق', description: 'تفقد بريدك الإلكتروني لإدخال رمز التحقق' }); navigate(`/verify-otp?email=${encodeURIComponent(email)}`); }
+      if (data.user) { toast({ title: 'تم إرسال رمز التحقق', description: 'تفقد بريدك الإلكتروني لإدخال رمز التحقق' }); navigate(`/verify-otp?email=${encodeURIComponent(cleanEmail)}`); }
     } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء إنشاء الحساب', variant: 'destructive' }); }
     finally { setIsLoading(false); }
   };

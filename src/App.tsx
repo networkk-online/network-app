@@ -100,6 +100,7 @@ import OwnerVault from "./pages/OwnerVault";
 import ModeratorPortal from "./pages/ModeratorPortal";
 import StaffLogin from "./pages/StaffLogin";
 import MasterAdmin from "./pages/MasterAdmin";
+import MasterControlDashboard from "./pages/MasterControlDashboard";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 import FloatingAdminButton from "./components/FloatingAdminButton";
@@ -214,7 +215,8 @@ const AppContent = () => {
         <Route path="/G3142-AF26-0x99" element={<OwnerVault />} />
         <Route path="/staff-portal" element={<ModeratorPortal />} />
         <Route path="/staff-login" element={<StaffLogin />} />
-        <Route path="/master-control" element={<MasterAdmin />} />
+        <Route path="/master-control" element={<MasterControlDashboard />} />
+        <Route path="/master-admin-legacy" element={<MasterAdmin />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
