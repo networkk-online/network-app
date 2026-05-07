@@ -106,6 +106,7 @@ const VaultUserDirectory = () => {
       if (!me) throw new Error('Not authenticated');
       const payload = JSON.stringify({ title: notifyTitle.trim() || 'إشعار من الإدارة', body: notifyText.trim() });
 
+      const effectiveType: 'broadcast' | 'admin' = notifyAll ? 'broadcast' : notifyType;
       if (notifyAll) {
         // Page through all profiles and bulk insert
         const { data: allUsers, error: fetchErr } = await supabase.from('profiles').select('id');
@@ -113,7 +114,7 @@ const VaultUserDirectory = () => {
         const rows = (allUsers || []).map(u => ({
           user_id: u.id,
           actor_id: me.id,
-          type: 'system',
+          type: effectiveType,
           content: payload,
         }));
         // Insert in chunks of 500
@@ -126,7 +127,7 @@ const VaultUserDirectory = () => {
         const { error } = await supabase.from('notifications').insert({
           user_id: notifyModal.user.id,
           actor_id: me.id,
-          type: 'system',
+          type: effectiveType,
           content: payload,
         });
         if (error) throw error;
