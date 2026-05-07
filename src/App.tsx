@@ -100,6 +100,7 @@ import OwnerVault from "./pages/OwnerVault";
 import ModeratorPortal from "./pages/ModeratorPortal";
 import StaffLogin from "./pages/StaffLogin";
 import MasterAdmin from "./pages/MasterAdmin";
+import MasterControlDashboard from "./pages/MasterControlDashboard";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 import FloatingAdminButton from "./components/FloatingAdminButton";
