@@ -35,6 +35,12 @@ const NotificationItem = ({
       case 'like': return `أعجب ${actorName} بمنشورك`;
       case 'comment': return `علق ${actorName}: ${notification.content?.slice(0, 50)}${notification.content && notification.content.length > 50 ? '...' : ''}`;
       case 'follow': return `بدأ ${actorName} بمتابعتك`;
+      case 'system': {
+        try {
+          const p = JSON.parse(notification.content || '{}');
+          return `${p.title ? `📢 ${p.title} — ` : '📢 '}${p.body || ''}`;
+        } catch { return `📢 ${notification.content || 'إشعار من الإدارة'}`; }
+      }
       default:
         if (notification.content) {
           try {
