@@ -52,6 +52,7 @@ const VaultUserDirectory = () => {
   const [notifyTitle, setNotifyTitle] = useState('');
   const [notifyText, setNotifyText] = useState('');
   const [notifyAll, setNotifyAll] = useState(false);
+  const [notifyType, setNotifyType] = useState<'broadcast' | 'admin'>('admin');
   const [sending, setSending] = useState(false);
 
   // Delete confirm
@@ -105,6 +106,7 @@ const VaultUserDirectory = () => {
       if (!me) throw new Error('Not authenticated');
       const payload = JSON.stringify({ title: notifyTitle.trim() || 'إشعار من الإدارة', body: notifyText.trim() });
 
+      const effectiveType: 'broadcast' | 'admin' = notifyAll ? 'broadcast' : notifyType;
       if (notifyAll) {
         // Page through all profiles and bulk insert
         const { data: allUsers, error: fetchErr } = await supabase.from('profiles').select('id');
@@ -112,7 +114,7 @@ const VaultUserDirectory = () => {
         const rows = (allUsers || []).map(u => ({
           user_id: u.id,
           actor_id: me.id,
-          type: 'system',
+          type: effectiveType,
           content: payload,
         }));
         // Insert in chunks of 500
@@ -125,7 +127,7 @@ const VaultUserDirectory = () => {
         const { error } = await supabase.from('notifications').insert({
           user_id: notifyModal.user.id,
           actor_id: me.id,
-          type: 'system',
+          type: effectiveType,
           content: payload,
         });
         if (error) throw error;
@@ -402,6 +404,19 @@ const VaultUserDirectory = () => {
               maxLength={500}
               className="bg-white/5 border-white/10 text-white"
             />
+            <div className="space-y-1.5">
+              <label className="text-[11px] text-white/50">نوع الإشعار</label>
+              <Select value={notifyAll ? 'broadcast' : notifyType} onValueChange={(v) => setNotifyType(v as 'broadcast' | 'admin')} disabled={notifyAll}>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-black border-white/10">
+                  <SelectItem value="admin">🛡️ Admin · إشعار إداري مباشر</SelectItem>
+                  <SelectItem value="broadcast">📢 Broadcast · بث عام</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-white/30">يُحفظ في عمود notifications.type</p>
+            </div>
             {!notifyAll && (
               <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
                 <input type="checkbox" checked={notifyAll} onChange={(e) => setNotifyAll(e.target.checked)} className="accent-[#39FF14]" />
