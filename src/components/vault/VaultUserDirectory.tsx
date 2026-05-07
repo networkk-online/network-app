@@ -404,6 +404,19 @@ const VaultUserDirectory = () => {
               maxLength={500}
               className="bg-white/5 border-white/10 text-white"
             />
+            <div className="space-y-1.5">
+              <label className="text-[11px] text-white/50">نوع الإشعار</label>
+              <Select value={notifyAll ? 'broadcast' : notifyType} onValueChange={(v) => setNotifyType(v as 'broadcast' | 'admin')} disabled={notifyAll}>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-black border-white/10">
+                  <SelectItem value="admin">🛡️ Admin · إشعار إداري مباشر</SelectItem>
+                  <SelectItem value="broadcast">📢 Broadcast · بث عام</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-white/30">يُحفظ في عمود notifications.type</p>
+            </div>
             {!notifyAll && (
               <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
                 <input type="checkbox" checked={notifyAll} onChange={(e) => setNotifyAll(e.target.checked)} className="accent-[#39FF14]" />
