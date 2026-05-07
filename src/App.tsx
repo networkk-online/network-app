@@ -120,6 +120,7 @@ const AppContent = () => {
       <AdminRouteBlocker />
       <BottomNav />
       <FloatingAdminButton />
+      <InstallPWAButton />
       <Routes>
         <Route path="/welcome" element={<SplashScreen />} />
         <Route path="/" element={<Index />} />
