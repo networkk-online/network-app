@@ -375,28 +375,43 @@ const VaultUserDirectory = () => {
       </Dialog>
 
       {/* Notify */}
-      <Dialog open={notifyModal.open} onOpenChange={(open) => { if (!open) setNotifyModal({ open: false, user: null }); }}>
-        <DialogContent className="bg-black/95 border border-cyan-400/20 text-white max-w-md">
+      <Dialog open={notifyModal.open} onOpenChange={(open) => { if (!open) { setNotifyModal({ open: false, user: null }); setNotifyAll(false); } }}>
+        <DialogContent className="bg-black/95 border border-[#39FF14]/30 text-white max-w-md backdrop-blur-2xl"
+          style={{ boxShadow: '0 0 40px rgba(57,255,20,0.15), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
           <DialogHeader>
-            <DialogTitle className="text-cyan-400 flex items-center gap-2 text-base">
-              <Bell className="h-5 w-5" /> إشعار مباشر
+            <DialogTitle className="text-[#39FF14] flex items-center gap-2 text-base">
+              <Bell className="h-5 w-5" /> {notifyAll ? 'بث إشعار للجميع' : 'إشعار مباشر'}
             </DialogTitle>
             <DialogDescription className="text-white/40 text-xs">
-              إلى @{notifyModal.user?.username || 'N/A'}
+              {notifyAll ? 'سيُرسل لكافة المستخدمين' : `إلى @${notifyModal.user?.username || 'N/A'}`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 pt-2">
+            <Input
+              placeholder="عنوان الإشعار"
+              value={notifyTitle}
+              onChange={(e) => setNotifyTitle(e.target.value)}
+              maxLength={80}
+              className="bg-white/5 border-white/10 text-white"
+            />
             <Textarea
-              placeholder="نص الإشعار..."
+              placeholder="نص الرسالة..."
               value={notifyText}
               onChange={(e) => setNotifyText(e.target.value)}
               rows={4}
+              maxLength={500}
               className="bg-white/5 border-white/10 text-white"
             />
+            {!notifyAll && (
+              <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
+                <input type="checkbox" checked={notifyAll} onChange={(e) => setNotifyAll(e.target.checked)} className="accent-[#39FF14]" />
+                إرسال للجميع بدلاً من هذا المستخدم
+              </label>
+            )}
             <Button onClick={sendNotification} disabled={sending || !notifyText.trim()}
-              className="w-full bg-cyan-400/10 border border-cyan-400/30 text-cyan-300 hover:bg-cyan-400/20">
+              className="w-full bg-[#39FF14]/15 border border-[#39FF14]/40 text-[#39FF14] hover:bg-[#39FF14]/25">
               {sending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
-              إرسال
+              {notifyAll ? 'بث الآن' : 'إرسال'}
             </Button>
           </div>
         </DialogContent>
