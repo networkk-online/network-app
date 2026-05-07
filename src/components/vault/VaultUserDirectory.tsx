@@ -49,7 +49,9 @@ const VaultUserDirectory = () => {
 
   // Notify modal
   const [notifyModal, setNotifyModal] = useState<{ open: boolean; user: any | null }>({ open: false, user: null });
+  const [notifyTitle, setNotifyTitle] = useState('');
   const [notifyText, setNotifyText] = useState('');
+  const [notifyAll, setNotifyAll] = useState(false);
   const [sending, setSending] = useState(false);
 
   // Delete confirm
