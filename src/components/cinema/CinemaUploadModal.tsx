@@ -89,7 +89,39 @@ export const CinemaUploadModal = ({ open, onClose, onUploaded }: Props) => {
     setProgress(0);
 
     const ext = file.name.split('.').pop() || 'mp4';
-    const path = `${user.id}/${Date.now()}.${ext}`;
+    const stamp = Date.now();
+    const path = `${user.id}/${stamp}.${ext}`;
+    const thumbPath = `${user.id}/${stamp}_thumb.jpg`;
+
+    // Generate thumbnail from a frame ~1s into the video
+    const generateThumb = async (): Promise<Blob | null> => {
+      try {
+        return await new Promise<Blob | null>((resolve) => {
+          const v = document.createElement('video');
+          v.src = previewUrl;
+          v.muted = true;
+          v.playsInline = true;
+          v.crossOrigin = 'anonymous';
+          v.preload = 'auto';
+          const cleanup = () => { v.remove(); };
+          v.onloadedmetadata = () => {
+            v.currentTime = Math.min(1, (v.duration || 1) * 0.1);
+          };
+          v.onseeked = () => {
+            const canvas = document.createElement('canvas');
+            const ratio = v.videoWidth && v.videoHeight ? v.videoWidth / v.videoHeight : 16 / 9;
+            canvas.width = 1280;
+            canvas.height = Math.round(1280 / ratio);
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { cleanup(); return resolve(null); }
+            ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((b) => { cleanup(); resolve(b); }, 'image/jpeg', 0.85);
+          };
+          v.onerror = () => { cleanup(); resolve(null); };
+          setTimeout(() => { cleanup(); resolve(null); }, 8000);
+        });
+      } catch { return null; }
+    };
 
     try {
       // Use XHR to a Supabase storage signed upload URL for true progress + no server timeout
