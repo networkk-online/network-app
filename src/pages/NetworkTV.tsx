@@ -698,6 +698,12 @@ const NetworkTV = () => {
           )}
         </div>
       </main>
+
+      <CinemaUploadModal
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        onUploaded={() => fetchVideos(0, false)}
+      />
     </motion.div>
   );
 };
