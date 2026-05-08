@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { CinemaUploadModal } from '@/components/cinema/CinemaUploadModal';
 
 const PAGE_SIZE = 12;
 
