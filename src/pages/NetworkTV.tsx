@@ -453,6 +453,7 @@ const NetworkTV = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [activeSidebarId, setActiveSidebarId] = useState('home');
+  const [uploadOpen, setUploadOpen] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
