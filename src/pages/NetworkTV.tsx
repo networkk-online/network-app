@@ -617,9 +617,10 @@ const NetworkTV = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2 relative flex-shrink-0">
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate('/creator-studio')}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors">
-            <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-foreground/60" strokeWidth={1.5} />
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setUploadOpen(true)}
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-[#39FF14]/10 flex items-center justify-center transition-colors group"
+            style={{ boxShadow: 'inset 0 0 0 1px rgba(57,255,20,0.15)' }}>
+            <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-[#39FF14] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
           </motion.button>
           <motion.button whileTap={{ scale: 0.9 }}
             className="w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-white/[0.06] flex items-center justify-center transition-colors relative">
