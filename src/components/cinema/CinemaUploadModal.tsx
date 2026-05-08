@@ -145,12 +145,25 @@ export const CinemaUploadModal = ({ open, onClose, onUploaded }: Props) => {
 
       const { data: pub } = supabase.storage.from('videos').getPublicUrl(path);
 
+      // Upload thumbnail (best-effort)
+      let thumbnailUrl: string | null = null;
+      const thumbBlob = await generateThumb();
+      if (thumbBlob) {
+        const { error: thumbErr } = await supabase.storage
+          .from('videos')
+          .upload(thumbPath, thumbBlob, { contentType: 'image/jpeg', upsert: true });
+        if (!thumbErr) {
+          thumbnailUrl = supabase.storage.from('videos').getPublicUrl(thumbPath).data.publicUrl;
+        }
+      }
+
       const { data: row, error: dbErr } = await supabase.from('videos').insert({
         user_id: user.id,
         title: title.trim(),
         description: description.trim() || null,
         category,
         video_url: pub.publicUrl,
+        thumbnail_url: thumbnailUrl,
         duration,
         is_published: true,
       }).select('id').single();
