@@ -155,15 +155,23 @@ const VideoPlayer = () => {
     }
     if (currentUserId === profile.id) return;
     const wasSubbed = subscribed;
+    const delta = wasSubbed ? -1 : 1;
     setSubscribed(!wasSubbed);
+    setProfile((p: any) => p ? { ...p, followers_count: Math.max(0, (p.followers_count || 0) + delta) } : p);
     try {
       if (wasSubbed) {
-        await supabase.from('follows').delete().eq('follower_id', currentUserId).eq('following_id', profile.id);
+        const { error } = await supabase.from('follows').delete().eq('follower_id', currentUserId).eq('following_id', profile.id);
+        if (error) throw error;
       } else {
-        await supabase.from('follows').insert({ follower_id: currentUserId, following_id: profile.id });
+        const { error } = await supabase.from('follows').insert({ follower_id: currentUserId, following_id: profile.id });
+        if (error) throw error;
       }
+      // Re-sync from server (trigger updates the count)
+      const { data: fresh } = await supabase.from('profiles').select('followers_count').eq('id', profile.id).single();
+      if (fresh) setProfile((p: any) => p ? { ...p, followers_count: fresh.followers_count } : p);
     } catch {
       setSubscribed(wasSubbed);
+      setProfile((p: any) => p ? { ...p, followers_count: Math.max(0, (p.followers_count || 0) - delta) } : p);
       toast.error('حدث خطأ');
     }
   };
