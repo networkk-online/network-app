@@ -38,8 +38,10 @@ const VideoPlayer = () => {
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [analytics, setAnalytics] = useState<{ gained: number; lost: number } | null>(null);
 
   // Comments
   const [comments, setComments] = useState<any[]>([]);
@@ -113,6 +115,30 @@ const VideoPlayer = () => {
     load();
   }, [videoId]);
 
+  // Load 7-day creator analytics when viewer is the channel owner
+  useEffect(() => {
+    const loadAnalytics = async () => {
+      if (!profile?.id || currentUserId !== profile.id) {
+        setAnalytics(null);
+        return;
+      }
+      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from('follow_events' as any)
+        .select('event_type')
+        .eq('following_id', profile.id)
+        .gte('created_at', since);
+      if (Array.isArray(data)) {
+        let gained = 0, lost = 0;
+        data.forEach((r: any) => { r.event_type === 'follow' ? gained++ : lost++; });
+        setAnalytics({ gained, lost });
+      } else {
+        setAnalytics({ gained: 0, lost: 0 });
+      }
+    };
+    loadAnalytics();
+  }, [profile?.id, currentUserId]);
+
   const togglePlay = () => {
     if (!videoRef.current) return;
     if (isPlaying) videoRef.current.pause();
@@ -149,6 +175,7 @@ const VideoPlayer = () => {
   };
 
   const handleSubscribe = async () => {
+    if (subscribing) return; // prevent double-tap
     if (!currentUserId || !profile?.id) {
       toast.error('يجب تسجيل الدخول');
       return;
@@ -156,9 +183,11 @@ const VideoPlayer = () => {
     if (currentUserId === profile.id) return;
     const wasSubbed = subscribed;
     const delta = wasSubbed ? -1 : 1;
+    setSubscribing(true);
     setSubscribed(!wasSubbed);
     setProfile((p: any) => p ? { ...p, followers_count: Math.max(0, (p.followers_count || 0) + delta) } : p);
-    try {
+
+    const attempt = async () => {
       if (wasSubbed) {
         const { error } = await supabase.from('follows').delete().eq('follower_id', currentUserId).eq('following_id', profile.id);
         if (error) throw error;
@@ -166,13 +195,24 @@ const VideoPlayer = () => {
         const { error } = await supabase.from('follows').insert({ follower_id: currentUserId, following_id: profile.id });
         if (error) throw error;
       }
-      // Re-sync from server (trigger updates the count)
+    };
+
+    try {
+      try {
+        await attempt();
+      } catch (e) {
+        // simple one-shot retry on transient failure
+        await new Promise(r => setTimeout(r, 600));
+        await attempt();
+      }
       const { data: fresh } = await supabase.from('profiles').select('followers_count').eq('id', profile.id).single();
       if (fresh) setProfile((p: any) => p ? { ...p, followers_count: fresh.followers_count } : p);
     } catch {
       setSubscribed(wasSubbed);
       setProfile((p: any) => p ? { ...p, followers_count: Math.max(0, (p.followers_count || 0) - delta) } : p);
-      toast.error('حدث خطأ');
+      toast.error('حدث خطأ، حاول مجدداً');
+    } finally {
+      setSubscribing(false);
     }
   };
 
@@ -339,19 +379,25 @@ const VideoPlayer = () => {
                 </div>
                 {!isOwnChannel && (
                   <motion.button
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: subscribing ? 1 : 0.95 }}
                     onClick={handleSubscribe}
-                    className="mr-2 px-5 py-2 rounded-full text-xs font-bold transition-all"
+                    disabled={subscribing}
+                    aria-busy={subscribing}
+                    className="mr-2 px-5 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 disabled:cursor-not-allowed"
                     style={{
                       background: subscribed ? 'rgba(255,255,255,0.08)' : NEON,
                       color: subscribed ? 'rgba(255,255,255,0.6)' : '#FFFFFF',
                       border: subscribed ? '1px solid rgba(255,255,255,0.1)' : 'none',
                       boxShadow: subscribed ? 'none' : `0 0 18px ${NEON}88, 0 4px 14px ${NEON}44`,
-                      opacity: subscribed ? 0.7 : 1,
+                      opacity: subscribing ? 0.6 : (subscribed ? 0.7 : 1),
                       textShadow: subscribed ? 'none' : '0 1px 2px rgba(0,0,0,0.3)',
                     }}
                   >
-                    {subscribed ? 'مشترك ✓' : 'اشترك'}
+                    {subscribing && (
+                      <span className="w-3 h-3 rounded-full border-2 animate-spin"
+                        style={{ borderColor: subscribed ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.4)', borderTopColor: subscribed ? '#fff' : '#fff' }} />
+                    )}
+                    {subscribing ? '...' : (subscribed ? 'مشترك ✓' : 'اشترك')}
                   </motion.button>
                 )}
               </div>
@@ -383,6 +429,34 @@ const VideoPlayer = () => {
                 </motion.button>
               </div>
             </div>
+
+            {/* Creator analytics (owner only) */}
+            {isOwnChannel && analytics && (
+              <div className="p-4 rounded-2xl" dir="rtl"
+                style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${NEON}22`, backdropFilter: 'blur(20px)', boxShadow: `0 0 24px ${NEON}11` }}>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-foreground text-sm font-semibold">تحليلات القناة</p>
+                  <span className="text-[10px] tracking-[0.2em] font-bold" style={{ color: NEON }}>آخر 7 أيام</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-3 rounded-xl" style={{ background: `${NEON}10`, border: `1px solid ${NEON}33` }}>
+                    <p className="text-[10px] text-muted-foreground mb-1">مشتركون جدد</p>
+                    <p className="text-lg font-bold tabular-nums" style={{ color: NEON, textShadow: `0 0 8px ${NEON}88` }}>+{analytics.gained}</p>
+                  </div>
+                  <div className="p-3 rounded-xl" style={{ background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.25)' }}>
+                    <p className="text-[10px] text-muted-foreground mb-1">إلغاء اشتراك</p>
+                    <p className="text-lg font-bold tabular-nums text-red-400">-{analytics.lost}</p>
+                  </div>
+                  <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <p className="text-[10px] text-muted-foreground mb-1">صافي النمو</p>
+                    <p className={`text-lg font-bold tabular-nums ${analytics.gained - analytics.lost >= 0 ? '' : 'text-red-400'}`}
+                      style={analytics.gained - analytics.lost >= 0 ? { color: NEON } : undefined}>
+                      {analytics.gained - analytics.lost >= 0 ? '+' : ''}{analytics.gained - analytics.lost}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Description */}
             {video.description && (
