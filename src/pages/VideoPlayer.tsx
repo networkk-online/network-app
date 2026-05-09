@@ -38,8 +38,10 @@ const VideoPlayer = () => {
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [analytics, setAnalytics] = useState<{ gained: number; lost: number } | null>(null);
 
   // Comments
   const [comments, setComments] = useState<any[]>([]);
