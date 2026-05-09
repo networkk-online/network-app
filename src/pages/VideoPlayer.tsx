@@ -430,6 +430,34 @@ const VideoPlayer = () => {
               </div>
             </div>
 
+            {/* Creator analytics (owner only) */}
+            {isOwnChannel && analytics && (
+              <div className="p-4 rounded-2xl" dir="rtl"
+                style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${NEON}22`, backdropFilter: 'blur(20px)', boxShadow: `0 0 24px ${NEON}11` }}>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-foreground text-sm font-semibold">تحليلات القناة</p>
+                  <span className="text-[10px] tracking-[0.2em] font-bold" style={{ color: NEON }}>آخر 7 أيام</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-3 rounded-xl" style={{ background: `${NEON}10`, border: `1px solid ${NEON}33` }}>
+                    <p className="text-[10px] text-muted-foreground mb-1">مشتركون جدد</p>
+                    <p className="text-lg font-bold tabular-nums" style={{ color: NEON, textShadow: `0 0 8px ${NEON}88` }}>+{analytics.gained}</p>
+                  </div>
+                  <div className="p-3 rounded-xl" style={{ background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.25)' }}>
+                    <p className="text-[10px] text-muted-foreground mb-1">إلغاء اشتراك</p>
+                    <p className="text-lg font-bold tabular-nums text-red-400">-{analytics.lost}</p>
+                  </div>
+                  <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <p className="text-[10px] text-muted-foreground mb-1">صافي النمو</p>
+                    <p className={`text-lg font-bold tabular-nums ${analytics.gained - analytics.lost >= 0 ? '' : 'text-red-400'}`}
+                      style={analytics.gained - analytics.lost >= 0 ? { color: NEON } : undefined}>
+                      {analytics.gained - analytics.lost >= 0 ? '+' : ''}{analytics.gained - analytics.lost}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Description */}
             {video.description && (
               <div className="p-4 rounded-2xl" dir="rtl"
