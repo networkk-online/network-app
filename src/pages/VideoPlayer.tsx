@@ -115,6 +115,30 @@ const VideoPlayer = () => {
     load();
   }, [videoId]);
 
+  // Load 7-day creator analytics when viewer is the channel owner
+  useEffect(() => {
+    const loadAnalytics = async () => {
+      if (!profile?.id || currentUserId !== profile.id) {
+        setAnalytics(null);
+        return;
+      }
+      const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from('follow_events' as any)
+        .select('event_type')
+        .eq('following_id', profile.id)
+        .gte('created_at', since);
+      if (Array.isArray(data)) {
+        let gained = 0, lost = 0;
+        data.forEach((r: any) => { r.event_type === 'follow' ? gained++ : lost++; });
+        setAnalytics({ gained, lost });
+      } else {
+        setAnalytics({ gained: 0, lost: 0 });
+      }
+    };
+    loadAnalytics();
+  }, [profile?.id, currentUserId]);
+
   const togglePlay = () => {
     if (!videoRef.current) return;
     if (isPlaying) videoRef.current.pause();
