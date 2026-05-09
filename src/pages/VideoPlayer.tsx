@@ -151,6 +151,7 @@ const VideoPlayer = () => {
   };
 
   const handleSubscribe = async () => {
+    if (subscribing) return; // prevent double-tap
     if (!currentUserId || !profile?.id) {
       toast.error('يجب تسجيل الدخول');
       return;
@@ -158,9 +159,11 @@ const VideoPlayer = () => {
     if (currentUserId === profile.id) return;
     const wasSubbed = subscribed;
     const delta = wasSubbed ? -1 : 1;
+    setSubscribing(true);
     setSubscribed(!wasSubbed);
     setProfile((p: any) => p ? { ...p, followers_count: Math.max(0, (p.followers_count || 0) + delta) } : p);
-    try {
+
+    const attempt = async () => {
       if (wasSubbed) {
         const { error } = await supabase.from('follows').delete().eq('follower_id', currentUserId).eq('following_id', profile.id);
         if (error) throw error;
@@ -168,13 +171,24 @@ const VideoPlayer = () => {
         const { error } = await supabase.from('follows').insert({ follower_id: currentUserId, following_id: profile.id });
         if (error) throw error;
       }
-      // Re-sync from server (trigger updates the count)
+    };
+
+    try {
+      try {
+        await attempt();
+      } catch (e) {
+        // simple one-shot retry on transient failure
+        await new Promise(r => setTimeout(r, 600));
+        await attempt();
+      }
       const { data: fresh } = await supabase.from('profiles').select('followers_count').eq('id', profile.id).single();
       if (fresh) setProfile((p: any) => p ? { ...p, followers_count: fresh.followers_count } : p);
     } catch {
       setSubscribed(wasSubbed);
       setProfile((p: any) => p ? { ...p, followers_count: Math.max(0, (p.followers_count || 0) - delta) } : p);
-      toast.error('حدث خطأ');
+      toast.error('حدث خطأ، حاول مجدداً');
+    } finally {
+      setSubscribing(false);
     }
   };
 
