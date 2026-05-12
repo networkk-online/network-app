@@ -223,8 +223,8 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={startBroadcast}
-                disabled={agora.isLoading}
-                className="w-20 h-20 bg-[#19e05b] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(25,224,91,0.4)] disabled:opacity-50"
+                disabled={agora.isLoading || !previewActive || !!previewError}
+                className="w-20 h-20 bg-[#39FF14] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(57,255,20,0.5)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {agora.isLoading ? (
                   <Loader2 className="w-8 h-8 text-black animate-spin" />
