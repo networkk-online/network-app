@@ -177,8 +177,8 @@ export const useAgoraRoom = () => {
         updateParticipants(client);
       });
 
-      // In testing mode (no certificate), token is null — pass null
-      await client.join(creds.appId, channel, creds.token || null, 0);
+      // If certificate is enabled the edge function returns a token; in testing mode token is null.
+      await client.join(String(creds.appId), channel, creds.token ?? null, Number(creds.uid) || 0);
 
       // 4. Publish tracks
       await client.publish([audioTrack, videoTrack]);
@@ -188,6 +188,7 @@ export const useAgoraRoom = () => {
       setIsInRoom(true);
       setViewerCount(0);
       updateParticipants(client);
+      startStatsPolling(client);
       return channel;
     } catch (err: any) {
       console.error('Agora createRoom error:', err);
