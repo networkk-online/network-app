@@ -207,7 +207,9 @@ export const useAgoraRoom = () => {
   const joinRoom = useCallback(async (channel: string) => {
     setIsLoading(true);
     try {
+      await preflightGateway();
       const creds = await getAgoraCredentials(channel);
+      if (!creds.appId) throw new Error('Missing Agora App ID');
 
       const client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8' });
       client.setClientRole('audience');
@@ -221,12 +223,13 @@ export const useAgoraRoom = () => {
       client.on('user-joined', () => updateParticipants(client));
       client.on('user-left', () => updateParticipants(client));
 
-      await client.join(creds.appId, channel, creds.token || null, 0);
+      await client.join(String(creds.appId), channel, creds.token ?? null, Number(creds.uid) || 0);
 
       setChannelName(channel);
       setIsHost(false);
       setIsInRoom(true);
       updateParticipants(client);
+      startStatsPolling(client);
     } catch (err: any) {
       console.error('Agora joinRoom error:', err);
       toast({ title: 'خطأ في الانضمام', description: err.message, variant: 'destructive' });
