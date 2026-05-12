@@ -239,6 +239,7 @@ export const useAgoraRoom = () => {
   }, []);
 
   const leaveRoom = useCallback(async () => {
+    stopStatsPolling();
     localAudioRef.current?.close();
     localVideoRef.current?.close();
     localAudioRef.current = null;
