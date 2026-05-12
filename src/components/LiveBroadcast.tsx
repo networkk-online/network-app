@@ -192,21 +192,72 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
       <div className="relative flex-1 min-w-0">
         {agora.isInRoom ? (
           <>
-            <AgoraVideoGrid participants={agora.participants} />
-            <LiveStatsOverlay stats={agora.stats} />
-            <LiveChatSidebar comments={liveComments} onSend={handleSendLiveComment} />
-            {agora.isHost && (
-              <div className="absolute top-4 left-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-[#39FF14]/40">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#39FF14] animate-pulse shadow-[0_0_10px_#39FF14]" />
-                <span className="text-[#39FF14] text-xs font-black tracking-wider">LIVE</span>
+            {/* Beauty filter wraps the video layer */}
+            <div className="absolute inset-0" style={beautyOn ? beautyFilterStyle : undefined}>
+              {vsMode ? (
+                <VSModeFrame participants={agora.participants} onExit={() => setVsMode(false)} />
+              ) : (
+                <AgoraVideoGrid participants={agora.participants} />
+              )}
+              {/* Watch Together replaces main feed when active */}
+              <WatchTogetherVideo state={watchTogether} />
+            </div>
+
+            {/* Host PiP bubble while Watch-Together is on */}
+            {watchTogether.url && agora.isHost && (
+              <div className="absolute bottom-28 right-4 z-30 w-28 h-40 rounded-2xl overflow-hidden border-2 border-[#39FF14] shadow-[0_0_20px_rgba(57,255,20,0.5)] bg-black">
+                <AgoraVideoGrid participants={agora.participants.filter(p => p.isLocal)} />
               </div>
             )}
+
+            <LiveStatsOverlay stats={agora.stats} />
+            <LiveChatSidebar comments={liveComments} onSend={handleSendLiveComment} />
+
+            {/* Tiered gift animations */}
+            <TieredGiftOverlay events={tieredEvents} onComplete={completeGift} />
+
+            {/* Host-only top bar + tools */}
+            {agora.isHost && (
+              <>
+                <HostTopBar
+                  startedAt={startedAt}
+                  gemsCollected={gemsCollected}
+                  beautyOn={beautyOn}
+                  onToggleBeauty={() => setBeautyOn(b => !b)}
+                  viewerCount={agora.viewerCount}
+                />
+                <WatchTogetherPanel
+                  isHost
+                  remoteState={watchTogether}
+                  onChange={setWatchTogether}
+                />
+                <ModeratorPanel
+                  isHost
+                  channel={agora.channelName}
+                  viewers={moderatorViewers}
+                  onKick={handleKick}
+                  onMute={handleMute}
+                />
+                <button
+                  onClick={() => setVsMode(v => !v)}
+                  className={`absolute top-40 right-3 z-40 w-10 h-10 rounded-full backdrop-blur-xl border flex items-center justify-center ${
+                    vsMode
+                      ? 'bg-[#39FF14]/20 border-[#39FF14]/60 text-[#39FF14]'
+                      : 'bg-black/60 border-[#39FF14]/40 text-[#39FF14]'
+                  }`}
+                  title="VS Mode"
+                >
+                  <Swords className="w-4 h-4" />
+                </button>
+              </>
+            )}
+
             <TikTokLiveOverlay
               streamerName={agora.isHost ? 'أنت' : 'المضيف'}
               viewerCount={agora.viewerCount}
               onClose={stopBroadcast}
               onSendComment={handleSendLiveComment}
-              onSendGift={(giftType, amount) => console.log('Gift:', giftType, amount)}
+              onSendGift={handleGiftSent}
               comments={liveComments}
               isHost={agora.isHost}
             />
