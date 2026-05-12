@@ -1,15 +1,33 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Video, VideoOff, Mic, MicOff, X, RotateCcw, Loader2 } from 'lucide-react';
+import { Video, VideoOff, Mic, MicOff, X, RotateCcw, Loader2, Swords } from 'lucide-react';
 import { DonationReplyDialog } from './DonationReplyDialog';
 import { TikTokLiveOverlay } from './TikTokLiveOverlay';
 import { AgoraVideoGrid } from './live/AgoraVideoGrid';
 import { LiveStatsOverlay } from './live/LiveStatsOverlay';
 import { LiveChatSidebar } from './live/LiveChatSidebar';
+import { TieredGiftOverlay, giftTier, type TieredGiftEvent } from './live/TieredGiftOverlay';
+import { HostTopBar, beautyFilterStyle } from './live/HostTopBar';
+import { WatchTogetherPanel, WatchTogetherVideo } from './live/WatchTogetherPanel';
+import { ModeratorPanel, type ModViewer } from './live/ModeratorPanel';
+import { VSModeFrame } from './live/VSModeFrame';
 import { useAgoraRoom } from '@/hooks/useAgoraRoom';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import type { LiveComment } from './live';
+
+const GIFT_META: Record<string, { icon: string; name: string; price: number }> = {
+  rose: { icon: '🌹', name: 'وردة', price: 1 },
+  heart: { icon: '💖', name: 'قلب', price: 5 },
+  star: { icon: '⭐', name: 'نجمة', price: 10 },
+  crown: { icon: '👑', name: 'تاج', price: 50 },
+  diamond: { icon: '💎', name: 'ماسة', price: 100 },
+  lion: { icon: '🦁', name: 'أسد الملك', price: 500 },
+  whale: { icon: '🐋', name: 'الحوت', price: 1000 },
+  supercar: { icon: '🏎️', name: 'سوبركار', price: 2000 },
+  rocket: { icon: '🚀', name: 'صاروخ', price: 500 },
+  galaxy: { icon: '🌌', name: 'مجرة', price: 1000 },
+};
 
 interface LiveBroadcastProps {
   onClose: () => void;
