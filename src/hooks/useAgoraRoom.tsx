@@ -152,8 +152,11 @@ export const useAgoraRoom = () => {
       localVideoRef.current = videoTrack;
 
       // 2. Get credentials from edge function
+      // 2. Network preflight + credentials
+      await preflightGateway();
       const channel = `network-live-${Date.now()}`;
       const creds = await getAgoraCredentials(channel);
+      if (!creds.appId) throw new Error('Missing Agora App ID');
 
       // 3. Create client and join
       const client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8' });
