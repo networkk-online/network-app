@@ -1,15 +1,33 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Video, VideoOff, Mic, MicOff, X, RotateCcw, Loader2 } from 'lucide-react';
+import { Video, VideoOff, Mic, MicOff, X, RotateCcw, Loader2, Swords } from 'lucide-react';
 import { DonationReplyDialog } from './DonationReplyDialog';
 import { TikTokLiveOverlay } from './TikTokLiveOverlay';
 import { AgoraVideoGrid } from './live/AgoraVideoGrid';
 import { LiveStatsOverlay } from './live/LiveStatsOverlay';
 import { LiveChatSidebar } from './live/LiveChatSidebar';
+import { TieredGiftOverlay, giftTier, type TieredGiftEvent } from './live/TieredGiftOverlay';
+import { HostTopBar, beautyFilterStyle } from './live/HostTopBar';
+import { WatchTogetherPanel, WatchTogetherVideo } from './live/WatchTogetherPanel';
+import { ModeratorPanel, type ModViewer } from './live/ModeratorPanel';
+import { VSModeFrame } from './live/VSModeFrame';
 import { useAgoraRoom } from '@/hooks/useAgoraRoom';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import type { LiveComment } from './live';
+
+const GIFT_META: Record<string, { icon: string; name: string; price: number }> = {
+  rose: { icon: '🌹', name: 'وردة', price: 1 },
+  heart: { icon: '💖', name: 'قلب', price: 5 },
+  star: { icon: '⭐', name: 'نجمة', price: 10 },
+  crown: { icon: '👑', name: 'تاج', price: 50 },
+  diamond: { icon: '💎', name: 'ماسة', price: 100 },
+  lion: { icon: '🦁', name: 'أسد الملك', price: 500 },
+  whale: { icon: '🐋', name: 'الحوت', price: 1000 },
+  supercar: { icon: '🏎️', name: 'سوبركار', price: 2000 },
+  rocket: { icon: '🚀', name: 'صاروخ', price: 500 },
+  galaxy: { icon: '🌌', name: 'مجرة', price: 1000 },
+};
 
 interface LiveBroadcastProps {
   onClose: () => void;
@@ -27,6 +45,65 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const [replyDialogOpen, setReplyDialogOpen] = useState(false);
   const [selectedDonation, setSelectedDonation] = useState<any>(null);
   const [broadcastTitle, setBroadcastTitle] = useState('');
+
+  // === Tiered gifts + session metrics ===
+  const [tieredEvents, setTieredEvents] = useState<TieredGiftEvent[]>([]);
+  const [gemsCollected, setGemsCollected] = useState(0);
+  const [startedAt, setStartedAt] = useState<number>(Date.now());
+  const [beautyOn, setBeautyOn] = useState(false);
+  const [vsMode, setVsMode] = useState(false);
+  const [watchTogether, setWatchTogether] = useState<{ url: string | null; playing: boolean; t: number }>({
+    url: null,
+    playing: false,
+    t: 0,
+  });
+  const [mutedUids, setMutedUids] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (agora.isInRoom) setStartedAt(Date.now());
+  }, [agora.isInRoom]);
+
+  const handleGiftSent = (giftId: string, amount: number) => {
+    const meta = GIFT_META[giftId] || { icon: '🎁', name: 'هدية', price: 1 };
+    const totalPrice = meta.price * amount;
+    setGemsCollected(g => g + totalPrice);
+    setTieredEvents(prev => [
+      ...prev,
+      {
+        id: `${Date.now()}-${Math.random()}`,
+        giftId,
+        icon: meta.icon,
+        name: meta.name,
+        price: totalPrice,
+        sender: 'أنت',
+        tier: giftTier(totalPrice),
+      },
+    ]);
+    setLiveComments(prev => [
+      ...prev,
+      { id: Date.now().toString(), username: 'أنت', message: `أرسل ${meta.name} ${meta.icon}`, isVIP: true },
+    ]);
+  };
+
+  const completeGift = (id: string) => setTieredEvents(prev => prev.filter(e => e.id !== id));
+
+  const moderatorViewers: ModViewer[] = agora.participants
+    .filter(p => !p.isLocal)
+    .map(p => ({ uid: p.uid, username: `viewer_${String(p.uid).slice(-4)}`, isMuted: mutedUids.has(String(p.uid)) }));
+
+  const handleKick = (uid: string | number) => {
+    toast({ title: '🚫 تم طرد المشاهد', description: String(uid) });
+    // Note: actual Agora kick requires a server-side privilege call; UI feedback only.
+  };
+  const handleMute = (uid: string | number) => {
+    setMutedUids(prev => {
+      const next = new Set(prev);
+      const k = String(uid);
+      if (next.has(k)) next.delete(k); else next.add(k);
+      return next;
+    });
+    toast({ title: '🔇 تم تبديل حالة الكتم', description: String(uid) });
+  };
 
   // === Local camera preview ===
   const previewVideoRef = useRef<HTMLVideoElement>(null);
@@ -115,21 +192,72 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
       <div className="relative flex-1 min-w-0">
         {agora.isInRoom ? (
           <>
-            <AgoraVideoGrid participants={agora.participants} />
-            <LiveStatsOverlay stats={agora.stats} />
-            <LiveChatSidebar comments={liveComments} onSend={handleSendLiveComment} />
-            {agora.isHost && (
-              <div className="absolute top-4 left-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-[#39FF14]/40">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#39FF14] animate-pulse shadow-[0_0_10px_#39FF14]" />
-                <span className="text-[#39FF14] text-xs font-black tracking-wider">LIVE</span>
+            {/* Beauty filter wraps the video layer */}
+            <div className="absolute inset-0" style={beautyOn ? beautyFilterStyle : undefined}>
+              {vsMode ? (
+                <VSModeFrame participants={agora.participants} onExit={() => setVsMode(false)} />
+              ) : (
+                <AgoraVideoGrid participants={agora.participants} />
+              )}
+              {/* Watch Together replaces main feed when active */}
+              <WatchTogetherVideo state={watchTogether} />
+            </div>
+
+            {/* Host PiP bubble while Watch-Together is on */}
+            {watchTogether.url && agora.isHost && (
+              <div className="absolute bottom-28 right-4 z-30 w-28 h-40 rounded-2xl overflow-hidden border-2 border-[#39FF14] shadow-[0_0_20px_rgba(57,255,20,0.5)] bg-black">
+                <AgoraVideoGrid participants={agora.participants.filter(p => p.isLocal)} />
               </div>
             )}
+
+            <LiveStatsOverlay stats={agora.stats} />
+            <LiveChatSidebar comments={liveComments} onSend={handleSendLiveComment} />
+
+            {/* Tiered gift animations */}
+            <TieredGiftOverlay events={tieredEvents} onComplete={completeGift} />
+
+            {/* Host-only top bar + tools */}
+            {agora.isHost && (
+              <>
+                <HostTopBar
+                  startedAt={startedAt}
+                  gemsCollected={gemsCollected}
+                  beautyOn={beautyOn}
+                  onToggleBeauty={() => setBeautyOn(b => !b)}
+                  viewerCount={agora.viewerCount}
+                />
+                <WatchTogetherPanel
+                  isHost
+                  remoteState={watchTogether}
+                  onChange={setWatchTogether}
+                />
+                <ModeratorPanel
+                  isHost
+                  channel={agora.channelName}
+                  viewers={moderatorViewers}
+                  onKick={handleKick}
+                  onMute={handleMute}
+                />
+                <button
+                  onClick={() => setVsMode(v => !v)}
+                  className={`absolute top-40 right-3 z-40 w-10 h-10 rounded-full backdrop-blur-xl border flex items-center justify-center ${
+                    vsMode
+                      ? 'bg-[#39FF14]/20 border-[#39FF14]/60 text-[#39FF14]'
+                      : 'bg-black/60 border-[#39FF14]/40 text-[#39FF14]'
+                  }`}
+                  title="VS Mode"
+                >
+                  <Swords className="w-4 h-4" />
+                </button>
+              </>
+            )}
+
             <TikTokLiveOverlay
               streamerName={agora.isHost ? 'أنت' : 'المضيف'}
               viewerCount={agora.viewerCount}
               onClose={stopBroadcast}
               onSendComment={handleSendLiveComment}
-              onSendGift={(giftType, amount) => console.log('Gift:', giftType, amount)}
+              onSendGift={handleGiftSent}
               comments={liveComments}
               isHost={agora.isHost}
             />
