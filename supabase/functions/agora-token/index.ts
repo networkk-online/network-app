@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { RtcTokenBuilder, RtcRole } from "npm:agora-token@2.0.5";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,31 +22,52 @@ serve(async (req) => {
       );
     }
 
-    const { channelName, uid, role } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { channelName, uid = 0, role = 1 } = body || {};
 
-    if (!channelName) {
+    if (!channelName || typeof channelName !== "string") {
       return new Response(
         JSON.stringify({ ok: false, error: "channelName is required" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // In testing mode (no certificate), token is null — App ID auth only
-    const token = null;
+    let token: string | null = null;
+
+    // If App Certificate is configured, we MUST generate a token.
+    // Otherwise (testing mode: App ID only), token can stay null.
+    if (appCertificate && appCertificate.trim().length > 0) {
+      const expireSeconds = 3600 * 4; // 4 hours
+      const currentTs = Math.floor(Date.now() / 1000);
+      const privilegeExpireTs = currentTs + expireSeconds;
+      const rtcRole = role === 2 ? RtcRole.SUBSCRIBER : RtcRole.PUBLISHER;
+
+      token = RtcTokenBuilder.buildTokenWithUid(
+        appId,
+        appCertificate,
+        channelName,
+        Number(uid) || 0,
+        rtcRole,
+        privilegeExpireTs,
+        privilegeExpireTs,
+      );
+    }
 
     return new Response(
       JSON.stringify({
         ok: true,
-        appId,
+        appId: String(appId),
         token,
         channelName,
-        uid: uid || 0,
+        uid: Number(uid) || 0,
+        mode: appCertificate ? "token" : "testing",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
+    console.error("agora-token error:", error);
     return new Response(
-      JSON.stringify({ ok: false, error: error.message }),
+      JSON.stringify({ ok: false, error: (error as Error).message }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
