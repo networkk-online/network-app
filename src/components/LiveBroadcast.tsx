@@ -114,6 +114,12 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
         {agora.isInRoom ? (
           <>
             <AgoraVideoGrid participants={agora.participants} />
+            {agora.isHost && (
+              <div className="absolute top-4 left-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-[#39FF14]/40">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#39FF14] animate-pulse shadow-[0_0_10px_#39FF14]" />
+                <span className="text-[#39FF14] text-xs font-black tracking-wider">LIVE</span>
+              </div>
+            )}
             <TikTokLiveOverlay
               streamerName={agora.isHost ? 'أنت' : 'المضيف'}
               viewerCount={agora.viewerCount}
