@@ -42,6 +42,13 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const startPreview = async () => {
     try {
       setPreviewError(null);
+      // Check device availability first
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const hasCam = devices.some(d => d.kind === 'videoinput');
+      const hasMic = devices.some(d => d.kind === 'audioinput');
+      if (!hasCam || !hasMic) {
+        throw Object.assign(new Error('NotFoundError'), { name: 'NotFoundError' });
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: 1280, height: 720 },
         audio: true,
@@ -51,8 +58,15 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
         previewVideoRef.current.srcObject = stream;
       }
       setPreviewActive(true);
-    } catch {
-      setPreviewError('تعذر الوصول للكاميرا. تأكد من السماح بالأذونات.');
+    } catch (err: any) {
+      const name = err?.name || '';
+      if (name === 'NotFoundError' || name === 'DevicesNotFoundError' || name === 'OverconstrainedError') {
+        setPreviewError('يرجى التأكد من توصيل الكاميرا والمايكروفون وإعطاء الصلاحية للمتصفح');
+      } else if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        setPreviewError('تم رفض الإذن. يرجى السماح بالوصول للكاميرا والمايكروفون من إعدادات المتصفح');
+      } else {
+        setPreviewError('تعذر الوصول للكاميرا. تأكد من السماح بالأذونات.');
+      }
       setPreviewActive(false);
     }
   };
@@ -100,6 +114,12 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
         {agora.isInRoom ? (
           <>
             <AgoraVideoGrid participants={agora.participants} />
+            {agora.isHost && (
+              <div className="absolute top-4 left-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-[#39FF14]/40">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#39FF14] animate-pulse shadow-[0_0_10px_#39FF14]" />
+                <span className="text-[#39FF14] text-xs font-black tracking-wider">LIVE</span>
+              </div>
+            )}
             <TikTokLiveOverlay
               streamerName={agora.isHost ? 'أنت' : 'المضيف'}
               viewerCount={agora.viewerCount}
@@ -134,13 +154,30 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
                 className="text-center px-6"
               >
                 {previewError ? (
-                  <p className="text-red-400 text-sm mb-4">{previewError}</p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-5 mx-auto max-w-sm bg-white/[0.05] backdrop-blur-xl border border-[#39FF14]/30 rounded-2xl p-5 shadow-[0_0_30px_rgba(57,255,20,0.15)]"
+                  >
+                    <p className="text-white text-sm mb-4 leading-relaxed">{previewError}</p>
+                    <button
+                      onClick={startPreview}
+                      className="w-full py-2.5 rounded-xl bg-[#39FF14]/20 hover:bg-[#39FF14]/30 border border-[#39FF14]/50 text-[#39FF14] font-bold text-sm transition"
+                    >
+                      إعادة المحاولة
+                    </button>
+                  </motion.div>
                 ) : previewActive ? (
                   <div className="flex items-center gap-2 mb-4 justify-center">
-                    <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                    <div className="w-3 h-3 rounded-full bg-[#39FF14] animate-pulse shadow-[0_0_10px_#39FF14]" />
                     <span className="text-white/70 text-sm">الكاميرا جاهزة</span>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="flex items-center gap-2 mb-4 justify-center">
+                    <Loader2 className="w-4 h-4 text-white/60 animate-spin" />
+                    <span className="text-white/60 text-sm">جاري تجهيز الكاميرا...</span>
+                  </div>
+                )}
 
                 <motion.div
                   animate={{
@@ -192,8 +229,8 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={startBroadcast}
-                disabled={agora.isLoading}
-                className="w-20 h-20 bg-[#19e05b] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(25,224,91,0.4)] disabled:opacity-50"
+                disabled={agora.isLoading || !previewActive || !!previewError}
+                className="w-20 h-20 bg-[#39FF14] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(57,255,20,0.5)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {agora.isLoading ? (
                   <Loader2 className="w-8 h-8 text-black animate-spin" />

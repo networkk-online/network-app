@@ -68,10 +68,20 @@ export const useAgoraRoom = () => {
     setIsLoading(true);
     try {
       // 1. Request camera/mic FIRST (preserves user gesture context)
-      const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks(
-        {},
-        { encoderConfig: '720p_2' }
-      );
+      let audioTrack: IMicrophoneAudioTrack;
+      let videoTrack: ICameraVideoTrack;
+      try {
+        [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks(
+          {},
+          { encoderConfig: '720p_2' }
+        );
+      } catch (mediaErr: any) {
+        const code = mediaErr?.code || mediaErr?.name || '';
+        if (code === 'DEVICE_NOT_FOUND' || code === 'NotFoundError' || code === 'PERMISSION_DENIED' || code === 'NotAllowedError') {
+          throw new Error('يرجى التأكد من توصيل الكاميرا والمايكروفون وإعطاء الصلاحية للمتصفح');
+        }
+        throw mediaErr;
+      }
       localAudioRef.current = audioTrack;
       localVideoRef.current = videoTrack;
 
