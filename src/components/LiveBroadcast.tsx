@@ -4,6 +4,8 @@ import { Video, VideoOff, Mic, MicOff, X, RotateCcw, Loader2 } from 'lucide-reac
 import { DonationReplyDialog } from './DonationReplyDialog';
 import { TikTokLiveOverlay } from './TikTokLiveOverlay';
 import { AgoraVideoGrid } from './live/AgoraVideoGrid';
+import { LiveStatsOverlay } from './live/LiveStatsOverlay';
+import { LiveChatSidebar } from './live/LiveChatSidebar';
 import { useAgoraRoom } from '@/hooks/useAgoraRoom';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
@@ -114,6 +116,8 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
         {agora.isInRoom ? (
           <>
             <AgoraVideoGrid participants={agora.participants} />
+            <LiveStatsOverlay stats={agora.stats} />
+            <LiveChatSidebar comments={liveComments} onSend={handleSendLiveComment} />
             {agora.isHost && (
               <div className="absolute top-4 left-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-[#39FF14]/40">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#39FF14] animate-pulse shadow-[0_0_10px_#39FF14]" />
