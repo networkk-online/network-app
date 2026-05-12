@@ -48,6 +48,63 @@ export const useAgoraRoom = () => {
     return data;
   };
 
+  const preflightGateway = async () => {
+    // Lightweight reachability check to Agora's web gateway. Fails fast on firewalls.
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 4000);
+      // no-cors so we don't fail on CORS — we only care that the network resolves
+      await fetch('https://webrtc2-ap-web-1.agora.io/', { mode: 'no-cors', signal: ctrl.signal });
+      clearTimeout(t);
+    } catch {
+      throw new Error('تعذر الوصول إلى خوادم البث. تحقق من اتصالك بالإنترنت أو الجدار الناري.');
+    }
+  };
+
+  const startStatsPolling = (client: IAgoraRTCClient) => {
+    if (statsIntervalRef.current) window.clearInterval(statsIntervalRef.current);
+    statsIntervalRef.current = window.setInterval(() => {
+      try {
+        const rtc = client.getRTCStats();
+        let bitrateKbps = 0;
+        let fps = 0;
+        let packetLoss = 0;
+
+        if (localVideoRef.current) {
+          const v = client.getLocalVideoStats() as any;
+          bitrateKbps = Math.round((v.sendBitrate || 0) / 1000);
+          fps = Math.round(v.sendFrameRate || 0);
+        } else {
+          const remote = client.getRemoteVideoStats() as any;
+          const ids = Object.keys(remote || {});
+          if (ids.length) {
+            const first = remote[ids[0]];
+            bitrateKbps = Math.round((first.receiveBitrate || 0) / 1000);
+            fps = Math.round(first.receiveFrameRate || 0);
+            packetLoss = Math.round((first.packetLossRate || 0) * 100);
+          }
+        }
+
+        setStats({
+          bitrateKbps,
+          fps,
+          packetLoss,
+          rtt: Math.round((rtc as any).RTT || 0),
+        });
+      } catch {
+        // ignore transient stats errors
+      }
+    }, 1500);
+  };
+
+  const stopStatsPolling = () => {
+    if (statsIntervalRef.current) {
+      window.clearInterval(statsIntervalRef.current);
+      statsIntervalRef.current = null;
+    }
+    setStats({ bitrateKbps: 0, fps: 0, packetLoss: 0, rtt: 0 });
+  };
+
   const updateParticipants = (client: IAgoraRTCClient) => {
     const remoteUsers = client.remoteUsers;
     const parts: AgoraParticipant[] = [];
