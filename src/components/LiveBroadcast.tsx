@@ -148,13 +148,30 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
                 className="text-center px-6"
               >
                 {previewError ? (
-                  <p className="text-red-400 text-sm mb-4">{previewError}</p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-5 mx-auto max-w-sm bg-white/[0.05] backdrop-blur-xl border border-[#39FF14]/30 rounded-2xl p-5 shadow-[0_0_30px_rgba(57,255,20,0.15)]"
+                  >
+                    <p className="text-white text-sm mb-4 leading-relaxed">{previewError}</p>
+                    <button
+                      onClick={startPreview}
+                      className="w-full py-2.5 rounded-xl bg-[#39FF14]/20 hover:bg-[#39FF14]/30 border border-[#39FF14]/50 text-[#39FF14] font-bold text-sm transition"
+                    >
+                      إعادة المحاولة
+                    </button>
+                  </motion.div>
                 ) : previewActive ? (
                   <div className="flex items-center gap-2 mb-4 justify-center">
-                    <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                    <div className="w-3 h-3 rounded-full bg-[#39FF14] animate-pulse shadow-[0_0_10px_#39FF14]" />
                     <span className="text-white/70 text-sm">الكاميرا جاهزة</span>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="flex items-center gap-2 mb-4 justify-center">
+                    <Loader2 className="w-4 h-4 text-white/60 animate-spin" />
+                    <span className="text-white/60 text-sm">جاري تجهيز الكاميرا...</span>
+                  </div>
+                )}
 
                 <motion.div
                   animate={{
