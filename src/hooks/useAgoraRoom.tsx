@@ -82,6 +82,8 @@ export const useAgoraRoom = () => {
         }
         throw mediaErr;
       }
+      localAudioRef.current = audioTrack;
+      localVideoRef.current = videoTrack;
 
       // 2. Get credentials from edge function
       const channel = `network-live-${Date.now()}`;
