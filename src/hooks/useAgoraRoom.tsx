@@ -309,5 +309,6 @@ export const useAgoraRoom = () => {
     toggleMute,
     toggleCamera,
     switchCamera,
+    stats,
   };
 };
