@@ -4,6 +4,8 @@ import { Video, VideoOff, Mic, MicOff, X, RotateCcw, Loader2 } from 'lucide-reac
 import { DonationReplyDialog } from './DonationReplyDialog';
 import { TikTokLiveOverlay } from './TikTokLiveOverlay';
 import { AgoraVideoGrid } from './live/AgoraVideoGrid';
+import { LiveStatsOverlay } from './live/LiveStatsOverlay';
+import { LiveChatSidebar } from './live/LiveChatSidebar';
 import { useAgoraRoom } from '@/hooks/useAgoraRoom';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
