@@ -46,6 +46,65 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const [selectedDonation, setSelectedDonation] = useState<any>(null);
   const [broadcastTitle, setBroadcastTitle] = useState('');
 
+  // === Tiered gifts + session metrics ===
+  const [tieredEvents, setTieredEvents] = useState<TieredGiftEvent[]>([]);
+  const [gemsCollected, setGemsCollected] = useState(0);
+  const [startedAt, setStartedAt] = useState<number>(Date.now());
+  const [beautyOn, setBeautyOn] = useState(false);
+  const [vsMode, setVsMode] = useState(false);
+  const [watchTogether, setWatchTogether] = useState<{ url: string | null; playing: boolean; t: number }>({
+    url: null,
+    playing: false,
+    t: 0,
+  });
+  const [mutedUids, setMutedUids] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (agora.isInRoom) setStartedAt(Date.now());
+  }, [agora.isInRoom]);
+
+  const handleGiftSent = (giftId: string, amount: number) => {
+    const meta = GIFT_META[giftId] || { icon: '🎁', name: 'هدية', price: 1 };
+    const totalPrice = meta.price * amount;
+    setGemsCollected(g => g + totalPrice);
+    setTieredEvents(prev => [
+      ...prev,
+      {
+        id: `${Date.now()}-${Math.random()}`,
+        giftId,
+        icon: meta.icon,
+        name: meta.name,
+        price: totalPrice,
+        sender: 'أنت',
+        tier: giftTier(totalPrice),
+      },
+    ]);
+    setLiveComments(prev => [
+      ...prev,
+      { id: Date.now().toString(), username: 'أنت', message: `أرسل ${meta.name} ${meta.icon}`, isVIP: true },
+    ]);
+  };
+
+  const completeGift = (id: string) => setTieredEvents(prev => prev.filter(e => e.id !== id));
+
+  const moderatorViewers: ModViewer[] = agora.participants
+    .filter(p => !p.isLocal)
+    .map(p => ({ uid: p.uid, username: `viewer_${String(p.uid).slice(-4)}`, isMuted: mutedUids.has(String(p.uid)) }));
+
+  const handleKick = (uid: string | number) => {
+    toast({ title: '🚫 تم طرد المشاهد', description: String(uid) });
+    // Note: actual Agora kick requires a server-side privilege call; UI feedback only.
+  };
+  const handleMute = (uid: string | number) => {
+    setMutedUids(prev => {
+      const next = new Set(prev);
+      const k = String(uid);
+      if (next.has(k)) next.delete(k); else next.add(k);
+      return next;
+    });
+    toast({ title: '🔇 تم تبديل حالة الكتم', description: String(uid) });
+  };
+
   // === Local camera preview ===
   const previewVideoRef = useRef<HTMLVideoElement>(null);
   const previewStreamRef = useRef<MediaStream | null>(null);
