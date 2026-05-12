@@ -42,6 +42,13 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const startPreview = async () => {
     try {
       setPreviewError(null);
+      // Check device availability first
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const hasCam = devices.some(d => d.kind === 'videoinput');
+      const hasMic = devices.some(d => d.kind === 'audioinput');
+      if (!hasCam || !hasMic) {
+        throw Object.assign(new Error('NotFoundError'), { name: 'NotFoundError' });
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: 1280, height: 720 },
         audio: true,
@@ -51,8 +58,15 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
         previewVideoRef.current.srcObject = stream;
       }
       setPreviewActive(true);
-    } catch {
-      setPreviewError('تعذر الوصول للكاميرا. تأكد من السماح بالأذونات.');
+    } catch (err: any) {
+      const name = err?.name || '';
+      if (name === 'NotFoundError' || name === 'DevicesNotFoundError' || name === 'OverconstrainedError') {
+        setPreviewError('يرجى التأكد من توصيل الكاميرا والمايكروفون وإعطاء الصلاحية للمتصفح');
+      } else if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        setPreviewError('تم رفض الإذن. يرجى السماح بالوصول للكاميرا والمايكروفون من إعدادات المتصفح');
+      } else {
+        setPreviewError('تعذر الوصول للكاميرا. تأكد من السماح بالأذونات.');
+      }
       setPreviewActive(false);
     }
   };
