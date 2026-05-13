@@ -171,6 +171,14 @@ const OwnerVault = () => {
                   <Switch checked={maintenanceMode} onCheckedChange={toggleMaintenance} />
                 </div>
               </div>
+              <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-white font-medium">🟢 مؤشرات البث المباشر</h3>
+                    <p className="text-xs text-white/30 mt-1">إظهار حلقة LIVE النيون حول صور المستخدمين المباشرين</p>
+                  </div>
+                  <Switch checked={liveIndicators} onCheckedChange={toggleLiveIndicators} />
+                </div>
             </CardContent>
           </Card>
         );
