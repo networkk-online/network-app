@@ -163,6 +163,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Admin auth required — this triggers a full PII export
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
+
   try {
     const AWS_ACCESS_KEY_ID = Deno.env.get('AWS_ACCESS_KEY_ID')!;
     const AWS_SECRET_ACCESS_KEY = Deno.env.get('AWS_SECRET_ACCESS_KEY')!;
