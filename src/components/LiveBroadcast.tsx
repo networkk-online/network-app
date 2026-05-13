@@ -282,7 +282,7 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
                 <AgoraVideoGrid participants={agora.participants} />
               )}
               {/* Watch Together replaces main feed when active */}
-              <WatchTogetherVideo state={watchTogether} />
+              <WatchTogetherSyncedVideo state={watchTogether} channelName={agora.channelName} isHost={agora.isHost} />
             </div>
 
             {/* Host PiP bubble while Watch-Together is on */}
