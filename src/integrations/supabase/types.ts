@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_restrictions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          imposed_by: string | null
+          reason: string | null
+          shadow_banned: boolean
+          updated_at: string
+          user_id: string
+          verification_frozen: boolean
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          imposed_by?: string | null
+          reason?: string | null
+          shadow_banned?: boolean
+          updated_at?: string
+          user_id: string
+          verification_frozen?: boolean
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          imposed_by?: string | null
+          reason?: string | null
+          shadow_banned?: boolean
+          updated_at?: string
+          user_id?: string
+          verification_frozen?: boolean
+        }
+        Relationships: []
+      }
+      activity_intel: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          device: string | null
+          event_type: string
+          id: string
+          ip: string | null
+          metadata: Json | null
+          os: string | null
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          event_type: string
+          id?: string
+          ip?: string | null
+          metadata?: Json | null
+          os?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          event_type?: string
+          id?: string
+          ip?: string | null
+          metadata?: Json | null
+          os?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ad_interactions: {
         Row: {
           ad_id: string
@@ -850,6 +928,39 @@ export type Database = {
           is_active?: boolean | null
           likes_count?: number | null
           media_url?: string | null
+        }
+        Relationships: []
+      }
+      financial_alerts: {
+        Row: {
+          alert_type: string
+          amount: number
+          created_at: string
+          evidence: Json | null
+          id: string
+          status: string
+          user_id: string
+          window_minutes: number | null
+        }
+        Insert: {
+          alert_type: string
+          amount?: number
+          created_at?: string
+          evidence?: Json | null
+          id?: string
+          status?: string
+          user_id: string
+          window_minutes?: number | null
+        }
+        Update: {
+          alert_type?: string
+          amount?: number
+          created_at?: string
+          evidence?: Json | null
+          id?: string
+          status?: string
+          user_id?: string
+          window_minutes?: number | null
         }
         Relationships: []
       }
@@ -2608,6 +2719,45 @@ export type Database = {
           metadata?: Json | null
           severity?: string
           title?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      threat_flags: {
+        Row: {
+          auto_action: string | null
+          created_at: string
+          evidence: Json | null
+          flag_type: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          auto_action?: string | null
+          created_at?: string
+          evidence?: Json | null
+          flag_type: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          auto_action?: string | null
+          created_at?: string
+          evidence?: Json | null
+          flag_type?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
           user_id?: string
         }
         Relationships: []

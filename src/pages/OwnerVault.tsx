@@ -13,6 +13,7 @@ import VaultExecution from '@/components/vault/VaultExecution';
 import VaultDocs from '@/components/vault/VaultDocs';
 import VaultFinance from '@/components/vault/VaultFinance';
 import { VaultLiveMonitor } from '@/components/vault/VaultLiveMonitor';
+import VaultIntelligence from '@/components/vault/VaultIntelligence';
 import MasterGiftCodes from '@/components/master-admin/MasterGiftCodes';
 import MasterExploreControl from '@/components/master-admin/MasterExploreControl';
 import MasterReelsManager from '@/components/master-admin/MasterReelsManager';
@@ -87,6 +88,7 @@ const OwnerVault = () => {
 
   const tabTitles: Record<string, string> = {
     overview: 'نظرة عامة',
+    intelligence: 'مركز الاستخبارات',
     users: 'إدارة المستخدمين',
     staff: 'إدارة المشرفين',
     verification: 'التحقق من الهوية',
@@ -107,6 +109,8 @@ const OwnerVault = () => {
     switch (activeTab) {
       case 'overview':
         return <VaultOverview stats={stats} maintenanceMode={maintenanceMode} onToggleMaintenance={toggleMaintenance} lastSecurityLog={securityLogs[0]?.created_at} />;
+      case 'intelligence':
+        return <VaultIntelligence />;
       case 'users':
         return <VaultUserDirectory />;
       case 'staff':
