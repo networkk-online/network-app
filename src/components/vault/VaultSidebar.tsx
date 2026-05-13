@@ -35,6 +35,7 @@ const menuGroups = [
     items: [
       { id: 'explore', label: 'مدير الاستكشاف', icon: Compass },
       { id: 'reels', label: 'إدارة الريلز', icon: Film },
+      { id: 'live', label: 'مراقبة البث', icon: Radio },
     ],
   },
   {
