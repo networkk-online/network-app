@@ -78,6 +78,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
+
   try {
     const region = Deno.env.get('AWS_REGION') || 'us-east-1';
     const tableName = Deno.env.get('AWS_DYNAMODB_TABLE_NAME') || 'MyDataNetwork';
