@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Users, Shield, Gift, Settings, Eye, FileText,
   ChevronLeft, ChevronRight, Power, LogOut, UserCheck, Wallet, BarChart3,
-  Film, Compass, Ban, BookOpen, Zap
+  Film, Compass, Ban, BookOpen, Zap, Radio
 } from 'lucide-react';
 
 interface VaultSidebarProps {
