@@ -212,25 +212,56 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
     }
   }, [joinRoomId]);
 
-  const handleSendLiveComment = (message: string) => {
+  const handleSendLiveComment = (raw: string) => {
+    const message = sanitizeText(raw, 500);
+    if (!message) return;
     setLiveComments(prev => [
       ...prev,
       { id: Date.now().toString(), username: 'أنت', message, isHost: agora.isHost },
     ]);
   };
 
+  const requestStart = () => setTermsOpen(true);
+
   const startBroadcast = async () => {
     stopPreview();
     const room = await agora.createRoom(broadcastTitle || 'بث مباشر');
     if (room) {
       toast({ title: '🔴 بدأ البث المباشر!' });
+      // Register stream in the live_streams registry
+      if (hostUserId) {
+        const { data, error } = await supabase
+          .from('live_streams')
+          .insert({
+            host_id: hostUserId,
+            channel_name: room,
+            title: broadcastTitle || 'بث مباشر',
+            status: 'live',
+            viewer_count: 0,
+          })
+          .select('id')
+          .single();
+        if (!error && data) setStreamRowId(data.id);
+      }
     }
   };
 
   const stopBroadcast = async () => {
+    if (streamRowId) {
+      await supabase
+        .from('live_streams')
+        .update({ status: 'ended', ended_at: new Date().toISOString() })
+        .eq('id', streamRowId);
+    }
     await agora.leaveRoom();
     onClose();
   };
+
+  // Sync viewer count to live_streams
+  useEffect(() => {
+    if (!streamRowId) return;
+    supabase.from('live_streams').update({ viewer_count: agora.viewerCount }).eq('id', streamRowId);
+  }, [agora.viewerCount, streamRowId]);
 
   return (
     <motion.div
