@@ -5,10 +5,8 @@ import MasterOverview from '@/components/master-admin/MasterOverview';
 import MasterGiftCodes from '@/components/master-admin/MasterGiftCodes';
 import MasterReelsManager from '@/components/master-admin/MasterReelsManager';
 import MasterExploreControl from '@/components/master-admin/MasterExploreControl';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-
-const MASTER_USERNAME = 'ghaith_admin';
-const MASTER_PASSWORD = 'NeTw0rKK@2025!';
 
 const tabs = [
   { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard },
@@ -21,74 +19,47 @@ const tabs = [
 const MasterAdmin = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [checking, setChecking] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Server-side validation: must be signed in AND have admin role.
   useEffect(() => {
-    const auth = sessionStorage.getItem('master_admin_auth');
-    if (auth === 'true') setIsAuthenticated(true);
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (username === MASTER_USERNAME && password === MASTER_PASSWORD) {
-      sessionStorage.setItem('master_admin_auth', 'true');
-      setIsAuthenticated(true);
-      setError('');
-    } else {
-      setError('بيانات الدخول غير صحيحة');
-    }
-  };
-
-  const handleLogout = () => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { if (!cancelled) navigate('/login'); return; }
+      const { data: role } = await supabase.from('user_roles')
+        .select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle();
+      if (cancelled) return;
+      if (role) setIsAuthenticated(true);
+      else navigate('/');
+      setChecking(false);
+    })();
+    // Clear any legacy client-only flag
     sessionStorage.removeItem('master_admin_auth');
-    setIsAuthenticated(false);
+    return () => { cancelled = true; };
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate('/');
   };
 
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <p className="text-[#39FF14] text-xs font-mono tracking-widest">VERIFYING ACCESS…</p>
+      </div>
+    );
+  }
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{
-          backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(57,255,20,0.15) 0%, transparent 60%)',
-        }} />
-        <div className="w-full max-w-md relative z-10">
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-[#39FF14]/10 border border-[#39FF14]/20 flex items-center justify-center">
-              <Shield className="w-10 h-10 text-[#39FF14]" />
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-1">Master Control</h1>
-            <p className="text-sm text-white/30">networkk.online — Restricted Access</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4 p-6 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]">
-            <div>
-              <label className="text-xs text-white/40 mb-1.5 block">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                className="w-full h-11 px-4 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-sm outline-none focus:border-[#39FF14]/40 transition-colors"
-                autoComplete="off"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-white/40 mb-1.5 block">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full h-11 px-4 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-sm outline-none focus:border-[#39FF14]/40 transition-colors"
-              />
-            </div>
-            {error && <p className="text-red-400 text-xs text-center">{error}</p>}
-            <button type="submit" className="w-full h-11 rounded-xl bg-[#39FF14] text-black font-bold text-sm hover:bg-[#39FF14]/80 transition-colors active:scale-[0.98]">
-              دخول النظام
-            </button>
-          </form>
+        <div className="text-center">
+          <Shield className="w-12 h-12 text-[#39FF14] mx-auto mb-3" />
+          <p className="text-white/60 text-sm">Access denied. Admin role required.</p>
         </div>
       </div>
     );

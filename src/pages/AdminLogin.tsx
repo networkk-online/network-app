@@ -242,7 +242,7 @@ const AdminLogin = () => {
       {/* Hint for demo purposes */}
       <div className="fixed bottom-4 right-4 bg-card backdrop-blur-sm border rounded-lg p-4 max-w-xs shadow-lg">
         <p className="text-xs text-muted-foreground mb-1">💡 للتجربة:</p>
-        <p className="text-sm font-mono text-primary">رمز PIN الافتراضي: 2580</p>
+        <p className="text-sm font-mono text-primary">أدخل رمز PIN الخاص بك</p>
       </div>
     </div>
   );
