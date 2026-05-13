@@ -145,6 +145,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings_finance: {
+        Row: {
+          id: number
+          platform_commission_rate: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: number
+          platform_commission_rate?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: number
+          platform_commission_rate?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       blocked_users: {
         Row: {
           blocked_id: string
@@ -599,6 +620,39 @@ export type Database = {
           },
         ]
       }
+      compliance_logs: {
+        Row: {
+          accepted_at: string
+          context: string | null
+          document_type: string
+          document_version: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          context?: string | null
+          document_type: string
+          document_version: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          context?: string | null
+          document_type?: string
+          document_version?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -880,6 +934,74 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_ledger: {
+        Row: {
+          channel_name: string | null
+          commission_rate: number
+          created_at: string
+          creator_earning: number
+          creator_id: string
+          gift_id: string
+          gift_name: string | null
+          id: string
+          ip_address: string | null
+          platform_fee: number
+          quantity: number
+          sender_id: string
+          status: string
+          stream_id: string | null
+          total_price: number
+          unit_price: number
+          user_agent: string | null
+        }
+        Insert: {
+          channel_name?: string | null
+          commission_rate?: number
+          created_at?: string
+          creator_earning?: number
+          creator_id: string
+          gift_id: string
+          gift_name?: string | null
+          id?: string
+          ip_address?: string | null
+          platform_fee?: number
+          quantity?: number
+          sender_id: string
+          status?: string
+          stream_id?: string | null
+          total_price: number
+          unit_price: number
+          user_agent?: string | null
+        }
+        Update: {
+          channel_name?: string | null
+          commission_rate?: number
+          created_at?: string
+          creator_earning?: number
+          creator_id?: string
+          gift_id?: string
+          gift_name?: string | null
+          id?: string
+          ip_address?: string | null
+          platform_fee?: number
+          quantity?: number
+          sender_id?: string
+          status?: string
+          stream_id?: string | null
+          total_price?: number
+          unit_price?: number
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_ledger_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gift_redemptions: {
         Row: {
           code: string
@@ -1070,6 +1192,51 @@ export type Database = {
           title?: string | null
           updated_at?: string
           viewer_count?: number | null
+        }
+        Relationships: []
+      }
+      live_streams: {
+        Row: {
+          channel_name: string
+          created_at: string
+          ended_at: string | null
+          host_id: string
+          id: string
+          killed_by: string | null
+          killed_reason: string | null
+          started_at: string
+          status: string
+          title: string | null
+          updated_at: string
+          viewer_count: number
+        }
+        Insert: {
+          channel_name: string
+          created_at?: string
+          ended_at?: string | null
+          host_id: string
+          id?: string
+          killed_by?: string | null
+          killed_reason?: string | null
+          started_at?: string
+          status?: string
+          title?: string | null
+          updated_at?: string
+          viewer_count?: number
+        }
+        Update: {
+          channel_name?: string
+          created_at?: string
+          ended_at?: string | null
+          host_id?: string
+          id?: string
+          killed_by?: string | null
+          killed_reason?: string | null
+          started_at?: string
+          status?: string
+          title?: string | null
+          updated_at?: string
+          viewer_count?: number
         }
         Relationships: []
       }
@@ -2093,6 +2260,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      security_events: {
+        Row: {
+          created_at: string
+          details: Json | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          severity: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          severity?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          severity?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       security_logs: {
         Row: {
