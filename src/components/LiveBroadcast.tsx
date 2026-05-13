@@ -15,6 +15,9 @@ import { useAgoraRoom } from '@/hooks/useAgoraRoom';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import type { LiveComment } from './live';
+import { TermsConsentModal } from './legal/TermsConsentModal';
+import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 
 const GIFT_META: Record<string, { icon: string; name: string; price: number }> = {
   rose: { icon: '🌹', name: 'وردة', price: 1 },
