@@ -56,9 +56,29 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const loginEmail = await resolveEmail(identifier);
-      if (!loginEmail) { setIsLoading(false); return; }
-      const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
+      const trimmed = identifier.trim();
+      const isUsername = !trimmed.includes('@') && !/^[\d\+٠-٩]/.test(trimmed);
+
+      // For username logins, do server-side sign-in so email is never exposed.
+      if (isUsername) {
+        const { data: r, error: rErr } = await supabase.functions.invoke('lookup-username', {
+          body: { username: trimmed.toLowerCase(), password },
+        });
+        if (rErr || !r?.session) {
+          toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
+          return;
+        }
+        await supabase.auth.setSession({
+          access_token: r.session.access_token,
+          refresh_token: r.session.refresh_token,
+        });
+        // Re-use existing post-login flow by re-fetching session below
+      }
+
+      const loginEmail = isUsername ? null : await resolveEmail(identifier);
+      const { data, error } = isUsername
+        ? await supabase.auth.getSession().then(({ data: s }) => ({ data: { session: s.session }, error: null as any }))
+        : await supabase.auth.signInWithPassword({ email: loginEmail!, password });
       if (error) { toast({ title: 'خطأ في تسجيل الدخول', description: error.message === 'Invalid login credentials' ? 'البيانات غير صحيحة. تحقق من اسم المستخدم/البريد وكلمة المرور' : error.message, variant: 'destructive' }); return; }
       if (data.session) {
         // Save new session to account switcher storage
