@@ -5,10 +5,8 @@ import MasterOverview from '@/components/master-admin/MasterOverview';
 import MasterGiftCodes from '@/components/master-admin/MasterGiftCodes';
 import MasterReelsManager from '@/components/master-admin/MasterReelsManager';
 import MasterExploreControl from '@/components/master-admin/MasterExploreControl';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-
-const MASTER_USERNAME = 'ghaith_admin';
-const MASTER_PASSWORD = 'NeTw0rKK@2025!';
 
 const tabs = [
   { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard },
@@ -21,33 +19,33 @@ const tabs = [
 const MasterAdmin = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [checking, setChecking] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Server-side validation: must be signed in AND have admin role.
   useEffect(() => {
-    const auth = sessionStorage.getItem('master_admin_auth');
-    if (auth === 'true') setIsAuthenticated(true);
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (username === MASTER_USERNAME && password === MASTER_PASSWORD) {
-      sessionStorage.setItem('master_admin_auth', 'true');
-      setIsAuthenticated(true);
-      setError('');
-    } else {
-      setError('بيانات الدخول غير صحيحة');
-    }
-  };
-
-  const handleLogout = () => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { if (!cancelled) navigate('/login'); return; }
+      const { data: role } = await supabase.from('user_roles')
+        .select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle();
+      if (cancelled) return;
+      if (role) setIsAuthenticated(true);
+      else navigate('/');
+      setChecking(false);
+    })();
+    // Clear any legacy client-only flag
     sessionStorage.removeItem('master_admin_auth');
-    setIsAuthenticated(false);
+    return () => { cancelled = true; };
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate('/');
   };
+
 
   if (!isAuthenticated) {
     return (
