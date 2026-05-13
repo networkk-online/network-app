@@ -117,6 +117,8 @@ const OwnerVault = () => {
         return <MasterExploreControl />;
       case 'reels':
         return <MasterReelsManager />;
+      case 'live':
+        return <VaultLiveMonitor />;
       case 'finance':
         return <VaultFinance />;
       case 'gifts':
