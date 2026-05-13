@@ -19,6 +19,7 @@ const menuGroups = [
     title: 'القيادة',
     items: [
       { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard },
+      { id: 'intelligence', label: 'الاستخبارات', icon: Activity },
       { id: 'analytics', label: 'التحليلات', icon: BarChart3 },
     ],
   },
