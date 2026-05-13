@@ -527,6 +527,13 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
           donation={selectedDonation}
         />
       )}
+
+      <TermsConsentModal
+        open={termsOpen}
+        context="live_stream"
+        onAccept={() => { setTermsOpen(false); startBroadcast(); }}
+        onCancel={() => setTermsOpen(false)}
+      />
     </motion.div>
   );
 };
