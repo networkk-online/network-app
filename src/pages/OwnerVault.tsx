@@ -179,6 +179,7 @@ const OwnerVault = () => {
                   </div>
                   <Switch checked={liveIndicators} onCheckedChange={toggleLiveIndicators} />
                 </div>
+              </div>
             </CardContent>
           </Card>
         );
