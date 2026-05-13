@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Users, Shield, Gift, Settings, Eye, FileText,
   ChevronLeft, ChevronRight, Power, LogOut, UserCheck, Wallet, BarChart3,
-  Film, Compass, Ban, BookOpen, Zap
+  Film, Compass, Ban, BookOpen, Zap, Radio
 } from 'lucide-react';
 
 interface VaultSidebarProps {
@@ -35,6 +35,7 @@ const menuGroups = [
     items: [
       { id: 'explore', label: 'مدير الاستكشاف', icon: Compass },
       { id: 'reels', label: 'إدارة الريلز', icon: Film },
+      { id: 'live', label: 'مراقبة البث', icon: Radio },
     ],
   },
   {

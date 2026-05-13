@@ -8,13 +8,17 @@ import { LiveStatsOverlay } from './live/LiveStatsOverlay';
 import { LiveChatSidebar } from './live/LiveChatSidebar';
 import { TieredGiftOverlay, giftTier, type TieredGiftEvent } from './live/TieredGiftOverlay';
 import { HostTopBar, beautyFilterStyle } from './live/HostTopBar';
-import { WatchTogetherPanel, WatchTogetherVideo } from './live/WatchTogetherPanel';
+import { WatchTogetherPanel } from './live/WatchTogetherPanel';
+import { WatchTogetherSyncedVideo } from './live/WatchTogetherSyncedVideo';
 import { ModeratorPanel, type ModViewer } from './live/ModeratorPanel';
 import { VSModeFrame } from './live/VSModeFrame';
 import { useAgoraRoom } from '@/hooks/useAgoraRoom';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import type { LiveComment } from './live';
+import { TermsConsentModal } from './legal/TermsConsentModal';
+import { supabase } from '@/integrations/supabase/client';
+import { sanitizeText } from '@/lib/sanitize';
 
 const GIFT_META: Record<string, { icon: string; name: string; price: number }> = {
   rose: { icon: '🌹', name: 'وردة', price: 1 },
@@ -58,14 +62,41 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
     t: 0,
   });
   const [mutedUids, setMutedUids] = useState<Set<string>>(new Set());
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [streamRowId, setStreamRowId] = useState<string | null>(null);
+  const [hostUserId, setHostUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (agora.isInRoom) setStartedAt(Date.now());
   }, [agora.isInRoom]);
 
-  const handleGiftSent = (giftId: string, amount: number) => {
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setHostUserId(data.user?.id ?? null));
+  }, []);
+
+  // Listen for kill-switch on this stream
+  useEffect(() => {
+    if (!streamRowId) return;
+    const ch = supabase
+      .channel(`stream-${streamRowId}`)
+      .on('postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'live_streams', filter: `id=eq.${streamRowId}` },
+          (p) => {
+            const next = (p.new as any)?.status;
+            if (next === 'killed') {
+              toast({ title: '🛑 تم إيقاف البث من قبل الإدارة', variant: 'destructive' });
+              agora.leaveRoom().finally(onClose);
+            }
+          })
+      .subscribe();
+    return () => { ch.unsubscribe(); };
+  }, [streamRowId]);
+
+  const handleGiftSent = async (giftId: string, amount: number) => {
     const meta = GIFT_META[giftId] || { icon: '🎁', name: 'هدية', price: 1 };
     const totalPrice = meta.price * amount;
+
+    // Optimistic UI
     setGemsCollected(g => g + totalPrice);
     setTieredEvents(prev => [
       ...prev,
@@ -83,6 +114,26 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
       ...prev,
       { id: Date.now().toString(), username: 'أنت', message: `أرسل ${meta.name} ${meta.icon}`, isVIP: true },
     ]);
+
+    // Server-side authoritative ledger entry (only when there is a remote creator)
+    const creator = agora.participants.find(p => !p.isLocal);
+    if (!creator || agora.isHost) return; // hosts don't tip themselves
+    try {
+      const { error } = await supabase.functions.invoke('process-gift', {
+        body: {
+          creator_id: String(creator.uid), // best-effort: real mapping requires uid->user_id table
+          gift_id: giftId,
+          gift_name: meta.name,
+          unit_price: meta.price,
+          quantity: amount,
+          channel_name: agora.channelName,
+          stream_id: streamRowId,
+        },
+      });
+      if (error) toast({ title: 'تعذّر تأكيد الهدية', description: error.message, variant: 'destructive' });
+    } catch (e: any) {
+      toast({ title: 'تعذّر إرسال الهدية', description: e?.message, variant: 'destructive' });
+    }
   };
 
   const completeGift = (id: string) => setTieredEvents(prev => prev.filter(e => e.id !== id));
@@ -162,25 +213,56 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
     }
   }, [joinRoomId]);
 
-  const handleSendLiveComment = (message: string) => {
+  const handleSendLiveComment = (raw: string) => {
+    const message = sanitizeText(raw, 500);
+    if (!message) return;
     setLiveComments(prev => [
       ...prev,
       { id: Date.now().toString(), username: 'أنت', message, isHost: agora.isHost },
     ]);
   };
 
+  const requestStart = () => setTermsOpen(true);
+
   const startBroadcast = async () => {
     stopPreview();
     const room = await agora.createRoom(broadcastTitle || 'بث مباشر');
     if (room) {
       toast({ title: '🔴 بدأ البث المباشر!' });
+      // Register stream in the live_streams registry
+      if (hostUserId) {
+        const { data, error } = await supabase
+          .from('live_streams')
+          .insert({
+            host_id: hostUserId,
+            channel_name: room,
+            title: broadcastTitle || 'بث مباشر',
+            status: 'live',
+            viewer_count: 0,
+          })
+          .select('id')
+          .single();
+        if (!error && data) setStreamRowId(data.id);
+      }
     }
   };
 
   const stopBroadcast = async () => {
+    if (streamRowId) {
+      await supabase
+        .from('live_streams')
+        .update({ status: 'ended', ended_at: new Date().toISOString() })
+        .eq('id', streamRowId);
+    }
     await agora.leaveRoom();
     onClose();
   };
+
+  // Sync viewer count to live_streams
+  useEffect(() => {
+    if (!streamRowId) return;
+    supabase.from('live_streams').update({ viewer_count: agora.viewerCount }).eq('id', streamRowId);
+  }, [agora.viewerCount, streamRowId]);
 
   return (
     <motion.div
@@ -200,7 +282,7 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
                 <AgoraVideoGrid participants={agora.participants} />
               )}
               {/* Watch Together replaces main feed when active */}
-              <WatchTogetherVideo state={watchTogether} />
+              <WatchTogetherSyncedVideo state={watchTogether} channelName={agora.channelName} isHost={agora.isHost} />
             </div>
 
             {/* Host PiP bubble while Watch-Together is on */}
@@ -360,7 +442,7 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
             <div className="flex items-center justify-center gap-6">
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={startBroadcast}
+                onClick={requestStart}
                 disabled={agora.isLoading || !previewActive || !!previewError}
                 className="w-20 h-20 bg-[#39FF14] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(57,255,20,0.5)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
               >
@@ -446,6 +528,13 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
           donation={selectedDonation}
         />
       )}
+
+      <TermsConsentModal
+        open={termsOpen}
+        context="live_stream"
+        onAccept={() => { setTermsOpen(false); startBroadcast(); }}
+        onCancel={() => setTermsOpen(false)}
+      />
     </motion.div>
   );
 };

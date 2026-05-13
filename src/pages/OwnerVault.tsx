@@ -12,6 +12,7 @@ import VaultAnalytics from '@/components/vault/VaultAnalytics';
 import VaultExecution from '@/components/vault/VaultExecution';
 import VaultDocs from '@/components/vault/VaultDocs';
 import VaultFinance from '@/components/vault/VaultFinance';
+import { VaultLiveMonitor } from '@/components/vault/VaultLiveMonitor';
 import MasterGiftCodes from '@/components/master-admin/MasterGiftCodes';
 import MasterExploreControl from '@/components/master-admin/MasterExploreControl';
 import MasterReelsManager from '@/components/master-admin/MasterReelsManager';
@@ -116,6 +117,8 @@ const OwnerVault = () => {
         return <MasterExploreControl />;
       case 'reels':
         return <MasterReelsManager />;
+      case 'live':
+        return <VaultLiveMonitor />;
       case 'finance':
         return <VaultFinance />;
       case 'gifts':
