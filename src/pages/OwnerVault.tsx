@@ -108,6 +108,8 @@ const OwnerVault = () => {
     switch (activeTab) {
       case 'overview':
         return <VaultOverview stats={stats} maintenanceMode={maintenanceMode} onToggleMaintenance={toggleMaintenance} lastSecurityLog={securityLogs[0]?.created_at} />;
+      case 'intelligence':
+        return <VaultIntelligence />;
       case 'users':
         return <VaultUserDirectory />;
       case 'staff':
