@@ -91,9 +91,11 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
     return () => { ch.unsubscribe(); };
   }, [streamRowId]);
 
-  const handleGiftSent = (giftId: string, amount: number) => {
+  const handleGiftSent = async (giftId: string, amount: number) => {
     const meta = GIFT_META[giftId] || { icon: '🎁', name: 'هدية', price: 1 };
     const totalPrice = meta.price * amount;
+
+    // Optimistic UI
     setGemsCollected(g => g + totalPrice);
     setTieredEvents(prev => [
       ...prev,
@@ -111,6 +113,26 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
       ...prev,
       { id: Date.now().toString(), username: 'أنت', message: `أرسل ${meta.name} ${meta.icon}`, isVIP: true },
     ]);
+
+    // Server-side authoritative ledger entry (only when there is a remote creator)
+    const creator = agora.participants.find(p => !p.isLocal);
+    if (!creator || agora.isHost) return; // hosts don't tip themselves
+    try {
+      const { error } = await supabase.functions.invoke('process-gift', {
+        body: {
+          creator_id: String(creator.uid), // best-effort: real mapping requires uid->user_id table
+          gift_id: giftId,
+          gift_name: meta.name,
+          unit_price: meta.price,
+          quantity: amount,
+          channel_name: agora.channelName,
+          stream_id: streamRowId,
+        },
+      });
+      if (error) toast({ title: 'تعذّر تأكيد الهدية', description: error.message, variant: 'destructive' });
+    } catch (e: any) {
+      toast({ title: 'تعذّر إرسال الهدية', description: e?.message, variant: 'destructive' });
+    }
   };
 
   const completeGift = (id: string) => setTieredEvents(prev => prev.filter(e => e.id !== id));
