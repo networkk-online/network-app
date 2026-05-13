@@ -79,6 +79,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
+
   try {
     const { userId } = await req.json();
     
