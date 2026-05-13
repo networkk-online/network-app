@@ -30,6 +30,7 @@ const OwnerVault = () => {
   const [moderators, setModerators] = useState<any[]>([]);
   const [securityLogs, setSecurityLogs] = useState<any[]>([]);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [liveIndicators, setLiveIndicators] = useState(true);
   const [stats, setStats] = useState({ users: 0, posts: 0, deposits: 0, mods: 0 });
 
   useEffect(() => {
@@ -37,7 +38,24 @@ const OwnerVault = () => {
     fetchModerators();
     fetchSecurityLogs();
     fetchMaintenanceMode();
+    fetchLiveIndicators();
   }, []);
+
+  const fetchLiveIndicators = async () => {
+    const { data } = await supabase.from('app_settings').select('value').eq('key', 'live_indicators_enabled').maybeSingle();
+    setLiveIndicators((data?.value as any)?.enabled !== false);
+  };
+
+  const toggleLiveIndicators = async () => {
+    const newVal = !liveIndicators;
+    await supabase.from('app_settings').upsert({
+      key: 'live_indicators_enabled',
+      value: { enabled: newVal },
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'key' });
+    setLiveIndicators(newVal);
+    toast({ title: newVal ? '🟢 مؤشرات البث المباشر مُفعّلة' : '⚪ تم إيقاف مؤشرات البث' });
+  };
 
   const fetchStats = async () => {
     const [users, posts, deposits] = await Promise.all([
@@ -151,6 +169,15 @@ const OwnerVault = () => {
                     <p className="text-xs text-white/30 mt-1">إيقاف التطبيق ووضعه في حالة الصيانة</p>
                   </div>
                   <Switch checked={maintenanceMode} onCheckedChange={toggleMaintenance} />
+                </div>
+              </div>
+              <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-white font-medium">🟢 مؤشرات البث المباشر</h3>
+                    <p className="text-xs text-white/30 mt-1">إظهار حلقة LIVE النيون حول صور المستخدمين المباشرين</p>
+                  </div>
+                  <Switch checked={liveIndicators} onCheckedChange={toggleLiveIndicators} />
                 </div>
               </div>
             </CardContent>
