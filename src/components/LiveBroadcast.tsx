@@ -61,10 +61,35 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
     t: 0,
   });
   const [mutedUids, setMutedUids] = useState<Set<string>>(new Set());
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [streamRowId, setStreamRowId] = useState<string | null>(null);
+  const [hostUserId, setHostUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (agora.isInRoom) setStartedAt(Date.now());
   }, [agora.isInRoom]);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setHostUserId(data.user?.id ?? null));
+  }, []);
+
+  // Listen for kill-switch on this stream
+  useEffect(() => {
+    if (!streamRowId) return;
+    const ch = supabase
+      .channel(`stream-${streamRowId}`)
+      .on('postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'live_streams', filter: `id=eq.${streamRowId}` },
+          (p) => {
+            const next = (p.new as any)?.status;
+            if (next === 'killed') {
+              toast({ title: '🛑 تم إيقاف البث من قبل الإدارة', variant: 'destructive' });
+              agora.leaveRoom().finally(onClose);
+            }
+          })
+      .subscribe();
+    return () => { ch.unsubscribe(); };
+  }, [streamRowId]);
 
   const handleGiftSent = (giftId: string, amount: number) => {
     const meta = GIFT_META[giftId] || { icon: '🎁', name: 'هدية', price: 1 };
