@@ -88,6 +88,7 @@ const OwnerVault = () => {
 
   const tabTitles: Record<string, string> = {
     overview: 'نظرة عامة',
+    intelligence: 'مركز الاستخبارات',
     users: 'إدارة المستخدمين',
     staff: 'إدارة المشرفين',
     verification: 'التحقق من الهوية',
