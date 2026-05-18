@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useNativeApp } from "@/hooks/useNativeApp";
 import useFinanceNotifications from "@/hooks/useFinanceNotifications";
 import { ChimeCallProvider } from "@/components/ChimeCallProvider";
+import { AgoraCallProvider } from "@/components/calls/AgoraCallProvider";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Explore from "./pages/Explore";
