@@ -596,7 +596,7 @@ export const useAgoraCall = () => {
             receiver_id: peer.id,
             call_type: callType,
             channel_name: channel,
-            status: 'initiated',
+            status: 'ringing',
           })
           .select()
           .single();
@@ -608,7 +608,7 @@ export const useAgoraCall = () => {
           receiver_id: peer.id,
           call_type: callType,
           channel_name: channel,
-          status: 'initiated',
+          status: 'ringing',
           peer,
           direction: 'outgoing',
         };
