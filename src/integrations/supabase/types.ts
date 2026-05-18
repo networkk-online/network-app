@@ -199,6 +199,48 @@ export type Database = {
         }
         Relationships: []
       }
+      agora_calls: {
+        Row: {
+          call_type: string
+          caller_id: string
+          channel_name: string
+          created_at: string
+          ended_at: string | null
+          ended_by: string | null
+          id: string
+          receiver_id: string
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          call_type: string
+          caller_id: string
+          channel_name: string
+          created_at?: string
+          ended_at?: string | null
+          ended_by?: string | null
+          id?: string
+          receiver_id: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          call_type?: string
+          caller_id?: string
+          channel_name?: string
+          created_at?: string
+          ended_at?: string | null
+          ended_by?: string | null
+          id?: string
+          receiver_id?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           id: string
