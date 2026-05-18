@@ -1,6 +1,6 @@
 import { Phone, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useChimeCall } from '@/components/ChimeCallProvider';
+import { useAgoraCallContext } from '@/components/calls/AgoraCallProvider';
 import { toast } from '@/hooks/use-toast';
 
 interface CallButtonsProps {
@@ -23,18 +23,18 @@ const CallButtons = ({
   showLabels = false,
   className = ''
 }: CallButtonsProps) => {
-  const { startCall, isInCall, isInitialized, isConnecting } = useChimeCall();
+  const { startCall, activeCall, isCallReady, sessionLoading } = useAgoraCallContext();
 
   const handleVoiceCall = async () => {
-    if (!isInitialized) {
+    if (!isCallReady || sessionLoading) {
       toast({
-        title: 'جاري التحميل',
-        description: 'يرجى الانتظار...',
+        title: 'جاري تحميل الجلسة',
+        description: 'انتظر لحظة قبل بدء المكالمة...',
       });
       return;
     }
 
-    if (isInCall || isConnecting) {
+    if (activeCall) {
       toast({
         title: 'مكالمة جارية',
         description: 'أنت في مكالمة حالياً',
@@ -47,15 +47,15 @@ const CallButtons = ({
   };
 
   const handleVideoCall = async () => {
-    if (!isInitialized) {
+    if (!isCallReady || sessionLoading) {
       toast({
-        title: 'جاري التحميل',
-        description: 'يرجى الانتظار...',
+        title: 'جاري تحميل الجلسة',
+        description: 'انتظر لحظة قبل بدء المكالمة...',
       });
       return;
     }
 
-    if (isInCall || isConnecting) {
+    if (activeCall) {
       toast({
         title: 'مكالمة جارية',
         description: 'أنت في مكالمة حالياً',
