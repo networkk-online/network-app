@@ -421,7 +421,10 @@ export const EnhancedChatWindow = ({
                 exit={{ opacity: 0, y: 10 }}
                 transition={springConfig}
               >
-                <TypingIndicator username={otherUser.full_name || otherUser.username} />
+                <TypingIndicator
+                  username={otherUser.full_name || otherUser.username}
+                  avatarUrl={otherUser.avatar_url}
+                />
               </motion.div>
             )}
           </AnimatePresence>
