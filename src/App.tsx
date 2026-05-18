@@ -236,7 +236,9 @@ const App = () => (
         <ErrorBoundary>
           <MaintenanceGuard>
             <ChimeCallProvider>
-              <AppContent />
+              <AgoraCallProvider>
+                <AppContent />
+              </AgoraCallProvider>
             </ChimeCallProvider>
           </MaintenanceGuard>
         </ErrorBoundary>
