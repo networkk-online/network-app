@@ -419,15 +419,16 @@ const VideoPlayer = () => {
                   <Heart className="w-4 h-4" fill={liked ? NEON : 'transparent'} stroke={liked ? NEON : 'currentColor'} strokeWidth={1.6} />
                   <span className="tabular-nums">{formatViews(likesCount)}</span>
                 </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.92 }}
-                  onClick={handleShare}
-                  className="px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-medium"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.85)' }}
-                >
-                  <Share2 className="w-4 h-4" style={{ color: NEON }} strokeWidth={1.6} />
-                  مشاركة
-                </motion.button>
+                <PremiumShareButton
+                  shareData={{
+                    title: video?.title || 'Network Cinema Video',
+                    text: `Watch "${video?.title}" on Networkk Cinema`,
+                    url: window.location.href,
+                  }}
+                  variant="inline"
+                  showLabel
+                  label="مشاركة"
+                />
               </div>
             </div>
 
