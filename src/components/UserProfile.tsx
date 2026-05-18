@@ -22,6 +22,7 @@ import { ReportDialog } from '@/components/ReportDialog';
 import { ImageCropDialog } from '@/components/ImageCropDialog';
 import CallButtons from '@/components/CallButtons';
 import AffiliationBadge from '@/components/AffiliationBadge';
+import { PremiumShareButton } from '@/components/PremiumShareButton';
 
 // Social media icons
 const TikTokIcon = () => (
@@ -647,7 +648,7 @@ const UserProfile = ({
 
           {/* Action Buttons */}
           {isOwnProfile ? (
-            <div className="flex gap-3 mb-4">
+            <div className="flex gap-3 mb-4 items-center">
               <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                 <DialogTrigger asChild>
                   <Button 
@@ -871,6 +872,15 @@ const UserProfile = ({
                 </DialogContent>
               </Dialog>
 
+              <PremiumShareButton
+                shareData={{
+                  title: `${displayName} (@${username}) on Network`,
+                  text: bio || `Check out ${displayName}'s profile on Network!`,
+                  url: `${window.location.origin}/profile/${profileId || ''}`,
+                }}
+                variant="icon-only"
+              />
+
               {verificationStatus === 'none' && (
                 <Button
                   onClick={handleVerificationRequest}
@@ -918,6 +928,14 @@ const UserProfile = ({
                 variant="outline"
                 size="lg"
                 className="flex-shrink-0"
+              />
+              <PremiumShareButton
+                shareData={{
+                  title: `${displayName} (@${username}) on Network`,
+                  text: bio || `Check out ${displayName}'s profile on Network!`,
+                  url: `${window.location.origin}/profile/${profileId || ''}`,
+                }}
+                variant="icon-only"
               />
             </div>
           )}

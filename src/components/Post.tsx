@@ -13,6 +13,7 @@ import { CommentSection } from '@/components/CommentSection';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { useRepost } from '@/hooks/useRepost';
 import { PremiumShareSheet } from '@/components/PremiumShareSheet';
+import { PremiumShareButton } from '@/components/PremiumShareButton';
 import { TipDialog } from '@/components/TipDialog';
 import AffiliationBadge from '@/components/AffiliationBadge';
 import { useAffiliation } from '@/hooks/useAffiliation';
@@ -444,14 +445,14 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
                 strokeWidth={1.4}
               />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-0 hover:bg-transparent interactive-element"
-              onClick={() => setShowShareMenu(true)}
-            >
-              <Send className="w-[22px] h-[22px] text-white/50 hover:text-primary transition-colors" strokeWidth={1.4} />
-            </Button>
+            <PremiumShareButton
+              shareData={{
+                title: `${username} on Network`,
+                text: getShareText(),
+                url: getShareUrl(),
+              }}
+              variant="icon-only"
+            />
             {currentUser?.id !== userId && (
               <Button 
                 variant="ghost" 

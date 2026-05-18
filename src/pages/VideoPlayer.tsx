@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowRight, Play, Pause, Volume2, VolumeX, Maximize, Heart, Share2, Eye, Clock, ChevronDown, ChevronUp, Send, MessageCircle } from 'lucide-react';
+import { ArrowRight, Play, Pause, Volume2, VolumeX, Maximize, Heart, Eye, Clock, ChevronDown, ChevronUp, Send, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { PremiumShareButton } from '@/components/PremiumShareButton';
 
 const NEON = '#39FF14';
 
@@ -216,13 +217,6 @@ const VideoPlayer = () => {
     }
   };
 
-  const handleShare = async () => {
-    const url = window.location.href;
-    try {
-      if (navigator.share) await navigator.share({ title: video?.title, url });
-      else { await navigator.clipboard.writeText(url); toast.success('تم نسخ الرابط'); }
-    } catch {}
-  };
 
   const submitComment = async () => {
     if (!newComment.trim() || !currentUserId) return;
@@ -418,15 +412,16 @@ const VideoPlayer = () => {
                   <Heart className="w-4 h-4" fill={liked ? NEON : 'transparent'} stroke={liked ? NEON : 'currentColor'} strokeWidth={1.6} />
                   <span className="tabular-nums">{formatViews(likesCount)}</span>
                 </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.92 }}
-                  onClick={handleShare}
-                  className="px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-medium"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.85)' }}
-                >
-                  <Share2 className="w-4 h-4" style={{ color: NEON }} strokeWidth={1.6} />
-                  مشاركة
-                </motion.button>
+                <PremiumShareButton
+                  shareData={{
+                    title: video?.title || 'Network Cinema Video',
+                    text: `Watch "${video?.title}" on Networkk Cinema`,
+                    url: window.location.href,
+                  }}
+                  variant="inline"
+                  showLabel
+                  label="مشاركة"
+                />
               </div>
             </div>
 
