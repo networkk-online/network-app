@@ -348,7 +348,7 @@ export const useAgoraCall = () => {
           if (row.status === 'accepted') {
             stopIncomingAlerts();
             if (prev.direction === 'outgoing') {
-              joinAgoraChannel(next).catch(() => undefined);
+              joinAgoraChannelRef.current?.(next).catch(() => undefined);
             }
           }
 
