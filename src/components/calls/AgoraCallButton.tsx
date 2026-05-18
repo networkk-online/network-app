@@ -14,15 +14,15 @@ interface Props {
  * Use `type="voice"`, `"video"`, or `"both"` (renders two buttons).
  */
 export const AgoraCallButton = ({ peer, type = 'both', className = '' }: Props) => {
-  const { startCall, activeCall } = useAgoraCallContext();
+  const { startCall, activeCall, isCallReady, sessionLoading } = useAgoraCallContext();
 
   const Btn = ({ kind }: { kind: 'voice' | 'video' }) => (
     <motion.button
       whileTap={{ scale: 0.9 }}
       whileHover={{ scale: 1.05 }}
-      disabled={!!activeCall}
+      disabled={!!activeCall || !isCallReady || sessionLoading}
       onClick={() => startCall(peer, kind)}
-      title={kind === 'video' ? 'مكالمة فيديو' : 'مكالمة صوتية'}
+      title={!isCallReady ? 'جاري تحميل الجلسة...' : kind === 'video' ? 'مكالمة فيديو' : 'مكالمة صوتية'}
       className={`h-11 w-11 rounded-full flex items-center justify-center backdrop-blur-xl bg-white/[0.06] border border-[#00FF00]/40 text-[#00FF00] shadow-[0_0_15px_rgba(0,255,0,0.25)] hover:bg-[#00FF00]/15 hover:shadow-[0_0_25px_rgba(0,255,0,0.5)] transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
     >
       {kind === 'video' ? <Video className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
