@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowRight, Play, Pause, Volume2, VolumeX, Maximize, Heart, Share2, Eye, Clock, ChevronDown, ChevronUp, Send, MessageCircle } from 'lucide-react';
+import { ArrowRight, Play, Pause, Volume2, VolumeX, Maximize, Heart, Eye, Clock, ChevronDown, ChevronUp, Send, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { PremiumShareButton } from '@/components/PremiumShareButton';
 
 const NEON = '#39FF14';
 
