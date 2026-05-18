@@ -1,0 +1,2 @@
+-- Add PremiumShareButton component integration
+-- No database changes needed for this frontend feature
