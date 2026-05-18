@@ -648,7 +648,7 @@ const UserProfile = ({
 
           {/* Action Buttons */}
           {isOwnProfile ? (
-            <div className="flex gap-3 mb-4">
+            <div className="flex gap-3 mb-4 items-center">
               <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                 <DialogTrigger asChild>
                   <Button 
