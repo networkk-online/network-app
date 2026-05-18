@@ -872,6 +872,15 @@ const UserProfile = ({
                 </DialogContent>
               </Dialog>
 
+              <PremiumShareButton
+                shareData={{
+                  title: `${displayName} (@${username}) on Network`,
+                  text: bio || `Check out ${displayName}'s profile on Network!`,
+                  url: `${window.location.origin}/profile/${profileId || ''}`,
+                }}
+                variant="icon-only"
+              />
+
               {verificationStatus === 'none' && (
                 <Button
                   onClick={handleVerificationRequest}
