@@ -108,6 +108,7 @@ export const useAgoraCall = () => {
   const ringtoneGainRef = useRef<GainNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const reconnectAttemptsRef = useRef(0);
+  const joinAgoraChannelRef = useRef<((call: ActiveCall, reconnecting?: boolean) => Promise<void>) | null>(null);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
@@ -502,7 +503,7 @@ export const useAgoraCall = () => {
           await teardownAgora(false);
           window.setTimeout(() => {
             const latest = activeCallRef.current;
-            if (latest?.status === 'accepted') joinAgoraChannel(latest, true).catch(() => undefined);
+            if (latest?.status === 'accepted') joinAgoraChannelRef.current?.(latest, true).catch(() => undefined);
           }, 1200 * reconnectAttemptsRef.current);
         }
         console.info('[Agora calls] connection-state-change', { curState, reason });
@@ -550,11 +551,21 @@ export const useAgoraCall = () => {
         variant: 'destructive',
       });
       await teardownAgora();
-      if (activeCallRef.current && !reconnecting) await endCall();
+      if (activeCallRef.current && !reconnecting) {
+        await updateCallStatus(activeCallRef.current.id, {
+          status: 'ended',
+          ended_at: new Date().toISOString(),
+          ended_by: currentUserIdRef.current,
+        }, 'end failed join');
+      }
     } finally {
       setJoining(false);
     }
-  }, [preferences.default_camera_off, preferences.default_mic_muted, startQualityMonitor, teardownAgora, toast]);
+  }, [preferences.default_camera_off, preferences.default_mic_muted, startQualityMonitor, teardownAgora, toast, updateCallStatus]);
+
+  useEffect(() => {
+    joinAgoraChannelRef.current = joinAgoraChannel;
+  }, [joinAgoraChannel]);
 
   const startCall = useCallback(
     async (peer: CallPeer, callType: 'voice' | 'video') => {
