@@ -217,13 +217,6 @@ const VideoPlayer = () => {
     }
   };
 
-  const handleShare = async () => {
-    const url = window.location.href;
-    try {
-      if (navigator.share) await navigator.share({ title: video?.title, url });
-      else { await navigator.clipboard.writeText(url); toast.success('تم نسخ الرابط'); }
-    } catch {}
-  };
 
   const submitComment = async () => {
     if (!newComment.trim() || !currentUserId) return;
