@@ -13,6 +13,7 @@ import { CommentSection } from '@/components/CommentSection';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { useRepost } from '@/hooks/useRepost';
 import { PremiumShareSheet } from '@/components/PremiumShareSheet';
+import { PremiumShareButton } from '@/components/PremiumShareButton';
 import { TipDialog } from '@/components/TipDialog';
 import AffiliationBadge from '@/components/AffiliationBadge';
 import { useAffiliation } from '@/hooks/useAffiliation';
