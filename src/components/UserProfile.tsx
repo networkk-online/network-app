@@ -22,6 +22,7 @@ import { ReportDialog } from '@/components/ReportDialog';
 import { ImageCropDialog } from '@/components/ImageCropDialog';
 import CallButtons from '@/components/CallButtons';
 import AffiliationBadge from '@/components/AffiliationBadge';
+import { PremiumShareButton } from '@/components/PremiumShareButton';
 
 // Social media icons
 const TikTokIcon = () => (
