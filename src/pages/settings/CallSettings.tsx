@@ -113,6 +113,10 @@ const CallSettingsPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      if (newSettings.push_notifications && 'Notification' in window && Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+
       const updatedSettings = { ...settings, ...newSettings };
       setSettings(updatedSettings);
 

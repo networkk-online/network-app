@@ -426,6 +426,7 @@ export type Database = {
       }
       call_history: {
         Row: {
+          agora_call_id: string | null
           call_type: string
           caller_id: string
           created_at: string
@@ -437,6 +438,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          agora_call_id?: string | null
           call_type: string
           caller_id: string
           created_at?: string
@@ -448,6 +450,7 @@ export type Database = {
           status: string
         }
         Update: {
+          agora_call_id?: string | null
           call_type?: string
           caller_id?: string
           created_at?: string

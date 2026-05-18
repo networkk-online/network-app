@@ -17,7 +17,7 @@ export const useAgoraCallContext = () => {
 export const AgoraCallProvider = ({ children }: { children: ReactNode }) => {
   const api = useAgoraCall();
   const { activeCall, remoteUsers, localVideoTrack, isMuted, isCameraOff, joining,
-    permissionError, acceptCall, rejectCall, endCall, toggleMute, toggleCamera, flipCamera } = api;
+    permissionError, quality, connectionMessage, acceptCall, rejectCall, endCall, toggleMute, toggleCamera, flipCamera } = api;
 
   const showIncoming =
     activeCall && activeCall.direction === 'incoming' &&
@@ -52,6 +52,8 @@ export const AgoraCallProvider = ({ children }: { children: ReactNode }) => {
             isCameraOff={isCameraOff}
             joining={joining}
             permissionError={permissionError}
+            quality={quality}
+            connectionMessage={connectionMessage}
             onToggleMute={toggleMute}
             onToggleCamera={toggleCamera}
             onFlipCamera={flipCamera}

@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { IAgoraRTCRemoteUser, ICameraVideoTrack } from 'agora-rtc-sdk-ng';
-import type { ActiveCall } from '@/hooks/useAgoraCall';
+import type { ActiveCall, CallQuality } from '@/hooks/useAgoraCall';
 
 interface Props {
   call: ActiveCall;
@@ -15,6 +15,8 @@ interface Props {
   isCameraOff: boolean;
   joining: boolean;
   permissionError: 'denied' | 'unavailable' | null;
+  quality: CallQuality;
+  connectionMessage: string | null;
   onToggleMute: () => void;
   onToggleCamera: () => void;
   onFlipCamera: () => void;
@@ -29,6 +31,8 @@ export const ActiveCallScreen = ({
   isCameraOff,
   joining,
   permissionError,
+  quality,
+  connectionMessage,
   onToggleMute,
   onToggleCamera,
   onFlipCamera,
@@ -146,13 +150,14 @@ export const ActiveCallScreen = ({
       )}
 
       {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 z-10 pt-6 px-6">
+      <div className="absolute top-0 left-0 right-0 z-10 pt-6 px-6 space-y-3">
         <div className="mx-auto max-w-sm rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/10 px-4 py-2 flex items-center justify-center">
-          <span className="w-2 h-2 rounded-full bg-[#00FF00] animate-pulse mr-2 shadow-[0_0_8px_#00FF00]" />
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse mr-2 shadow-[0_0_8px_hsl(var(--primary))]" />
           <span className="text-white/90 text-sm font-medium">
             {call.status === 'accepted' ? `${mm}:${ss}` : 'متصل...'}
           </span>
         </div>
+        <QualityBadge quality={quality} message={connectionMessage} />
       </div>
 
       {/* Permission error toast */}
@@ -248,3 +253,22 @@ const ControlButton = ({
     <span className="text-[10px] text-white/70">{label}</span>
   </motion.button>
 );
+
+const QualityBadge = ({ quality, message }: { quality: CallQuality; message: string | null }) => {
+  const tone = quality.label === 'poor' || quality.label === 'reconnecting'
+    ? 'border-destructive/50 text-destructive bg-destructive/10'
+    : quality.label === 'fair'
+    ? 'border-yellow-500/50 text-yellow-300 bg-yellow-500/10'
+    : 'border-primary/50 text-primary bg-primary/10';
+
+  return (
+    <div className={`mx-auto max-w-md rounded-2xl backdrop-blur-xl border px-4 py-2 ${tone}`}>
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] font-medium">
+        <span>{message || (quality.label === 'excellent' ? 'اتصال ممتاز' : quality.label === 'good' ? 'اتصال جيد' : quality.label === 'fair' ? 'اتصال متوسط' : 'اتصال ضعيف')}</span>
+        <span>{quality.latency ?? '--'}ms</span>
+        <span>{quality.bitrate ?? '--'}kbps</span>
+        <span>{quality.packetLoss ?? '--'}% loss</span>
+      </div>
+    </div>
+  );
+};
