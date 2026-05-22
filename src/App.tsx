@@ -44,6 +44,7 @@ import ContentPreferences from "./pages/settings/ContentPreferences";
 import ArchiveDownload from "./pages/settings/ArchiveDownload";
 import AccessibilitySettings from "./pages/settings/AccessibilitySettings";
 import AccountStatus from "./pages/settings/AccountStatus";
+import AccountCenter from "./pages/settings/AccountCenter";
 import CreatorTools from "./pages/settings/CreatorTools";
 import NotificationsSettings from "./pages/settings/NotificationsSettings";
 import HiddenWords from "./pages/settings/HiddenWords";
@@ -167,6 +168,8 @@ const AppContent = () => {
         <Route path="/settings/archive" element={<ArchiveDownload />} />
         <Route path="/settings/accessibility" element={<AccessibilitySettings />} />
         <Route path="/settings/account-status" element={<AccountStatus />} />
+        <Route path="/settings/account-center" element={<AccountCenter />} />
+        <Route path="/account-center" element={<AccountCenter />} />
         <Route path="/settings/creator-tools" element={<CreatorTools />} />
         <Route path="/settings/notifications" element={<NotificationsSettings />} />
         <Route path="/settings/hidden-words" element={<HiddenWords />} />
