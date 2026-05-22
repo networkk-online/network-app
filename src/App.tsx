@@ -168,6 +168,8 @@ const AppContent = () => {
         <Route path="/settings/archive" element={<ArchiveDownload />} />
         <Route path="/settings/accessibility" element={<AccessibilitySettings />} />
         <Route path="/settings/account-status" element={<AccountStatus />} />
+        <Route path="/settings/account-center" element={<AccountCenter />} />
+        <Route path="/account-center" element={<AccountCenter />} />
         <Route path="/settings/creator-tools" element={<CreatorTools />} />
         <Route path="/settings/notifications" element={<NotificationsSettings />} />
         <Route path="/settings/hidden-words" element={<HiddenWords />} />
