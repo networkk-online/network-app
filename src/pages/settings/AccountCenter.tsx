@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { MaskedEmail } from '@/components/MaskedEmail';
 
 interface ContactInfo {
   email: string | null;
@@ -219,7 +220,11 @@ const AccountCenter = () => {
       {activeSheet === 'contact' && contact && (
         <Sheet title="معلومات الاتصال" onClose={() => setActiveSheet(null)}>
           <div className="space-y-3">
-            <Row icon={<Mail size={18} />} label="البريد الإلكتروني" value={contact.email ?? 'غير محدد'} />
+            <Row
+              icon={<Mail size={18} />}
+              label="البريد الإلكتروني"
+              value={contact.email ? <MaskedEmail email={contact.email} /> : 'غير محدد'}
+            />
             <Row
               icon={<Smartphone size={18} />}
               label="رقم الهاتف"
@@ -321,7 +326,7 @@ const Sheet = ({ title, onClose, children }: { title: string; onClose: () => voi
   </div>
 );
 
-const Row = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+const Row = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) => (
   <div className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-800/60 rounded-xl p-3">
     <div className="text-emerald-400">{icon}</div>
     <div className="flex-1 min-w-0">
