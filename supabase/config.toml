@@ -1,37 +1,29 @@
 project_id = "ykjnpcrseiyltsazbnci"
 
-[functions.admin-update-password]
-verify_jwt = false
-
-[functions.test-dynamodb]
-verify_jwt = false
-
-[functions.sync-to-dynamodb]
-verify_jwt = false
-
-[functions.log-user-data]
-verify_jwt = false
-
-[functions.get-user-logs]
-verify_jwt = false
-
-[functions.get-user-logs-by-id]
-verify_jwt = false
-
-[functions.get-ip-location]
-verify_jwt = false
-
-[functions.send-admin-otp]
-verify_jwt = false
-
-[functions.lookup-username]
-verify_jwt = false
-
-[functions.daily-room]
-verify_jwt = false
-
-[functions.send-login-otp]
-verify_jwt = false
-
-[functions.verify-login-otp]
-verify_jwt = false
+[functions]
+  [functions.admin-update-password]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.daily-room]
+    verify_jwt = false
+  [functions.get-ip-location]
+    verify_jwt = false
+  [functions.get-user-logs]
+    verify_jwt = false
+  [functions.get-user-logs-by-id]
+    verify_jwt = false
+  [functions.log-user-data]
+    verify_jwt = false
+  [functions.lookup-username]
+    verify_jwt = false
+  [functions.send-admin-otp]
+    verify_jwt = false
+  [functions.send-login-otp]
+    verify_jwt = false
+  [functions.sync-to-dynamodb]
+    verify_jwt = false
+  [functions.test-dynamodb]
+    verify_jwt = false
+  [functions.verify-login-otp]
+    verify_jwt = false
