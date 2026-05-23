@@ -220,7 +220,11 @@ const VerifyOtp = () => {
           <div className="space-y-6">
             <p className="text-center text-zinc-400 text-sm">
               تم إرسال الرمز إلى{' '}
-              <span className="text-emerald-400 font-medium" dir="ltr">{identifier}</span>
+              {authMethod === 'email' ? (
+                <MaskedEmail email={identifier} className="font-bold text-base" />
+              ) : (
+                <span className="text-emerald-400 font-medium" dir="ltr">{identifier}</span>
+              )}
             </p>
 
             <div className="flex justify-center gap-2.5" dir="ltr" onPaste={handlePaste}>
