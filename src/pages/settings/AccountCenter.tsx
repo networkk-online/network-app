@@ -220,7 +220,11 @@ const AccountCenter = () => {
       {activeSheet === 'contact' && contact && (
         <Sheet title="معلومات الاتصال" onClose={() => setActiveSheet(null)}>
           <div className="space-y-3">
-            <Row icon={<Mail size={18} />} label="البريد الإلكتروني" value={contact.email ?? 'غير محدد'} />
+            <Row
+              icon={<Mail size={18} />}
+              label="البريد الإلكتروني"
+              value={contact.email ? <MaskedEmail email={contact.email} /> : 'غير محدد'}
+            />
             <Row
               icon={<Smartphone size={18} />}
               label="رقم الهاتف"
