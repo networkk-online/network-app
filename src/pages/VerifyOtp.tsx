@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Smartphone, Mail, ArrowRight, Loader2, ShieldCheck, RotateCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { MaskedEmail } from '@/components/MaskedEmail';
 import networkLogo from '@/assets/network-logo.png';
 
 type AuthMethod = 'phone' | 'email';
