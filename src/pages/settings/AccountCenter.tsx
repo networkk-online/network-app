@@ -326,7 +326,7 @@ const Sheet = ({ title, onClose, children }: { title: string; onClose: () => voi
   </div>
 );
 
-const Row = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+const Row = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) => (
   <div className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-800/60 rounded-xl p-3">
     <div className="text-emerald-400">{icon}</div>
     <div className="flex-1 min-w-0">
