@@ -13,6 +13,9 @@ const VerifyOtp = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const presetEmail = searchParams.get('email') || '';
+  const flow = searchParams.get('flow') || ''; // 'login' = custom login OTP flow
+
+  const isLoginFlow = flow === 'login';
 
   const [authMethod, setAuthMethod] = useState<AuthMethod>(presetEmail ? 'email' : 'phone');
   const [step, setStep] = useState<Step>(presetEmail ? 'verify' : 'input');
@@ -36,11 +39,20 @@ const VerifyOtp = () => {
     if (authMethod === 'email') {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim());
     }
-    // phone: digits, optional +, 8-15 chars
     return /^\+?\d{8,15}$/.test(identifier.trim().replace(/\s/g, ''));
   };
 
   const sendCode = async () => {
+    // Login-flow resends are not supported here (we don't have the password) → ask user to retry login
+    if (isLoginFlow) {
+      toast({
+        title: 'يلزم إعادة تسجيل الدخول',
+        description: 'لإرسال رمز جديد، يرجى العودة لصفحة تسجيل الدخول',
+        variant: 'destructive',
+      });
+      navigate('/login');
+      return;
+    }
     if (!validateIdentifier()) {
       toast({
         title: 'إدخال غير صالح',
@@ -81,6 +93,34 @@ const VerifyOtp = () => {
     setIsLoading(true);
     try {
       const cleaned = identifier.trim().replace(/\s/g, '');
+
+      // --- Login-flow: verify via custom edge function then mint session via magiclink ---
+      if (isLoginFlow) {
+        const { data: res, error: fnErr } = await supabase.functions.invoke('verify-login-otp', {
+          body: { email: cleaned, code },
+        });
+        if (fnErr || !res?.success || !res?.token_hash) {
+          toast({
+            title: 'رمز غير صحيح',
+            description: res?.error || 'رمز التحقق غير صحيح أو منتهي',
+            variant: 'destructive',
+          });
+          return;
+        }
+        const { data: vData, error: vErr } = await supabase.auth.verifyOtp({
+          token_hash: res.token_hash,
+          type: 'magiclink',
+        });
+        if (vErr || !vData.session) {
+          toast({ title: 'خطأ', description: vErr?.message || 'تعذر إنشاء الجلسة', variant: 'destructive' });
+          return;
+        }
+        toast({ title: 'تم تسجيل الدخول ✅', description: 'مرحباً بك في نيتورك!' });
+        navigate('/');
+        return;
+      }
+
+      // --- Default: Supabase native OTP (signup / passwordless) ---
       const params =
         authMethod === 'email'
           ? { email: cleaned, token: code, type: 'email' as const }
