@@ -59,47 +59,62 @@ const Login = () => {
       const trimmed = identifier.trim();
       const isUsername = !trimmed.includes('@') && !/^[\d\+٠-٩]/.test(trimmed);
 
-      // For username logins, do server-side sign-in so email is never exposed.
+      // Resolve to email. For usernames, use lookup-username with password to confirm and get email.
+      let loginEmail: string | null = null;
       if (isUsername) {
         const { data: r, error: rErr } = await supabase.functions.invoke('lookup-username', {
           body: { username: trimmed.toLowerCase(), password },
         });
-        if (rErr || !r?.session) {
+        if (rErr || !r?.email) {
           toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
           return;
         }
-        await supabase.auth.setSession({
-          access_token: r.session.access_token,
-          refresh_token: r.session.refresh_token,
-        });
-        // Re-use existing post-login flow by re-fetching session below
+        loginEmail = r.email;
+      } else {
+        loginEmail = await resolveEmail(identifier);
       }
 
-      const loginEmail = isUsername ? null : await resolveEmail(identifier);
-      const { data, error } = isUsername
-        ? await supabase.auth.getSession().then(({ data: s }) => ({ data: { session: s.session }, error: null as any }))
-        : await supabase.auth.signInWithPassword({ email: loginEmail!, password });
-      if (error) { toast({ title: 'خطأ في تسجيل الدخول', description: error.message === 'Invalid login credentials' ? 'البيانات غير صحيحة. تحقق من اسم المستخدم/البريد وكلمة المرور' : error.message, variant: 'destructive' }); return; }
-      if (data.session) {
-        // Save new session to account switcher storage
-        const { data: profile } = await supabase.from('profiles').select('username, full_name, avatar_url').eq('id', data.session.user.id).maybeSingle();
-        const stored = JSON.parse(localStorage.getItem('network_linked_accounts') || '[]');
-        const filtered = stored.filter((a: any) => a.id !== data.session!.user.id);
-        filtered.push({
-          id: data.session.user.id,
-          email: data.session.user.email,
-          username: profile?.username || null,
-          full_name: profile?.full_name || null,
-          avatar_url: profile?.avatar_url || null,
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
-        });
-        localStorage.setItem('network_linked_accounts', JSON.stringify(filtered));
+      if (!loginEmail) {
+        toast({ title: 'خطأ', description: 'تعذر تحديد البريد الإلكتروني', variant: 'destructive' });
+        return;
+      }
 
-        toast({ title: isAddAccount ? 'تم إضافة الحساب ✅' : 'تم تسجيل الدخول بنجاح', description: isAddAccount ? 'يمكنك التبديل بين حساباتك الآن' : 'مرحباً بك مجدداً!' });
+      // For phone-based logins, Supabase auth uses phone not email - fall back to legacy flow
+      if (loginEmail.startsWith('+')) {
+        const { data, error } = await supabase.auth.signInWithPassword({ phone: loginEmail, password } as any);
+        if (error || !data.session) {
+          toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
+          return;
+        }
         logLogin(data.session.user.id);
         navigate('/profile');
+        return;
       }
+
+      // Send OTP to email (validates password server-side, then emails branded OTP)
+      const { data: otpRes, error: otpErr } = await supabase.functions.invoke('send-login-otp', {
+        body: { email: loginEmail, password },
+      });
+
+      if (otpErr || !otpRes?.success) {
+        const msg = (otpErr as any)?.context?.body
+          ? (await (otpErr as any).context.json?.())?.error
+          : otpRes?.error;
+        toast({
+          title: 'خطأ في تسجيل الدخول',
+          description: msg || 'البيانات غير صحيحة أو تعذر إرسال الرمز',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'تم إرسال رمز التحقق ✉️',
+        description: otpRes.debug_otp
+          ? `الرمز (وضع التطوير): ${otpRes.debug_otp}`
+          : 'تفقد بريدك الإلكتروني لإكمال تسجيل الدخول',
+      });
+      navigate(`/verify-otp?flow=login&email=${encodeURIComponent(loginEmail)}`);
     } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' }); }
     finally { setIsLoading(false); }
   };
