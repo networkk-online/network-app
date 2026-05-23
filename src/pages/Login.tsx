@@ -65,11 +65,13 @@ const Login = () => {
         const { data: r, error: rErr } = await supabase.functions.invoke('lookup-username', {
           body: { username: trimmed.toLowerCase(), password },
         });
-        if (rErr || !r?.email) {
+        if (rErr || !r?.session?.user?.email) {
           toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
           return;
         }
-        loginEmail = r.email;
+        loginEmail = r.session.user.email;
+        // Sign out the temp session created by lookup-username — OTP step will mint a new one
+        await supabase.auth.signOut();
       } else {
         loginEmail = await resolveEmail(identifier);
       }
