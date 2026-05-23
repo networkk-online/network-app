@@ -8,10 +8,16 @@ import {
   Container,
   Head,
   Heading,
+  Hr,
   Html,
+  Img,
   Preview,
+  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+
+const LOGO_URL =
+  'https://ykjnpcrseiyltsazbnci.supabase.co/storage/v1/object/public/email-assets/network-logo.png'
 
 interface MagicLinkEmailProps {
   siteName: string
@@ -22,22 +28,28 @@ export const MagicLinkEmail = ({
   siteName,
   confirmationUrl,
 }: MagicLinkEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="ar" dir="rtl">
     <Head />
-    <Preview>Your login link for {siteName}</Preview>
+    <Preview>رابط تسجيل الدخول إلى {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Your login link</Heading>
-        <Text style={text}>
-          Click the button below to log in to {siteName}. This link will expire
-          shortly.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Log In
-        </Button>
-        <Text style={footer}>
-          If you didn't request this link, you can safely ignore this email.
-        </Text>
+        <Section style={header}>
+          <Img src={LOGO_URL} width="56" height="56" alt="Network" style={logo} />
+        </Section>
+        <Section style={card}>
+          <Heading style={h1}>رابط تسجيل الدخول</Heading>
+          <Text style={text}>
+            اضغط على الزر أدناه لتسجيل الدخول إلى {siteName}. تنتهي صلاحية هذا الرابط قريباً.
+          </Text>
+          <Button style={button} href={confirmationUrl}>
+            تسجيل الدخول
+          </Button>
+          <Hr style={hr} />
+          <Text style={footer}>
+            إذا لم تطلب هذا الرابط، يمكنك تجاهل هذه الرسالة بأمان.
+          </Text>
+        </Section>
+        <Text style={brandFooter}>© Network — networkk.online</Text>
       </Container>
     </Body>
   </Html>
@@ -45,26 +57,36 @@ export const MagicLinkEmail = ({
 
 export default MagicLinkEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
+const main = {
+  backgroundColor: '#ffffff',
+  fontFamily: "'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif",
+  padding: '24px 0',
 }
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
+const container = { maxWidth: '560px', margin: '0 auto', padding: '0 16px' }
+const header = { textAlign: 'center' as const, padding: '8px 0 20px' }
+const logo = { margin: '0 auto', display: 'block' }
+const card = {
+  backgroundColor: '#ffffff',
+  border: '1px solid #e6e8eb',
+  borderRadius: '20px',
+  padding: '32px 28px',
+  boxShadow: '0 4px 24px rgba(8, 160, 69, 0.08)',
+  borderTop: '3px solid #08A045',
+  textAlign: 'center' as const,
 }
+const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#0a0a0a', margin: '0 0 16px' }
+const text = { fontSize: '15px', color: '#4b5563', lineHeight: '1.7', margin: '0 0 28px' }
 const button = {
-  backgroundColor: '#000000',
+  backgroundColor: '#08A045',
   color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  fontSize: '15px',
+  fontWeight: 'bold' as const,
+  borderRadius: '14px',
+  padding: '14px 32px',
   textDecoration: 'none',
+  display: 'inline-block',
+  boxShadow: '0 6px 16px rgba(8, 160, 69, 0.35)',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const hr = { borderColor: '#eef0f2', margin: '28px 0 16px' }
+const footer = { fontSize: '12px', color: '#9ca3af', margin: '0' }
+const brandFooter = { fontSize: '12px', color: '#9ca3af', textAlign: 'center' as const, margin: '20px 0 0' }
