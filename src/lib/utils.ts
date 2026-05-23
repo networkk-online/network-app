@@ -32,7 +32,7 @@ export function maskEmail(email: string): string {
 
   if (local.length <= 2) return email;
   if (local.length <= 4) {
-    return local[3] + '•'.repeat(6) + local[local.length - 1] + domain;
+    return local[0] + '•'.repeat(6) + local[local.length - 1] + domain;
   }
 
   const first = local.slice(0, 3);
