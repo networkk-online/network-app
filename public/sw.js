@@ -1,6 +1,6 @@
 // Service Worker - Networkk Online PWA
-const CACHE_NAME = 'networkk-v1';
-const APP_SHELL = ['/', '/manifest.json', '/favicon.png'];
+const CACHE_NAME = 'networkk-v2-green-logo';
+const APP_SHELL = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-maskable-192.png', '/icon-maskable-512.png', '/apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -10,11 +10,15 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    // Nuke ALL previous caches so old yellow icons are evicted
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)));
+    await self.clients.claim();
+    // Force open clients to reload so the new manifest + icons are picked up
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    clients.forEach((c) => { try { c.navigate(c.url); } catch {} });
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
