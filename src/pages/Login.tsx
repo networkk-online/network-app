@@ -59,19 +59,16 @@ const Login = () => {
       const trimmed = identifier.trim();
       const isUsername = !trimmed.includes('@') && !/^[\d\+٠-٩]/.test(trimmed);
 
-      // Resolve to email. For usernames, use lookup-username with password to confirm and get email.
       let loginEmail: string | null = null;
       if (isUsername) {
         const { data: r, error: rErr } = await supabase.functions.invoke('lookup-username', {
-          body: { username: trimmed.toLowerCase(), password },
+          body: { username: trimmed.toLowerCase() },
         });
-        if (rErr || !r?.session?.user?.email) {
-          toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
+        if (rErr || !r?.email) {
+          toast({ title: 'خطأ في تسجيل الدخول', description: 'اسم المستخدم غير موجود', variant: 'destructive' });
           return;
         }
-        loginEmail = r.session.user.email;
-        // Sign out the temp session created by lookup-username — OTP step will mint a new one
-        await supabase.auth.signOut();
+        loginEmail = r.email;
       } else {
         loginEmail = await resolveEmail(identifier);
       }
@@ -81,42 +78,18 @@ const Login = () => {
         return;
       }
 
-      // For phone-based logins, Supabase auth uses phone not email - fall back to legacy flow
-      if (loginEmail.startsWith('+')) {
-        const { data, error } = await supabase.auth.signInWithPassword({ phone: loginEmail, password } as any);
-        if (error || !data.session) {
-          toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
-          return;
-        }
-        logLogin(data.session.user.id);
-        navigate('/profile');
+      // Direct sign-in with password (no OTP)
+      const credentials = loginEmail.startsWith('+')
+        ? ({ phone: loginEmail, password } as any)
+        : { email: loginEmail, password };
+
+      const { data, error } = await supabase.auth.signInWithPassword(credentials);
+      if (error || !data.session) {
+        toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
         return;
       }
-
-      // Send OTP to email (validates password server-side, then emails branded OTP)
-      const { data: otpRes, error: otpErr } = await supabase.functions.invoke('send-login-otp', {
-        body: { email: loginEmail, password },
-      });
-
-      if (otpErr || !otpRes?.success) {
-        const msg = (otpErr as any)?.context?.body
-          ? (await (otpErr as any).context.json?.())?.error
-          : otpRes?.error;
-        toast({
-          title: 'خطأ في تسجيل الدخول',
-          description: msg || 'البيانات غير صحيحة أو تعذر إرسال الرمز',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      toast({
-        title: 'تم إرسال رمز التحقق ✉️',
-        description: otpRes.debug_otp
-          ? `الرمز (وضع التطوير): ${otpRes.debug_otp}`
-          : 'تفقد بريدك الإلكتروني لإكمال تسجيل الدخول',
-      });
-      navigate(`/verify-otp?flow=login&email=${encodeURIComponent(loginEmail)}`);
+      logLogin(data.session.user.id);
+      navigate('/');
     } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' }); }
     finally { setIsLoading(false); }
   };
