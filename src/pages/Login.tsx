@@ -57,31 +57,43 @@ const Login = () => {
     setIsLoading(true);
     try {
       const trimmed = identifier.trim();
-      const isUsername = !trimmed.includes('@') && !/^[\d\+٠-٩]/.test(trimmed);
+      const isEmail = trimmed.includes('@');
+      const isPhone = /^[\d\+٠-٩]/.test(trimmed);
+      const isUsername = !isEmail && !isPhone;
 
-      let loginEmail: string | null = null;
       if (isUsername) {
+        // Username sign-in: delegate to the edge function (which knows the email server-side)
         const { data: r, error: rErr } = await supabase.functions.invoke('lookup-username', {
-          body: { username: trimmed.toLowerCase() },
+          body: { username: trimmed.toLowerCase(), password },
         });
-        if (rErr || !r?.email) {
-          toast({ title: 'خطأ في تسجيل الدخول', description: 'اسم المستخدم غير موجود', variant: 'destructive' });
+        if (rErr || !r?.session) {
+          toast({ title: 'خطأ في تسجيل الدخول', description: r?.error || 'اسم المستخدم أو كلمة المرور غير صحيحة', variant: 'destructive' });
           return;
         }
-        loginEmail = r.email;
-      } else {
-        loginEmail = await resolveEmail(identifier);
-      }
-
-      if (!loginEmail) {
-        toast({ title: 'خطأ', description: 'تعذر تحديد البريد الإلكتروني', variant: 'destructive' });
+        const { data: setData, error: setErr } = await supabase.auth.setSession({
+          access_token: r.session.access_token,
+          refresh_token: r.session.refresh_token,
+        });
+        if (setErr || !setData.session) {
+          toast({ title: 'خطأ', description: 'تعذر إنشاء الجلسة', variant: 'destructive' });
+          return;
+        }
+        logLogin(setData.session.user.id);
+        navigate('/');
         return;
       }
 
-      // Direct sign-in with password (no OTP)
-      const credentials = loginEmail.startsWith('+')
-        ? ({ phone: loginEmail, password } as any)
-        : { email: loginEmail, password };
+      // Email or phone: direct password sign-in
+      let loginIdentifier = trimmed;
+      if (isPhone) {
+        let phone = trimmed.replace(/\s+/g, '');
+        if (phone.startsWith('07')) phone = '+964' + phone.slice(1);
+        else if (phone.startsWith('964')) phone = '+' + phone;
+        loginIdentifier = phone;
+      }
+      const credentials = isPhone
+        ? ({ phone: loginIdentifier, password } as any)
+        : { email: loginIdentifier, password };
 
       const { data, error } = await supabase.auth.signInWithPassword(credentials);
       if (error || !data.session) {
@@ -93,6 +105,7 @@ const Login = () => {
     } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' }); }
     finally { setIsLoading(false); }
   };
+
 
   const handleGoogleSignIn = async () => {
     try { const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/` } }); if (error) toast({ title: 'خطأ', description: error.message, variant: 'destructive' }); }
