@@ -177,8 +177,12 @@ const Login = () => {
           </Button>
 
           <div className="text-center pt-2">
-            <p className="text-white/30 text-[11px]">منصة خاصة — التسجيل مغلق</p>
+            <button type="button" onClick={() => navigate('/signup')}
+              className="text-white/50 hover:text-primary transition-colors text-xs">
+              ليس لديك حساب؟ <span className="text-primary font-semibold">إنشاء حساب</span>
+            </button>
           </div>
+
 
         </form>
       </div>
