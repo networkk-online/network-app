@@ -80,8 +80,8 @@ const Login = () => {
           toast({ title: 'خطأ', description: 'تعذر إنشاء الجلسة', variant: 'destructive' });
           return;
         }
-        if (!(await enforceSingleUser(setData.session.user.id))) return;
         logLogin(setData.session.user.id);
+
         navigate('/');
         return;
       }
@@ -102,8 +102,8 @@ const Login = () => {
         toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
         return;
       }
-      if (!(await enforceSingleUser(data.session.user.id))) return;
       logLogin(data.session.user.id);
+
       navigate('/');
     } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' }); }
     finally { setIsLoading(false); }
