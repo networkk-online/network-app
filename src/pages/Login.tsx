@@ -52,22 +52,8 @@ const Login = () => {
     return () => subscription.unsubscribe();
   }, [navigate, logLogin, isAddAccount]);
 
-  const OWNER_USERNAME = '11556zzaa';
 
-  const enforceSingleUser = async (userId: string): Promise<boolean> => {
-    const { data: profile } = await supabase
-      .from('profiles').select('username').eq('id', userId).single();
-    if (profile?.username !== OWNER_USERNAME) {
-      await supabase.auth.signOut();
-      toast({
-        title: 'منصة خاصة',
-        description: 'هذه المنصة خاصة ومقتصرة على مستخدم واحد فقط',
-        variant: 'destructive',
-      });
-      return false;
-    }
-    return true;
-  };
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,8 +80,8 @@ const Login = () => {
           toast({ title: 'خطأ', description: 'تعذر إنشاء الجلسة', variant: 'destructive' });
           return;
         }
-        if (!(await enforceSingleUser(setData.session.user.id))) return;
         logLogin(setData.session.user.id);
+
         navigate('/');
         return;
       }
@@ -116,8 +102,8 @@ const Login = () => {
         toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
         return;
       }
-      if (!(await enforceSingleUser(data.session.user.id))) return;
       logLogin(data.session.user.id);
+
       navigate('/');
     } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' }); }
     finally { setIsLoading(false); }
@@ -191,8 +177,12 @@ const Login = () => {
           </Button>
 
           <div className="text-center pt-2">
-            <p className="text-white/30 text-[11px]">منصة خاصة — التسجيل مغلق</p>
+            <button type="button" onClick={() => navigate('/signup')}
+              className="text-white/50 hover:text-primary transition-colors text-xs">
+              ليس لديك حساب؟ <span className="text-primary font-semibold">إنشاء حساب</span>
+            </button>
           </div>
+
 
         </form>
       </div>
