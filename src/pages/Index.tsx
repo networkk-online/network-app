@@ -259,6 +259,11 @@ const Index = () => {
               )}
             </div>
 
+            {/* Public Stats Section */}
+            <div className="mb-6">
+              <PublicUserCounter />
+            </div>
+
             {/* Tweets Section Link */}
             <div className="mb-6">
               <motion.button
