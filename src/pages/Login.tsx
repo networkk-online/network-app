@@ -52,6 +52,23 @@ const Login = () => {
     return () => subscription.unsubscribe();
   }, [navigate, logLogin, isAddAccount]);
 
+  const OWNER_USERNAME = '11556zzaa';
+
+  const enforceSingleUser = async (userId: string): Promise<boolean> => {
+    const { data: profile } = await supabase
+      .from('profiles').select('username').eq('id', userId).single();
+    if (profile?.username !== OWNER_USERNAME) {
+      await supabase.auth.signOut();
+      toast({
+        title: 'منصة خاصة',
+        description: 'هذه المنصة خاصة ومقتصرة على مستخدم واحد فقط',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -62,7 +79,6 @@ const Login = () => {
       const isUsername = !isEmail && !isPhone;
 
       if (isUsername) {
-        // Username sign-in: delegate to the edge function (which knows the email server-side)
         const { data: r, error: rErr } = await supabase.functions.invoke('lookup-username', {
           body: { username: trimmed.toLowerCase(), password },
         });
@@ -78,12 +94,12 @@ const Login = () => {
           toast({ title: 'خطأ', description: 'تعذر إنشاء الجلسة', variant: 'destructive' });
           return;
         }
+        if (!(await enforceSingleUser(setData.session.user.id))) return;
         logLogin(setData.session.user.id);
         navigate('/');
         return;
       }
 
-      // Email or phone: direct password sign-in
       let loginIdentifier = trimmed;
       if (isPhone) {
         let phone = trimmed.replace(/\s+/g, '');
@@ -100,6 +116,7 @@ const Login = () => {
         toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
         return;
       }
+      if (!(await enforceSingleUser(data.session.user.id))) return;
       logLogin(data.session.user.id);
       navigate('/');
     } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' }); }
