@@ -52,22 +52,8 @@ const Login = () => {
     return () => subscription.unsubscribe();
   }, [navigate, logLogin, isAddAccount]);
 
-  const OWNER_USERNAME = '11556zzaa';
 
-  const enforceSingleUser = async (userId: string): Promise<boolean> => {
-    const { data: profile } = await supabase
-      .from('profiles').select('username').eq('id', userId).single();
-    if (profile?.username !== OWNER_USERNAME) {
-      await supabase.auth.signOut();
-      toast({
-        title: 'منصة خاصة',
-        description: 'هذه المنصة خاصة ومقتصرة على مستخدم واحد فقط',
-        variant: 'destructive',
-      });
-      return false;
-    }
-    return true;
-  };
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
