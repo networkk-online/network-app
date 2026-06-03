@@ -23,6 +23,8 @@ import Profile from "./pages/Profile";
 import AITools from "./pages/AITools";
 import CreatePost from "./pages/CreatePost";
 import NotFound from "./pages/NotFound";
+import AddFunds from "./pages/AddFunds";
+import About from "./pages/About";
 import QuickReply from "./pages/QuickReply";
 import Withdraw from "./pages/Withdraw";
 import AdminDashboard from "./pages/AdminDashboard";
