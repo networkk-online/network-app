@@ -213,6 +213,8 @@ const AppContent = () => {
         <Route path="/store" element={<CoinStore />} />
         <Route path="/transactions" element={<TransactionHistory />} />
         <Route path="/recharge" element={<Recharge />} />
+        <Route path="/add-funds" element={<AddFunds />} />
+        <Route path="/about" element={<About />} />
         <Route path="/network-tv" element={<NetworkTV />} />
         <Route path="/watch/:videoId" element={<VideoPlayer />} />
         <Route path="/creator-studio" element={<CreatorStudio />} />
