@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, CreditCard, FileText } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Loader2, Save, CreditCard, FileText, Plus, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const NEON = '#00ff66';
@@ -16,12 +17,23 @@ type Gateway = {
   instructions_ar: string | null; instructions_en: string | null; sort_order: number;
 };
 
+const blankGw = {
+  key: '', name_en: '', name_ar: '', icon: '💳',
+  min_amount: 1, max_amount: 1000, bonus_percent: 0,
+  instructions_ar: '', instructions_en: '',
+  is_active: true, sort_order: 100,
+};
+
 export default function AdminContentManager() {
   const [gateways, setGateways] = useState<Gateway[]>([]);
   const [about, setAbout] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savingAbout, setSavingAbout] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newGw, setNewGw] = useState({ ...blankGw });
+  const [creating, setCreating] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const load = async () => {
     const [g, a] = await Promise.all([
@@ -44,12 +56,17 @@ export default function AdminContentManager() {
     if (error) {
       updateLocal(g.id, { is_active: !value });
       toast({ title: 'فشل التحديث', variant: 'destructive' });
+    } else {
+      toast({ title: value ? 'تم تفعيل البوابة' : 'تم تعطيل البوابة' });
     }
   };
 
   const saveGateway = async (g: Gateway) => {
     setSavingId(g.id);
     const { error } = await supabase.from('payment_gateways').update({
+      name_ar: g.name_ar,
+      name_en: g.name_en,
+      icon: g.icon,
       min_amount: g.min_amount,
       max_amount: g.max_amount,
       bonus_percent: g.bonus_percent,
@@ -58,6 +75,40 @@ export default function AdminContentManager() {
     }).eq('id', g.id);
     setSavingId(null);
     toast({ title: error ? 'فشل الحفظ' : 'تم الحفظ', variant: error ? 'destructive' : 'default' });
+  };
+
+  const deleteGateway = async (g: Gateway) => {
+    if (!confirm(`حذف بوابة "${g.name_ar}" نهائياً؟`)) return;
+    setDeletingId(g.id);
+    const { error } = await supabase.from('payment_gateways').delete().eq('id', g.id);
+    setDeletingId(null);
+    if (error) toast({ title: 'فشل الحذف', description: error.message, variant: 'destructive' });
+    else {
+      setGateways((arr) => arr.filter((x) => x.id !== g.id));
+      toast({ title: 'تم حذف البوابة' });
+    }
+  };
+
+  const createGateway = async () => {
+    if (!newGw.name_ar || !newGw.name_en || !newGw.key) {
+      toast({ title: 'الاسم والمعرّف مطلوبان', variant: 'destructive' });
+      return;
+    }
+    setCreating(true);
+    const { data, error } = await supabase
+      .from('payment_gateways')
+      .insert([newGw])
+      .select('*')
+      .maybeSingle();
+    setCreating(false);
+    if (error) {
+      toast({ title: 'فشل الإنشاء', description: error.message, variant: 'destructive' });
+      return;
+    }
+    if (data) setGateways((arr) => [...arr, data as Gateway].sort((a, b) => a.sort_order - b.sort_order));
+    setShowAdd(false);
+    setNewGw({ ...blankGw });
+    toast({ title: 'تمت إضافة البوابة' });
   };
 
   const saveAbout = async () => {
@@ -117,61 +168,156 @@ export default function AdminContentManager() {
 
       {/* Payment gateways */}
       <section>
-        <div className="flex items-center gap-2 mb-3">
-          <CreditCard className="w-5 h-5" style={{ color: NEON }} />
-          <h2 className="text-lg font-bold text-white">إدارة طرق الدفع</h2>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <CreditCard className="w-5 h-5" style={{ color: NEON }} />
+            <h2 className="text-lg font-bold text-white">إدارة بوابات الدفع</h2>
+          </div>
+          <Button onClick={() => setShowAdd(true)} className="font-bold" style={neonBtn}>
+            <Plus className="w-4 h-4 ml-1" /> إضافة بوابة جديدة
+          </Button>
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
-          {gateways.map((g) => (
-            <Card key={g.id} className="p-4 bg-[#0f1422] border-white/[0.06] space-y-3"
-              style={{ boxShadow: g.is_active ? `0 0 18px rgba(0,255,102,0.08)` : undefined }}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{g.icon}</span>
-                  <div>
-                    <div className="font-bold text-white">{g.name_ar}</div>
-                    <div className="text-xs text-white/40">{g.name_en}</div>
+
+        {gateways.length === 0 ? (
+          <Card className="p-10 text-center text-white/50 bg-[#0f1422] border-dashed border-white/10">
+            لا توجد بوابات. اضغط "إضافة بوابة جديدة" للبدء.
+          </Card>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-4">
+            {gateways.map((g) => (
+              <Card key={g.id} className="p-4 bg-[#0f1422] border-white/[0.06] space-y-3"
+                style={{ boxShadow: g.is_active ? `0 0 18px rgba(0,255,102,0.08)` : undefined }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 flex-1">
+                    <Input
+                      className="w-14 text-center text-2xl h-12 bg-transparent border-white/10"
+                      value={g.icon ?? ''}
+                      onChange={(e) => updateLocal(g.id, { icon: e.target.value })}
+                    />
+                    <div className="flex-1 space-y-1">
+                      <Input className="h-8 text-sm font-bold" value={g.name_ar}
+                        onChange={(e) => updateLocal(g.id, { name_ar: e.target.value })} placeholder="الاسم (عربي)" />
+                      <Input className="h-7 text-xs text-white/60" value={g.name_en} dir="ltr"
+                        onChange={(e) => updateLocal(g.id, { name_en: e.target.value })} placeholder="Name (EN)" />
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center gap-1 ms-2">
+                    <Switch checked={g.is_active} onCheckedChange={(v) => toggleActive(g, v)} />
+                    <span className="text-[9px]" style={{ color: g.is_active ? NEON : 'rgba(255,255,255,0.4)' }}>
+                      {g.is_active ? 'مفعّلة' : 'معطّلة'}
+                    </span>
                   </div>
                 </div>
-                <Switch checked={g.is_active} onCheckedChange={(v) => toggleActive(g, v)} />
-              </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="text-[10px] text-white/40">الحد الأدنى</label>
-                  <Input type="number" value={g.min_amount} onChange={(e) => updateLocal(g.id, { min_amount: +e.target.value })} className="h-9" />
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] text-white/40">الحد الأدنى $</label>
+                    <Input type="number" value={g.min_amount} onChange={(e) => updateLocal(g.id, { min_amount: +e.target.value })} className="h-9" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-white/40">الحد الأقصى $</label>
+                    <Input type="number" value={g.max_amount} onChange={(e) => updateLocal(g.id, { max_amount: +e.target.value })} className="h-9" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-white/40">بونص %</label>
+                    <Input type="number" value={g.bonus_percent} onChange={(e) => updateLocal(g.id, { bonus_percent: +e.target.value })} className="h-9" />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-[10px] text-white/40">الحد الأقصى</label>
-                  <Input type="number" value={g.max_amount} onChange={(e) => updateLocal(g.id, { max_amount: +e.target.value })} className="h-9" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-white/40">بونص %</label>
-                  <Input type="number" value={g.bonus_percent} onChange={(e) => updateLocal(g.id, { bonus_percent: +e.target.value })} className="h-9" />
-                </div>
-              </div>
 
-              <Textarea
-                rows={2}
-                placeholder="تعليمات (عربي)"
-                value={g.instructions_ar ?? ''}
-                onChange={(e) => updateLocal(g.id, { instructions_ar: e.target.value })}
-              />
-              <Textarea
-                rows={2}
-                placeholder="Instructions (EN)"
-                dir="ltr"
-                value={g.instructions_en ?? ''}
-                onChange={(e) => updateLocal(g.id, { instructions_en: e.target.value })}
-              />
+                <Textarea rows={2} placeholder="تعليمات (عربي)" value={g.instructions_ar ?? ''}
+                  onChange={(e) => updateLocal(g.id, { instructions_ar: e.target.value })} />
+                <Textarea rows={2} placeholder="Instructions (EN)" dir="ltr" value={g.instructions_en ?? ''}
+                  onChange={(e) => updateLocal(g.id, { instructions_en: e.target.value })} />
 
-              <Button onClick={() => saveGateway(g)} disabled={savingId === g.id} className="w-full font-bold" style={neonBtn}>
-                {savingId === g.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 ml-1" /> حفظ الإعدادات</>}
-              </Button>
-            </Card>
-          ))}
-        </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => saveGateway(g)} disabled={savingId === g.id} className="flex-1 font-bold" style={neonBtn}>
+                    {savingId === g.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 ml-1" /> حفظ</>}
+                  </Button>
+                  <Button
+                    onClick={() => deleteGateway(g)}
+                    disabled={deletingId === g.id}
+                    variant="destructive"
+                    className="font-bold"
+                  >
+                    {deletingId === g.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </section>
+
+      {/* Add Gateway Modal */}
+      <Dialog open={showAdd} onOpenChange={setShowAdd}>
+        <DialogContent className="bg-[#0b0f19] border-white/10 text-white max-w-lg" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5" style={{ color: NEON }} />
+              إضافة بوابة دفع جديدة
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-[80px_1fr] gap-3">
+              <div>
+                <label className="text-[10px] text-white/40">الأيقونة</label>
+                <Input className="h-12 text-2xl text-center" value={newGw.icon}
+                  onChange={(e) => setNewGw({ ...newGw, icon: e.target.value })} placeholder="💳" />
+              </div>
+              <div>
+                <label className="text-[10px] text-white/40">المعرّف (key, إنجليزي بدون مسافات)</label>
+                <Input className="h-12" value={newGw.key} dir="ltr"
+                  onChange={(e) => setNewGw({ ...newGw, key: e.target.value.replace(/\s+/g, '_').toLowerCase() })}
+                  placeholder="usdt_trc20" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] text-white/40">الاسم (عربي)</label>
+                <Input value={newGw.name_ar} onChange={(e) => setNewGw({ ...newGw, name_ar: e.target.value })} placeholder="مثلاً: تحويل USDT" />
+              </div>
+              <div>
+                <label className="text-[10px] text-white/40">Name (EN)</label>
+                <Input dir="ltr" value={newGw.name_en} onChange={(e) => setNewGw({ ...newGw, name_en: e.target.value })} placeholder="USDT Transfer" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-[10px] text-white/40">الحد الأدنى $</label>
+                <Input type="number" value={newGw.min_amount} onChange={(e) => setNewGw({ ...newGw, min_amount: +e.target.value })} />
+              </div>
+              <div>
+                <label className="text-[10px] text-white/40">الحد الأقصى $</label>
+                <Input type="number" value={newGw.max_amount} onChange={(e) => setNewGw({ ...newGw, max_amount: +e.target.value })} />
+              </div>
+              <div>
+                <label className="text-[10px] text-white/40">بونص %</label>
+                <Input type="number" value={newGw.bonus_percent} onChange={(e) => setNewGw({ ...newGw, bonus_percent: +e.target.value })} />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] text-white/40">تعليمات (عربي)</label>
+              <Textarea rows={3} value={newGw.instructions_ar} onChange={(e) => setNewGw({ ...newGw, instructions_ar: e.target.value })}
+                placeholder="مثلاً: أرسل المبلغ إلى المحفظة التالية..." />
+            </div>
+            <div>
+              <label className="text-[10px] text-white/40">Instructions (EN)</label>
+              <Textarea rows={3} dir="ltr" value={newGw.instructions_en} onChange={(e) => setNewGw({ ...newGw, instructions_en: e.target.value })}
+                placeholder="e.g. Send the amount to..." />
+            </div>
+            <div className="flex items-center justify-between border border-white/10 rounded-lg p-3">
+              <span className="text-sm">تفعيل البوابة فور الإنشاء</span>
+              <Switch checked={newGw.is_active} onCheckedChange={(v) => setNewGw({ ...newGw, is_active: v })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowAdd(false)}>إلغاء</Button>
+            <Button onClick={createGateway} disabled={creating} className="font-bold" style={neonBtn}>
+              {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4 ml-1" /> إنشاء البوابة</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
