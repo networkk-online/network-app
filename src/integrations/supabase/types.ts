@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      about_page_content: {
+        Row: {
+          id: number
+          intro_ar: string
+          intro_en: string
+          mission_ar: string
+          mission_en: string
+          stat_countries: number
+          stat_creators: number
+          stat_users: number
+          story_ar: string
+          story_en: string
+          team_ar: string
+          team_en: string
+          title_ar: string
+          title_en: string
+          updated_at: string
+          vision_ar: string
+          vision_en: string
+        }
+        Insert: {
+          id?: number
+          intro_ar?: string
+          intro_en?: string
+          mission_ar?: string
+          mission_en?: string
+          stat_countries?: number
+          stat_creators?: number
+          stat_users?: number
+          story_ar?: string
+          story_en?: string
+          team_ar?: string
+          team_en?: string
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+          vision_ar?: string
+          vision_en?: string
+        }
+        Update: {
+          id?: number
+          intro_ar?: string
+          intro_en?: string
+          mission_ar?: string
+          mission_en?: string
+          stat_countries?: number
+          stat_creators?: number
+          stat_users?: number
+          story_ar?: string
+          story_en?: string
+          team_ar?: string
+          team_en?: string
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+          vision_ar?: string
+          vision_en?: string
+        }
+        Relationships: []
+      }
       account_restrictions: {
         Row: {
           created_at: string
@@ -1673,6 +1733,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_gateways: {
+        Row: {
+          bonus_percent: number
+          created_at: string
+          icon: string | null
+          id: string
+          instructions_ar: string | null
+          instructions_en: string | null
+          is_active: boolean
+          key: string
+          max_amount: number
+          min_amount: number
+          name_ar: string
+          name_en: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          bonus_percent?: number
+          created_at?: string
+          icon?: string | null
+          id?: string
+          instructions_ar?: string | null
+          instructions_en?: string | null
+          is_active?: boolean
+          key: string
+          max_amount?: number
+          min_amount?: number
+          name_ar: string
+          name_en: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          bonus_percent?: number
+          created_at?: string
+          icon?: string | null
+          id?: string
+          instructions_ar?: string | null
+          instructions_en?: string | null
+          is_active?: boolean
+          key?: string
+          max_amount?: number
+          min_amount?: number
+          name_ar?: string
+          name_en?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       payment_methods: {
         Row: {
