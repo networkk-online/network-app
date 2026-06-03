@@ -2,12 +2,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, LogOut, LayoutDashboard, BadgeCheck, Database, Clock } from 'lucide-react';
+import { Shield, LogOut, LayoutDashboard, BadgeCheck, Database, Clock, Settings2 } from 'lucide-react';
 import AdminAuthGuard from '@/components/admin/AdminAuthGuard';
 import AdminStatsCards from '@/components/admin/AdminStatsCards';
 import AdminVerificationTab from '@/components/admin/AdminVerificationTab';
 import AdminDataTab from '@/components/admin/AdminDataTab';
 import AdminAuditTab from '@/components/admin/AdminAuditTab';
+import AdminContentManager from '@/components/admin/AdminContentManager';
 
 const AdminControl = () => {
   const navigate = useNavigate();
@@ -56,6 +57,9 @@ const AdminControl = () => {
                 <TabsTrigger value="audit" className="gap-2 data-[state=active]:bg-primary/20">
                   <Clock className="h-4 w-4" /> سجل النشاط
                 </TabsTrigger>
+                <TabsTrigger value="content-pages" className="gap-2 data-[state=active]:bg-primary/20">
+                  <Settings2 className="h-4 w-4" /> الصفحات والدفع
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview">
@@ -75,6 +79,10 @@ const AdminControl = () => {
 
               <TabsContent value="audit">
                 <AdminAuditTab />
+              </TabsContent>
+
+              <TabsContent value="content-pages">
+                <AdminContentManager />
               </TabsContent>
             </Tabs>
           </main>
