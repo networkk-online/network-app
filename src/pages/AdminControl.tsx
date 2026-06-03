@@ -80,6 +80,10 @@ const AdminControl = () => {
               <TabsContent value="audit">
                 <AdminAuditTab />
               </TabsContent>
+
+              <TabsContent value="content-pages">
+                <AdminContentManager />
+              </TabsContent>
             </Tabs>
           </main>
         </div>
