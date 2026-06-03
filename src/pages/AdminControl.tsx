@@ -57,6 +57,9 @@ const AdminControl = () => {
                 <TabsTrigger value="audit" className="gap-2 data-[state=active]:bg-primary/20">
                   <Clock className="h-4 w-4" /> سجل النشاط
                 </TabsTrigger>
+                <TabsTrigger value="content-pages" className="gap-2 data-[state=active]:bg-primary/20">
+                  <Settings2 className="h-4 w-4" /> الصفحات والدفع
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview">
