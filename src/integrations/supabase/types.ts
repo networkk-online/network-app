@@ -2873,6 +2873,33 @@ export type Database = {
         }
         Relationships: []
       }
+      system_broadcasts: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          title: string
+          variant: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          title: string
+          variant?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          title?: string
+          variant?: string
+        }
+        Relationships: []
+      }
       system_messages: {
         Row: {
           content: string
