@@ -151,7 +151,7 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
             <ArrowRightLeft className="w-3.5 h-3.5" />
             تحويل
           </Button>
-          <Button size="sm" variant="outline" onClick={() => navigate('/recharge')}
+          <Button size="sm" variant="outline" onClick={() => navigate('/add-funds')}
             className="h-10 text-xs font-medium gap-1.5 border-border/30 bg-muted/10 hover:bg-[#ffd700]/10 hover:border-[#ffd700]/40 transition-all"
             onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 15px rgba(255,215,0,0.2)'}
             onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}

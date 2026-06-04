@@ -115,9 +115,13 @@ import AdminRouteBlocker from "./components/guards/AdminRouteBlocker";
 
 const queryClient = new QueryClient();
 
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+
 const AppContent = () => {
   useNativeApp();
   useFinanceNotifications();
+  useRealtimeNotifications();
+  
   
   return (
     <>

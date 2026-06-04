@@ -14,6 +14,7 @@ import VaultDocs from '@/components/vault/VaultDocs';
 import VaultFinance from '@/components/vault/VaultFinance';
 import { VaultLiveMonitor } from '@/components/vault/VaultLiveMonitor';
 import VaultIntelligence from '@/components/vault/VaultIntelligence';
+import VaultBroadcast from '@/components/vault/VaultBroadcast';
 import MasterGiftCodes from '@/components/master-admin/MasterGiftCodes';
 import MasterExploreControl from '@/components/master-admin/MasterExploreControl';
 import MasterReelsManager from '@/components/master-admin/MasterReelsManager';
@@ -118,6 +119,7 @@ const OwnerVault = () => {
     'ip-ban': 'حظر IP',
     logs: 'سجلات الوصول',
     analytics: 'التحليلات',
+    broadcast: 'بث إشعار للجميع',
     execution: 'مركز التنفيذ',
     docs: 'الوثائق',
     settings: 'الإعدادات',
@@ -151,6 +153,8 @@ const OwnerVault = () => {
         return <VaultSecurityAudit />;
       case 'analytics':
         return <VaultAnalytics />;
+      case 'broadcast':
+        return <VaultBroadcast />;
       case 'execution':
         return <VaultExecution />;
       case 'docs':
