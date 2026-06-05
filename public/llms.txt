@@ -1,0 +1,18 @@
+# networkk.online
+
+> Networkk is a modern social platform that combines creativity, real interaction, and earning opportunities — letting creators share moments, build audiences, and monetize content.
+
+## Pages
+
+- [Home](/): Discover the latest posts, reels, and creators on Networkk.
+- [About](/about): What Networkk is and who it's for.
+- [Explore](/explore): Trending posts and creators across the platform.
+- [Network TV](/network-tv): Networkk Cinema — long-form videos and shows.
+- [Shorts](/shorts): Vertical short-form videos.
+- [Tweets](/tweets): Microblog posts and threads.
+- [Add Funds](/add-funds): Top up your in-app wallet with coin packages.
+
+## Optional
+
+- [Local Fame Rank](/local-fame-rank): Regional creator leaderboard.
+- [Pages](/pages): Public brand and business pages.

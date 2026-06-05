@@ -30,6 +30,10 @@ const STATIC_ENTRIES: Entry[] = [
   { path: '/explore', changefreq: 'daily', priority: '0.8' },
   { path: '/shorts', changefreq: 'daily', priority: '0.7' },
   { path: '/tweets', changefreq: 'daily', priority: '0.6' },
+  { path: '/welcome', changefreq: 'monthly', priority: '0.7' },
+  { path: '/broadcast', changefreq: 'weekly', priority: '0.6' },
+  { path: '/business', changefreq: 'monthly', priority: '0.6' },
+  { path: '/pages', changefreq: 'weekly', priority: '0.6' },
 ];
 
 async function fetchCinemaEntries(): Promise<Entry[]> {
