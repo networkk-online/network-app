@@ -41,6 +41,26 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://networkk.online/welcome</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://networkk.online/broadcast</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://networkk.online/business</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://networkk.online/pages</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://networkk.online/watch/d009ec81-0b0f-4788-9f57-c7c3c213f00f</loc>
     <lastmod>2026-05-08</lastmod>
     <changefreq>weekly</changefreq>

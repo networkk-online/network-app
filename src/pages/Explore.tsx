@@ -209,6 +209,7 @@ const Explore = () => {
             <input
               type="text"
               placeholder="بحث..."
+              aria-label="Search Explore"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="w-full h-10 bg-white/[0.06] backdrop-blur-[25px] border-[0.5px] border-white/[0.15] rounded-xl pr-10 pl-4 text-sm text-white placeholder-white/25 outline-none focus:border-primary/40 transition-all"

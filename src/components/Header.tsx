@@ -127,10 +127,10 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
             <div className="w-7 h-7 sm:w-8 sm:h-8">
               <img src={logo} alt="networkk.online Logo" className="w-full h-full object-contain" />
             </div>
-            <h1 className="text-sm sm:text-lg font-bold text-foreground tracking-tight"
+            <div className="text-sm sm:text-lg font-bold text-foreground tracking-tight"
                 style={{ textShadow: '0 0 20px hsla(144, 90%, 33%, 0.2)' }}>
               networkk.online
-            </h1>
+            </div>
           </div>
 
           {/* Post Size Toggle */}
@@ -151,14 +151,16 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
           <div
             className="hidden md:flex items-center glass-input px-4 py-2 w-48 lg:w-64 cursor-pointer"
             onClick={() => navigate('/search')}
+            role="search"
+            aria-label="Search Networkk"
           >
             <Search className="w-4 h-4 text-white/30 mr-2" strokeWidth={1.4} />
-            <input type="text" readOnly placeholder="بحث..." className="bg-transparent text-foreground placeholder-white/25 outline-none flex-1 text-sm" />
+            <input type="text" readOnly placeholder="بحث..." aria-label="Search Networkk" className="bg-transparent text-foreground placeholder-white/25 outline-none flex-1 text-sm" />
           </div>
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/notifications')}>
+            <Button variant="ghost" size="sm" aria-label="Notifications" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/notifications')}>
               <Bell className="w-5 h-5 text-white/60" strokeWidth={1.4} />
               {unreadNotifications > 0 && (
                 <Badge className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-[10px] border-0 rounded-full">
@@ -167,7 +169,7 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
               )}
             </Button>
             {navigationItems.map((item, index) => (
-              <Button key={index} variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate(item.path)}>
+              <Button key={index} variant="ghost" size="sm" aria-label={item.label} className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate(item.path)}>
                 <item.icon className="w-5 h-5 text-white/60" strokeWidth={1.4} />
                 {item.showBadge && unreadMessages > 0 && (
                   <Badge className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-[10px] border-0 rounded-full">
@@ -177,11 +179,11 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
               </Button>
             ))}
             {user ? (
-              <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-destructive/10 interactive-element" onClick={handleLogout}>
+              <Button variant="ghost" size="sm" aria-label="Log out" className="p-2 rounded-full hover:bg-destructive/10 interactive-element" onClick={handleLogout}>
                 <LogOut className="w-5 h-5 text-destructive/70" strokeWidth={1.4} />
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/[0.04] interactive-element" onClick={() => navigate('/login')}>
+              <Button variant="ghost" size="sm" aria-label="Log in" className="p-2 rounded-full hover:bg-white/[0.04] interactive-element" onClick={() => navigate('/login')}>
                 <LogOut className="w-5 h-5 text-white/60" strokeWidth={1.4} />
               </Button>
             )}
@@ -189,7 +191,7 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
 
           {/* Mobile Nav */}
           <div className="flex lg:hidden items-center gap-1">
-            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/notifications')}>
+            <Button variant="ghost" size="sm" aria-label="Notifications" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/notifications')}>
               <Bell className="w-5 h-5 text-white/60" strokeWidth={1.4} />
               {unreadNotifications > 0 && (
                 <Badge className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-[10px] border-0 rounded-full">
@@ -197,7 +199,7 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
                 </Badge>
               )}
             </Button>
-            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/messages')}>
+            <Button variant="ghost" size="sm" aria-label="Messages" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/messages')}>
               <MessageCircle className="w-5 h-5 text-white/60" strokeWidth={1.4} />
               {unreadMessages > 0 && (
                 <Badge className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center px-1 bg-destructive text-destructive-foreground text-[10px] border-0 rounded-full">
