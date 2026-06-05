@@ -350,7 +350,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         >
           <img 
             src={userAvatar} 
-            alt={username}
+            alt={`${username} profile picture`}
             className={`rounded-full object-cover ring-[1.5px] ring-white/10 transition-all group-hover:ring-white/20 ${
               displaySize === 'compact' ? 'w-7 h-7' : displaySize === 'large' ? 'w-12 h-12' : 'w-10 h-10'
             }`}
@@ -372,6 +372,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         <Button
           variant="ghost"
           size="sm"
+          aria-label="Post options"
           className="p-1.5 rounded-full hover:bg-white/[0.04] interactive-element"
           onClick={() => setShowOptionsDrawer(true)}
         >
@@ -392,7 +393,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         <div className="relative mx-4 my-2 rounded-2xl overflow-hidden">
           <img 
             src={image} 
-            alt="Post content"
+            alt={caption ? `${username}: ${caption.slice(0, 100)}` : `Post by ${username}`}
             className={`w-full object-cover transition-all duration-300 ${
               displaySize === 'compact' ? 'h-48' : displaySize === 'large' ? 'h-[500px]' : 'h-96'
             }`}
@@ -411,6 +412,8 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
             <Button 
               variant="ghost" 
               size="sm" 
+              aria-label={isLiked ? 'Unlike post' : 'Like post'}
+              aria-pressed={isLiked}
               className="p-0 hover:bg-transparent interactive-element"
               onClick={handleLike}
             >
@@ -426,6 +429,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
             <Button 
               variant="ghost" 
               size="sm" 
+              aria-label="View comments"
               className="p-0 hover:bg-transparent interactive-element"
               onClick={() => setShowCommentsModal(true)}
             >
@@ -434,6 +438,8 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
             <Button 
               variant="ghost" 
               size="sm" 
+              aria-label={isReposted ? 'Undo repost' : 'Repost'}
+              aria-pressed={isReposted}
               className="p-0 hover:bg-transparent interactive-element"
               onClick={handleRepost}
               disabled={repostLoading}
@@ -457,6 +463,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
               <Button 
                 variant="ghost" 
                 size="sm" 
+                aria-label="Send a tip"
                 className="p-0 hover:bg-transparent interactive-element"
                 onClick={() => setShowTipDialog(true)}
               >
@@ -467,6 +474,8 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           <Button
             variant="ghost" 
             size="sm" 
+            aria-label={isSaved ? 'Remove from saved' : 'Save post'}
+            aria-pressed={isSaved}
             className="p-0 hover:bg-transparent interactive-element"
             onClick={handleSave}
             disabled={saveLoading}
