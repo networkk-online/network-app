@@ -2908,6 +2908,7 @@ export type Database = {
       }
       support_settings: {
         Row: {
+          call_url: string | null
           hero_subtitle: string | null
           hero_title: string | null
           id: string
@@ -2917,6 +2918,7 @@ export type Database = {
           whatsapp_url: string | null
         }
         Insert: {
+          call_url?: string | null
           hero_subtitle?: string | null
           hero_title?: string | null
           id?: string
@@ -2926,6 +2928,7 @@ export type Database = {
           whatsapp_url?: string | null
         }
         Update: {
+          call_url?: string | null
           hero_subtitle?: string | null
           hero_title?: string | null
           id?: string
