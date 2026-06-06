@@ -29,14 +29,7 @@ const MaintenanceGuard = ({ children }: Props) => {
             .from('user_roles')
             .select('role')
             .eq('user_id', user.id);
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', user.id)
-            .single();
-          setIsOwner(
-            roles?.some(r => r.role === 'admin') || profile?.username === '11556zzaa'
-          );
+          setIsOwner(!!roles?.some(r => r.role === 'admin'));
         }
       }
       setLoading(false);

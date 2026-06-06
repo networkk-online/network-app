@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { RtcTokenBuilder, RtcRole } from "npm:agora-token@2.0.5";
+import { requireUser } from "../_shared/require-user.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
+
+  // Require authenticated user
+  const auth = await requireUser(req, corsHeaders);
+  if ('response' in auth) return auth.response;
 
   try {
     const appId = Deno.env.get("AGORA_APP_ID");
@@ -25,19 +30,17 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { channelName, uid = 0, role = 1 } = body || {};
 
-    if (!channelName || typeof channelName !== "string") {
+    if (!channelName || typeof channelName !== "string" || channelName.length > 128) {
       return new Response(
         JSON.stringify({ ok: false, error: "channelName is required" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     let token: string | null = null;
 
-    // If App Certificate is configured, we MUST generate a token.
-    // Otherwise (testing mode: App ID only), token can stay null.
     if (appCertificate && appCertificate.trim().length > 0) {
-      const expireSeconds = 3600 * 4; // 4 hours
+      const expireSeconds = 3600 * 4;
       const currentTs = Math.floor(Date.now() / 1000);
       const privilegeExpireTs = currentTs + expireSeconds;
       const rtcRole = role === 2 ? RtcRole.SUBSCRIBER : RtcRole.PUBLISHER;
@@ -68,7 +71,7 @@ serve(async (req) => {
     console.error("agora-token error:", error);
     return new Response(
       JSON.stringify({ ok: false, error: (error as Error).message }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });

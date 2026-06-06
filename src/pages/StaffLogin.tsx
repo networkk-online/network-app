@@ -32,13 +32,7 @@ const StaffLogin = () => {
         .select('role')
         .eq('user_id', userId);
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', userId)
-        .single();
-
-      const isOwner = profile?.username === '11556zzaa' || roles?.some(r => r.role === 'admin');
+      const isOwner = roles?.some(r => r.role === 'admin');
       const isModerator = roles?.some(r => r.role === 'moderator');
 
       if (isOwner) {

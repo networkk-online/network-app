@@ -56,9 +56,7 @@ export default function MasterControlDashboard() {
       if (!user) { navigate('/login'); return; }
       const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
       const isAdmin = roles?.some(r => r.role === 'admin');
-      const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle();
-      const isOwner = profile?.username === '11556zzaa';
-      if (!isAdmin && !isOwner) { navigate('/'); return; }
+      if (!isAdmin) { navigate('/'); return; }
       setAuthorized(true);
       setLoading(false);
     })();

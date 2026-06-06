@@ -19,15 +19,7 @@ const AdminAuthGuard = ({ children }: AdminAuthGuardProps) => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { navigate('/'); return; }
 
-        // Check username-based admin access OR role-based
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', user.id)
-          .single();
-
-        const isAdminByUsername = profile?.username === '11556zzaa';
-
+        // Server-side role check only — no client-trustable username gating.
         const { data: roles } = await supabase
           .from('user_roles')
           .select('role')
@@ -35,7 +27,7 @@ const AdminAuthGuard = ({ children }: AdminAuthGuardProps) => {
 
         const isAdminByRole = roles?.some(r => r.role === 'admin');
 
-        if (!isAdminByUsername && !isAdminByRole) { navigate('/'); return; }
+        if (!isAdminByRole) { navigate('/'); return; }
 
         setCurrentUserId(user.id);
         setAuthorized(true);

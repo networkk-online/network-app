@@ -23,15 +23,7 @@ const OwnerRouteGuard = ({ children }: Props) => {
           return;
         }
 
-        // Check if owner by username OR admin role
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', user.id)
-          .single();
-
-        const isOwnerByUsername = profile?.username === '11556zzaa';
-
+        // Server-side role check only — no client-trustable username gating.
         const { data: roles } = await supabase
           .from('user_roles')
           .select('role')
@@ -39,7 +31,7 @@ const OwnerRouteGuard = ({ children }: Props) => {
 
         const isAdmin = roles?.some(r => r.role === 'admin');
 
-        if (!isOwnerByUsername && !isAdmin) {
+        if (!isAdmin) {
           await logAttempt(user.id, '/G3142-AF26-0x99');
           // Auto logout unauthorized users
           await supabase.auth.signOut();
