@@ -2,7 +2,8 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Users, Shield, Gift, Settings, Eye, FileText,
   ChevronLeft, ChevronRight, Power, LogOut, UserCheck, Wallet, BarChart3,
-  Film, Compass, Ban, BookOpen, Zap, Radio, Activity, Megaphone
+  Film, Compass, Ban, BookOpen, Zap, Radio, Activity, Megaphone,
+  CreditCard, Briefcase, LifeBuoy, FileEdit
 } from 'lucide-react';
 
 interface VaultSidebarProps {
@@ -44,6 +45,7 @@ const menuGroups = [
     title: 'المالية',
     items: [
       { id: 'finance', label: 'المالية والأصول', icon: Wallet },
+      { id: 'payment-gateways', label: 'بوابات الدفع', icon: CreditCard },
       { id: 'gifts', label: 'أكواد الهدايا', icon: Gift },
     ],
   },
@@ -59,6 +61,9 @@ const menuGroups = [
     title: 'النظام',
     items: [
       { id: 'execution', label: 'مركز التنفيذ', icon: Zap },
+      { id: 'pages-content', label: 'محتوى الصفحات', icon: FileEdit },
+      { id: 'careers', label: 'إدارة الوظائف', icon: Briefcase },
+      { id: 'support-center', label: 'مركز الدعم', icon: LifeBuoy },
       { id: 'docs', label: 'الوثائق', icon: BookOpen },
       { id: 'settings', label: 'الإعدادات', icon: Settings },
     ],
