@@ -637,6 +637,45 @@ export type Database = {
         }
         Relationships: []
       }
+      careers_jobs: {
+        Row: {
+          department: string | null
+          description: string
+          employment_type: string | null
+          id: string
+          is_open: boolean
+          location: string | null
+          posted_at: string
+          requirements: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          department?: string | null
+          description?: string
+          employment_type?: string | null
+          id?: string
+          is_open?: boolean
+          location?: string | null
+          posted_at?: string
+          requirements?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          department?: string | null
+          description?: string
+          employment_type?: string | null
+          id?: string
+          is_open?: boolean
+          location?: string | null
+          posted_at?: string
+          requirements?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       close_friends: {
         Row: {
           created_at: string | null
@@ -2624,6 +2663,36 @@ export type Database = {
         }
         Relationships: []
       }
+      site_pages: {
+        Row: {
+          body: string
+          id: string
+          meta_description: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body?: string
+          id?: string
+          meta_description?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body?: string
+          id?: string
+          meta_description?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       stories: {
         Row: {
           allow_story_replies: boolean | null
@@ -2836,6 +2905,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      support_settings: {
+        Row: {
+          hero_subtitle: string | null
+          hero_title: string | null
+          id: string
+          sections: Json
+          support_phone: string | null
+          updated_at: string
+          whatsapp_url: string | null
+        }
+        Insert: {
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string
+          sections?: Json
+          support_phone?: string | null
+          updated_at?: string
+          whatsapp_url?: string | null
+        }
+        Update: {
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string
+          sections?: Json
+          support_phone?: string | null
+          updated_at?: string
+          whatsapp_url?: string | null
+        }
+        Relationships: []
       }
       support_tickets: {
         Row: {

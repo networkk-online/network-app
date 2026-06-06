@@ -105,6 +105,9 @@ import ModeratorPortal from "./pages/ModeratorPortal";
 import StaffLogin from "./pages/StaffLogin";
 import MasterAdmin from "./pages/MasterAdmin";
 import MasterControlDashboard from "./pages/MasterControlDashboard";
+import Careers from "./pages/public/Careers";
+import SupportCenter from "./pages/public/SupportCenter";
+import DynamicPage from "./components/public/DynamicPage";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
 import FloatingAdminButton from "./components/FloatingAdminButton";
@@ -232,6 +235,24 @@ const AppContent = () => {
         <Route path="/staff-login" element={<StaffLogin />} />
         <Route path="/master-control" element={<MasterControlDashboard />} />
         <Route path="/master-admin-legacy" element={<MasterAdmin />} />
+        {/* Public footer pages (admin-editable) */}
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/help" element={<SupportCenter />} />
+        <Route path="/platform-status" element={<DynamicPage slug="platform-status" />} />
+        <Route path="/accessibility" element={<DynamicPage slug="accessibility" />} />
+        <Route path="/download" element={<DynamicPage slug="download" />} />
+        <Route path="/newsroom" element={<DynamicPage slug="newsroom" />} />
+        <Route path="/investors" element={<DynamicPage slug="investors" />} />
+        <Route path="/using-networkk" element={<DynamicPage slug="using-networkk" />} />
+        <Route path="/manage-account" element={<DynamicPage slug="manage-account" />} />
+        <Route path="/terms" element={<DynamicPage slug="terms" />} />
+        <Route path="/contact" element={<DynamicPage slug="contact" />} />
+        <Route path="/developers" element={<DynamicPage slug="developers" />} />
+        <Route path="/docs" element={<DynamicPage slug="docs" />} />
+        <Route path="/engineering-blog" element={<DynamicPage slug="engineering-blog" />} />
+        <Route path="/advertising" element={<DynamicPage slug="advertising" />} />
+        <Route path="/resources" element={<DynamicPage slug="resources" />} />
+        <Route path="/p/:slug" element={<DynamicPage slug="" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

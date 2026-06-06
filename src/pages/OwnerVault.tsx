@@ -18,6 +18,10 @@ import VaultBroadcast from '@/components/vault/VaultBroadcast';
 import MasterGiftCodes from '@/components/master-admin/MasterGiftCodes';
 import MasterExploreControl from '@/components/master-admin/MasterExploreControl';
 import MasterReelsManager from '@/components/master-admin/MasterReelsManager';
+import VaultPagesContent from '@/components/vault/VaultPagesContent';
+import VaultCareersManager from '@/components/vault/VaultCareersManager';
+import VaultSupportCenter from '@/components/vault/VaultSupportCenter';
+import VaultPaymentGateways from '@/components/vault/VaultPaymentGateways';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
@@ -114,6 +118,7 @@ const OwnerVault = () => {
     explore: 'مدير الاستكشاف',
     reels: 'إدارة الريلز',
     finance: 'المالية والأصول',
+    'payment-gateways': 'بوابات الدفع',
     gifts: 'أكواد الهدايا',
     security: 'تدقيق الأمان',
     'ip-ban': 'حظر IP',
@@ -121,6 +126,9 @@ const OwnerVault = () => {
     analytics: 'التحليلات',
     broadcast: 'بث إشعار للجميع',
     execution: 'مركز التنفيذ',
+    'pages-content': 'محتوى الصفحات',
+    careers: 'إدارة الوظائف',
+    'support-center': 'مركز الدعم',
     docs: 'الوثائق',
     settings: 'الإعدادات',
   };
@@ -145,6 +153,14 @@ const OwnerVault = () => {
         return <VaultLiveMonitor />;
       case 'finance':
         return <VaultFinance />;
+      case 'payment-gateways':
+        return <VaultPaymentGateways />;
+      case 'pages-content':
+        return <VaultPagesContent />;
+      case 'careers':
+        return <VaultCareersManager />;
+      case 'support-center':
+        return <VaultSupportCenter />;
       case 'gifts':
         return <MasterGiftCodes />;
       case 'security':

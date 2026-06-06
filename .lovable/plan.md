@@ -1,62 +1,77 @@
-## Intelligence & Monitoring Center — G3142-AF26-0x99
+## Scope
 
-Build a Cyber-Command intelligence suite inside the Owner Vault with 4 modules. All UI in Pure Black + Neon Green (#39FF14) glassmorphism, Cairo font for admin.
+Two major workstreams:
+1. **Consolidate admin routes** into the existing Owner Vault at `/G3142-AF26-0x99` and redirect legacy routes.
+2. **Footer-driven content system**: create ~20 public pages (Careers, About, Help, etc.), wire each to a dynamic content store, and add admin CRUD managers inside the Vault — including a Support Center content manager.
 
-### 1. Database (migration)
+## Workstream 1 — Admin Consolidation
 
-New tables (all RLS-locked to `has_role(auth.uid(),'admin')`):
-- **`activity_intel`** — `event_type` (signup_apple/signup_google/gem_transfer_high/live_start/login), `user_id`, `ip`, `country`, `city`, `device`, `os`, `metadata jsonb`, `severity`, `created_at`
-- **`threat_flags`** — `user_id`, `flag_type` (extortion_keyword/bot_behavior/rapid_login/scam), `evidence jsonb`, `status` (pending/reviewed/dismissed), `auto_action` (shadow_ban/freeze/none), `created_at`
-- **`account_restrictions`** — `user_id unique`, `shadow_banned bool`, `verification_frozen bool`, `reason`, `imposed_by`, `expires_at`
-- **`financial_alerts`** — `user_id`, `alert_type` (rapid_gifts/unusual_volume), `amount`, `window_minutes`, `status`, `created_at`
-- Extend `app_settings` with `maintenance_mode bool`, `extortion_keywords text[]`
+**Redirects (no business-logic change)**
+- `/admin` → `/G3142-AF26-0x99`
+- `/admin-control` → `/G3142-AF26-0x99`
+- `/admin-control-panel-secret` → `/G3142-AF26-0x99`
+- Replace each page component with a `<Navigate to="/G3142-AF26-0x99" replace />` (kept as files so any deep import still resolves). Keep `AdminAuthGuard` on the vault as today.
 
-Triggers:
-- On `gift_ledger` insert ≥ threshold (e.g. 100k IQD in 10 min) → insert into `financial_alerts`
-- On `live_streams` start → insert into `activity_intel`
+**Vault sidebar embedding** (`src/pages/OwnerVault.tsx` + `VaultSidebar.tsx`)
+- Under **المالية والأصول**: mount `AdminContentManager`'s Payment Gateways card grid (new `finance` sub-tab "بوابات الدفع").
+- Under **مركز التنفيذ**: add tabs for `pages-content` (CMS for footer pages), `careers` (jobs CRUD), `support-center` (support page content + phone + WhatsApp link CRUD).
+- All tabs render via the existing `activeTab` switch — no hard refresh.
 
-### 2. Edge Functions
+**Theme pass**: ensure new panels use `bg-[#080808]`, glass cards `bg-[#0d0d0d]/80 border border-white/5`, accents `#00e676` (matches existing vault tokens; minor tweak only).
 
-- **`intel-log-event`** — client-callable; captures IP (from headers), parses UA → device/os, geo via free `ipapi.co` lookup, writes to `activity_intel`. Called from auth callbacks, gift transfers, live start.
-- **`threat-scanner`** — scans message/profile text against keyword list (Arabic + English: ابتزاز، تهديد، صور، blackmail, sextortion, scam…); writes `threat_flags`; if score ≥ threshold auto-inserts `account_restrictions` (shadow_ban or freeze).
-- **`admin-remote-command`** — admin-only (verifies role); supports actions: `kill_live` (calls existing kill-stream), `revoke_sessions` (admin.signOut user), `set_maintenance` (toggle app_setting), `lift_restriction`.
-- Hook **`process-gift`** to call rapid-gift detection.
+## Workstream 2 — Footer Pages + CMS
 
-### 3. Frontend — Vault Intelligence Hub
+**Database (single migration)**
+- `site_pages` (slug PK-ish unique, title, body_md, body_html, meta_description, updated_at, updated_by). Seeded with all footer slugs.
+- `careers_jobs` (id, title, department, location, employment_type, description, requirements, is_open, posted_at).
+- `support_settings` (singleton row: support_phone, whatsapp_url, hero_title, hero_subtitle, sections JSONB).
+- RLS: public `SELECT` on all three; `INSERT/UPDATE/DELETE` restricted to `has_role(auth.uid(),'admin')`.
+- Grants: `anon, authenticated` SELECT; `authenticated` full CRUD (guarded by RLS); `service_role` ALL.
 
-New route inside Vault: `VaultIntelligence.tsx` with tabbed Cyber-Command UI:
-
-```text
-┌─ INTEL ─┬─ THREATS ─┬─ FINANCE ─┬─ COMMAND ─┐
-│ Live activity feed (realtime)                │
-│ Threat queue + auto-actions                  │
-│ Revenue/commission chart + flagged wallets   │
-│ Kill switch grid + maintenance toggle        │
-└──────────────────────────────────────────────┘
+**Public routes** (each fetches its row from `site_pages` by slug; Careers fetches jobs list)
 ```
+/careers, /platform-status, /accessibility, /download
+/about, /newsroom, /investors
+/help, /using-networkk, /manage-account, /terms, /contact
+/developers, /docs, /engineering-blog
+/advertising, /business, /resources
+```
+- One shared `<DynamicPage slug="…" />` component renders title + markdown body for the static ones.
+- `Careers.tsx` lists `careers_jobs where is_open=true` with a clean card UI.
+- Add routes to `src/App.tsx`; lazy load.
 
-Components (all in `src/components/vault/intel/`):
-- `GlobalActivityFeed.tsx` — realtime channel on `activity_intel`, neon green pulse rows, filter chips (signups/gifts/lives/logins), shows flag/country/device.
-- `ThreatQueue.tsx` — pending `threat_flags` cards with evidence, "Confirm Ban / Freeze / Dismiss" buttons.
-- `FinancialIntelPanel.tsx` — Recharts area chart of platform 20% commission (last 24h/7d/30d), top earners, flagged wallets list from `financial_alerts`.
-- `RemoteCommandPanel.tsx` — kill any live (list active streams + button), revoke session by user search, master "MAINTENANCE MODE" toggle with confirmation modal.
-- `IntelStatCards.tsx` — 4 KPI cards (active threats, today signups, gifts last hour, platform revenue today).
+**Vault CMS panels** (inside `OwnerVault`, glass theme)
+- `VaultPagesContent.tsx`: list site_pages, edit title/body/meta, save → updates row (no rebuild needed; consumers re-fetch).
+- `VaultCareersManager.tsx`: full CRUD on `careers_jobs` (create, edit, toggle open, delete).
+- `VaultSupportCenter.tsx`: edit phone, WhatsApp URL, hero text, section cards.
 
-Visual: `bg-black`, panels `bg-white/[0.04] backdrop-blur-xl border border-[#39FF14]/20`, neon pulse animations, monospace numerics, Cairo headings, scanline overlay.
+**Footer**: update existing footer (if present) so every link points to the new routes; otherwise add a `SiteFooter` with the columns from the screenshot.
 
-### 4. Integration hooks (light client edits)
+## Out of scope / explicit notes
+- `https://support.networkk.online` is a separate subdomain not in this repo. We expose a **shared `support_settings` table + public read endpoint** so that subdomain can fetch the same data. We will not deploy to that subdomain here.
+- No payment-gateway logic changes — only relocate the existing manager UI into the vault sidebar.
+- No auth changes; Vault keeps its 123456 secondary password.
 
-- `useAuth` / login flow → call `intel-log-event` after successful Apple/Google signup
-- `useAgoraRoom` start → log `live_start`
-- `process-gift` → already server-side; add rapid-gift insert
-- App root → if `maintenance_mode = true` and not admin, render glass lockout screen
+## Technical sections
 
-### 5. Vault sidebar
+**Files created**
+- `supabase/migrations/<ts>_cms_and_admin_consolidation.sql`
+- `src/components/vault/VaultPagesContent.tsx`
+- `src/components/vault/VaultCareersManager.tsx`
+- `src/components/vault/VaultSupportCenter.tsx`
+- `src/components/vault/VaultPaymentGateways.tsx` (wrapper that mounts existing gateway UI from `AdminContentManager`)
+- `src/components/public/DynamicPage.tsx`
+- `src/pages/public/Careers.tsx` + ~17 thin page files (or one route that takes `:slug`)
+- `src/components/SiteFooter.tsx` (if missing)
 
-Add "Intelligence" item to `VaultSidebar.tsx` linking to new tab.
+**Files edited**
+- `src/App.tsx` — add public routes, add redirect routes for legacy admin paths.
+- `src/pages/OwnerVault.tsx` — register new tabs.
+- `src/components/vault/VaultSidebar.tsx` — add menu items (pages-content, careers, support-center, payment-gateways).
+- `src/pages/AdminControl.tsx`, `src/pages/ControlPanel.tsx`, `src/pages/SecureAdminPanel.tsx`, `src/pages/AdminDashboard.tsx` (if linked) — replaced with `<Navigate>` redirect.
 
----
+**Single slug-driven route to keep things lean**
+Instead of 17 separate page files, use one `<Route path="/p/:slug" element={<DynamicPage/>}/>` plus explicit aliases (`/about`, `/careers`, etc.) that render the same component with a fixed slug.
 
-**Out of scope** (can follow up): full ML bot detection, paid IP geo provider, encrypted-at-rest column wrapping. Current geo uses free ipapi; keywords are admin-editable list.
-
-Proceed?
+## Confirm before I build
+The plan touches a lot of surface area (1 migration, ~6 new components, ~17 new routes, sidebar/vault refactor, 4 redirects). Approve and I'll execute it as a single batch, then verify the build.
