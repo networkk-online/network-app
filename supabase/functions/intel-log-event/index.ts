@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { requireUser } from '../_shared/require-user.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,10 +20,18 @@ function parseUA(ua: string) {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  // Require authenticated user
+  const auth = await requireUser(req, corsHeaders);
+  if ('response' in auth) return auth.response;
+
   try {
     const body = await req.json();
-    const { event_type, user_id, severity = 'info', metadata = {} } = body;
+    const { event_type, severity = 'info', metadata = {} } = body;
     if (!event_type) return new Response(JSON.stringify({ error: 'event_type required' }), { status: 400, headers: corsHeaders });
+
+    // Force user_id to the authenticated caller — prevents spoofing events against others.
+    const user_id = auth.userId;
 
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('cf-connecting-ip') || 'unknown';
     const ua = req.headers.get('user-agent') || '';

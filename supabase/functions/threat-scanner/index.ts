@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { requireAdmin } from '../_shared/require-admin.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,6 +8,11 @@ const corsHeaders = {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  // Admin-only — this function can shadow-ban users.
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
+
   try {
     const { user_id, text, source = 'message' } = await req.json();
     if (!user_id || !text) {
