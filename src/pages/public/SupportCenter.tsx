@@ -17,6 +17,7 @@ const SupportCenter = () => {
 
   const phone = data?.support_phone || '07737318706';
   const whatsapp = data?.whatsapp_url || 'https://wa.me/9647737318706';
+  const callUrl = data?.call_url || `tel:${phone}`;
 
   return (
     <div className="min-h-screen bg-[#080808] text-white/90">
@@ -37,23 +38,25 @@ const SupportCenter = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4 mb-10">
-          <a href={`tel:${phone}`} className="bg-[#0d0d0d]/80 border border-white/5 hover:border-[#00e676]/40 rounded-2xl p-6 backdrop-blur-xl transition group">
+          <a href={callUrl} className="bg-[#0d0d0d]/80 border border-white/5 hover:border-[#00e676]/40 rounded-2xl p-6 backdrop-blur-xl transition group">
             <Phone className="h-8 w-8 text-[#00e676] mb-3" />
-            <h3 className="text-white font-semibold mb-1">Call Now</h3>
-            <p className="text-white/40 text-sm">{phone}</p>
+            <h3 className="text-white font-semibold mb-1">اتصل الآن</h3>
+            <p className="text-white/40 text-sm" dir="ltr">{phone}</p>
           </a>
           <a href={whatsapp} target="_blank" rel="noreferrer" className="bg-[#0d0d0d]/80 border border-white/5 hover:border-[#00e676]/40 rounded-2xl p-6 backdrop-blur-xl transition group">
             <MessageCircle className="h-8 w-8 text-[#00e676] mb-3" />
-            <h3 className="text-white font-semibold mb-1">WhatsApp</h3>
-            <p className="text-white/40 text-sm">Chat with us instantly</p>
+            <h3 className="text-white font-semibold mb-1">واتساب</h3>
+            <p className="text-white/40 text-sm">تواصل معنا فوراً</p>
           </a>
         </div>
 
         <div className="grid gap-4">
           {(data?.sections || []).map((s: any, i: number) => (
             <div key={i} className="bg-[#0d0d0d]/80 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
+              {s.category && <p className="text-[10px] uppercase tracking-widest text-[#00e676]/70 mb-1">{s.category}</p>}
               <h3 className="text-[#00e676] font-semibold mb-2">{s.title}</h3>
-              <p className="text-white/70 whitespace-pre-wrap">{s.body}</p>
+              {s.description && <p className="text-white/60 text-sm mb-2">{s.description}</p>}
+              {s.body && <p className="text-white/70 whitespace-pre-wrap">{s.body}</p>}
             </div>
           ))}
         </div>

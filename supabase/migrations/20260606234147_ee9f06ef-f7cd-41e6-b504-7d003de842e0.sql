@@ -1,0 +1,1 @@
+ALTER TABLE public.support_settings ADD COLUMN IF NOT EXISTS call_url text;
