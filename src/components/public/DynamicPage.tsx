@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import SiteFooter from '@/components/SiteFooter';
 
-interface Props { slug: string }
+interface Props { slug?: string }
 
-const DynamicPage = ({ slug }: Props) => {
+const DynamicPage = ({ slug: slugProp }: Props) => {
+  const params = useParams();
+  const slug = slugProp || params.slug || '';
   const [page, setPage] = useState<{ title: string; body: string; meta_description: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
