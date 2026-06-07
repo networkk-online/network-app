@@ -32,6 +32,9 @@ interface Story {
   poll_options?: any;
   poll_votes?: any;
   allow_story_replies?: boolean;
+  music_title?: string | null;
+  music_artist?: string | null;
+  music_url?: string | null;
   profiles?: {
     username: string;
     avatar_url: string;
