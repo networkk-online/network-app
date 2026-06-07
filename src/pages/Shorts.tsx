@@ -174,22 +174,41 @@ const Shorts = () => {
   // Background music for current reel — synced with video play/pause & global mute
   useEffect(() => {
     reelAudioRef.current?.pause();
+    if (reelAudioRef.current) reelAudioRef.current.src = '';
     reelAudioRef.current = null;
     const url = currentReel?.music_url;
     if (!url) return;
-    const a = new Audio(url);
+    const a = new Audio();
+    a.crossOrigin = 'anonymous';
+    a.preload = 'auto';
     a.loop = true;
     a.muted = isMuted;
     a.volume = 0.85;
+    a.src = url;
     reelAudioRef.current = a;
-    a.play().catch(() => {});
+
+    const tryPlay = () => a.play().catch(() => {});
+    tryPlay();
+
+    // Autoplay-block fallback: start on first user interaction anywhere
+    const onUserGesture = () => {
+      if (a.paused) tryPlay();
+    };
+    window.addEventListener('pointerdown', onUserGesture, { once: true });
+    window.addEventListener('touchstart', onUserGesture, { once: true });
+    window.addEventListener('keydown', onUserGesture, { once: true });
+
     const video = videoRef.current;
-    const onPlay = () => a.play().catch(() => {});
+    const onPlay = () => tryPlay();
     const onPause = () => a.pause();
     video?.addEventListener('play', onPlay);
     video?.addEventListener('pause', onPause);
     return () => {
       a.pause();
+      a.src = '';
+      window.removeEventListener('pointerdown', onUserGesture);
+      window.removeEventListener('touchstart', onUserGesture);
+      window.removeEventListener('keydown', onUserGesture);
       video?.removeEventListener('play', onPlay);
       video?.removeEventListener('pause', onPause);
     };
