@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import BackButton from '@/components/BackButton';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import AffiliationBadge from '@/components/AffiliationBadge';
+import SeoHead from '@/components/seo/SeoHead';
 import { useAffiliation } from '@/hooks/useAffiliation';
 
 const MAX_CHARS = 280;
@@ -394,6 +395,7 @@ const Tweets = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SeoHead route="/tweets" />
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="max-w-2xl mx-auto flex items-center justify-between px-4 h-14">

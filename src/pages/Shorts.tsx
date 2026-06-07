@@ -13,6 +13,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useSavedReels } from '@/hooks/useSavedReels';
 import { useToast } from '@/hooks/use-toast';
 import ShareMenu from '@/components/ShareMenu';
+import SeoHead from '@/components/seo/SeoHead';
 import { LiveReelCard } from '@/components/LiveReelCard';
 import { PostOptionsDrawer } from '@/components/PostOptionsDrawer';
 import ProfileOverlayContent from '@/components/ProfileOverlayContent';
@@ -302,6 +303,7 @@ const Shorts = () => {
 
   return (
     <div className="h-screen bg-black overflow-hidden">
+      <SeoHead route="/shorts" />
       {/* Top Bar */}
       <div className="absolute top-0 left-0 right-0 z-40 bg-gradient-to-b from-black/80 to-transparent">
         <div className="flex items-center justify-between p-4">

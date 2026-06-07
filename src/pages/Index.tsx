@@ -17,6 +17,7 @@ import LocalFameRankSection from '@/components/LocalFameRankSection';
 import PublicUserCounter from '@/components/PublicUserCounter';
 import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
 import { Film, Feather } from 'lucide-react';
+import SeoHead from '@/components/seo/SeoHead';
 
 const Index = () => {
   const { toast } = useToast();
@@ -209,6 +210,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      <SeoHead route="/" />
       <Header postSize={postSize} onPostSizeChange={setPostSize} />
       <FloatingWheelIcon />
       
