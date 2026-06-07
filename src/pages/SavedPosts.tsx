@@ -140,6 +140,9 @@ const SavedPosts = () => {
                     commentsCount={post.comments_count || 0}
                     timeAgo={new Date(post.created_at).toLocaleDateString('ar-EG')}
                     walletEarnings={0}
+                    musicTitle={post.music_title}
+                    musicArtist={post.music_artist}
+                    musicUrl={post.music_url}
                   />
                 ))
               ) : (
