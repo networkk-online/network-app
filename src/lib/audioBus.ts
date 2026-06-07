@@ -21,6 +21,6 @@ export const audioBus = {
   },
   onMuteChange(fn: (m: boolean) => void) {
     muteListeners.add(fn);
-    return () => muteListeners.delete(fn);
+    return () => { muteListeners.delete(fn); };
   },
 };
