@@ -75,6 +75,7 @@ const PostMusicBar = ({ title, artist, url, overlay = false, postId, startTime =
       setPlaying(false);
     } else {
       audioBus.announcePlay(idRef.current);
+      try { if (startTime > 0 && Math.abs(a.currentTime - startTime) > 0.5) a.currentTime = startTime; } catch {}
       const p = a.play();
       if (p && typeof p.then === 'function') {
         p.then(() => setPlaying(true)).catch((err) => {
