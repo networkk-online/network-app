@@ -90,7 +90,7 @@ const ITunesSearch = ({ onSelect, selected, onClear, placeholder = 'ابحث ع�
 
   if (selected) {
     return (
-      <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-primary/60 ring-1 ring-primary/30">
         {selected.artwork ? (
           <img src={selected.artwork} alt="" className="w-10 h-10 rounded-md object-cover" />
         ) : (
