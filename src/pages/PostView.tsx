@@ -113,6 +113,9 @@ const PostView = () => {
           commentsCount={post.comments_count || 0}
           timeAgo={getTimeAgo(post.created_at)}
           walletEarnings={0}
+          musicTitle={post.music_title}
+          musicArtist={post.music_artist}
+          musicUrl={post.music_url}
         />
       </div>
     </div>
