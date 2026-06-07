@@ -657,12 +657,22 @@ const CreateStory = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Iraqi Music Library */}
-      <IraqiMusicLibrary
-        isOpen={showMusicDialog}
-        onClose={() => setShowMusicDialog(false)}
-        onSelect={handleMusicSelect}
-      />
+      {/* Global Music Library (iTunes) */}
+      <Dialog open={showMusicDialog} onOpenChange={setShowMusicDialog}>
+        <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-md p-4">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Music className="w-5 h-5 text-primary" /> اختر موسيقى
+            </DialogTitle>
+          </DialogHeader>
+          <MusicPicker
+            currentMusic={selectedMusic ? { title: selectedMusic.title, artist: selectedMusic.artist, url: selectedMusic.url } : undefined}
+            onMusicSelect={(m) => { handleMusicSelect({ title: m.title, artist: m.artist || '', url: m.url }); setShowMusicDialog(false); }}
+            onRemove={() => setSelectedMusic(null)}
+          />
+        </DialogContent>
+      </Dialog>
+
 
       {/* Camera Capture */}
       <StoryCameraCapture
