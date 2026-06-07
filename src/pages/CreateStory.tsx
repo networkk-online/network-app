@@ -11,7 +11,7 @@ import { StickersLibrary } from '@/components/StickersLibrary';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { StoryCameraCapture } from '@/components/StoryCameraCapture';
-import { IraqiMusicLibrary } from '@/components/IraqiMusicLibrary';
+import { MusicPicker } from '@/components/MusicPicker';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CreateStory = () => {
