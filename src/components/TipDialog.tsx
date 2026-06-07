@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, Send, Loader2 } from 'lucide-react';
+import { Gem, Send, Loader2, Banknote } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -16,27 +16,40 @@ interface TipDialogProps {
   creatorAvatar: string;
 }
 
-const TIP_AMOUNTS = [500, 1000, 2500, 5000, 10000];
+const GEM_AMOUNTS = [500, 1000, 2500, 5000, 10000];
+const CASH_AMOUNTS = [500, 1000, 2500, 5000, 10000];
+
+type Currency = 'gems' | 'cash';
 
 interface SendTipResult {
   success: boolean;
   error?: string;
   new_balance?: number;
+  currency?: string;
 }
 
 export const TipDialog = ({ isOpen, onClose, creatorId, creatorName, creatorAvatar }: TipDialogProps) => {
+  const [currency, setCurrency] = useState<Currency>('gems');
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
 
   const finalAmount = selectedAmount || (customAmount ? Number(customAmount) : 0);
+  const amounts = currency === 'gems' ? GEM_AMOUNTS : CASH_AMOUNTS;
+  const unit = currency === 'gems' ? '💎' : 'IQD';
 
   const resetAndClose = () => {
     setSelectedAmount(null);
     setCustomAmount('');
     setMessage('');
     onClose();
+  };
+
+  const switchCurrency = (c: Currency) => {
+    setCurrency(c);
+    setSelectedAmount(null);
+    setCustomAmount('');
   };
 
   const handleSendTip = async () => {
@@ -54,35 +67,41 @@ export const TipDialog = ({ isOpen, onClose, creatorId, creatorName, creatorAvat
 
     setSending(true);
     try {
-      const { data, error } = await supabase.rpc('send_tip' as any, {
+      const { data, error } = await supabase.rpc('send_tip_v2' as any, {
         sender_id: user.id,
         receiver_id: creatorId,
         tip_amount: finalAmount,
+        currency_type: currency,
         tip_message: message.trim() || null,
       });
 
       const result = data as SendTipResult | null;
 
       if (error || !result?.success) {
-        if (result?.error === 'insufficient_balance') {
-          toast.error('رصيدك الحالي غير كافي لإتمام عملية الإرسال.');
-        } else if (result?.error === 'cannot_tip_self') {
+        const code = result?.error;
+        if (code === 'insufficient_gems') {
+          toast.error('رصيد الجواهر الحالي غير كافي لإتمام عملية الإرسال.');
+        } else if (code === 'insufficient_cash') {
+          toast.error('رصيد الكاش الحالي غير كافي لإتمام عملية الإرسال.');
+        } else if (code === 'cannot_tip_self') {
           toast.error('لا يمكنك إرسال إكرامية لنفسك');
-        } else if (result?.error === 'invalid_amount') {
+        } else if (code === 'invalid_amount') {
           toast.error('قيمة الإكرامية غير صحيحة');
+        } else if (code === 'unauthorized') {
+          toast.error('غير مصرح بهذه العملية');
         } else {
-          toast.error('رصيدك الحالي غير كافي لإتمام عملية الإرسال.');
+          toast.error(error?.message || 'فشل إرسال الإكرامية');
         }
         return;
       }
 
       toast.success('تم إرسال الإكرامية بنجاح', {
-        description: `${finalAmount.toLocaleString()} IQD إلى ${creatorName}`,
+        description: `${finalAmount.toLocaleString()} ${unit} إلى ${creatorName}`,
       });
       resetAndClose();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Tip error:', e);
-      toast.error('رصيدك الحالي غير كافي لإتمام عملية الإرسال.');
+      toast.error(e?.message || 'حدث خطأ غير متوقع');
     } finally {
       setSending(false);
     }
@@ -93,10 +112,40 @@ export const TipDialog = ({ isOpen, onClose, creatorId, creatorName, creatorAvat
       <DialogContent className="bg-black/95 border-green-500/30 max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-center text-white flex items-center justify-center gap-2">
-            <DollarSign className="w-5 h-5 text-green-400" />
+            <Gem className="w-5 h-5 text-green-400" />
             إرسال إكرامية
           </DialogTitle>
         </DialogHeader>
+
+        {/* Currency toggle */}
+        <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-white/5 border border-white/10">
+          <button
+            type="button"
+            disabled={sending}
+            onClick={() => switchCurrency('gems')}
+            className={cn(
+              'py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all',
+              currency === 'gems'
+                ? 'bg-green-500/20 text-green-400 border border-green-500/40'
+                : 'text-white/60 hover:text-white'
+            )}
+          >
+            <Gem className="w-3.5 h-3.5" /> جواهر 💎
+          </button>
+          <button
+            type="button"
+            disabled={sending}
+            onClick={() => switchCurrency('cash')}
+            className={cn(
+              'py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all',
+              currency === 'cash'
+                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
+                : 'text-white/60 hover:text-white'
+            )}
+          >
+            <Banknote className="w-3.5 h-3.5" /> رصيد كاش 💵
+          </button>
+        </div>
 
         <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
           <img src={creatorAvatar} alt={creatorName} className="w-10 h-10 rounded-full object-cover border border-green-500/50" />
@@ -107,7 +156,7 @@ export const TipDialog = ({ isOpen, onClose, creatorId, creatorName, creatorAvat
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          {TIP_AMOUNTS.map((amount) => (
+          {amounts.map((amount) => (
             <motion.button
               key={amount}
               whileTap={{ scale: 0.95 }}
@@ -120,7 +169,7 @@ export const TipDialog = ({ isOpen, onClose, creatorId, creatorName, creatorAvat
                   : 'bg-white/5 border-white/10 text-white/70 hover:border-green-500/50'
               )}
             >
-              {amount.toLocaleString()} IQD
+              {amount.toLocaleString()} {unit}
             </motion.button>
           ))}
           <input
@@ -156,7 +205,7 @@ export const TipDialog = ({ isOpen, onClose, creatorId, creatorName, creatorAvat
           ) : (
             <span className="flex items-center gap-2">
               <Send className="w-4 h-4" />
-              إرسال {finalAmount > 0 ? `${finalAmount.toLocaleString()} IQD` : ''}
+              إرسال {finalAmount > 0 ? `${finalAmount.toLocaleString()} ${unit}` : ''}
             </span>
           )}
         </Button>
