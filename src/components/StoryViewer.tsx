@@ -91,6 +91,35 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
     };
   }, []);
 
+  // Background music playback per-story
+  useEffect(() => {
+    storyAudioRef.current?.pause();
+    storyAudioRef.current = null;
+    const url = currentStory?.music_url;
+    if (!url) return;
+    const a = new Audio(url);
+    a.loop = true;
+    a.muted = storyMuted;
+    a.volume = 0.8;
+    storyAudioRef.current = a;
+    if (!shouldPause) a.play().catch(() => {});
+    return () => { a.pause(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStory?.id]);
+
+  useEffect(() => {
+    if (!storyAudioRef.current) return;
+    if (shouldPause) storyAudioRef.current.pause();
+    else storyAudioRef.current.play().catch(() => {});
+  }, [shouldPause]);
+
+  useEffect(() => {
+    if (storyAudioRef.current) storyAudioRef.current.muted = storyMuted;
+  }, [storyMuted]);
+
+  useEffect(() => () => { storyAudioRef.current?.pause(); }, []);
+
+
   // Check ownership on story change
   useEffect(() => {
     if (!currentStory) return;
