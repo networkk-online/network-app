@@ -321,6 +321,15 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {currentStory.music_url && (
+            <button
+              onClick={() => setStoryMuted(m => !m)}
+              aria-label={storyMuted ? 'تشغيل الصوت' : 'كتم الصوت'}
+              className="text-white hover:bg-white/20 p-2 rounded-full transition-colors"
+            >
+              {storyMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            </button>
+          )}
           {isOwnStory && (
             <Popover open={showOwnMenu} onOpenChange={setShowOwnMenu}>
               <PopoverTrigger asChild>
