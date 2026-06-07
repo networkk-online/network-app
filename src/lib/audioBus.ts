@@ -10,7 +10,7 @@ export const audioBus = {
   },
   subscribe(fn: Handler) {
     listeners.add(fn);
-    return () => listeners.delete(fn);
+    return () => { listeners.delete(fn); };
   },
   isGloballyMuted() {
     return _globalMuted;
