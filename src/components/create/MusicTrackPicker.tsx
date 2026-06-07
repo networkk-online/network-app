@@ -12,11 +12,12 @@ const MusicTrackPicker = ({ onSelect, selected }: MusicTrackPickerProps) => {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">🎵 ابحث في مكتبة الموسيقى العالمية</p>
+      <p className="text-xs font-semibold text-white/70">🎵 موسيقى مقترحة</p>
       <ITunesSearch
         selected={sel}
         onClear={() => onSelect(null)}
         onSelect={(t) => onSelect({ song_id: t.song_id, title: t.song_title, artist: t.artist, url: t.song_url })}
+        placeholder="ابحث عن أغنية أو فنان..."
       />
     </div>
   );
