@@ -95,6 +95,7 @@ const CreatePost = () => {
         music_title: music?.title || null,
         music_artist: music?.artist || null,
         music_url: music?.url || null,
+        music_start_time: music?.startTime ?? 0,
         mentions: mentions.length > 0 ? mentions : null,
       });
       if (error) throw error;
