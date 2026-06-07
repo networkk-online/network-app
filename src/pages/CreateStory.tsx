@@ -165,6 +165,9 @@ const CreateStory = () => {
             media_type: mediaType,
             close_friends_only: isCloseFriends,
             allow_story_replies: true,
+            music_title: selectedMusic?.title || null,
+            music_artist: selectedMusic?.artist || null,
+            music_url: selectedMusic?.url || null,
           });
 
         if (insertError) {
