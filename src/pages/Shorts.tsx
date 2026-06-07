@@ -75,6 +75,7 @@ const Shorts = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const progressAnimRef = useRef<number>(0);
+  const reelAudioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   
