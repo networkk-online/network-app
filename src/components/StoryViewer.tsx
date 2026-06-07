@@ -630,6 +630,18 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
         )}
       </div>
 
+      {/* Music sticker */}
+      {currentStory.music_title && (
+        <div className="absolute bottom-24 left-4 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/55 backdrop-blur-md border border-white/10 max-w-[70%]">
+          <Music2 className="w-3.5 h-3.5 text-white animate-pulse" />
+          <div className="overflow-hidden">
+            <p className="text-white text-xs font-medium whitespace-nowrap animate-[marquee_14s_linear_infinite]">
+              {currentStory.music_title}{currentStory.music_artist ? ` • ${currentStory.music_artist}` : ''}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Click areas for navigation */}
       <div className="absolute inset-0 flex">
         <div className="flex-1" onClick={onPrev} />
