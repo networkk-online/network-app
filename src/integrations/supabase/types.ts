@@ -1947,6 +1947,7 @@ export type Database = {
           media_url: string | null
           mentions: string[] | null
           music_artist: string | null
+          music_start_time: number
           music_title: string | null
           music_url: string | null
           shares_count: number | null
@@ -1967,6 +1968,7 @@ export type Database = {
           media_url?: string | null
           mentions?: string[] | null
           music_artist?: string | null
+          music_start_time?: number
           music_title?: string | null
           music_url?: string | null
           shares_count?: number | null
@@ -1987,6 +1989,7 @@ export type Database = {
           media_url?: string | null
           mentions?: string[] | null
           music_artist?: string | null
+          music_start_time?: number
           music_title?: string | null
           music_url?: string | null
           shares_count?: number | null
