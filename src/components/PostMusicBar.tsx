@@ -16,12 +16,38 @@ const PostMusicBar = ({ title, artist, url, overlay = false, postId }: PostMusic
   const idRef = useRef<string>(postId || Math.random().toString(36).slice(2));
   const [playing, setPlaying] = useState(false);
 
+  const ensureAudio = () => {
+    if (!url) return null;
+    if (!audioRef.current) {
+      const a = new Audio();
+      a.crossOrigin = 'anonymous';
+      a.preload = 'auto';
+      a.loop = true;
+      a.src = url;
+      a.onended = () => setPlaying(false);
+      a.onerror = () => setPlaying(false);
+      audioRef.current = a;
+    }
+    return audioRef.current;
+  };
+
   useEffect(() => {
     return () => {
       audioRef.current?.pause();
+      if (audioRef.current) audioRef.current.src = '';
       audioRef.current = null;
     };
   }, []);
+
+  // Reset audio object when url changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
+      setPlaying(false);
+    }
+  }, [url]);
 
   // Pause when another audio announces play
   useEffect(() => {
@@ -33,20 +59,25 @@ const PostMusicBar = ({ title, artist, url, overlay = false, postId }: PostMusic
     });
   }, []);
 
-  const toggle = () => {
+  const toggle = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!url) return;
-    if (!audioRef.current) {
-      audioRef.current = new Audio(url);
-      audioRef.current.loop = true;
-      audioRef.current.onended = () => setPlaying(false);
-    }
+    const a = ensureAudio();
+    if (!a) return;
     if (playing) {
-      audioRef.current.pause();
+      a.pause();
       setPlaying(false);
     } else {
       audioBus.announcePlay(idRef.current);
-      audioRef.current.play().catch(() => setPlaying(false));
-      setPlaying(true);
+      const p = a.play();
+      if (p && typeof p.then === 'function') {
+        p.then(() => setPlaying(true)).catch((err) => {
+          console.warn('Audio playback blocked:', err);
+          setPlaying(false);
+        });
+      } else {
+        setPlaying(true);
+      }
     }
   };
 
