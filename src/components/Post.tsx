@@ -409,9 +409,15 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         </div>
       ) : null}
 
+      {/* Attached music */}
+      {(musicUrl || musicTitle) && (
+        <PostMusicBar title={musicTitle || 'Untitled'} artist={musicArtist} url={musicUrl} />
+      )}
+
       {/* Post Actions */}
       <div className="px-5 pb-4 pt-3 relative z-10">
         <div className="flex items-center justify-between mb-3">
+
           <div className="flex items-center gap-3.5">
             <Button 
               variant="ghost" 
