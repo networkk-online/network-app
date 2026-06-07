@@ -3719,6 +3719,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      send_tip: {
+        Args: {
+          receiver_id: string
+          sender_id: string
+          tip_amount: number
+          tip_message?: string
+        }
+        Returns: Json
+      }
       update_all_fame_scores: { Args: never; Returns: undefined }
     }
     Enums: {
