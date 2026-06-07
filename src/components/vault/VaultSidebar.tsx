@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Shield, Gift, Settings, Eye, FileText,
   ChevronLeft, ChevronRight, Power, LogOut, UserCheck, Wallet, BarChart3,
   Film, Compass, Ban, BookOpen, Zap, Radio, Activity, Megaphone,
-  CreditCard, Briefcase, LifeBuoy, FileEdit
+  CreditCard, Briefcase, LifeBuoy, FileEdit, Search
 } from 'lucide-react';
 
 interface VaultSidebarProps {
@@ -64,6 +64,7 @@ const menuGroups = [
       { id: 'pages-content', label: 'محتوى الصفحات', icon: FileEdit },
       { id: 'careers', label: 'إدارة الوظائف', icon: Briefcase },
       { id: 'support-center', label: 'مركز الدعم', icon: LifeBuoy },
+      { id: 'seo', label: 'SEO والكلمات المفتاحية', icon: Search },
       { id: 'docs', label: 'الوثائق', icon: BookOpen },
       { id: 'settings', label: 'الإعدادات', icon: Settings },
     ],

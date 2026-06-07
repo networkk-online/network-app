@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import visaLogo from '@/assets/visa-logo.png';
 import mastercardLogo from '@/assets/mastercard-logo.jpg';
 import zaincashLogo from '@/assets/zaincash-logo.jpg';
+import SeoHead from '@/components/seo/SeoHead';
 
 const EXCHANGE_RATE = 1500;
 
@@ -49,6 +50,7 @@ const Recharge = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SeoHead route="/recharge" />
       {/* Header */}
       <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b border-border/20"
         style={{ background: 'rgba(8,8,15,0.95)', backdropFilter: 'blur(12px)' }}>

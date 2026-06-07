@@ -1,8 +1,13 @@
 import { createRoot } from 'react-dom/client'
+import { HelmetProvider } from 'react-helmet-async'
 import App from './App.tsx'
 import './index.css'
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <HelmetProvider>
+    <App />
+  </HelmetProvider>
+);
 
 // PWA: register service worker (skip in iframe / Lovable preview to avoid stale-cache issues)
 if ('serviceWorker' in navigator) {
@@ -14,7 +19,6 @@ if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch((err) => console.warn('SW registration failed', err));
     });
   } else {
-    // Clean up any previously-registered worker in preview/iframe
     navigator.serviceWorker.getRegistrations?.().then((rs) => rs.forEach((r) => r.unregister()));
   }
 }

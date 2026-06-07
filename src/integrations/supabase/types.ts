@@ -2663,6 +2663,33 @@ export type Database = {
         }
         Relationships: []
       }
+      seo_meta: {
+        Row: {
+          description: string
+          id: string
+          keywords: string
+          route: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          description?: string
+          id?: string
+          keywords?: string
+          route: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          description?: string
+          id?: string
+          keywords?: string
+          route?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_pages: {
         Row: {
           body: string

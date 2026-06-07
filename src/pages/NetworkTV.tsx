@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { CinemaUploadModal } from '@/components/cinema/CinemaUploadModal';
+import SeoHead from '@/components/seo/SeoHead';
 
 const PAGE_SIZE = 12;
 
@@ -553,6 +554,7 @@ const NetworkTV = () => {
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className="min-h-screen bg-background"
     >
+      <SeoHead route="/network-tv" />
       {/* Cinema Curtain */}
       <AnimatePresence>
         {!entered && (

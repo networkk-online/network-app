@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
+import SeoHead from '@/components/seo/SeoHead';
 
 interface ExplorePost {
   id: string;
@@ -194,6 +195,7 @@ const Explore = () => {
 
   return (
     <div className="min-h-screen bg-black" ref={scrollContainerRef}>
+      <SeoHead route="/explore" />
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-[35px] border-b-[0.5px] border-white/[0.08]">
         <div className="px-4 pt-3 pb-2">

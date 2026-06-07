@@ -5,6 +5,7 @@ import { ArrowRight, ArrowLeft, Languages, ShieldCheck, Zap, Gift, Sparkles, Che
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import SeoHead from '@/components/seo/SeoHead';
 
 type Gateway = {
   id: string;
@@ -153,6 +154,7 @@ export default function AddFunds() {
 
   return (
     <div dir={t.dir} className="min-h-screen text-white" style={{ background: '#0b0f19' }}>
+      <SeoHead route="/add-funds" />
       {/* Ambient neon glow */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-[480px] h-[480px] rounded-full opacity-20 blur-3xl"
