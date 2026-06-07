@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Search, Play, Pause, Music, Loader2, X } from 'lucide-react';
+import { Search, Play, Pause, Music, Loader2, X, Scissors } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 import { motion } from 'framer-motion';
 
 export interface ITunesTrack {
@@ -24,17 +25,43 @@ interface Props {
   selected?: ITunesTrack | null;
   onClear?: () => void;
   placeholder?: string;
+  startTime?: number;
+  onStartTimeChange?: (sec: number) => void;
+  /** trim window length in seconds (default 15) */
+  windowSec?: number;
 }
 
-const ITunesSearch = ({ onSelect, selected, onClear, placeholder = 'ابحث عن أغنية (iTunes)...' }: Props) => {
+const formatTime = (s: number) => {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+};
+
+const ITunesSearch = ({
+  onSelect,
+  selected,
+  onClear,
+  placeholder = 'ابحث عن أغنية (iTunes)...',
+  startTime = 0,
+  onStartTimeChange,
+  windowSec = 15,
+}: Props) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ITunesTrack[]>([]);
   const [loading, setLoading] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [duration, setDuration] = useState(30); // iTunes previews are ~30s
+  const [trimPlaying, setTrimPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const trimAudioRef = useRef<HTMLAudioElement | null>(null);
+  const stopTimerRef = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  useEffect(() => () => { audioRef.current?.pause(); audioRef.current = null; }, []);
+  useEffect(() => () => {
+    audioRef.current?.pause(); audioRef.current = null;
+    trimAudioRef.current?.pause(); trimAudioRef.current = null;
+    if (stopTimerRef.current) window.clearTimeout(stopTimerRef.current);
+  }, []);
 
   useEffect(() => {
     if (timerRef.current) window.clearTimeout(timerRef.current);
@@ -62,6 +89,18 @@ const ITunesSearch = ({ onSelect, selected, onClear, placeholder = 'ابحث ع�
     }, 350);
   }, [query, selected]);
 
+  // Load metadata of selected track to know real duration
+  useEffect(() => {
+    if (!selected) { setDuration(30); return; }
+    const probe = new Audio();
+    probe.crossOrigin = 'anonymous';
+    probe.preload = 'metadata';
+    probe.src = selected.song_url;
+    probe.onloadedmetadata = () => {
+      if (isFinite(probe.duration) && probe.duration > 0) setDuration(Math.floor(probe.duration));
+    };
+  }, [selected]);
+
   const togglePreview = (t: ITunesTrack) => {
     if (previewId === t.song_id) {
       audioRef.current?.pause();
@@ -88,28 +127,91 @@ const ITunesSearch = ({ onSelect, selected, onClear, placeholder = 'ابحث ع�
     onSelect(t);
   };
 
+  const maxStart = Math.max(0, duration - Math.min(windowSec, duration));
+  const endTime = Math.min(duration, startTime + windowSec);
+
+  const previewTrim = (newStart: number) => {
+    if (!selected) return;
+    if (stopTimerRef.current) window.clearTimeout(stopTimerRef.current);
+    if (!trimAudioRef.current) {
+      const a = new Audio();
+      a.crossOrigin = 'anonymous';
+      a.preload = 'auto';
+      a.src = selected.song_url;
+      a.onerror = () => setTrimPlaying(false);
+      trimAudioRef.current = a;
+    }
+    const a = trimAudioRef.current;
+    try { a.currentTime = newStart; } catch {}
+    a.play().then(() => setTrimPlaying(true)).catch(() => setTrimPlaying(false));
+    stopTimerRef.current = window.setTimeout(() => {
+      a.pause();
+      setTrimPlaying(false);
+    }, Math.min(windowSec, 3) * 1000); // brief 3s scrub
+  };
+
+  const stopTrimPreview = () => {
+    if (stopTimerRef.current) window.clearTimeout(stopTimerRef.current);
+    trimAudioRef.current?.pause();
+    setTrimPlaying(false);
+  };
+
   if (selected) {
     return (
-      <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-primary/60 ring-1 ring-primary/30">
-        {selected.artwork ? (
-          <img src={selected.artwork} alt="" className="w-10 h-10 rounded-md object-cover" />
-        ) : (
-          <div className="w-10 h-10 rounded-md bg-primary/15 flex items-center justify-center">
-            <Music className="w-5 h-5 text-primary" />
+      <div className="space-y-3">
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-primary/60 ring-1 ring-primary/30">
+          {selected.artwork ? (
+            <img src={selected.artwork} alt="" className="w-10 h-10 rounded-md object-cover" />
+          ) : (
+            <div className="w-10 h-10 rounded-md bg-primary/15 flex items-center justify-center">
+              <Music className="w-5 h-5 text-primary" />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">{selected.song_title}</p>
+            <p className="text-xs text-muted-foreground truncate">{selected.artist}</p>
           </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground truncate">{selected.song_title}</p>
-          <p className="text-xs text-muted-foreground truncate">{selected.artist}</p>
+          <button
+            type="button"
+            onClick={() => { stopTrimPreview(); audioRef.current?.pause(); onClear?.(); }}
+            aria-label="إزالة الأغنية"
+            className="w-8 h-8 rounded-full hover:bg-white/[0.08] flex items-center justify-center"
+          >
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => { audioRef.current?.pause(); onClear?.(); }}
-          aria-label="إزالة الأغنية"
-          className="w-8 h-8 rounded-full hover:bg-white/[0.08] flex items-center justify-center"
-        >
-          <X className="w-4 h-4 text-muted-foreground" />
-        </button>
+
+        {/* Trim / start-time slider */}
+        <div className="px-3 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5 text-[11px] text-white/60">
+              <Scissors className="w-3 h-3 text-primary" />
+              <span>اختر بداية المقطع</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => (trimPlaying ? stopTrimPreview() : previewTrim(startTime))}
+              className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/15 hover:bg-primary/25 text-[11px] text-primary"
+            >
+              {trimPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+              معاينة
+            </button>
+          </div>
+          <Slider
+            value={[Math.min(startTime, maxStart)]}
+            min={0}
+            max={maxStart || 1}
+            step={1}
+            onValueChange={(v) => onStartTimeChange?.(v[0] ?? 0)}
+            onValueCommit={(v) => previewTrim(v[0] ?? 0)}
+            className="my-2"
+          />
+          <div className="flex items-center justify-between text-[10px] text-white/50 font-mono">
+            <span>{formatTime(startTime)}</span>
+            <span className="text-primary/70">المقطع {windowSec}ث</span>
+            <span>{formatTime(endTime)}</span>
+          </div>
+        </div>
       </div>
     );
   }

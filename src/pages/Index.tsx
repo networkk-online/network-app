@@ -151,6 +151,7 @@ const Index = () => {
           musicTitle: post.music_title,
           musicArtist: post.music_artist,
           musicUrl: post.music_url,
+          musicStartTime: (post as any).music_start_time ?? 0,
         };
       });
 

@@ -1,0 +1,1 @@
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS music_start_time integer NOT NULL DEFAULT 0;

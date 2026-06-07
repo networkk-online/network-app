@@ -1,8 +1,16 @@
 import ITunesSearch, { type ITunesTrack } from '@/components/create/iTunesSearch';
 
+export interface PickedTrack {
+  title: string;
+  artist?: string;
+  url?: string;
+  song_id?: string;
+  startTime?: number;
+}
+
 interface MusicTrackPickerProps {
-  onSelect: (track: { title: string; artist?: string; url?: string; song_id?: string } | null) => void;
-  selected?: { title: string; artist?: string; url?: string; song_id?: string } | null;
+  onSelect: (track: PickedTrack | null) => void;
+  selected?: PickedTrack | null;
 }
 
 const MusicTrackPicker = ({ onSelect, selected }: MusicTrackPickerProps) => {
@@ -16,7 +24,9 @@ const MusicTrackPicker = ({ onSelect, selected }: MusicTrackPickerProps) => {
       <ITunesSearch
         selected={sel}
         onClear={() => onSelect(null)}
-        onSelect={(t) => onSelect({ song_id: t.song_id, title: t.song_title, artist: t.artist, url: t.song_url })}
+        onSelect={(t) => onSelect({ song_id: t.song_id, title: t.song_title, artist: t.artist, url: t.song_url, startTime: 0 })}
+        startTime={selected?.startTime ?? 0}
+        onStartTimeChange={(sec) => selected && onSelect({ ...selected, startTime: sec })}
         placeholder="ابحث عن أغنية أو فنان..."
       />
     </div>

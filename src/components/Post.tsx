@@ -39,9 +39,10 @@ interface PostProps {
   musicTitle?: string | null;
   musicArtist?: string | null;
   musicUrl?: string | null;
+  musicStartTime?: number | null;
 }
 
-const Post = ({ id, userId, username, userAvatar, isVerified = false, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration, displaySize = 'standard', musicTitle, musicArtist, musicUrl }: PostProps) => {
+const Post = ({ id, userId, username, userAvatar, isVerified = false, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration, displaySize = 'standard', musicTitle, musicArtist, musicUrl, musicStartTime }: PostProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLiked, setIsLiked] = useState(false);
@@ -406,14 +407,14 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           <div className="absolute inset-0 pointer-events-none rounded-2xl" 
                style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)' }} />
           {(musicUrl || musicTitle) && (
-            <PostMusicBar overlay postId={id} title={musicTitle || 'Untitled'} artist={musicArtist} url={musicUrl} />
+            <PostMusicBar overlay postId={id} title={musicTitle || 'Untitled'} artist={musicArtist} url={musicUrl} startTime={musicStartTime ?? 0} />
           )}
         </div>
       ) : null}
 
       {/* Attached music (no image fallback) */}
       {!image && !voiceUrl && (musicUrl || musicTitle) && (
-        <PostMusicBar postId={id} title={musicTitle || 'Untitled'} artist={musicArtist} url={musicUrl} />
+        <PostMusicBar postId={id} title={musicTitle || 'Untitled'} artist={musicArtist} url={musicUrl} startTime={musicStartTime ?? 0} />
       )}
 
       {/* Post Actions */}

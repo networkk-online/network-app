@@ -9,9 +9,11 @@ interface PostMusicBarProps {
   /** when true, render as Instagram-style absolute overlay on image */
   overlay?: boolean;
   postId?: string;
+  /** seconds into the song where playback should start */
+  startTime?: number;
 }
 
-const PostMusicBar = ({ title, artist, url, overlay = false, postId }: PostMusicBarProps) => {
+const PostMusicBar = ({ title, artist, url, overlay = false, postId, startTime = 0 }: PostMusicBarProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const idRef = useRef<string>(postId || Math.random().toString(36).slice(2));
   const [playing, setPlaying] = useState(false);
@@ -24,6 +26,10 @@ const PostMusicBar = ({ title, artist, url, overlay = false, postId }: PostMusic
       a.preload = 'auto';
       a.loop = true;
       a.src = url;
+      const seek = () => {
+        try { if (startTime > 0) a.currentTime = startTime; } catch {}
+      };
+      a.onloadedmetadata = seek;
       a.onended = () => setPlaying(false);
       a.onerror = () => setPlaying(false);
       audioRef.current = a;
@@ -69,6 +75,7 @@ const PostMusicBar = ({ title, artist, url, overlay = false, postId }: PostMusic
       setPlaying(false);
     } else {
       audioBus.announcePlay(idRef.current);
+      try { if (startTime > 0 && Math.abs(a.currentTime - startTime) > 0.5) a.currentTime = startTime; } catch {}
       const p = a.play();
       if (p && typeof p.then === 'function') {
         p.then(() => setPlaying(true)).catch((err) => {
