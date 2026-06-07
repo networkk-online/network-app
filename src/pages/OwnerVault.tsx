@@ -22,6 +22,7 @@ import VaultPagesContent from '@/components/vault/VaultPagesContent';
 import VaultCareersManager from '@/components/vault/VaultCareersManager';
 import VaultSupportCenter from '@/components/vault/VaultSupportCenter';
 import VaultPaymentGateways from '@/components/vault/VaultPaymentGateways';
+import VaultSeoManager from '@/components/vault/VaultSeoManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
@@ -129,6 +130,7 @@ const OwnerVault = () => {
     'pages-content': 'محتوى الصفحات',
     careers: 'إدارة الوظائف',
     'support-center': 'مركز الدعم',
+    seo: 'SEO والكلمات المفتاحية',
     docs: 'الوثائق',
     settings: 'الإعدادات',
   };
@@ -161,6 +163,8 @@ const OwnerVault = () => {
         return <VaultCareersManager />;
       case 'support-center':
         return <VaultSupportCenter />;
+      case 'seo':
+        return <VaultSeoManager />;
       case 'gifts':
         return <MasterGiftCodes />;
       case 'security':
