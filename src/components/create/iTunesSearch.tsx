@@ -69,8 +69,12 @@ const ITunesSearch = ({ onSelect, selected, onClear, placeholder = 'ابحث ع�
       return;
     }
     audioRef.current?.pause();
-    const a = new Audio(t.song_url);
+    const a = new Audio();
+    a.crossOrigin = 'anonymous';
+    a.preload = 'auto';
+    a.src = t.song_url;
     a.onended = () => setPreviewId(null);
+    a.onerror = () => setPreviewId(null);
     a.play().catch(() => setPreviewId(null));
     audioRef.current = a;
     setPreviewId(t.song_id);
@@ -86,7 +90,7 @@ const ITunesSearch = ({ onSelect, selected, onClear, placeholder = 'ابحث ع�
 
   if (selected) {
     return (
-      <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-primary/60 ring-1 ring-primary/30">
         {selected.artwork ? (
           <img src={selected.artwork} alt="" className="w-10 h-10 rounded-md object-cover" />
         ) : (
