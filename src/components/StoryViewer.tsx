@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical, Star, AtSign, MoreHorizontal, Share2, Facebook, Twitter, Instagram, Link, Mail } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye, MessageCircle, Send, MoreVertical, Star, AtSign, MoreHorizontal, Share2, Facebook, Twitter, Instagram, Link, Mail, Volume2, VolumeX, Music2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from './ui/button';
@@ -32,6 +32,9 @@ interface Story {
   poll_options?: any;
   poll_votes?: any;
   allow_story_replies?: boolean;
+  music_title?: string | null;
+  music_artist?: string | null;
+  music_url?: string | null;
   profiles?: {
     username: string;
     avatar_url: string;
@@ -62,6 +65,8 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
   const [showOwnMenu, setShowOwnMenu] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isTypingReply, setIsTypingReply] = useState(false);
+  const [storyMuted, setStoryMuted] = useState(false);
+  const storyAudioRef = useRef<HTMLAudioElement | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef(0);
   const progressAnimRef = useRef<number>(0);
@@ -85,6 +90,35 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
       // Don't close on unmount of overlays — only on full viewer close
     };
   }, []);
+
+  // Background music playback per-story
+  useEffect(() => {
+    storyAudioRef.current?.pause();
+    storyAudioRef.current = null;
+    const url = currentStory?.music_url;
+    if (!url) return;
+    const a = new Audio(url);
+    a.loop = true;
+    a.muted = storyMuted;
+    a.volume = 0.8;
+    storyAudioRef.current = a;
+    if (!shouldPause) a.play().catch(() => {});
+    return () => { a.pause(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStory?.id]);
+
+  useEffect(() => {
+    if (!storyAudioRef.current) return;
+    if (shouldPause) storyAudioRef.current.pause();
+    else storyAudioRef.current.play().catch(() => {});
+  }, [shouldPause]);
+
+  useEffect(() => {
+    if (storyAudioRef.current) storyAudioRef.current.muted = storyMuted;
+  }, [storyMuted]);
+
+  useEffect(() => () => { storyAudioRef.current?.pause(); }, []);
+
 
   // Check ownership on story change
   useEffect(() => {
@@ -287,6 +321,15 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {currentStory.music_url && (
+            <button
+              onClick={() => setStoryMuted(m => !m)}
+              aria-label={storyMuted ? 'تشغيل الصوت' : 'كتم الصوت'}
+              className="text-white hover:bg-white/20 p-2 rounded-full transition-colors"
+            >
+              {storyMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            </button>
+          )}
           {isOwnStory && (
             <Popover open={showOwnMenu} onOpenChange={setShowOwnMenu}>
               <PopoverTrigger asChild>
@@ -586,6 +629,18 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
           />
         )}
       </div>
+
+      {/* Music sticker */}
+      {currentStory.music_title && (
+        <div className="absolute bottom-24 left-4 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/55 backdrop-blur-md border border-white/10 max-w-[70%]">
+          <Music2 className="w-3.5 h-3.5 text-white animate-pulse" />
+          <div className="overflow-hidden">
+            <p className="text-white text-xs font-medium whitespace-nowrap animate-[marquee_14s_linear_infinite]">
+              {currentStory.music_title}{currentStory.music_artist ? ` • ${currentStory.music_artist}` : ''}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Click areas for navigation */}
       <div className="absolute inset-0 flex">

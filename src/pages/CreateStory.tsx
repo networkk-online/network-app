@@ -11,7 +11,7 @@ import { StickersLibrary } from '@/components/StickersLibrary';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { StoryCameraCapture } from '@/components/StoryCameraCapture';
-import { IraqiMusicLibrary } from '@/components/IraqiMusicLibrary';
+import { MusicPicker } from '@/components/MusicPicker';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CreateStory = () => {
@@ -165,6 +165,9 @@ const CreateStory = () => {
             media_type: mediaType,
             close_friends_only: isCloseFriends,
             allow_story_replies: true,
+            music_title: selectedMusic?.title || null,
+            music_artist: selectedMusic?.artist || null,
+            music_url: selectedMusic?.url || null,
           });
 
         if (insertError) {
@@ -657,12 +660,22 @@ const CreateStory = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Iraqi Music Library */}
-      <IraqiMusicLibrary
-        isOpen={showMusicDialog}
-        onClose={() => setShowMusicDialog(false)}
-        onSelect={handleMusicSelect}
-      />
+      {/* Global Music Library (iTunes) */}
+      <Dialog open={showMusicDialog} onOpenChange={setShowMusicDialog}>
+        <DialogContent className="bg-gray-900/98 backdrop-blur-sm border-gray-800 max-w-md p-4">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Music className="w-5 h-5 text-primary" /> اختر موسيقى
+            </DialogTitle>
+          </DialogHeader>
+          <MusicPicker
+            currentMusic={selectedMusic ? { title: selectedMusic.title, artist: selectedMusic.artist, url: selectedMusic.url } : undefined}
+            onMusicSelect={(m) => { handleMusicSelect({ title: m.title, artist: m.artist || '', url: m.url }); setShowMusicDialog(false); }}
+            onRemove={() => setSelectedMusic(null)}
+          />
+        </DialogContent>
+      </Dialog>
+
 
       {/* Camera Capture */}
       <StoryCameraCapture

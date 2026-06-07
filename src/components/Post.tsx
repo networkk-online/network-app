@@ -403,15 +403,17 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
             }`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
-          {/* Glass edge overlay */}
           <div className="absolute inset-0 pointer-events-none rounded-2xl" 
                style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)' }} />
+          {(musicUrl || musicTitle) && (
+            <PostMusicBar overlay postId={id} title={musicTitle || 'Untitled'} artist={musicArtist} url={musicUrl} />
+          )}
         </div>
       ) : null}
 
-      {/* Attached music */}
-      {(musicUrl || musicTitle) && (
-        <PostMusicBar title={musicTitle || 'Untitled'} artist={musicArtist} url={musicUrl} />
+      {/* Attached music (no image fallback) */}
+      {!image && !voiceUrl && (musicUrl || musicTitle) && (
+        <PostMusicBar postId={id} title={musicTitle || 'Untitled'} artist={musicArtist} url={musicUrl} />
       )}
 
       {/* Post Actions */}

@@ -75,6 +75,7 @@ const Shorts = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const progressAnimRef = useRef<number>(0);
+  const reelAudioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -169,6 +170,35 @@ const Shorts = () => {
       video.removeEventListener('seeked', onSeeked);
     };
   }, [currentVideoIndex, updateProgress]);
+
+  // Background music for current reel — synced with video play/pause & global mute
+  useEffect(() => {
+    reelAudioRef.current?.pause();
+    reelAudioRef.current = null;
+    const url = currentReel?.music_url;
+    if (!url) return;
+    const a = new Audio(url);
+    a.loop = true;
+    a.muted = isMuted;
+    a.volume = 0.85;
+    reelAudioRef.current = a;
+    a.play().catch(() => {});
+    const video = videoRef.current;
+    const onPlay = () => a.play().catch(() => {});
+    const onPause = () => a.pause();
+    video?.addEventListener('play', onPlay);
+    video?.addEventListener('pause', onPause);
+    return () => {
+      a.pause();
+      video?.removeEventListener('play', onPlay);
+      video?.removeEventListener('pause', onPause);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentReel?.id]);
+
+  useEffect(() => {
+    if (reelAudioRef.current) reelAudioRef.current.muted = isMuted;
+  }, [isMuted]);
 
   useEffect(() => {
     if (videoRef.current) {
