@@ -69,8 +69,12 @@ const ITunesSearch = ({ onSelect, selected, onClear, placeholder = 'ابحث ع�
       return;
     }
     audioRef.current?.pause();
-    const a = new Audio(t.song_url);
+    const a = new Audio();
+    a.crossOrigin = 'anonymous';
+    a.preload = 'auto';
+    a.src = t.song_url;
     a.onended = () => setPreviewId(null);
+    a.onerror = () => setPreviewId(null);
     a.play().catch(() => setPreviewId(null));
     audioRef.current = a;
     setPreviewId(t.song_id);
