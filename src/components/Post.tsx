@@ -17,6 +17,7 @@ import { PremiumShareButton } from '@/components/PremiumShareButton';
 import { TipDialog } from '@/components/TipDialog';
 import AffiliationBadge from '@/components/AffiliationBadge';
 import { useAffiliation } from '@/hooks/useAffiliation';
+import PostMusicBar from '@/components/PostMusicBar';
 import type { PostSize } from '@/hooks/usePostSize';
 
 
@@ -35,9 +36,12 @@ interface PostProps {
   voiceUrl?: string;
   voiceDuration?: number;
   displaySize?: PostSize;
+  musicTitle?: string | null;
+  musicArtist?: string | null;
+  musicUrl?: string | null;
 }
 
-const Post = ({ id, userId, username, userAvatar, isVerified = false, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration, displaySize = 'standard' }: PostProps) => {
+const Post = ({ id, userId, username, userAvatar, isVerified = false, image, caption, likes, commentsCount = 0, timeAgo, walletEarnings, voiceUrl, voiceDuration, displaySize = 'standard', musicTitle, musicArtist, musicUrl }: PostProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLiked, setIsLiked] = useState(false);
@@ -405,9 +409,15 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         </div>
       ) : null}
 
+      {/* Attached music */}
+      {(musicUrl || musicTitle) && (
+        <PostMusicBar title={musicTitle || 'Untitled'} artist={musicArtist} url={musicUrl} />
+      )}
+
       {/* Post Actions */}
       <div className="px-5 pb-4 pt-3 relative z-10">
         <div className="flex items-center justify-between mb-3">
+
           <div className="flex items-center gap-3.5">
             <Button 
               variant="ghost" 
