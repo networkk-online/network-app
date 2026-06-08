@@ -12,7 +12,7 @@ const menuItems = [
   { icon: Film, label: 'ريل جديد', path: '/create-reel', color: '#a855f7' },
   { icon: Camera, label: 'قصة جديدة', path: '/create-story', color: '#f97316' },
   { icon: Radio, label: 'بث مباشر', path: '/broadcast', color: '#ef4444' },
-  { icon: TrendingUp, label: 'إعلان', path: '/manage-ads', color: '#eab308' },
+  { icon: TrendingUp, label: 'إعلان', path: '/ads', color: '#eab308' },
   { icon: Sparkles, label: 'أدوات AI', path: '/ai-tools', color: '#06b6d4' },
 ];
 
