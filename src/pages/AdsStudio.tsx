@@ -56,9 +56,11 @@ const AdsStudio = () => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
-        // Hand-off to the unified ads auth so session is shared across app + ads.networkk.online
-        const back = encodeURIComponent(window.location.href);
-        window.location.href = `${UNIFIED_AUTH_URL}?redirect=${back}`;
+        // Use the in-app /login which already resolves username → email via the
+        // lookup-username edge function before calling supabase.auth.signInWithPassword.
+        // After login the user returns to /ads where the integrated ads panel opens
+        // automatically and stays in sync with ads.networkk.online via the shared session.
+        navigate(`/login?redirect=${encodeURIComponent('/ads')}`, { replace: true });
         return;
       }
       setUserId(session.user.id);
