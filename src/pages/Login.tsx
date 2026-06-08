@@ -39,15 +39,20 @@ const Login = () => {
     } catch { toast({ title: 'خطأ', description: 'تعذر البحث عن اسم المستخدم', variant: 'destructive' }); return null; }
   };
 
+  const redirectPath = searchParams.get('redirect');
+  const isSafeRedirect = (p: string | null): p is string =>
+    !!p && p.startsWith('/') && !p.startsWith('//');
+  const postLoginPath = isSafeRedirect(redirectPath) ? redirectPath : '/';
+
   useEffect(() => {
     // If adding account, sign out current session first (tokens are saved by useAccountSwitcher)
     if (isAddAccount) {
       supabase.auth.signOut();
       return;
     }
-    supabase.auth.getSession().then(({ data: { session } }) => { if (session) navigate('/'); });
+    supabase.auth.getSession().then(({ data: { session } }) => { if (session) navigate(postLoginPath); });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && event === 'SIGNED_IN') { logLogin(session.user.id); navigate('/'); }
+      if (session && event === 'SIGNED_IN') { logLogin(session.user.id); navigate(postLoginPath); }
     });
     return () => subscription.unsubscribe();
   }, [navigate, logLogin, isAddAccount]);
@@ -82,7 +87,7 @@ const Login = () => {
         }
         logLogin(setData.session.user.id);
 
-        navigate('/');
+        navigate(postLoginPath);
         return;
       }
 
@@ -104,7 +109,7 @@ const Login = () => {
       }
       logLogin(data.session.user.id);
 
-      navigate('/');
+      navigate(postLoginPath);
     } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' }); }
     finally { setIsLoading(false); }
   };
