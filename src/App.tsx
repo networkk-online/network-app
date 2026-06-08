@@ -34,6 +34,7 @@ import ManageUsers from "./pages/ManageUsers";
 import EliteUserDirectory from "./pages/EliteUserDirectory";
 import ManageContent from "./pages/ManageContent";
 import ManageAds from "./pages/ManageAds";
+import AdsStudio from "./pages/AdsStudio";
 import AdminSettings from "./pages/AdminSettings";
 import SecretAdminAccess from "./pages/SecretAdminAccess";
 import Settings from "./pages/Settings";
@@ -163,6 +164,8 @@ const AppContent = () => {
         <Route path="/admin/users-legacy" element={<ManageUsers />} />
         <Route path="/admin/content" element={<ManageContent />} />
         <Route path="/admin/ads" element={<ManageAds />} />
+        <Route path="/ads" element={<AdsStudio />} />
+        <Route path="/manage-ads" element={<AdsStudio />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/verification" element={<VerificationRequests />} />
         <Route path="/admin/logs" element={<AdminLogs />} />
