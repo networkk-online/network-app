@@ -1,14 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, FileText, Film, TrendingUp, Sparkles, Trash2, Loader2 } from 'lucide-react';
 import { useCountUp } from '@/hooks/useCountUp';
 import { toast } from 'sonner';
 
+const TARGET_USERS = 2500;
+const AUTOGEN_FLAG = 'networkk_autogen_mock_users_v1';
+
 const MasterOverview = () => {
   const [stats, setStats] = useState({ users: 0, posts: 0, reels: 0, deposits: 0 });
   const [busy, setBusy] = useState<null | 'create' | 'delete'>(null);
   const [statusMsg, setStatusMsg] = useState<string>('');
+  const autoTriggeredRef = useRef(false);
 
   const loadStats = useCallback(async () => {
     const [u, p, r, d] = await Promise.all([
@@ -38,24 +42,42 @@ const MasterOverview = () => {
 
   const animatedUsers = useCountUp({ end: stats.users, duration: 1200 });
 
-  const handleGenerate = async () => {
-    if (busy) return;
+  const runGenerate = useCallback(async (count: number, silent = false) => {
     setBusy('create');
-    setStatusMsg('Generating 2500 users...');
+    setStatusMsg(silent ? 'Auto-populating users...' : 'Generating users...');
     try {
       const { data, error } = await supabase.functions.invoke('admin-bulk-create-users', {
-        body: { count: 2500, batchSize: 50, prefix: 'mock' },
+        body: { count, batchSize: 50, prefix: 'mock' },
       });
       if (error) throw error;
-      toast.success(`تم إنشاء ${data?.created ?? 0} مستخدم (فشل ${data?.failed ?? 0})`);
+      if (!silent) toast.success(`تم إنشاء ${data?.created ?? 0} مستخدم (فشل ${data?.failed ?? 0})`);
+      else if (data?.created) toast.success(`تمت إضافة ${data.created} مستخدم تلقائياً`);
     } catch (e: any) {
-      toast.error(e.message || 'فشل الإنشاء');
+      if (!silent) toast.error(e.message || 'فشل الإنشاء');
+      console.error('[auto-gen]', e);
     } finally {
       await loadStats();
       setBusy(null);
       setStatusMsg('');
     }
-  };
+  }, [loadStats]);
+
+  const handleGenerate = () => { if (!busy) runGenerate(TARGET_USERS, false); };
+
+  // Auto-trigger: on first dashboard mount, if below target, fill in the gap in the background.
+  // Guarded by a localStorage flag + in-memory ref so it can never run more than once per session.
+  useEffect(() => {
+    if (autoTriggeredRef.current) return;
+    if (busy) return;
+    if (stats.users === 0) return; // wait for first stats load
+    if (stats.users >= TARGET_USERS) return;
+    if (localStorage.getItem(AUTOGEN_FLAG)) return;
+
+    autoTriggeredRef.current = true;
+    localStorage.setItem(AUTOGEN_FLAG, String(Date.now()));
+    const remaining = TARGET_USERS - stats.users;
+    runGenerate(remaining, true);
+  }, [stats.users, busy, runGenerate]);
 
   const handleDelete = async () => {
     if (busy) return;
