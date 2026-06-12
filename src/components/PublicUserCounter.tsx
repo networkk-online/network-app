@@ -20,6 +20,13 @@ export default function PublicUserCounter() {
       }
     };
     fetchCount();
+
+    // Live update when profiles are added/removed (e.g., bulk mock user creation)
+    const channel = supabase
+      .channel('public-user-counter')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchCount())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const animatedCount = useCountUp({
