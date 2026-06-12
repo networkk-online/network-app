@@ -1,9 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, FileText, Film, TrendingUp, Sparkles, Trash2, Loader2 } from 'lucide-react';
 import { useCountUp } from '@/hooks/useCountUp';
 import { toast } from 'sonner';
+
+const TARGET_USERS = 2500;
+const AUTOGEN_FLAG = 'networkk_autogen_mock_users_v1';
 
 const MasterOverview = () => {
   const [stats, setStats] = useState({ users: 0, posts: 0, reels: 0, deposits: 0 });
