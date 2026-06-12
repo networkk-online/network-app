@@ -226,7 +226,7 @@ const Settings = () => {
             </SettingSection>
 
             <SettingSection title="مزيد من المعلومات والدعم">
-              <SettingItem icon={<BriefcaseBusiness className="w-4 h-4" strokeWidth={1.4} />} title="الوظائف" onClick={() => toast({ title: "قريباً", description: "هذه الميزة قيد التطوير" })} />
+              <SettingItem icon={<BriefcaseBusiness className="w-4 h-4" strokeWidth={1.4} />} title="الوظائف" onClick={() => window.open('https://careers.networkk.online/', '_blank', 'noopener,noreferrer')} />
               <SettingItem icon={<Shield className="w-4 h-4" strokeWidth={1.4} />} title="مركز الخصوصية" onClick={() => navigate('/settings/privacy-center')} />
               <SettingItem icon={<UserCog className="w-4 h-4" strokeWidth={1.4} />} title="حالة الحساب" onClick={() => navigate('/settings/account-status')} />
             </SettingSection>
