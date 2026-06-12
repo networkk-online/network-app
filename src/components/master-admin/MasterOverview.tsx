@@ -12,6 +12,7 @@ const MasterOverview = () => {
   const [stats, setStats] = useState({ users: 0, posts: 0, reels: 0, deposits: 0 });
   const [busy, setBusy] = useState<null | 'create' | 'delete'>(null);
   const [statusMsg, setStatusMsg] = useState<string>('');
+  const autoTriggeredRef = useRef(false);
 
   const loadStats = useCallback(async () => {
     const [u, p, r, d] = await Promise.all([
