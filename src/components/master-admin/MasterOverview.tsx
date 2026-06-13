@@ -69,14 +69,15 @@ const MasterOverview = () => {
 
   const handleGenerate = () => { if (!busy) runGenerate(TARGET_USERS, false); };
 
-  // Auto-trigger: on first dashboard mount, if below target, fill in the gap in the background.
-  // Guarded by a localStorage flag + in-memory ref so it can never run more than once per session.
+  // Auto-trigger: on first dashboard mount, if below target, fill the gap in the background.
+  // Guarded by in-memory ref + localStorage flag (in-progress) + done sentinel (completed).
   useEffect(() => {
     if (autoTriggeredRef.current) return;
     if (busy) return;
     if (stats.users === 0) return; // wait for first stats load
     if (stats.users >= TARGET_USERS) return;
     if (localStorage.getItem(AUTOGEN_FLAG)) return;
+    if (localStorage.getItem(AUTOGEN_DONE)) return;
 
     autoTriggeredRef.current = true;
     localStorage.setItem(AUTOGEN_FLAG, String(Date.now()));
