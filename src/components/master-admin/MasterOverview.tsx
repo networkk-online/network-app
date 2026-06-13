@@ -53,9 +53,13 @@ const MasterOverview = () => {
       if (error) throw error;
       if (!silent) toast.success(`تم إنشاء ${data?.created ?? 0} مستخدم (فشل ${data?.failed ?? 0})`);
       else if (data?.created) toast.success(`تمت إضافة ${data.created} مستخدم تلقائياً`);
+      // Mark completed so we never re-trigger after hitting the target
+      try { localStorage.setItem(AUTOGEN_DONE, String(Date.now())); } catch {}
     } catch (e: any) {
       if (!silent) toast.error(e.message || 'فشل الإنشاء');
       console.error('[auto-gen]', e);
+      // Allow a retry on next mount if the background run failed
+      if (silent) { try { localStorage.removeItem(AUTOGEN_FLAG); } catch {} }
     } finally {
       await loadStats();
       setBusy(null);
