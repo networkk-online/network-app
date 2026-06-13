@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 const TARGET_USERS = 2500;
 const AUTOGEN_FLAG = 'networkk_autogen_mock_users_v1';
+const AUTOGEN_DONE = 'networkk_autogen_mock_users_done_v1';
 
 const MasterOverview = () => {
   const [stats, setStats] = useState({ users: 0, posts: 0, reels: 0, deposits: 0 });
@@ -52,9 +53,13 @@ const MasterOverview = () => {
       if (error) throw error;
       if (!silent) toast.success(`تم إنشاء ${data?.created ?? 0} مستخدم (فشل ${data?.failed ?? 0})`);
       else if (data?.created) toast.success(`تمت إضافة ${data.created} مستخدم تلقائياً`);
+      // Mark completed so we never re-trigger after hitting the target
+      try { localStorage.setItem(AUTOGEN_DONE, String(Date.now())); } catch {}
     } catch (e: any) {
       if (!silent) toast.error(e.message || 'فشل الإنشاء');
       console.error('[auto-gen]', e);
+      // Allow a retry on next mount if the background run failed
+      if (silent) { try { localStorage.removeItem(AUTOGEN_FLAG); } catch {} }
     } finally {
       await loadStats();
       setBusy(null);
@@ -64,14 +69,15 @@ const MasterOverview = () => {
 
   const handleGenerate = () => { if (!busy) runGenerate(TARGET_USERS, false); };
 
-  // Auto-trigger: on first dashboard mount, if below target, fill in the gap in the background.
-  // Guarded by a localStorage flag + in-memory ref so it can never run more than once per session.
+  // Auto-trigger: on first dashboard mount, if below target, fill the gap in the background.
+  // Guarded by in-memory ref + localStorage flag (in-progress) + done sentinel (completed).
   useEffect(() => {
     if (autoTriggeredRef.current) return;
     if (busy) return;
     if (stats.users === 0) return; // wait for first stats load
     if (stats.users >= TARGET_USERS) return;
     if (localStorage.getItem(AUTOGEN_FLAG)) return;
+    if (localStorage.getItem(AUTOGEN_DONE)) return;
 
     autoTriggeredRef.current = true;
     localStorage.setItem(AUTOGEN_FLAG, String(Date.now()));
