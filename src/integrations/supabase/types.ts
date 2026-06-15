@@ -1576,6 +1576,51 @@ export type Database = {
         }
         Relationships: []
       }
+      matches: {
+        Row: {
+          away_team: string
+          created_at: string
+          created_by: string | null
+          home_team: string
+          id: string
+          league: string | null
+          notes: string | null
+          start_time: string
+          status: string
+          stream_url: string | null
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          away_team: string
+          created_at?: string
+          created_by?: string | null
+          home_team: string
+          id?: string
+          league?: string | null
+          notes?: string | null
+          start_time?: string
+          status?: string
+          stream_url?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          away_team?: string
+          created_at?: string
+          created_by?: string | null
+          home_team?: string
+          id?: string
+          league?: string | null
+          notes?: string | null
+          start_time?: string
+          status?: string
+          stream_url?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string | null
