@@ -23,6 +23,7 @@ import VaultCareersManager from '@/components/vault/VaultCareersManager';
 import VaultSupportCenter from '@/components/vault/VaultSupportCenter';
 import VaultPaymentGateways from '@/components/vault/VaultPaymentGateways';
 import VaultSeoManager from '@/components/vault/VaultSeoManager';
+import VaultMatchesManager from '@/components/vault/VaultMatchesManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
@@ -118,6 +119,7 @@ const OwnerVault = () => {
     verification: 'التحقق من الهوية',
     explore: 'مدير الاستكشاف',
     reels: 'إدارة الريلز',
+    matches: 'المباريات المباشرة',
     finance: 'المالية والأصول',
     'payment-gateways': 'بوابات الدفع',
     gifts: 'أكواد الهدايا',
@@ -153,6 +155,8 @@ const OwnerVault = () => {
         return <MasterReelsManager />;
       case 'live':
         return <VaultLiveMonitor />;
+      case 'matches':
+        return <VaultMatchesManager />;
       case 'finance':
         return <VaultFinance />;
       case 'payment-gateways':

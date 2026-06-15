@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Shield, Gift, Settings, Eye, FileText,
   ChevronLeft, ChevronRight, Power, LogOut, UserCheck, Wallet, BarChart3,
   Film, Compass, Ban, BookOpen, Zap, Radio, Activity, Megaphone,
-  CreditCard, Briefcase, LifeBuoy, FileEdit, Search
+  CreditCard, Briefcase, LifeBuoy, FileEdit, Search, Trophy
 } from 'lucide-react';
 
 interface VaultSidebarProps {
@@ -39,6 +39,7 @@ const menuGroups = [
       { id: 'explore', label: 'مدير الاستكشاف', icon: Compass },
       { id: 'reels', label: 'إدارة الريلز', icon: Film },
       { id: 'live', label: 'مراقبة البث', icon: Radio },
+      { id: 'matches', label: 'المباريات المباشرة', icon: Trophy },
     ],
   },
   {
