@@ -3,12 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Radio, Calendar, Trophy, Play, X } from 'lucide-react';
+import { Radio, Calendar, Trophy, Play } from 'lucide-react';
 
 interface Match {
   id: string;
@@ -27,7 +22,6 @@ const statusLabel = (s: string) =>
 const NetworkTV = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
-  const [active, setActive] = useState<Match | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -114,7 +108,9 @@ const NetworkTV = () => {
                     })}
                   </div>
                   <Button
-                    onClick={() => setActive(m)}
+                    onClick={() => {
+                      if (m.stream_url) window.open(m.stream_url, '_blank');
+                    }}
                     disabled={!m.stream_url}
                     className="mt-auto bg-[#08A045] hover:bg-[#08A045]/90 text-white font-bold gap-2"
                   >
@@ -127,58 +123,6 @@ const NetworkTV = () => {
           </div>
         )}
       </main>
-
-      {/* Watch Modal */}
-      <Dialog open={!!active} onOpenChange={(o) => !o && setActive(null)}>
-        <DialogContent className="max-w-5xl w-full p-0 bg-black border-white/[0.08] overflow-hidden">
-          <DialogTitle className="sr-only">
-            {active ? `${active.home_team} vs ${active.away_team}` : 'البث المباشر'}
-          </DialogTitle>
-          {active && (
-            <div className="flex flex-col">
-              {/* Modal Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Trophy className="w-4 h-4 text-[#08A045] shrink-0" />
-                  <span className="font-bold truncate">
-                    {active.home_team} <span className="text-white/30">vs</span> {active.away_team}
-                  </span>
-                  {active.status === 'live' && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/90 text-[10px] font-bold">
-                      <Radio className="w-3 h-3 animate-pulse" /> LIVE
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={() => setActive(null)}
-                  className="p-1.5 rounded hover:bg-white/10"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Stream Iframe */}
-              <div className="relative bg-black">
-                {active.stream_url ? (
-                  <iframe
-                    src={active.stream_url}
-                    title={`${active.home_team} vs ${active.away_team}`}
-                    className="w-full border-0"
-                    style={{ height: '600px' }}
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
-                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <div className="h-[400px] flex items-center justify-center text-white/40 text-sm">
-                    لا يوجد رابط بث متاح
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
