@@ -5,9 +5,10 @@ import { Users, FileText, Film, TrendingUp, Sparkles, Trash2, Loader2 } from 'lu
 import { useCountUp } from '@/hooks/useCountUp';
 import { toast } from 'sonner';
 
-const TARGET_USERS = 2500;
-const AUTOGEN_FLAG = 'networkk_autogen_mock_users_v1';
-const AUTOGEN_DONE = 'networkk_autogen_mock_users_done_v1';
+const TARGET_USERS = 2000;
+const AUTOGEN_FLAG = 'networkk_autogen_mock_users_v2';
+const AUTOGEN_DONE = 'networkk_autogen_mock_users_done_v2';
+const AUTOGEN_FLAG_TTL_MS = 5 * 60 * 1000; // stale lock auto-clears after 5 min
 
 const MasterOverview = () => {
   const [stats, setStats] = useState({ users: 0, posts: 0, reels: 0, deposits: 0 });
@@ -76,8 +77,15 @@ const MasterOverview = () => {
     if (busy) return;
     if (stats.users === 0) return; // wait for first stats load
     if (stats.users >= TARGET_USERS) return;
-    if (localStorage.getItem(AUTOGEN_FLAG)) return;
     if (localStorage.getItem(AUTOGEN_DONE)) return;
+
+    // Clear stale in-progress lock from a previous tab/run that died
+    const flagRaw = localStorage.getItem(AUTOGEN_FLAG);
+    if (flagRaw) {
+      const age = Date.now() - Number(flagRaw);
+      if (Number.isFinite(age) && age < AUTOGEN_FLAG_TTL_MS) return;
+      localStorage.removeItem(AUTOGEN_FLAG);
+    }
 
     autoTriggeredRef.current = true;
     localStorage.setItem(AUTOGEN_FLAG, String(Date.now()));
@@ -173,7 +181,7 @@ const MasterOverview = () => {
             >
               <div className="flex items-center justify-center gap-2">
                 {busy === 'create' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                <span>{busy === 'create' ? 'Generating...' : 'Generate 2500 Users'}</span>
+                <span>{busy === 'create' ? 'Generating...' : `Generate ${TARGET_USERS} Users`}</span>
               </div>
             </button>
 
