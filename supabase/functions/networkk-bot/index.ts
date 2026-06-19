@@ -29,13 +29,23 @@ serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Auth user from JWT (optional for some actions like welcome)
+    // Authn required for ALL actions
     const authHeader = req.headers.get("Authorization") ?? "";
-    const jwt = authHeader.replace("Bearer ", "");
-    const { data: userData } = jwt
-      ? await admin.auth.getUser(jwt)
-      : { data: { user: null } };
+    const jwt = authHeader.replace("Bearer ", "").trim();
+    if (!jwt) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: userData } = await admin.auth.getUser(jwt);
     const currentUser = userData?.user ?? null;
+    if (!currentUser) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const body = await req.json();
     const action: string = body.action ?? "chat";
