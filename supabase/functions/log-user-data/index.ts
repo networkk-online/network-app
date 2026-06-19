@@ -68,32 +68,32 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireUser(req, corsHeaders);
+  if ('response' in auth) return auth.response;
+  const userId = auth.userId;
+
   try {
     const region = Deno.env.get('AWS_REGION') || 'us-east-1';
     const tableName = Deno.env.get('AWS_DYNAMODB_TABLE_NAME') || 'MyDataNetwork';
-    
-    // قراءة البيانات من الطلب
+
     let action = 'visit';
-    let userId = 'anonymous';
-    
     try {
       const body = await req.json();
-      action = body.action || 'visit';
-      userId = body.user_id || 'anonymous';
+      if (typeof body.action === 'string' && ALLOWED_ACTIONS.has(body.action)) {
+        action = body.action;
+      }
     } catch {
-      // إذا لم يكن هناك body، نستخدم القيم الافتراضية
+      // ignore body parse errors
     }
-    
-    // جمع بيانات المستخدم
-    const userIP = req.headers.get('x-forwarded-for') || 
-                   req.headers.get('x-real-ip') || 
-                   req.headers.get('cf-connecting-ip') || 
+
+    const userIP = req.headers.get('x-forwarded-for') ||
+                   req.headers.get('x-real-ip') ||
+                   req.headers.get('cf-connecting-ip') ||
                    'unknown';
     const userAgent = req.headers.get('user-agent') || 'unknown';
     const timestamp = new Date().toISOString();
     const id = crypto.randomUUID();
 
-    console.log(`تسجيل ${action} - User: ${userId}, IP: ${userIP}, Timestamp: ${timestamp}`);
 
     // تحضير البيانات لـ DynamoDB
     const payload = {
