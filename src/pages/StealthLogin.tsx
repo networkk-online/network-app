@@ -16,7 +16,6 @@ const StealthLogin = () => {
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [userId, setUserId] = useState('');
-  const [debugOtp, setDebugOtp] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleCredentials = async () => {
@@ -37,7 +36,6 @@ const StealthLogin = () => {
       }
 
       setUserId(data.userId);
-      if (data.debug_otp) setDebugOtp(data.debug_otp);
       setStep('otp');
       toast({
         title: 'تم إرسال رمز التحقق',
@@ -68,8 +66,15 @@ const StealthLogin = () => {
         return;
       }
 
-      // Sign in on the client side
-      await supabase.auth.signInWithPassword({ email, password });
+      // Server-issued session token (post-OTP). Never call signInWithPassword from the client here.
+      const { error: verifyErr } = await supabase.auth.verifyOtp({
+        type: 'magiclink',
+        token_hash: data.token_hash,
+      });
+      if (verifyErr) {
+        toast({ title: 'تعذر إنشاء الجلسة', description: verifyErr.message, variant: 'destructive' });
+        return;
+      }
       sessionStorage.setItem('stealth_verified', 'true');
       navigate('/system-panel');
     } catch (err) {
@@ -143,11 +148,6 @@ const StealthLogin = () => {
                 <p className="text-xs font-mono text-gray-500">
                   Enter 6-digit verification code
                 </p>
-                {debugOtp && (
-                  <p className="text-xs font-mono text-yellow-500/60">
-                    [DEV] Code: {debugOtp}
-                  </p>
-                )}
               </div>
 
               <div className="flex justify-center" dir="ltr">
@@ -177,7 +177,7 @@ const StealthLogin = () => {
               </Button>
 
               <button
-                onClick={() => { setStep('credentials'); setOtp(''); setDebugOtp(''); }}
+                onClick={() => { setStep('credentials'); setOtp(''); }}
                 className="w-full text-xs font-mono text-gray-600 hover:text-gray-400 transition"
               >
                 ← Back

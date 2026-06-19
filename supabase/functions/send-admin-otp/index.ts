@@ -64,32 +64,37 @@ Deno.serve(async (req) => {
         code: otpCode,
       });
 
-      console.log(`OTP for ${email}: ${otpCode}`);
-
-      // Send via Resend if configured
+      // Send via Resend - REQUIRED. Never expose OTP via response or logs.
       const resendKey = Deno.env.get("RESEND_API_KEY");
-      if (resendKey) {
-        await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${resendKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from: "Network <noreply@networkk.online>",
-            to: [email],
-            subject: "رمز التحقق",
-            html: `<div dir="rtl" style="font-family:sans-serif;padding:20px;background:#111;color:#0f0;border-radius:8px"><h2>رمز التحقق</h2><p style="font-size:32px;letter-spacing:8px;font-weight:bold">${otpCode}</p><p>ينتهي خلال 5 دقائق</p></div>`,
-          }),
-        });
+      if (!resendKey) {
+        return new Response(
+          JSON.stringify({ error: "خدمة البريد غير مهيأة. يرجى إعداد RESEND_API_KEY." }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const emailRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Network <noreply@networkk.online>",
+          to: [email],
+          subject: "رمز التحقق",
+          html: `<div dir="rtl" style="font-family:sans-serif;padding:20px;background:#111;color:#0f0;border-radius:8px"><h2>رمز التحقق</h2><p style="font-size:32px;letter-spacing:8px;font-weight:bold">${otpCode}</p><p>ينتهي خلال 5 دقائق</p></div>`,
+        }),
+      });
+      if (!emailRes.ok) {
+        return new Response(
+          JSON.stringify({ error: "تعذر إرسال البريد" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       return new Response(
-        JSON.stringify({
-          success: true,
-          userId: authData.user.id,
-          ...(resendKey ? {} : { debug_otp: otpCode }),
-        }),
+        JSON.stringify({ success: true, userId: authData.user.id }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -125,8 +130,29 @@ Deno.serve(async (req) => {
         .update({ used: true })
         .eq("id", otpData.id);
 
+      // Look up the user's email to mint a server-side session token
+      const { data: userInfo } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const userEmail = userInfo?.user?.email;
+      if (!userEmail) {
+        return new Response(
+          JSON.stringify({ error: "تعذر إنشاء جلسة الدخول" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
+        type: "magiclink",
+        email: userEmail,
+      });
+      if (linkErr || !linkData?.properties?.hashed_token) {
+        return new Response(
+          JSON.stringify({ error: "تعذر إنشاء جلسة الدخول" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       return new Response(
-        JSON.stringify({ success: true, verified: true }),
+        JSON.stringify({ success: true, verified: true, token_hash: linkData.properties.hashed_token }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

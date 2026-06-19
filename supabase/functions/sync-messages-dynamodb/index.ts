@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireUser } from "../_shared/require-user.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -149,6 +150,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireUser(req, corsHeaders);
+  if ('response' in auth) return auth.response;
+  const authUserId = auth.userId;
+
   try {
     const AWS_ACCESS_KEY_ID = Deno.env.get('AWS_ACCESS_KEY_ID');
     const AWS_SECRET_ACCESS_KEY = Deno.env.get('AWS_SECRET_ACCESS_KEY');
@@ -163,6 +168,12 @@ serve(async (req) => {
     const { action, message, messages } = body;
 
     if (action === 'sync_single' && message) {
+      if (message.sender_id !== authUserId) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Forbidden: sender_id mismatch' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       // مزامنة رسالة واحدة فوراً
       console.log(`Syncing single message: ${message.id}`);
 
@@ -218,7 +229,13 @@ serve(async (req) => {
       );
 
     } else if (action === 'sync_batch' && messages && Array.isArray(messages)) {
-      // مزامنة دفعة من الرسائل
+      const invalid = messages.find((m: any) => m?.sender_id !== authUserId);
+      if (invalid) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Forbidden: batch contains messages with mismatched sender_id' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       console.log(`Syncing batch of ${messages.length} messages`);
 
       const results = await Promise.allSettled(
