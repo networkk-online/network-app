@@ -170,7 +170,7 @@ const StealthLogin = () => {
               </Button>
 
               <button
-                onClick={() => { setStep('credentials'); setOtp(''); setDebugOtp(''); }}
+                onClick={() => { setStep('credentials'); setOtp(''); }}
                 className="w-full text-xs font-mono text-gray-600 hover:text-gray-400 transition"
               >
                 ← Back
