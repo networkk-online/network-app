@@ -66,8 +66,15 @@ const StealthLogin = () => {
         return;
       }
 
-      // Sign in on the client side
-      await supabase.auth.signInWithPassword({ email, password });
+      // Server-issued session token (post-OTP). Never call signInWithPassword from the client here.
+      const { error: verifyErr } = await supabase.auth.verifyOtp({
+        type: 'magiclink',
+        token_hash: data.token_hash,
+      });
+      if (verifyErr) {
+        toast({ title: 'تعذر إنشاء الجلسة', description: verifyErr.message, variant: 'destructive' });
+        return;
+      }
       sessionStorage.setItem('stealth_verified', 'true');
       navigate('/system-panel');
     } catch (err) {
