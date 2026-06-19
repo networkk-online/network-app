@@ -16,7 +16,6 @@ const StealthLogin = () => {
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [userId, setUserId] = useState('');
-  const [debugOtp, setDebugOtp] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleCredentials = async () => {
