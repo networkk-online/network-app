@@ -36,7 +36,6 @@ const StealthLogin = () => {
       }
 
       setUserId(data.userId);
-      if (data.debug_otp) setDebugOtp(data.debug_otp);
       setStep('otp');
       toast({
         title: 'تم إرسال رمز التحقق',
