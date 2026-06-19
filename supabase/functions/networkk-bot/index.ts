@@ -63,6 +63,19 @@ serve(async (req) => {
 
     // ============= Action: send_system_message (server-side trigger) =============
     if (action === "send_system_message") {
+      // Admin/moderator only
+      const { data: roles } = await admin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", currentUser.id);
+      const isAdmin = roles?.some((r: any) => r.role === "admin" || r.role === "moderator");
+      if (!isAdmin) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const msg: SystemMessageInsert = body.message;
       if (!msg?.user_id || !msg?.content || !msg?.event_type) {
         return new Response(
@@ -86,12 +99,13 @@ serve(async (req) => {
 
     // ============= Action: welcome (called when user signs up) =============
     if (action === "welcome") {
-      const userId: string = body.user_id ?? currentUser?.id;
-      if (!userId)
-        return new Response(JSON.stringify({ error: "user_id required" }), {
-          status: 400,
+      const userId: string = body.user_id ?? currentUser.id;
+      if (userId !== currentUser.id) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
+      }
 
       const { data: profile } = await admin
         .from("profiles")
