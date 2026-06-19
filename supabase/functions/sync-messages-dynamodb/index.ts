@@ -229,7 +229,13 @@ serve(async (req) => {
       );
 
     } else if (action === 'sync_batch' && messages && Array.isArray(messages)) {
-      // مزامنة دفعة من الرسائل
+      const invalid = messages.find((m: any) => m?.sender_id !== authUserId);
+      if (invalid) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Forbidden: batch contains messages with mismatched sender_id' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       console.log(`Syncing batch of ${messages.length} messages`);
 
       const results = await Promise.allSettled(
