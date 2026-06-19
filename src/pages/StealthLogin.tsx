@@ -141,11 +141,6 @@ const StealthLogin = () => {
                 <p className="text-xs font-mono text-gray-500">
                   Enter 6-digit verification code
                 </p>
-                {debugOtp && (
-                  <p className="text-xs font-mono text-yellow-500/60">
-                    [DEV] Code: {debugOtp}
-                  </p>
-                )}
               </div>
 
               <div className="flex justify-center" dir="ltr">
