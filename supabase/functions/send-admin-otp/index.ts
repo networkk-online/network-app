@@ -130,8 +130,29 @@ Deno.serve(async (req) => {
         .update({ used: true })
         .eq("id", otpData.id);
 
+      // Look up the user's email to mint a server-side session token
+      const { data: userInfo } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const userEmail = userInfo?.user?.email;
+      if (!userEmail) {
+        return new Response(
+          JSON.stringify({ error: "تعذر إنشاء جلسة الدخول" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
+        type: "magiclink",
+        email: userEmail,
+      });
+      if (linkErr || !linkData?.properties?.hashed_token) {
+        return new Response(
+          JSON.stringify({ error: "تعذر إنشاء جلسة الدخول" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       return new Response(
-        JSON.stringify({ success: true, verified: true }),
+        JSON.stringify({ success: true, verified: true, token_hash: linkData.properties.hashed_token }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
