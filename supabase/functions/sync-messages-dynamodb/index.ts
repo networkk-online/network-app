@@ -150,6 +150,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireUser(req, corsHeaders);
+  if ('response' in auth) return auth.response;
+  const authUserId = auth.userId;
+
   try {
     const AWS_ACCESS_KEY_ID = Deno.env.get('AWS_ACCESS_KEY_ID');
     const AWS_SECRET_ACCESS_KEY = Deno.env.get('AWS_SECRET_ACCESS_KEY');
@@ -164,6 +168,12 @@ serve(async (req) => {
     const { action, message, messages } = body;
 
     if (action === 'sync_single' && message) {
+      if (message.sender_id !== authUserId) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Forbidden: sender_id mismatch' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       // مزامنة رسالة واحدة فوراً
       console.log(`Syncing single message: ${message.id}`);
 
