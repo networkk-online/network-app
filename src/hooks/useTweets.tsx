@@ -92,6 +92,21 @@ export const useTweets = (userId: string) => {
 
   const postTweet = useCallback(async (content: string, parentId?: string, quoteTweetId?: string) => {
     if (!userId || content.trim().length === 0) return false;
+
+    // Duplicate-tweet guard: same text by same user within last 2 minutes → block
+    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const { data: recent } = await supabase
+      .from('tweets')
+      .select('id, content')
+      .eq('user_id', userId)
+      .gte('created_at', twoMinAgo)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    if (recent && recent[0]?.content?.trim() === content.trim()) {
+      toast({ title: 'تغريدة مكررة', description: 'لقد نشرت نفس المحتوى للتو.', variant: 'destructive' });
+      return false;
+    }
+
     const { error } = await supabase.from('tweets').insert([{
       content: content.trim(),
       user_id: userId,
