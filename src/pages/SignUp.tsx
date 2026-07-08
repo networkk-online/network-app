@@ -224,6 +224,51 @@ const SignUp = () => {
             </div>
           )}
 
+          {/* Account type */}
+          <div>
+            <label className="block text-[11px] text-white/50 mb-2 text-right">نوع الحساب</label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { key: 'creator', label: 'منشئ محتوى', Icon: Sparkles },
+                { key: 'personal', label: 'شخصي', Icon: UserIcon },
+                { key: 'business', label: 'تجاري', Icon: Briefcase },
+              ] as const).map(({ key, label, Icon }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => { setAccountType(key); setSpecialty(''); }}
+                  disabled={isLoading}
+                  className={`h-16 rounded-2xl border flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-all ${
+                    accountType === key
+                      ? 'bg-primary/20 border-primary/40 text-primary'
+                      : 'bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white/90'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Specialty */}
+          <div>
+            <label className="block text-[11px] text-white/50 mb-2 text-right">اختر الاختصاص</label>
+            <select
+              value={specialty}
+              onChange={(e) => setSpecialty(e.target.value)}
+              disabled={isLoading}
+              className="w-full h-13 bg-white/[0.04] border border-white/[0.08] text-white/90 rounded-2xl text-sm px-3 focus:border-primary/30 focus:outline-none text-right"
+              style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}
+            >
+              <option value="" className="bg-black text-white/60">— اختر الاختصاص —</option>
+              {SPECIALTIES[accountType].map((s) => (
+                <option key={s.value} value={s.value} className="bg-black text-white">{s.labelAr}</option>
+              ))}
+            </select>
+          </div>
+
+
           <Input
             type="password" placeholder="كلمة المرور" value={password}
             onChange={(e) => setPassword(e.target.value)}
