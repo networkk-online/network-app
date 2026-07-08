@@ -301,6 +301,30 @@ export type Database = {
         }
         Relationships: []
       }
+      app_session_activity: {
+        Row: {
+          created_at: string
+          duration_seconds: number
+          id: string
+          session_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          session_date?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          session_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           id: string
@@ -1032,6 +1056,92 @@ export type Database = {
             columns: ["donor_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_invite_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          parent_id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          parent_id: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          parent_id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
+      family_links: {
+        Row: {
+          created_at: string
+          id: string
+          parent_id: string
+          teen_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parent_id: string
+          teen_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parent_id?: string
+          teen_id?: string
+        }
+        Relationships: []
+      }
+      family_restrictions: {
+        Row: {
+          content_filter_level: string
+          daily_time_limit_minutes: number | null
+          dm_scope: string
+          id: string
+          link_id: string
+          updated_at: string
+        }
+        Insert: {
+          content_filter_level?: string
+          daily_time_limit_minutes?: number | null
+          dm_scope?: string
+          id?: string
+          link_id: string
+          updated_at?: string
+        }
+        Update: {
+          content_filter_level?: string
+          daily_time_limit_minutes?: number | null
+          dm_scope?: string
+          id?: string
+          link_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_restrictions_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: true
+            referencedRelation: "family_links"
             referencedColumns: ["id"]
           },
         ]
@@ -2046,6 +2156,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type_enum"] | null
           affiliated_company_id: string | null
           avatar_url: string | null
           bio: string | null
@@ -2073,12 +2184,14 @@ export type Database = {
           profession: string | null
           school: string | null
           social_links: Json | null
+          specialty: string | null
           updated_at: string
           username: string | null
           verification_type: string | null
           website: string | null
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type_enum"] | null
           affiliated_company_id?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -2106,12 +2219,14 @@ export type Database = {
           profession?: string | null
           school?: string | null
           social_links?: Json | null
+          specialty?: string | null
           updated_at?: string
           username?: string | null
           verification_type?: string | null
           website?: string | null
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type_enum"] | null
           affiliated_company_id?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -2139,6 +2254,7 @@ export type Database = {
           profession?: string | null
           school?: string | null
           social_links?: Json | null
+          specialty?: string | null
           updated_at?: string
           username?: string | null
           verification_type?: string | null
@@ -3767,6 +3883,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      redeem_family_code: { Args: { _code: string }; Returns: Json }
       send_tip: {
         Args: {
           receiver_id: string
@@ -3789,6 +3906,7 @@ export type Database = {
       update_all_fame_scores: { Args: never; Returns: undefined }
     }
     Enums: {
+      account_type_enum: "creator" | "personal" | "business"
       app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
@@ -3917,6 +4035,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_type_enum: ["creator", "personal", "business"],
       app_role: ["admin", "moderator", "user"],
     },
   },
