@@ -303,7 +303,10 @@ export const StoryCameraCapture = ({ onCapture, onClose, isOpen }: StoryCameraCa
               playsInline
               muted
               className={cn(
-                "absolute inset-0 w-full h-full object-cover",
+                // object-contain preserves the camera's natural field of view
+                // (no clipping / no digital zoom). The black bars — if any —
+                // are the correct behavior on non-portrait sensors.
+                "absolute inset-0 w-full h-full object-contain bg-black",
                 facingMode === 'user' && "scale-x-[-1]"
               )}
             />
