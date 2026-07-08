@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Mail, Phone } from 'lucide-react';
+import { Loader2, Mail, Phone, Sparkles, User as UserIcon, Briefcase } from 'lucide-react';
 import networkLogo from '@/assets/network-logo.png';
 import {
   COUNTRY_PHONE_RULES,
@@ -16,6 +16,35 @@ import {
 } from '@/lib/countryPhoneRules';
 
 type Mode = 'email' | 'phone';
+type AccountType = 'creator' | 'personal' | 'business';
+
+const SPECIALTIES: Record<AccountType, { value: string; labelAr: string }[]> = {
+  creator: [
+    { value: 'gaming', labelAr: 'ألعاب' },
+    { value: 'video', labelAr: 'فيديو' },
+    { value: 'art', labelAr: 'فن' },
+    { value: 'photography', labelAr: 'تصوير' },
+    { value: 'tech', labelAr: 'تقنية' },
+    { value: 'music', labelAr: 'موسيقى' },
+    { value: 'fashion', labelAr: 'أزياء' },
+    { value: 'other', labelAr: 'أخرى' },
+  ],
+  personal: [
+    { value: 'lifestyle', labelAr: 'أسلوب حياة' },
+    { value: 'travel', labelAr: 'سفر' },
+    { value: 'sports', labelAr: 'رياضة' },
+    { value: 'other', labelAr: 'أخرى' },
+  ],
+  business: [
+    { value: 'tech', labelAr: 'تقنية' },
+    { value: 'commerce', labelAr: 'تجارة' },
+    { value: 'food', labelAr: 'مأكولات' },
+    { value: 'services', labelAr: 'خدمات' },
+    { value: 'health', labelAr: 'صحة' },
+    { value: 'education', labelAr: 'تعليم' },
+    { value: 'other', labelAr: 'أخرى' },
+  ],
+};
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -27,6 +56,8 @@ const SignUp = () => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
+  const [accountType, setAccountType] = useState<AccountType>('personal');
+  const [specialty, setSpecialty] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
   const rule = useMemo(() => getCountryRule(countryCode), [countryCode]);
@@ -92,6 +123,15 @@ const SignUp = () => {
         toast({ title: 'خطأ في التسجيل', description: error.message, variant: 'destructive' });
         return;
       }
+
+      // Persist account_type + specialty on the profile (created by handle_new_user trigger)
+      if (data.user) {
+        await supabase
+          .from('profiles')
+          .update({ account_type: accountType, specialty: specialty || null })
+          .eq('id', data.user.id);
+      }
+
       toast({ title: 'تم إنشاء الحساب', description: 'مرحباً بك في Network' });
       if (data.session) navigate('/');
       else navigate('/login');
@@ -183,6 +223,51 @@ const SignUp = () => {
               </p>
             </div>
           )}
+
+          {/* Account type */}
+          <div>
+            <label className="block text-[11px] text-white/50 mb-2 text-right">نوع الحساب</label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { key: 'creator', label: 'منشئ محتوى', Icon: Sparkles },
+                { key: 'personal', label: 'شخصي', Icon: UserIcon },
+                { key: 'business', label: 'تجاري', Icon: Briefcase },
+              ] as const).map(({ key, label, Icon }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => { setAccountType(key); setSpecialty(''); }}
+                  disabled={isLoading}
+                  className={`h-16 rounded-2xl border flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-all ${
+                    accountType === key
+                      ? 'bg-primary/20 border-primary/40 text-primary'
+                      : 'bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white/90'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Specialty */}
+          <div>
+            <label className="block text-[11px] text-white/50 mb-2 text-right">اختر الاختصاص</label>
+            <select
+              value={specialty}
+              onChange={(e) => setSpecialty(e.target.value)}
+              disabled={isLoading}
+              className="w-full h-13 bg-white/[0.04] border border-white/[0.08] text-white/90 rounded-2xl text-sm px-3 focus:border-primary/30 focus:outline-none text-right"
+              style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}
+            >
+              <option value="" className="bg-black text-white/60">— اختر الاختصاص —</option>
+              {SPECIALTIES[accountType].map((s) => (
+                <option key={s.value} value={s.value} className="bg-black text-white">{s.labelAr}</option>
+              ))}
+            </select>
+          </div>
+
 
           <Input
             type="password" placeholder="كلمة المرور" value={password}

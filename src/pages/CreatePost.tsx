@@ -78,6 +78,21 @@ const CreatePost = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate('/login'); return; }
 
+      // Duplicate-post guard: block re-posting identical text within the last 2 minutes
+      const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+      const { data: recent } = await supabase
+        .from('posts')
+        .select('id, content, created_at')
+        .eq('user_id', user.id)
+        .gte('created_at', twoMinAgo)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (recent && recent[0]?.content?.trim() === content.trim()) {
+        toast({ title: 'منشور مكرر', description: 'لقد نشرت هذا المحتوى للتو. يرجى الانتظار قليلاً.', variant: 'destructive' });
+        setIsLoading(false);
+        return;
+      }
+
       let finalMediaUrl: string | null = null;
       if (uploadMethod === 'file' && selectedFiles.length > 0) {
         finalMediaUrl = await uploadImage(selectedFiles[0], user.id);

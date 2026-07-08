@@ -38,6 +38,7 @@ import AdsStudio from "./pages/AdsStudio";
 import AdminSettings from "./pages/AdminSettings";
 import SecretAdminAccess from "./pages/SecretAdminAccess";
 import Settings from "./pages/Settings";
+import FamilySupervision from "./pages/FamilySupervision";
 import LanguageSettings from "./pages/LanguageSettings";
 import BlockedAccounts from "./pages/settings/BlockedAccounts";
 import PrivacySettings from "./pages/settings/PrivacySettings";
@@ -173,6 +174,8 @@ const AppContent = () => {
         <Route path="/admin/logs" element={<AdminLogs />} />
         <Route path="/admin/surveillance" element={<AdminSurveillance />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/family" element={<FamilySupervision />} />
+        <Route path="/family" element={<FamilySupervision />} />
         <Route path="/settings/language" element={<LanguageSettings />} />
         <Route path="/settings/blocked" element={<BlockedAccounts />} />
         <Route path="/settings/privacy" element={<PrivacySettings />} />

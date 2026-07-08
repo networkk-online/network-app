@@ -49,12 +49,12 @@ export const StoryCameraCapture = ({ onCapture, onClose, isOpen }: StoryCameraCa
         streamRef.current.getTracks().forEach(track => track.stop());
       }
 
+      // Use the device's native camera resolution and aspect ratio — no forced
+      // portrait/landscape or fixed dimensions — so the preview isn't cropped
+      // or digitally zoomed. facingMode stays a soft hint via "ideal".
       const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: facingMode,
-          width: { ideal: 1080 },
-          height: { ideal: 1920 },
-          aspectRatio: { ideal: 9 / 16 }
+          facingMode: { ideal: facingMode },
         },
         audio: true
       };
@@ -303,7 +303,10 @@ export const StoryCameraCapture = ({ onCapture, onClose, isOpen }: StoryCameraCa
               playsInline
               muted
               className={cn(
-                "absolute inset-0 w-full h-full object-cover",
+                // object-contain preserves the camera's natural field of view
+                // (no clipping / no digital zoom). The black bars — if any —
+                // are the correct behavior on non-portrait sensors.
+                "absolute inset-0 w-full h-full object-contain bg-black",
                 facingMode === 'user' && "scale-x-[-1]"
               )}
             />
