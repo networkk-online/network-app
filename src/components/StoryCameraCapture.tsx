@@ -49,12 +49,12 @@ export const StoryCameraCapture = ({ onCapture, onClose, isOpen }: StoryCameraCa
         streamRef.current.getTracks().forEach(track => track.stop());
       }
 
+      // Use the device's native camera resolution and aspect ratio — no forced
+      // portrait/landscape or fixed dimensions — so the preview isn't cropped
+      // or digitally zoomed. facingMode stays a soft hint via "ideal".
       const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: facingMode,
-          width: { ideal: 1080 },
-          height: { ideal: 1920 },
-          aspectRatio: { ideal: 9 / 16 }
+          facingMode: { ideal: facingMode },
         },
         audio: true
       };
