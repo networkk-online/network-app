@@ -16,6 +16,35 @@ import {
 } from '@/lib/countryPhoneRules';
 
 type Mode = 'email' | 'phone';
+type AccountType = 'creator' | 'personal' | 'business';
+
+const SPECIALTIES: Record<AccountType, { value: string; labelAr: string }[]> = {
+  creator: [
+    { value: 'gaming', labelAr: 'ألعاب' },
+    { value: 'video', labelAr: 'فيديو' },
+    { value: 'art', labelAr: 'فن' },
+    { value: 'photography', labelAr: 'تصوير' },
+    { value: 'tech', labelAr: 'تقنية' },
+    { value: 'music', labelAr: 'موسيقى' },
+    { value: 'fashion', labelAr: 'أزياء' },
+    { value: 'other', labelAr: 'أخرى' },
+  ],
+  personal: [
+    { value: 'lifestyle', labelAr: 'أسلوب حياة' },
+    { value: 'travel', labelAr: 'سفر' },
+    { value: 'sports', labelAr: 'رياضة' },
+    { value: 'other', labelAr: 'أخرى' },
+  ],
+  business: [
+    { value: 'tech', labelAr: 'تقنية' },
+    { value: 'commerce', labelAr: 'تجارة' },
+    { value: 'food', labelAr: 'مأكولات' },
+    { value: 'services', labelAr: 'خدمات' },
+    { value: 'health', labelAr: 'صحة' },
+    { value: 'education', labelAr: 'تعليم' },
+    { value: 'other', labelAr: 'أخرى' },
+  ],
+};
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -27,6 +56,8 @@ const SignUp = () => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
+  const [accountType, setAccountType] = useState<AccountType>('personal');
+  const [specialty, setSpecialty] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
   const rule = useMemo(() => getCountryRule(countryCode), [countryCode]);
