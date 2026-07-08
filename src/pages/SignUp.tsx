@@ -123,6 +123,15 @@ const SignUp = () => {
         toast({ title: 'خطأ في التسجيل', description: error.message, variant: 'destructive' });
         return;
       }
+
+      // Persist account_type + specialty on the profile (created by handle_new_user trigger)
+      if (data.user) {
+        await supabase
+          .from('profiles')
+          .update({ account_type: accountType, specialty: specialty || null })
+          .eq('id', data.user.id);
+      }
+
       toast({ title: 'تم إنشاء الحساب', description: 'مرحباً بك في Network' });
       if (data.session) navigate('/');
       else navigate('/login');
