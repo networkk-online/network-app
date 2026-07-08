@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Mail, Phone } from 'lucide-react';
+import { Loader2, Mail, Phone, Sparkles, User as UserIcon, Briefcase } from 'lucide-react';
 import networkLogo from '@/assets/network-logo.png';
 import {
   COUNTRY_PHONE_RULES,
