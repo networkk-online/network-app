@@ -38,6 +38,7 @@ import AdsStudio from "./pages/AdsStudio";
 import AdminSettings from "./pages/AdminSettings";
 import SecretAdminAccess from "./pages/SecretAdminAccess";
 import Settings from "./pages/Settings";
+import FamilySupervision from "./pages/FamilySupervision";
 import LanguageSettings from "./pages/LanguageSettings";
 import BlockedAccounts from "./pages/settings/BlockedAccounts";
 import PrivacySettings from "./pages/settings/PrivacySettings";
