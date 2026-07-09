@@ -114,6 +114,7 @@ import SupportCenter from "./pages/public/SupportCenter";
 import DynamicPage from "./components/public/DynamicPage";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
+import IntroSplash from "./components/IntroSplash";
 import FloatingAdminButton from "./components/FloatingAdminButton";
 import InstallPWAButton from "./components/InstallPWAButton";
 // ... keep existing code
@@ -275,6 +276,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <IntroSplash />
         <ErrorBoundary>
           <MaintenanceGuard>
             <ChimeCallProvider>
