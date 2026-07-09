@@ -3,7 +3,7 @@ import { Volume2, VolumeX } from 'lucide-react';
 import introVideo from '@/assets/networkk-intro.mov.asset.json';
 
 const SESSION_KEY = 'networkk_intro_played';
-const MAX_MS = 4000;
+const MAX_MS = 15000;
 
 const IntroSplash = () => {
   const [shown, setShown] = useState(() => {
@@ -71,12 +71,6 @@ const IntroSplash = () => {
         className="absolute bottom-8 right-8 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition"
       >
         {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-      </button>
-      <button
-        onClick={finish}
-        className="absolute top-8 right-8 text-white/70 hover:text-white text-sm px-3 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/10"
-      >
-        Skip
       </button>
     </div>
   );
