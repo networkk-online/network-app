@@ -3,7 +3,7 @@ import { Volume2, VolumeX } from 'lucide-react';
 import introVideo from '@/assets/networkk-intro.mov.asset.json';
 
 const SESSION_KEY = 'networkk_intro_played';
-const MAX_MS = 4000;
+const MAX_MS = 15000;
 
 const IntroSplash = () => {
   const [shown, setShown] = useState(() => {
