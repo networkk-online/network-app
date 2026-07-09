@@ -72,12 +72,6 @@ const IntroSplash = () => {
       >
         {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
       </button>
-      <button
-        onClick={finish}
-        className="absolute top-8 right-8 text-white/70 hover:text-white text-sm px-3 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/10"
-      >
-        Skip
-      </button>
     </div>
   );
 };
