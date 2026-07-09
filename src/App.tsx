@@ -276,6 +276,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <IntroSplash />
         <ErrorBoundary>
           <MaintenanceGuard>
             <ChimeCallProvider>
