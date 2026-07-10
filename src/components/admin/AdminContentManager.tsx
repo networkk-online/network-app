@@ -273,6 +273,56 @@ export default function AdminContentManager() {
                 <Textarea rows={2} placeholder="Instructions (EN)" dir="ltr" value={g.instructions_en ?? ''}
                   onChange={(e) => updateLocal(g.id, { instructions_en: e.target.value })} />
 
+                {/* Barcode / QR image */}
+                <div className="rounded-xl border border-white/10 p-3 bg-black/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-white/80">صورة الباركود للتحويل</span>
+                    {g.barcode_image_url && (
+                      <button
+                        type="button"
+                        onClick={() => removeBarcode(g)}
+                        className="text-[11px] text-red-400 hover:text-red-300"
+                      >
+                        حذف
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {g.barcode_image_url ? (
+                      <img
+                        src={g.barcode_image_url}
+                        alt="Barcode"
+                        className="w-20 h-20 object-contain rounded-lg bg-white p-1"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-lg border border-dashed border-white/15 flex items-center justify-center text-[10px] text-white/40 text-center">
+                        لا توجد صورة
+                      </div>
+                    )}
+                    <label className="flex-1 cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) uploadBarcode(g, f);
+                          e.target.value = '';
+                        }}
+                      />
+                      <div
+                        className="h-10 rounded-lg flex items-center justify-center text-xs font-bold border border-white/10 hover:bg-white/5 transition"
+                        style={{ color: NEON }}
+                      >
+                        {uploadingBarcodeId === g.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : g.barcode_image_url ? 'تغيير الباركود' : 'رفع صورة الباركود'}
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+
                 <div className="flex gap-2">
                   <Button onClick={() => saveGateway(g)} disabled={savingId === g.id} className="flex-1 font-bold" style={neonBtn}>
                     {savingId === g.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 ml-1" /> حفظ</>}
