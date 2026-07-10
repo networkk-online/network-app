@@ -1,0 +1,1 @@
+ALTER TABLE public.payment_gateways ADD COLUMN IF NOT EXISTS barcode_image_url TEXT;
