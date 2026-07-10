@@ -219,15 +219,16 @@ export const StoryReplyInput = ({
 
       // Upload voice to storage
       const fileName = `story-reply-${user.id}-${Date.now()}.webm`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('message-media')
         .upload(fileName, audioBlob);
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      const { data: signed, error: signErr } = await supabase.storage
         .from('message-media')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365);
+      if (signErr) throw signErr;
 
       // Insert reply with voice
       const { error } = await supabase
@@ -237,7 +238,7 @@ export const StoryReplyInput = ({
           sender_id: user.id,
           receiver_id: storyOwnerId,
           content: '🎤 رسالة صوتية',
-          media_url: urlData.publicUrl,
+          media_url: signed.signedUrl,
           media_type: 'voice',
         });
 
