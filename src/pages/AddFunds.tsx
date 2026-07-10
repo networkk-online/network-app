@@ -19,6 +19,7 @@ type Gateway = {
   bonus_percent: number;
   instructions_ar: string | null;
   instructions_en: string | null;
+  barcode_image_url?: string | null;
 };
 
 type Pkg = { id: number; coins: number; priceUSD: number; popular?: boolean };
