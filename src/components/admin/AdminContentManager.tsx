@@ -35,6 +35,49 @@ export default function AdminContentManager() {
   const [newGw, setNewGw] = useState({ ...blankGw });
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [uploadingBarcodeId, setUploadingBarcodeId] = useState<string | null>(null);
+
+  const uploadBarcode = async (g: Gateway, file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'يجب اختيار صورة', variant: 'destructive' });
+      return;
+    }
+    setUploadingBarcodeId(g.id);
+    const ext = file.name.split('.').pop() || 'png';
+    const path = `payment-gateways/${g.key || g.id}-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from('covers')
+      .upload(path, file, { contentType: file.type, upsert: true });
+    if (upErr) {
+      setUploadingBarcodeId(null);
+      toast({ title: 'فشل رفع الباركود', description: upErr.message, variant: 'destructive' });
+      return;
+    }
+    const { data: pub } = supabase.storage.from('covers').getPublicUrl(path);
+    const url = pub.publicUrl;
+    const { error } = await supabase
+      .from('payment_gateways')
+      .update({ barcode_image_url: url })
+      .eq('id', g.id);
+    setUploadingBarcodeId(null);
+    if (error) {
+      toast({ title: 'فشل حفظ الباركود', description: error.message, variant: 'destructive' });
+      return;
+    }
+    updateLocal(g.id, { barcode_image_url: url });
+    toast({ title: 'تم رفع صورة الباركود' });
+  };
+
+  const removeBarcode = async (g: Gateway) => {
+    const { error } = await supabase
+      .from('payment_gateways')
+      .update({ barcode_image_url: null })
+      .eq('id', g.id);
+    if (!error) {
+      updateLocal(g.id, { barcode_image_url: null });
+      toast({ title: 'تم حذف صورة الباركود' });
+    }
+  };
 
   const load = async () => {
     const [g, a] = await Promise.all([
