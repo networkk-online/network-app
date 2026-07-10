@@ -374,9 +374,21 @@ export default function AddFunds() {
                       <div className="text-xs uppercase tracking-widest mb-2" style={{ color: NEON }}>
                         {t.instructions}
                       </div>
-                      <p className="text-sm text-white/85 leading-relaxed">
+                      <p className="text-sm text-white/85 leading-relaxed whitespace-pre-wrap">
                         {(lang === 'ar' ? selectedGw.instructions_ar : selectedGw.instructions_en) || '—'}
                       </p>
+                      {selectedGw.barcode_image_url && (
+                        <div className="mt-4 flex flex-col items-center">
+                          <div className="text-[11px] uppercase tracking-widest mb-2 text-white/50">
+                            {lang === 'ar' ? 'امسح الباركود للتحويل' : 'Scan barcode to transfer'}
+                          </div>
+                          <img
+                            src={selectedGw.barcode_image_url}
+                            alt="Payment barcode / QR"
+                            className="w-56 h-56 object-contain rounded-xl bg-white p-2"
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </>
