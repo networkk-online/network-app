@@ -15,6 +15,7 @@ type Gateway = {
   id: string; key: string; name_en: string; name_ar: string; icon: string | null;
   is_active: boolean; min_amount: number; max_amount: number; bonus_percent: number;
   instructions_ar: string | null; instructions_en: string | null; sort_order: number;
+  barcode_image_url?: string | null;
 };
 
 const blankGw = {
