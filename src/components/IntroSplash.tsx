@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
 import introVideo from '@/assets/networkk-intro.mov.asset.json';
 
 const SESSION_KEY = 'networkk_intro_played';
@@ -10,15 +9,16 @@ const IntroSplash = () => {
     try { return !sessionStorage.getItem(SESSION_KEY); } catch { return true; }
   });
   const [fading, setFading] = useState(false);
-  const [muted, setMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<number | null>(null);
 
   const finish = () => {
-    if (fading) return;
-    setFading(true);
-    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch {}
-    window.setTimeout(() => setShown(false), 500);
+    setFading((f) => {
+      if (f) return f;
+      try { sessionStorage.setItem(SESSION_KEY, '1'); } catch {}
+      window.setTimeout(() => setShown(false), 500);
+      return true;
+    });
   };
 
   useEffect(() => {
@@ -26,14 +26,26 @@ const IntroSplash = () => {
     const v = videoRef.current;
     if (!v) return;
 
-    // Try to play unmuted first, fall back to muted if blocked
     v.muted = false;
+    v.volume = 1;
+
+    const tryUnmute = () => { v.muted = false; v.volume = 1; };
+
     const playPromise = v.play();
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise.catch(() => {
+        // Browser blocked unmuted autoplay — start muted, then unmute on first user gesture.
         v.muted = true;
-        setMuted(true);
         v.play().catch(() => finish());
+        const unlock = () => {
+          tryUnmute();
+          window.removeEventListener('pointerdown', unlock);
+          window.removeEventListener('keydown', unlock);
+          window.removeEventListener('touchstart', unlock);
+        };
+        window.addEventListener('pointerdown', unlock, { once: true });
+        window.addEventListener('keydown', unlock, { once: true });
+        window.addEventListener('touchstart', unlock, { once: true });
       });
     }
 
@@ -41,13 +53,6 @@ const IntroSplash = () => {
     return () => { if (timerRef.current) window.clearTimeout(timerRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shown]);
-
-  const toggleMute = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = !v.muted;
-    setMuted(v.muted);
-  };
 
   if (!shown) return null;
 
@@ -65,13 +70,6 @@ const IntroSplash = () => {
         onError={finish}
         className="w-full h-full object-cover"
       />
-      <button
-        onClick={toggleMute}
-        aria-label={muted ? 'Unmute' : 'Mute'}
-        className="absolute bottom-8 right-8 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition"
-      >
-        {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-      </button>
     </div>
   );
 };
