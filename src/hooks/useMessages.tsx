@@ -319,22 +319,24 @@ export const useMessages = (conversationId?: string) => {
       let mediaUrl = null;
       let mediaType = null;
 
-      // Upload media if provided
+      // Upload media if provided (message-media is a PRIVATE bucket → use signed URL)
       if (mediaFile) {
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
+
+        const { error: uploadError } = await supabase.storage
           .from('message-media')
-          .upload(fileName, mediaFile);
+          .upload(fileName, mediaFile, { contentType: mediaFile.type, upsert: false });
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
+        // 1 year signed URL so recipients (participants per RLS) can render it
+        const { data: signed, error: signErr } = await supabase.storage
           .from('message-media')
-          .getPublicUrl(fileName);
+          .createSignedUrl(fileName, 60 * 60 * 24 * 365);
+        if (signErr) throw signErr;
 
-        mediaUrl = publicUrl;
+        mediaUrl = signed.signedUrl;
         mediaType = mediaFile.type.startsWith('image/') ? 'image' : 'video';
       }
 
