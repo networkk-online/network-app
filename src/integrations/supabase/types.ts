@@ -1930,6 +1930,7 @@ export type Database = {
       }
       payment_gateways: {
         Row: {
+          barcode_image_url: string | null
           bonus_percent: number
           created_at: string
           icon: string | null
@@ -1946,6 +1947,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          barcode_image_url?: string | null
           bonus_percent?: number
           created_at?: string
           icon?: string | null
@@ -1962,6 +1964,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          barcode_image_url?: string | null
           bonus_percent?: number
           created_at?: string
           icon?: string | null
