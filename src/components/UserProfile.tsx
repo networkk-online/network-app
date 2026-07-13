@@ -369,11 +369,13 @@ const UserProfile = ({
     try {
       setUploading(true);
       
-      const fileName = `cover_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('يجب تسجيل الدخول أولاً');
+      const fileName = `${user.id}/cover_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from('covers')
-        .upload(fileName, croppedBlob);
+        .upload(fileName, croppedBlob, { upsert: true, contentType: 'image/jpeg' });
 
       if (uploadError) {
         console.error('Cover upload error:', uploadError);
