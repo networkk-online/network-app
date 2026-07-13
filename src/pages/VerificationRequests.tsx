@@ -21,11 +21,20 @@ interface VerificationRequest {
   updated_at: string;
   reviewed_by?: string;
   reviewed_at?: string;
+  full_name?: string;
+  account_type?: 'personal' | 'business';
+  website_url?: string | null;
+  id_document_url?: string | null;
+  business_document_url?: string | null;
   profile?: {
     username: string;
     full_name: string;
     avatar_url: string;
+    bio?: string;
+    posts_count?: number;
   };
+  id_document_signed?: string | null;
+  business_document_signed?: string | null;
 }
 
 export default function VerificationRequests() {
