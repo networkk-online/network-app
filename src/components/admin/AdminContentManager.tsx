@@ -6,8 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Loader2, Save, CreditCard, FileText, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Save, CreditCard, FileText, Plus, Trash2, Upload } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { getGatewayLogo } from '@/lib/gatewayLogos';
 
 const NEON = '#00ff66';
 
