@@ -340,7 +340,16 @@ export default function AddFunds() {
                         >
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <span className="text-2xl">{g.icon}</span>
+                              {(() => {
+                                const logo = getGatewayLogo(g.key, g.name_en);
+                                return logo ? (
+                                  <div className="w-10 h-10 rounded-lg flex items-center justify-center border border-white/10" style={{ background: logo.bg || '#fff' }}>
+                                    <img src={logo.url} alt={logo.alt} className="max-w-[80%] max-h-[70%] object-contain" />
+                                  </div>
+                                ) : (
+                                  <span className="text-2xl">{g.icon}</span>
+                                );
+                              })()}
                               <div>
                                 <div className="font-bold text-sm" style={{ color: active ? NEON : '#fff' }}>
                                   {lang === 'ar' ? g.name_ar : g.name_en}
