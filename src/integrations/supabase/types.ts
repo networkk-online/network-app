@@ -3607,8 +3607,12 @@ export type Database = {
       }
       verification_requests: {
         Row: {
+          account_type: string
+          business_document_url: string | null
           created_at: string | null
+          full_name: string | null
           id: string
+          id_document_url: string | null
           reason: string | null
           rejection_reason: string | null
           reviewed_at: string | null
@@ -3616,10 +3620,15 @@ export type Database = {
           status: string
           updated_at: string | null
           user_id: string
+          website_url: string | null
         }
         Insert: {
+          account_type?: string
+          business_document_url?: string | null
           created_at?: string | null
+          full_name?: string | null
           id?: string
+          id_document_url?: string | null
           reason?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -3627,10 +3636,15 @@ export type Database = {
           status?: string
           updated_at?: string | null
           user_id: string
+          website_url?: string | null
         }
         Update: {
+          account_type?: string
+          business_document_url?: string | null
           created_at?: string | null
+          full_name?: string | null
           id?: string
+          id_document_url?: string | null
           reason?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -3638,6 +3652,7 @@ export type Database = {
           status?: string
           updated_at?: string | null
           user_id?: string
+          website_url?: string | null
         }
         Relationships: []
       }
