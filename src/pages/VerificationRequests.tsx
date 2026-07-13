@@ -234,51 +234,52 @@ export default function VerificationRequests() {
                 <div className="space-y-3">
                   {pendingRequests.map((request) => (
                     <Card key={request.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3 flex-1">
-                            <Avatar>
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-3 flex-1">
+                            <Avatar className="w-12 h-12">
                               <AvatarImage src={request.profile?.avatar_url} />
                               <AvatarFallback>
                                 {request.profile?.full_name?.charAt(0) || request.profile?.username?.charAt(0) || 'U'}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1">
-                              <p className="font-semibold">{request.profile?.full_name}</p>
+                            <div className="flex-1 space-y-1">
+                              <p className="font-semibold">{request.full_name || request.profile?.full_name}</p>
                               <p className="text-sm text-muted-foreground">@{request.profile?.username}</p>
-                              {request.reason && (
-                                <p className="text-sm mt-1 text-muted-foreground">{request.reason}</p>
+                              <div className="flex flex-wrap gap-2 text-xs pt-1">
+                                <Badge variant="outline">{request.account_type === 'business' ? 'تجاري' : 'شخصي'}</Badge>
+                                <Badge variant="outline">{request.profile?.posts_count ?? 0} منشور</Badge>
+                                {request.profile?.bio && <Badge variant="outline">Bio ✓</Badge>}
+                              </div>
+                              {request.website_url && (
+                                <a href={request.website_url} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline block" dir="ltr">
+                                  {request.website_url}
+                                </a>
                               )}
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(request.created_at).toLocaleDateString('ar-SA', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                })}
-                              </p>
+                              {request.profile?.bio && (
+                                <p className="text-xs text-muted-foreground pt-1 line-clamp-2">{request.profile.bio}</p>
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col items-end gap-2">
                             {getStatusBadge(request.status)}
-                            <Button
-                              size="sm"
-                              variant="default"
-                              onClick={() => handleApprove(request)}
-                              className="gap-1"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                              قبول
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => openRejectDialog(request)}
-                              className="gap-1"
-                            >
-                              <XCircle className="h-4 w-4" />
-                              رفض
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="default" onClick={() => handleApprove(request)} className="gap-1">
+                                <CheckCircle className="h-4 w-4" /> قبول
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => openRejectDialog(request)} className="gap-1">
+                                <XCircle className="h-4 w-4" /> رفض
+                              </Button>
+                            </div>
                           </div>
+                        </div>
+
+                        {/* Documents */}
+                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/5">
+                          <DocPreview label="وثيقة الهوية" url={request.id_document_signed} />
+                          {request.account_type === 'business' && (
+                            <DocPreview label="السجل التجاري" url={request.business_document_signed} />
+                          )}
                         </div>
                       </CardContent>
                     </Card>
