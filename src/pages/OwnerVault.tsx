@@ -148,7 +148,7 @@ const OwnerVault = () => {
       case 'staff':
         return <VaultStaffManager moderators={moderators} onRefresh={fetchModerators} />;
       case 'verification':
-        return <VaultVerification />;
+        return <VerificationRequests />;
       case 'explore':
         return <MasterExploreControl />;
       case 'reels':
