@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import SeoHead from '@/components/seo/SeoHead';
+import { getGatewayLogo } from '@/lib/gatewayLogos';
 
 type Gateway = {
   id: string;
