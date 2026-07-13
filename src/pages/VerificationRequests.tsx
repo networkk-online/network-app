@@ -58,18 +58,27 @@ export default function VerificationRequests() {
 
       if (error) throw error;
 
-      // Load profiles separately
+      // Load profiles + counts + signed URLs for docs
       const requestsWithProfiles = await Promise.all(
-        (data || []).map(async (request) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('username, full_name, avatar_url')
-            .eq('id', request.user_id)
-            .single();
-          
+        (data || []).map(async (request: any) => {
+          const [{ data: profile }, { count }] = await Promise.all([
+            supabase.from('profiles').select('username, full_name, avatar_url, bio').eq('id', request.user_id).maybeSingle(),
+            supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', request.user_id),
+          ]);
+          const sign = async (path?: string | null) => {
+            if (!path) return null;
+            const { data } = await supabase.storage.from('verification-documents').createSignedUrl(path, 60 * 60);
+            return data?.signedUrl || null;
+          };
+          const [idSigned, bizSigned] = await Promise.all([
+            sign(request.id_document_url),
+            sign(request.business_document_url),
+          ]);
           return {
             ...request,
-            profile,
+            profile: profile ? { ...profile, posts_count: count || 0 } : undefined,
+            id_document_signed: idSigned,
+            business_document_signed: bizSigned,
           };
         })
       );
