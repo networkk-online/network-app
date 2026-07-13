@@ -63,32 +63,7 @@ const AccountStatus = () => {
   };
 
   const requestVerification = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supabase
-        .from('verification_requests')
-        .insert({
-          user_id: user.id,
-          reason: 'طلب توثيق الحساب',
-          status: 'pending',
-        });
-
-      if (error) throw error;
-
-      setAccountInfo(prev => prev ? { ...prev, verification_status: 'pending' } : null);
-      toast({
-        title: "تم إرسال الطلب",
-        description: "سيتم مراجعة طلبك قريباً",
-      });
-    } catch (error) {
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء إرسال الطلب",
-        variant: "destructive"
-      });
-    }
+    navigate('/settings/verification-request');
   };
 
   if (loading) {

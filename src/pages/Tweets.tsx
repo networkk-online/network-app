@@ -436,10 +436,10 @@ const Tweets = () => {
                     tweet={tweet}
                     isLiked={likedTweets.includes(tweet.id)}
                     isRetweeted={retweetedTweets.includes(tweet.id)}
-                    onLike={() => { toggleLike(tweet.id); }}
-                    onRetweet={() => { toggleRetweet(tweet.id); }}
-                    onReply={() => { handleReply(tweet); }}
-                    onQuote={() => { handleQuote(tweet); }}
+                    onLike={(e?: any) => { e?.stopPropagation?.(); toggleLike(tweet.id); }}
+                    onRetweet={(e?: any) => { e?.stopPropagation?.(); toggleRetweet(tweet.id); }}
+                    onReply={(e?: any) => { e?.stopPropagation?.(); handleReply(tweet); }}
+                    onQuote={(e?: any) => { e?.stopPropagation?.(); handleQuote(tweet); }}
                   />
                 </div>
               ))

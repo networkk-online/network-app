@@ -1,0 +1,1 @@
+REVOKE SELECT (phone_number, phone_country_code, business_email, birth_date, gender) ON public.profiles FROM anon;

@@ -6,8 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Loader2, Save, CreditCard, FileText, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Save, CreditCard, FileText, Plus, Trash2, Upload } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { getGatewayLogo } from '@/lib/gatewayLogos';
 
 const NEON = '#00ff66';
 
@@ -231,21 +232,33 @@ export default function AdminContentManager() {
             {gateways.map((g) => (
               <Card key={g.id} className="p-4 bg-[#0f1422] border-white/[0.06] space-y-3"
                 style={{ boxShadow: g.is_active ? `0 0 18px rgba(0,255,102,0.08)` : undefined }}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 flex-1">
-                    <Input
-                      className="w-14 text-center text-2xl h-12 bg-transparent border-white/10"
-                      value={g.icon ?? ''}
-                      onChange={(e) => updateLocal(g.id, { icon: e.target.value })}
-                    />
-                    <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {(() => {
+                      const logo = getGatewayLogo(g.key, g.name_en);
+                      return logo ? (
+                        <div
+                          className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 shadow-inner border border-white/10"
+                          style={{ background: logo.bg || '#fff' }}
+                        >
+                          <img src={logo.url} alt={logo.alt} className="max-w-[80%] max-h-[70%] object-contain" />
+                        </div>
+                      ) : (
+                        <Input
+                          className="w-14 h-14 text-center text-2xl bg-transparent border-white/10 shrink-0"
+                          value={g.icon ?? ''}
+                          onChange={(e) => updateLocal(g.id, { icon: e.target.value })}
+                        />
+                      );
+                    })()}
+                    <div className="flex-1 min-w-0 space-y-1">
                       <Input className="h-8 text-sm font-bold" value={g.name_ar}
                         onChange={(e) => updateLocal(g.id, { name_ar: e.target.value })} placeholder="الاسم (عربي)" />
                       <Input className="h-7 text-xs text-white/60" value={g.name_en} dir="ltr"
                         onChange={(e) => updateLocal(g.id, { name_en: e.target.value })} placeholder="Name (EN)" />
                     </div>
                   </div>
-                  <div className="flex flex-col items-center gap-1 ms-2">
+                  <div className="flex flex-col items-center gap-1 ms-2 shrink-0">
                     <Switch checked={g.is_active} onCheckedChange={(v) => toggleActive(g, v)} />
                     <span className="text-[9px]" style={{ color: g.is_active ? NEON : 'rgba(255,255,255,0.4)' }}>
                       {g.is_active ? 'مفعّلة' : 'معطّلة'}

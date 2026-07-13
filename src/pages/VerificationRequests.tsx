@@ -21,11 +21,20 @@ interface VerificationRequest {
   updated_at: string;
   reviewed_by?: string;
   reviewed_at?: string;
+  full_name?: string;
+  account_type?: 'personal' | 'business';
+  website_url?: string | null;
+  id_document_url?: string | null;
+  business_document_url?: string | null;
   profile?: {
     username: string;
     full_name: string;
     avatar_url: string;
+    bio?: string;
+    posts_count?: number;
   };
+  id_document_signed?: string | null;
+  business_document_signed?: string | null;
 }
 
 export default function VerificationRequests() {
@@ -49,18 +58,27 @@ export default function VerificationRequests() {
 
       if (error) throw error;
 
-      // Load profiles separately
+      // Load profiles + counts + signed URLs for docs
       const requestsWithProfiles = await Promise.all(
-        (data || []).map(async (request) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('username, full_name, avatar_url')
-            .eq('id', request.user_id)
-            .single();
-          
+        (data || []).map(async (request: any) => {
+          const [{ data: profile }, { count }] = await Promise.all([
+            supabase.from('profiles').select('username, full_name, avatar_url, bio').eq('id', request.user_id).maybeSingle(),
+            supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', request.user_id),
+          ]);
+          const sign = async (path?: string | null) => {
+            if (!path) return null;
+            const { data } = await supabase.storage.from('verification-documents').createSignedUrl(path, 60 * 60);
+            return data?.signedUrl || null;
+          };
+          const [idSigned, bizSigned] = await Promise.all([
+            sign(request.id_document_url),
+            sign(request.business_document_url),
+          ]);
           return {
             ...request,
-            profile,
+            profile: profile ? { ...profile, posts_count: count || 0 } : undefined,
+            id_document_signed: idSigned,
+            business_document_signed: bizSigned,
           };
         })
       );
@@ -216,51 +234,52 @@ export default function VerificationRequests() {
                 <div className="space-y-3">
                   {pendingRequests.map((request) => (
                     <Card key={request.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3 flex-1">
-                            <Avatar>
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-3 flex-1">
+                            <Avatar className="w-12 h-12">
                               <AvatarImage src={request.profile?.avatar_url} />
                               <AvatarFallback>
                                 {request.profile?.full_name?.charAt(0) || request.profile?.username?.charAt(0) || 'U'}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1">
-                              <p className="font-semibold">{request.profile?.full_name}</p>
+                            <div className="flex-1 space-y-1">
+                              <p className="font-semibold">{request.full_name || request.profile?.full_name}</p>
                               <p className="text-sm text-muted-foreground">@{request.profile?.username}</p>
-                              {request.reason && (
-                                <p className="text-sm mt-1 text-muted-foreground">{request.reason}</p>
+                              <div className="flex flex-wrap gap-2 text-xs pt-1">
+                                <Badge variant="outline">{request.account_type === 'business' ? 'تجاري' : 'شخصي'}</Badge>
+                                <Badge variant="outline">{request.profile?.posts_count ?? 0} منشور</Badge>
+                                {request.profile?.bio && <Badge variant="outline">Bio ✓</Badge>}
+                              </div>
+                              {request.website_url && (
+                                <a href={request.website_url} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline block" dir="ltr">
+                                  {request.website_url}
+                                </a>
                               )}
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(request.created_at).toLocaleDateString('ar-SA', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                })}
-                              </p>
+                              {request.profile?.bio && (
+                                <p className="text-xs text-muted-foreground pt-1 line-clamp-2">{request.profile.bio}</p>
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col items-end gap-2">
                             {getStatusBadge(request.status)}
-                            <Button
-                              size="sm"
-                              variant="default"
-                              onClick={() => handleApprove(request)}
-                              className="gap-1"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                              قبول
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => openRejectDialog(request)}
-                              className="gap-1"
-                            >
-                              <XCircle className="h-4 w-4" />
-                              رفض
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="default" onClick={() => handleApprove(request)} className="gap-1">
+                                <CheckCircle className="h-4 w-4" /> قبول
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => openRejectDialog(request)} className="gap-1">
+                                <XCircle className="h-4 w-4" /> رفض
+                              </Button>
+                            </div>
                           </div>
+                        </div>
+
+                        {/* Documents */}
+                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/5">
+                          <DocPreview label="وثيقة الهوية" url={request.id_document_signed} />
+                          {request.account_type === 'business' && (
+                            <DocPreview label="السجل التجاري" url={request.business_document_signed} />
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -344,5 +363,26 @@ export default function VerificationRequests() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function DocPreview({ label, url }: { label: string; url?: string | null }) {
+  if (!url) {
+    return (
+      <div className="rounded-lg border border-dashed border-white/10 p-3 text-center text-xs text-muted-foreground">
+        {label}: لم يتم رفع أي ملف
+      </div>
+    );
+  }
+  const isImage = /\.(png|jpe?g|webp|gif)(\?|$)/i.test(url);
+  return (
+    <a href={url} target="_blank" rel="noreferrer" className="block rounded-lg border border-white/10 overflow-hidden bg-black/20 hover:border-primary/60 transition">
+      {isImage ? (
+        <img src={url} alt={label} className="w-full h-32 object-cover" />
+      ) : (
+        <div className="h-32 flex items-center justify-center text-xs text-muted-foreground">PDF / ملف</div>
+      )}
+      <div className="px-2 py-1 text-xs font-medium">{label} — عرض</div>
+    </a>
   );
 }
