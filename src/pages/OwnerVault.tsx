@@ -6,7 +6,7 @@ import VaultSidebar from '@/components/vault/VaultSidebar';
 import VaultOverview from '@/components/vault/VaultOverview';
 import VaultUserDirectory from '@/components/vault/VaultUserDirectory';
 import VaultStaffManager from '@/components/vault/VaultStaffManager';
-import VaultVerification from '@/components/vault/VaultVerification';
+import VerificationRequests from '@/pages/VerificationRequests';
 import VaultSecurityAudit from '@/components/vault/VaultSecurityAudit';
 import VaultAnalytics from '@/components/vault/VaultAnalytics';
 import VaultExecution from '@/components/vault/VaultExecution';
@@ -148,7 +148,7 @@ const OwnerVault = () => {
       case 'staff':
         return <VaultStaffManager moderators={moderators} onRefresh={fetchModerators} />;
       case 'verification':
-        return <VaultVerification />;
+        return <VerificationRequests />;
       case 'explore':
         return <MasterExploreControl />;
       case 'reels':
