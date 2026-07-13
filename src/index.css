@@ -340,13 +340,13 @@
    ═══════════════════════════════ */
 @layer utilities {
   .container-responsive {
-    @apply w-full max-w-sm mx-auto;
+    @apply w-full max-w-full mx-auto px-4;
   }
-  @media (min-width: 640px) { .container-responsive { @apply max-w-md; } }
-  @media (min-width: 768px) { .container-responsive { @apply max-w-lg; } }
-  @media (min-width: 1024px) { .container-responsive { @apply max-w-xl; } }
-  @media (min-width: 1280px) { .container-responsive { @apply max-w-2xl; } }
-  @media (min-width: 1536px) { .container-responsive { @apply max-w-3xl; } }
+  @media (min-width: 640px) { .container-responsive { @apply max-w-xl; } }
+  @media (min-width: 768px) { .container-responsive { @apply max-w-2xl; } }
+  @media (min-width: 1024px) { .container-responsive { @apply max-w-3xl; } }
+  @media (min-width: 1280px) { .container-responsive { @apply max-w-4xl; } }
+  @media (min-width: 1536px) { .container-responsive { @apply max-w-5xl; } }
 
   .desktop-centered { @apply mx-auto; }
   @media (min-width: 1280px) { .desktop-centered { max-width: 1200px; } }

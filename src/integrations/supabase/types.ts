@@ -3532,7 +3532,9 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          allow_message_requests: boolean | null
           allow_messages_from_non_friends: boolean | null
+          allow_story_replies: boolean | null
           auto_backup_enabled: boolean | null
           comments_enabled: boolean | null
           comments_notifications: boolean | null
@@ -3546,7 +3548,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          allow_message_requests?: boolean | null
           allow_messages_from_non_friends?: boolean | null
+          allow_story_replies?: boolean | null
           auto_backup_enabled?: boolean | null
           comments_enabled?: boolean | null
           comments_notifications?: boolean | null
@@ -3560,7 +3564,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          allow_message_requests?: boolean | null
           allow_messages_from_non_friends?: boolean | null
+          allow_story_replies?: boolean | null
           auto_backup_enabled?: boolean | null
           comments_enabled?: boolean | null
           comments_notifications?: boolean | null
