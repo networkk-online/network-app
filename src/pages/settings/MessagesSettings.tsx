@@ -6,75 +6,84 @@ import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+type SettingsShape = {
+  allow_messages_from_non_friends: boolean;
+  allow_story_replies: boolean;
+  allow_message_requests: boolean;
+};
+
+const DEFAULTS: SettingsShape = {
+  allow_messages_from_non_friends: true,
+  allow_story_replies: true,
+  allow_message_requests: true,
+};
+
 const MessagesSettings = () => {
   const navigate = useNavigate();
-  const [settings, setSettings] = useState({
-    allow_messages_from_non_friends: true,
-    allow_story_replies: true,
-    message_requests: true,
-  });
+  const [settings, setSettings] = useState<SettingsShape>(DEFAULTS);
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [savingKey, setSavingKey] = useState<keyof SettingsShape | null>(null);
 
   useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data } = await supabase
-        .from('user_settings')
-        .select('allow_messages_from_non_friends')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (data) {
-        setSettings(prev => ({
-          ...prev,
-          allow_messages_from_non_friends: data.allow_messages_from_non_friends ?? true,
-        }));
-      }
-
-      // Load from localStorage for other settings
-      const storyReplies = localStorage.getItem('allow_story_replies');
-      const messageRequests = localStorage.getItem('message_requests');
-      
-      setSettings(prev => ({
-        ...prev,
-        allow_story_replies: storyReplies !== 'false',
-        message_requests: messageRequests !== 'false',
-      }));
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleToggle = async (key: string, value: boolean) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-
-    if (key === 'allow_messages_from_non_friends') {
+    (async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+        setUserId(user.id);
 
-        await supabase
+        const { data, error } = await supabase
           .from('user_settings')
-          .upsert({
-            user_id: user.id,
-            [key]: value,
-          });
-      } catch (error) {
-        console.error('Error saving setting:', error);
+          .select('allow_messages_from_non_friends, allow_story_replies, allow_message_requests')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Load settings error:', error);
+        }
+
+        setSettings({
+          allow_messages_from_non_friends: data?.allow_messages_from_non_friends ?? true,
+          allow_story_replies: (data as any)?.allow_story_replies ?? true,
+          allow_message_requests: (data as any)?.allow_message_requests ?? true,
+        });
+      } finally {
+        setLoading(false);
       }
-    } else {
-      localStorage.setItem(key, value.toString());
+    })();
+  }, [navigate]);
+
+  const handleToggle = async (key: keyof SettingsShape, value: boolean) => {
+    if (!userId) return;
+    const previous = settings[key];
+    setSettings((prev) => ({ ...prev, [key]: value }));
+    setSavingKey(key);
+
+    const { error } = await supabase
+      .from('user_settings')
+      .upsert(
+        { user_id: userId, [key]: value } as any,
+        { onConflict: 'user_id' }
+      );
+
+    setSavingKey(null);
+
+    if (error) {
+      console.error(`Failed to save ${key}:`, error);
+      // revert
+      setSettings((prev) => ({ ...prev, [key]: previous }));
+      toast({
+        title: 'تعذر حفظ الإعداد',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
     }
 
-    toast({ title: "تم حفظ الإعداد" });
+    toast({ title: 'تم حفظ الإعداد' });
   };
 
   if (loading) {
@@ -96,7 +105,7 @@ const MessagesSettings = () => {
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
         <p className="text-sm text-muted-foreground mb-4">
           تحكم في من يمكنه إرسال الرسائل إليك والرد على قصصك
         </p>
@@ -107,51 +116,44 @@ const MessagesSettings = () => {
               <Users className="w-5 h-5 text-muted-foreground" />
               <div>
                 <p className="font-medium">الرسائل من غير المتابعين</p>
-                <p className="text-sm text-muted-foreground">
-                  السماح بتلقي رسائل من أشخاص لا تتابعهم
-                </p>
+                <p className="text-sm text-muted-foreground">السماح بتلقي رسائل من أشخاص لا تتابعهم</p>
               </div>
             </div>
             <Switch
               checked={settings.allow_messages_from_non_friends}
+              disabled={savingKey === 'allow_messages_from_non_friends'}
               onCheckedChange={(v) => handleToggle('allow_messages_from_non_friends', v)}
             />
           </div>
 
-          <div className="border-t border-border pt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <MessageCircle className="w-5 h-5 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">ردود القصص</p>
-                  <p className="text-sm text-muted-foreground">
-                    السماح للآخرين بالرد على قصصك
-                  </p>
-                </div>
+          <div className="border-t border-border pt-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MessageCircle className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">ردود القصص</p>
+                <p className="text-sm text-muted-foreground">السماح للآخرين بالرد على قصصك</p>
               </div>
-              <Switch
-                checked={settings.allow_story_replies}
-                onCheckedChange={(v) => handleToggle('allow_story_replies', v)}
-              />
             </div>
+            <Switch
+              checked={settings.allow_story_replies}
+              disabled={savingKey === 'allow_story_replies'}
+              onCheckedChange={(v) => handleToggle('allow_story_replies', v)}
+            />
           </div>
 
-          <div className="border-t border-border pt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Lock className="w-5 h-5 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">طلبات الرسائل</p>
-                  <p className="text-sm text-muted-foreground">
-                    تلقي طلبات رسائل من حسابات جديدة
-                  </p>
-                </div>
+          <div className="border-t border-border pt-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Lock className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">طلبات الرسائل</p>
+                <p className="text-sm text-muted-foreground">تلقي طلبات رسائل من حسابات جديدة</p>
               </div>
-              <Switch
-                checked={settings.message_requests}
-                onCheckedChange={(v) => handleToggle('message_requests', v)}
-              />
             </div>
+            <Switch
+              checked={settings.allow_message_requests}
+              disabled={savingKey === 'allow_message_requests'}
+              onCheckedChange={(v) => handleToggle('allow_message_requests', v)}
+            />
           </div>
         </div>
       </div>
