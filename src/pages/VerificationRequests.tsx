@@ -365,3 +365,24 @@ export default function VerificationRequests() {
     </div>
   );
 }
+
+function DocPreview({ label, url }: { label: string; url?: string | null }) {
+  if (!url) {
+    return (
+      <div className="rounded-lg border border-dashed border-white/10 p-3 text-center text-xs text-muted-foreground">
+        {label}: لم يتم رفع أي ملف
+      </div>
+    );
+  }
+  const isImage = /\.(png|jpe?g|webp|gif)(\?|$)/i.test(url);
+  return (
+    <a href={url} target="_blank" rel="noreferrer" className="block rounded-lg border border-white/10 overflow-hidden bg-black/20 hover:border-primary/60 transition">
+      {isImage ? (
+        <img src={url} alt={label} className="w-full h-32 object-cover" />
+      ) : (
+        <div className="h-32 flex items-center justify-center text-xs text-muted-foreground">PDF / ملف</div>
+      )}
+      <div className="px-2 py-1 text-xs font-medium">{label} — عرض</div>
+    </a>
+  );
+}
