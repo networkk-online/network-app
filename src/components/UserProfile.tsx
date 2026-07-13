@@ -283,11 +283,13 @@ const UserProfile = ({
     try {
       setUploading(true);
       
-      const fileName = `avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('يجب تسجيل الدخول أولاً');
+      const fileName = `${user.id}/avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, croppedBlob);
+        .upload(fileName, croppedBlob, { upsert: true, contentType: 'image/jpeg' });
 
       if (uploadError) {
         console.error('Avatar upload error:', uploadError);
