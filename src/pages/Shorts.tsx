@@ -443,6 +443,8 @@ const Shorts = () => {
           postId={currentReel.id}
           userId={currentReel.user_id}
           currentUserId={currentUserId}
+          mediaUrl={currentReel.video_url}
+          contentType="reel"
         />
       )}
 
