@@ -13,6 +13,7 @@ import Index from "./pages/Index";
 import Explore from "./pages/Explore";
 const Broadcast = lazy(() => import("./pages/Broadcast"));
 import BusinessAccount from "./pages/BusinessAccount";
+import BusinessAffiliates from "./pages/BusinessAffiliates";
 import Pages from "./pages/Pages";
 const Shorts = lazy(() => import("./pages/Shorts"));
 import Login from "./pages/Login";
@@ -147,6 +148,7 @@ const AppContent = () => {
         <Route path="/explore/feed/:postId" element={<ExploreFeed />} />
         <Route path="/broadcast" element={<Broadcast />} />
         <Route path="/business" element={<BusinessAccount />} />
+        <Route path="/business/:companyId/affiliates" element={<BusinessAffiliates />} />
         <Route path="/pages" element={<Pages />} />
         <Route path="/shorts" element={<Shorts />} />
         <Route path="/login" element={<Login />} />
