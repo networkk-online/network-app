@@ -464,14 +464,15 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
                 strokeWidth={1.4}
               />
             </Button>
-            <PremiumShareButton
-              shareData={{
-                title: `${username} on Network`,
-                text: getShareText(),
-                url: getShareUrl(),
-              }}
-              variant="icon-only"
-            />
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Share post"
+              className="p-0 hover:bg-transparent interactive-element"
+              onClick={() => setShowShareMenu(true)}
+            >
+              <Send className="w-[22px] h-[22px] text-white/50 hover:text-primary transition-colors -rotate-12" strokeWidth={1.4} />
+            </Button>
             {currentUser?.id !== userId && (
               <Button 
                 variant="ghost" 
