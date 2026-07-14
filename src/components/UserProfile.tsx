@@ -577,10 +577,10 @@ const UserProfile = ({
                     <img 
                       src={avatarUrl || '/default-avatar.jpg'} 
                       alt={displayName} 
-                      className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background object-cover transition-opacity group-hover:opacity-75 shadow-lg"
+                      className={`w-28 h-28 sm:w-32 sm:h-32 ${accountType === 'business' ? 'rounded-2xl' : 'rounded-full'} border-4 border-background object-cover transition-opacity group-hover:opacity-75 shadow-lg`}
                     />
                     {uploading && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                      <div className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 ${accountType === 'business' ? 'rounded-2xl' : 'rounded-full'}`}>
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                       </div>
                     )}
@@ -600,7 +600,7 @@ const UserProfile = ({
                 <img 
                   src={avatarUrl || '/default-avatar.jpg'} 
                   alt={displayName} 
-                  className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background object-cover shadow-lg"
+                  className={`w-28 h-28 sm:w-32 sm:h-32 ${accountType === 'business' ? 'rounded-2xl' : 'rounded-full'} border-4 border-background object-cover shadow-lg`}
                 />
               )}
             </div>
