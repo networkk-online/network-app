@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useCountUp } from '@/hooks/useCountUp';
+import LiveRingOverlay from '@/components/live/LiveRingOverlay';
 
 import { FollowButton } from '@/components/FollowButton';
 import { CloseFriendsButton } from '@/components/CloseFriendsButton';
