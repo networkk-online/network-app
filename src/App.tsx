@@ -139,6 +139,7 @@ const AppContent = () => {
       <BottomNav />
       <FloatingAdminButton />
       <InstallPWAButton />
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
       <Routes>
         <Route path="/welcome" element={<SplashScreen />} />
         <Route path="/" element={<Index />} />
@@ -269,6 +270,7 @@ const AppContent = () => {
         <Route path="/p/:slug" element={<DynamicPage slug="" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
     </>
   );
 };
