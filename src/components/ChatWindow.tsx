@@ -31,10 +31,17 @@ export const ChatWindow = ({
   const [sending, setSending] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    const scroll = () => scrollToBottom(messages.length <= 1 ? 'auto' : 'smooth');
+    const raf = requestAnimationFrame(scroll);
+    const timer = window.setTimeout(scroll, 100);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
+    };
+  }, [messages.length, messages[messages.length - 1]?.id]);
 
   // Simulate typing indicator (in real app, this would come from real-time subscription)
   useEffect(() => {
@@ -46,8 +53,11 @@ export const ChatWindow = ({
     }
   }, [messages]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
   const handleFileSelect = (file: File) => {
@@ -135,7 +145,7 @@ export const ChatWindow = ({
       }}
     >
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {Object.entries(groupedMessages).map(([date, msgs]) => (
           <div key={date}>
             {/* Date Header */}
