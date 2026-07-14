@@ -485,28 +485,32 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
       {agora.isInRoom && (
         <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={agora.switchCamera}
-              className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-md border border-white/10"
-            >
-              <RotateCcw className="w-5 h-5 text-white" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={agora.toggleCamera}
-              className={`w-11 h-11 rounded-full ${
-                agora.isCameraOff ? 'bg-red-500/60' : 'bg-black/50'
-              } backdrop-blur-md border border-white/10`}
-            >
-              {agora.isCameraOff ? (
-                <VideoOff className="w-5 h-5 text-white" />
-              ) : (
-                <Video className="w-5 h-5 text-white" />
-              )}
-            </Button>
+            {agora.isHost && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={agora.switchCamera}
+                  className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-md border border-white/10"
+                >
+                  <RotateCcw className="w-5 h-5 text-white" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={agora.toggleCamera}
+                  className={`w-11 h-11 rounded-full ${
+                    agora.isCameraOff ? 'bg-red-500/60' : 'bg-black/50'
+                  } backdrop-blur-md border border-white/10`}
+                >
+                  {agora.isCameraOff ? (
+                    <VideoOff className="w-5 h-5 text-white" />
+                  ) : (
+                    <Video className="w-5 h-5 text-white" />
+                  )}
+                </Button>
+              </>
+            )}
             {agora.isHost ? (
               <motion.button
                 whileTap={{ scale: 0.95 }}
@@ -519,25 +523,27 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={stopBroadcast}
-                className="px-4 py-2.5 bg-red-500/80 rounded-full"
+                className="px-6 py-2.5 bg-red-500/80 rounded-full"
               >
-                <span className="text-white font-bold text-sm">مغادرة</span>
+                <span className="text-white font-bold">مغادرة</span>
               </motion.button>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={agora.toggleMute}
-              className={`w-11 h-11 rounded-full ${
-                agora.isMuted ? 'bg-red-500/60' : 'bg-black/50'
-              } backdrop-blur-md border border-white/10`}
-            >
-              {agora.isMuted ? (
-                <MicOff className="w-5 h-5 text-white" />
-              ) : (
-                <Mic className="w-5 h-5 text-white" />
-              )}
-            </Button>
+            {agora.isHost && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={agora.toggleMute}
+                className={`w-11 h-11 rounded-full ${
+                  agora.isMuted ? 'bg-red-500/60' : 'bg-black/50'
+                } backdrop-blur-md border border-white/10`}
+              >
+                {agora.isMuted ? (
+                  <MicOff className="w-5 h-5 text-white" />
+                ) : (
+                  <Mic className="w-5 h-5 text-white" />
+                )}
+              </Button>
+            )}
           </div>
         </div>
       )}
