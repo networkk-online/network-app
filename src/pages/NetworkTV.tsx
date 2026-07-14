@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   Home, Flame, Music2, Gamepad2, Newspaper, Film, GraduationCap, Radio, Tv,
   History as HistoryIcon, ThumbsUp, ThumbsDown, Share2, Download, MoreHorizontal,
@@ -370,12 +371,25 @@ const NetworkTV = () => {
       else { await navigator.clipboard.writeText(url); toast.success('تم نسخ الرابط'); }
     } catch {/**/}
   };
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!selected) return;
     if (getYouTubeId(selected.video_url)) { toast.error('لا يمكن تحميل مقاطع يوتيوب'); return; }
-    const a = document.createElement('a');
-    a.href = selected.video_url; a.download = `${selected.title}.mp4`; a.target = '_blank';
-    document.body.appendChild(a); a.click(); a.remove();
+    try {
+      const response = await fetch(selected.video_url, { mode: 'cors' });
+      if (!response.ok) throw new Error('download_failed');
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl; a.download = `${selected.title || 'network-video'}.mp4`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(blobUrl);
+      toast.success('بدأ تحميل الفيديو');
+    } catch {
+      const a = document.createElement('a');
+      a.href = selected.video_url; a.download = `${selected.title || 'network-video'}.mp4`; a.target = '_blank';
+      document.body.appendChild(a); a.click(); a.remove();
+      toast.success('تم فتح رابط التحميل');
+    }
   };
   const toggleWatchLater = () => {
     if (!selected) return;
@@ -625,10 +639,20 @@ const NetworkTV = () => {
                       className="rounded-full bg-white/[0.06] border-white/[0.08] text-white hover:bg-white/[0.1]" title="Cinema Mode">
                       {cinema ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                     </Button>
-                    <Button variant="outline"
-                      className="rounded-full w-9 h-9 p-0 bg-white/[0.06] border-white/[0.08] text-white hover:bg-white/[0.1]">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline"
+                          className="rounded-full w-9 h-9 p-0 bg-white/[0.06] border-white/[0.08] text-white hover:bg-white/[0.1]">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-black/95 border-white/[0.08] text-white">
+                        <DropdownMenuItem onClick={handleDownload} className="gap-2 cursor-pointer focus:bg-white/[0.08] focus:text-white">
+                          <Download className="w-4 h-4" />
+                          تحميل الفيديو
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
 
