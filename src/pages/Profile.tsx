@@ -492,6 +492,7 @@ const Profile = () => {
               website={profile?.website}
               socialLinks={profile?.social_links as any}
               affiliatedCompanyId={profile?.affiliated_company_id}
+              accountType={profile?.account_type}
             />
             
             {/* Story and Highlights Section */}
