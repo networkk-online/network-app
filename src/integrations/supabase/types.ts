@@ -1561,6 +1561,7 @@ export type Database = {
           ended_at: string | null
           host_id: string
           id: string
+          last_heartbeat_at: string
           max_participants: number | null
           status: string
           title: string | null
@@ -1574,6 +1575,7 @@ export type Database = {
           ended_at?: string | null
           host_id: string
           id?: string
+          last_heartbeat_at?: string
           max_participants?: number | null
           status?: string
           title?: string | null
@@ -1587,6 +1589,7 @@ export type Database = {
           ended_at?: string | null
           host_id?: string
           id?: string
+          last_heartbeat_at?: string
           max_participants?: number | null
           status?: string
           title?: string | null
