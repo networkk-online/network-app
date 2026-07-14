@@ -107,43 +107,43 @@ export const EnhancedChatWindow = ({
 
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (!container || messages.length === 0) return;
 
     const newCount = messages.length;
     const prevCount = prevMessageCountRef.current;
     prevMessageCountRef.current = newCount;
 
-    // First paint with messages → jump to bottom instantly, no arrow, no middle stop.
-    if (!didInitialScrollRef.current && newCount > 0) {
-      didInitialScrollRef.current = true;
-      requestAnimationFrame(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
-        setIsAtBottom(true);
-        setShowScrollButton(false);
-      });
-      prevScrollHeightRef.current = container.scrollHeight;
-      return;
-    }
-
-    // If message count didn't change, it's a reaction/read update — don't scroll
-    if (newCount === prevCount) {
+    if (newCount === prevCount && didInitialScrollRef.current) {
       isReactionUpdateRef.current = true;
       return;
     }
     isReactionUpdateRef.current = false;
 
-    const currentScrollHeight = container.scrollHeight;
-    const scrollDiff = currentScrollHeight - prevScrollHeightRef.current;
+    const behavior: ScrollBehavior = didInitialScrollRef.current ? 'smooth' : 'auto';
+    didInitialScrollRef.current = true;
+    isScrollLockedRef.current = true;
 
-    // Only auto-scroll if user is at the bottom AND it's a new message
-    if (isAtBottom && scrollDiff > 0) {
-      requestAnimationFrame(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      });
-    }
+    const runScroll = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
+      container.scrollTop = container.scrollHeight;
+      prevScrollHeightRef.current = container.scrollHeight;
+      setIsAtBottom(true);
+      setShowScrollButton(false);
+    };
 
-    prevScrollHeightRef.current = currentScrollHeight;
-  }, [messages, isAtBottom, conversationId]);
+    const raf = requestAnimationFrame(runScroll);
+    const afterRender = window.setTimeout(runScroll, 100);
+    const afterMediaLayout = window.setTimeout(() => {
+      runScroll();
+      isScrollLockedRef.current = false;
+    }, 260);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(afterRender);
+      window.clearTimeout(afterMediaLayout);
+    };
+  }, [messages.length, messages[messages.length - 1]?.id, conversationId]);
 
   // Track scroll position
   const handleScroll = useCallback(() => {
@@ -162,7 +162,14 @@ export const EnhancedChatWindow = ({
   // Scroll to bottom with smooth animation
   const scrollToBottom = useCallback(() => {
     isScrollLockedRef.current = true;
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const runScroll = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+      }
+    };
+    requestAnimationFrame(runScroll);
+    window.setTimeout(runScroll, 100);
     
     // Unlock after animation completes
     setTimeout(() => {
