@@ -69,6 +69,7 @@ export const PremiumShareSheet = ({
   shareUrl 
 }: PremiumShareSheetProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [friends, setFriends] = useState<Friend[]>([]);
   const [recentFriends, setRecentFriends] = useState<Friend[]>([]);
