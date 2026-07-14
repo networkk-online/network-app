@@ -639,9 +639,7 @@ const UserProfile = ({
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{displayName}</h2>
             {isVerified && (
-              <div className="relative">
-                <BadgeCheck className="h-6 w-6 sm:h-7 sm:w-7 text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-              </div>
+              <VerifiedBadge size="lg" userId={profileId} username={username} />
             )}
           </div>
 
