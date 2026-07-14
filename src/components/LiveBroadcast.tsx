@@ -291,7 +291,7 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   };
 
   const stopBroadcast = async () => {
-    if (streamRowId) {
+    if (streamRowId && agora.isHost) {
       await supabase
         .from('live_streams')
         .update({ status: 'ended', ended_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString() })
