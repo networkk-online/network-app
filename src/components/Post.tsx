@@ -19,6 +19,7 @@ import AffiliationBadge from '@/components/AffiliationBadge';
 import { useAffiliation } from '@/hooks/useAffiliation';
 import PostMusicBar from '@/components/PostMusicBar';
 import type { PostSize } from '@/hooks/usePostSize';
+import LiveRingOverlay from '@/components/live/LiveRingOverlay';
 
 
 interface PostProps {

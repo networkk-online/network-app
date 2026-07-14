@@ -597,11 +597,14 @@ const UserProfile = ({
                   />
                 </>
               ) : (
-                <img 
-                  src={avatarUrl || '/default-avatar.jpg'} 
-                  alt={displayName} 
-                  className={`w-28 h-28 sm:w-32 sm:h-32 ${accountType === 'business' ? 'rounded-2xl' : 'rounded-full'} border-4 border-background object-cover shadow-lg`}
-                />
+                <div className="relative">
+                  <img 
+                    src={avatarUrl || '/default-avatar.jpg'} 
+                    alt={displayName} 
+                    className={`w-28 h-28 sm:w-32 sm:h-32 ${accountType === 'business' ? 'rounded-2xl' : 'rounded-full'} border-4 border-background object-cover shadow-lg`}
+                  />
+                  <LiveRingOverlay userId={profileId} shape={accountType === 'business' ? '2xl' : 'full'} inset={5} badgeSize="md" />
+                </div>
               )}
             </div>
 
