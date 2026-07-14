@@ -186,11 +186,11 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const [previewError, setPreviewError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!agora.isInRoom) {
+    if (!agora.isInRoom && !isViewer) {
       startPreview();
     }
     return () => stopPreview();
-  }, [agora.isInRoom]);
+  }, [agora.isInRoom, isViewer]);
 
   const startPreview = async () => {
     try {
