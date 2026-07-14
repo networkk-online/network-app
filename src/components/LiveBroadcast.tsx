@@ -334,9 +334,9 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
 
   // Sync viewer count to live_streams
   useEffect(() => {
-    if (!streamRowId) return;
+    if (!streamRowId || !agora.isHost) return;
     supabase.from('live_streams').update({ viewer_count: agora.viewerCount, last_heartbeat_at: new Date().toISOString() }).eq('id', streamRowId).eq('status', 'live');
-  }, [agora.viewerCount, streamRowId]);
+  }, [agora.viewerCount, streamRowId, agora.isHost]);
 
   return (
     <motion.div
