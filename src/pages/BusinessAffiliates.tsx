@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Trash2, UserPlus, ShieldAlert, ArrowRight } from 'lucide-react';
+import { Loader2, Trash2, UserPlus, ShieldAlert, ArrowRight, Clock, X } from 'lucide-react';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
 
 interface Company {
@@ -21,6 +21,14 @@ interface Affiliate {
   avatar_url: string | null;
   is_verified: boolean | null;
 }
+interface PendingInvite {
+  request_id: string;
+  user_id: string;
+  username: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  created_at: string;
+}
 
 const BusinessAffiliates = () => {
   const { companyId } = useParams<{ companyId: string }>();
@@ -31,6 +39,7 @@ const BusinessAffiliates = () => {
   const [authorized, setAuthorized] = useState(false);
   const [company, setCompany] = useState<Company | null>(null);
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [pending, setPending] = useState<PendingInvite[]>([]);
   const [username, setUsername] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -56,14 +65,18 @@ const BusinessAffiliates = () => {
     setCompany(c as Company);
     setAuthorized(true);
 
-    const { data: list, error } = await supabase.rpc('owner_list_affiliates', { _company_id: companyId });
-    if (!error && list) setAffiliates(list as Affiliate[]);
+    const [{ data: list }, { data: pend }] = await Promise.all([
+      supabase.rpc('owner_list_affiliates', { _company_id: companyId }),
+      supabase.rpc('owner_list_pending_invites', { _company_id: companyId }),
+    ]);
+    if (list) setAffiliates(list as Affiliate[]);
+    if (pend) setPending(pend as PendingInvite[]);
     setLoading(false);
   };
 
   useEffect(() => { loadAll(); }, [companyId]);
 
-  const handleAdd = async () => {
+  const handleInvite = async () => {
     const clean = username.trim().replace(/^@/, '');
     if (!clean) return;
     if (clean.length > 40) {
@@ -71,23 +84,36 @@ const BusinessAffiliates = () => {
       return;
     }
     setBusy(true);
-    const { data, error } = await supabase.rpc('owner_set_affiliate', {
+    const { data, error } = await supabase.rpc('owner_invite_affiliate', {
       _username: clean,
       _company_id: companyId,
-      _attach: true,
     });
     setBusy(false);
     const res = data as any;
     if (error || !res?.success) {
       const msg = res?.error === 'user_not_found' ? 'المستخدم غير موجود'
         : res?.error === 'not_company_owner' ? 'ليست لديك صلاحية'
-        : 'فشل الإضافة';
+        : res?.error === 'already_invited' ? 'الدعوة مرسلة بالفعل'
+        : res?.error === 'already_affiliated' ? 'المستخدم تابع بالفعل'
+        : 'فشل الإرسال';
       toast({ title: msg, variant: 'destructive' });
       return;
     }
-    toast({ title: 'تمت الإضافة كحساب تابع' });
+    toast({ title: 'تم إرسال الدعوة، بانتظار قبول المستخدم' });
     setUsername('');
     loadAll();
+  };
+
+  const handleCancelInvite = async (requestId: string) => {
+    setBusy(true);
+    const { data } = await supabase.rpc('owner_cancel_invite', { _request_id: requestId });
+    setBusy(false);
+    if ((data as any)?.success) {
+      toast({ title: 'تم إلغاء الدعوة' });
+      loadAll();
+    } else {
+      toast({ title: 'فشل الإلغاء', variant: 'destructive' });
+    }
   };
 
   const handleRemove = async (uname: string | null) => {
@@ -162,29 +188,66 @@ const BusinessAffiliates = () => {
         </div>
 
         <div className="bg-card border border-border/50 rounded-xl p-4 mb-6">
-          <label className="text-sm font-medium mb-2 block">إضافة حساب تابع</label>
+          <label className="text-sm font-medium mb-2 block">دعوة حساب تابع</label>
           <div className="flex gap-2">
             <Input
               placeholder="اسم المستخدم بدون @"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+              onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
               maxLength={40}
               className="flex-1"
             />
-            <Button onClick={handleAdd} disabled={busy || !username.trim()} className="gap-1">
+            <Button onClick={handleInvite} disabled={busy || !username.trim()} className="gap-1">
               <UserPlus className="w-4 h-4" />
-              إضافة
+              إرسال الدعوة
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            سيظهر شعار شركتك بجانب اسم المستخدم للحسابات التابعة.
+            سيتم إرسال دعوة للمستخدم؛ يظهر الانتساب فقط بعد قبوله.
           </p>
         </div>
 
+        {pending.length > 0 && (
+          <div className="bg-card border border-border/50 rounded-xl overflow-hidden mb-6">
+            <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
+              <h2 className="text-sm font-semibold flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-amber-500" />
+                قيد الانتظار
+              </h2>
+              <span className="text-xs text-muted-foreground">{pending.length}</span>
+            </div>
+            <ul className="divide-y divide-border/40">
+              {pending.map((p) => (
+                <li key={p.request_id} className="flex items-center gap-3 px-4 py-3">
+                  <img
+                    src={p.avatar_url || '/default-avatar.jpg'}
+                    alt={p.username || ''}
+                    className="w-10 h-10 rounded-full object-cover border border-border/40"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{p.full_name || p.username}</p>
+                    <p className="text-xs text-muted-foreground truncate">@{p.username}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleCancelInvite(p.request_id)}
+                    disabled={busy}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="w-4 h-4" />
+                    إلغاء
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="bg-card border border-border/50 rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">القائمة الحالية</h2>
+            <h2 className="text-sm font-semibold">الحسابات التابعة الحالية</h2>
             <span className="text-xs text-muted-foreground">{affiliates.length}</span>
           </div>
           {affiliates.length === 0 ? (
