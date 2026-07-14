@@ -16,6 +16,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const CreateStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const embeddedPost = (location.state as any)?.embeddedPost as
+    | { id: string; thumbnailUrl?: string; creatorName: string; creatorAvatar?: string; caption?: string; url: string }
+    | undefined;
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
