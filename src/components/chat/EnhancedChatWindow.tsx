@@ -80,7 +80,7 @@ export const EnhancedChatWindow = ({
   const [vanishMode, setVanishMode] = useState(false);
   const [screenshotProtection, setScreenshotProtection] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [, setIsAtBottom] = useState(true);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
