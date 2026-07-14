@@ -311,7 +311,46 @@ export const PremiumShareSheet = ({
                 </div>
               </div>
 
-              {/* Search */}
+              {/* Add to Story */}
+              {content.type === 'post' && (
+                <div className="px-4 pb-3">
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => {
+                      onClose();
+                      navigate('/create-story', {
+                        state: {
+                          embeddedPost: {
+                            id: content.id,
+                            thumbnailUrl: content.thumbnailUrl,
+                            creatorName: content.creatorName,
+                            creatorAvatar: content.creatorAvatar,
+                            caption: content.caption,
+                            url: shareUrl,
+                          },
+                        },
+                      });
+                    }}
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-[#833AB4]/20 via-[#C13584]/20 to-[#E1306C]/20 border border-white/10 hover:border-[#E1306C]/40 transition-colors"
+                    dir="rtl"
+                  >
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#833AB4] via-[#C13584] to-[#E1306C] flex items-center justify-center shrink-0">
+                      <PlusCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 text-right">
+                      <p className="text-white font-medium text-sm">إضافة للستوري</p>
+                      <p className="text-white/50 text-xs">شارك هذا المنشور مع متابعيك في قصتك</p>
+                    </div>
+                  </motion.button>
+                </div>
+              )}
+
+              {/* Send to Friends header */}
+              <div className="px-4 pb-2 text-right" dir="rtl">
+                <h3 className="text-white font-medium text-sm">إرسال للأصدقاء</h3>
+              </div>
+
               <div className="px-4 pb-3">
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
