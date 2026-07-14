@@ -167,7 +167,10 @@ const CreateReel = () => {
 
         <div className="space-y-6">
           {!selectedFile ? (
-            <div className="border-2 border-dashed border-border rounded-lg p-12 text-center">
+            <label
+              htmlFor="video-upload"
+              className="border-2 border-dashed border-border rounded-lg p-12 text-center cursor-pointer flex flex-col items-center space-y-4 hover:border-primary/60 transition-colors block"
+            >
               <input
                 type="file"
                 accept="video/*"
@@ -175,27 +178,24 @@ const CreateReel = () => {
                 className="hidden"
                 id="video-upload"
               />
-              <label
-                htmlFor="video-upload"
-                className="cursor-pointer flex flex-col items-center space-y-4"
-              >
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Video className="w-10 h-10 text-primary" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-foreground mb-2">
-                    اختر فيديو للريل
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    MP4, MOV, AVI (حتى 100 ميجابايت)
-                  </p>
-                </div>
-                <Button variant="default">
-                  <Upload className="w-4 h-4 mr-2" />
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+                <Video className="w-10 h-10 text-primary" />
+              </div>
+              <div>
+                <p className="text-lg font-semibold text-foreground mb-2">
+                  اختر فيديو للريل
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  MP4, MOV, AVI (حتى 100 ميجابايت)
+                </p>
+              </div>
+              <Button asChild variant="default">
+                <span>
+                  <Upload className="w-4 h-4 mr-2 inline" />
                   اختيار فيديو
-                </Button>
-              </label>
-            </div>
+                </span>
+              </Button>
+            </label>
           ) : (
             <div className="space-y-4">
               {!showEditor ? (

@@ -282,9 +282,6 @@ const Shorts = () => {
           </Button>
           <h2 className="text-white font-semibold text-lg">ريلز</h2>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} className="text-white">
-              <Settings className="w-5 h-5" />
-            </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate('/create-reel')} className="text-white">
               <Camera className="w-6 h-6" />
             </Button>

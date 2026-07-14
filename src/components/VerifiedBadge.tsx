@@ -51,7 +51,7 @@ export const VerifiedBadge = ({ className, size = 'md', username, userId, verifi
   const [vType, setVType] = useState<VerificationType | null>(propType ?? null);
   const company = useAffiliation(userId);
 
-  // Fetch verification_type if not provided via prop
+  // Fetch verification_type + account_type if not provided via prop
   useEffect(() => {
     if (propType) { setVType(propType); return; }
     if (!userId) return;
@@ -59,10 +59,18 @@ export const VerifiedBadge = ({ className, size = 'md', username, userId, verifi
     const fetchType = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('verification_type')
+        .select('verification_type, account_type, is_verified')
         .eq('id', userId)
         .maybeSingle();
-      if (data?.verification_type) setVType(data.verification_type as VerificationType);
+      if (!data) return;
+      // Priority: explicit verification_type → derive from account_type when verified
+      if (data.verification_type) {
+        setVType(data.verification_type as VerificationType);
+      } else if (data.is_verified) {
+        if (data.account_type === 'business') setVType('business');
+        else if (data.account_type === 'government') setVType('government');
+        else setVType('notable');
+      }
     };
     fetchType();
 
@@ -73,8 +81,15 @@ export const VerifiedBadge = ({ className, size = 'md', username, userId, verifi
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
         (payload) => {
-          const newType = payload.new.verification_type as VerificationType | null;
-          setVType(newType);
+          const p: any = payload.new;
+          if (p.verification_type) setVType(p.verification_type as VerificationType);
+          else if (p.is_verified) {
+            if (p.account_type === 'business') setVType('business');
+            else if (p.account_type === 'government') setVType('government');
+            else setVType('notable');
+          } else {
+            setVType(null);
+          }
         }
       )
       .subscribe();

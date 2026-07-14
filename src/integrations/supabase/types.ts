@@ -4136,7 +4136,7 @@ export type Database = {
       update_all_fame_scores: { Args: never; Returns: undefined }
     }
     Enums: {
-      account_type_enum: "creator" | "personal" | "business"
+      account_type_enum: "creator" | "personal" | "business" | "government"
       app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
@@ -4265,7 +4265,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      account_type_enum: ["creator", "personal", "business"],
+      account_type_enum: ["creator", "personal", "business", "government"],
       app_role: ["admin", "moderator", "user"],
     },
   },
