@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MessageCircle, Plus, Search, ArrowRight, MoreVertical } from 'lucide-react';
+import { MessageCircle, Plus, Search, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMessages } from '@/hooks/useMessages';
 import { ConversationList } from '@/components/ConversationList';
