@@ -11,7 +11,7 @@ import CreateSidebar from './create/CreateSidebar';
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const shouldHideNav = location.pathname === '/messages';
+  const shouldHideNav = location.pathname === '/messages' || location.pathname === '/networkk-assistant' || location.pathname.startsWith('/chat/');
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [showSwitcher, setShowSwitcher] = useState(false);
