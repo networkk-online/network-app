@@ -23,6 +23,7 @@ import { ImageCropDialog } from '@/components/ImageCropDialog';
 import CallButtons from '@/components/CallButtons';
 import AffiliationBadge from '@/components/AffiliationBadge';
 import { PremiumShareButton } from '@/components/PremiumShareButton';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 
 // Social media icons
 const TikTokIcon = () => (
@@ -69,6 +70,7 @@ interface UserProfileProps {
   website?: string;
   socialLinks?: SocialLinks;
   affiliatedCompanyId?: string | null;
+  accountType?: 'personal' | 'business' | 'government' | string | null;
 }
 
 // Animated Number Component
@@ -100,7 +102,8 @@ const UserProfile = ({
   isVerified = false,
   website,
   socialLinks = {},
-  affiliatedCompanyId
+  affiliatedCompanyId,
+  accountType,
 }: UserProfileProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -574,10 +577,10 @@ const UserProfile = ({
                     <img 
                       src={avatarUrl || '/default-avatar.jpg'} 
                       alt={displayName} 
-                      className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background object-cover transition-opacity group-hover:opacity-75 shadow-lg"
+                      className={`w-28 h-28 sm:w-32 sm:h-32 ${accountType === 'business' ? 'rounded-2xl' : 'rounded-full'} border-4 border-background object-cover transition-opacity group-hover:opacity-75 shadow-lg`}
                     />
                     {uploading && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                      <div className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 ${accountType === 'business' ? 'rounded-2xl' : 'rounded-full'}`}>
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                       </div>
                     )}
@@ -597,7 +600,7 @@ const UserProfile = ({
                 <img 
                   src={avatarUrl || '/default-avatar.jpg'} 
                   alt={displayName} 
-                  className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-background object-cover shadow-lg"
+                  className={`w-28 h-28 sm:w-32 sm:h-32 ${accountType === 'business' ? 'rounded-2xl' : 'rounded-full'} border-4 border-background object-cover shadow-lg`}
                 />
               )}
             </div>
@@ -636,9 +639,7 @@ const UserProfile = ({
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{displayName}</h2>
             {isVerified && (
-              <div className="relative">
-                <BadgeCheck className="h-6 w-6 sm:h-7 sm:w-7 text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-              </div>
+              <VerifiedBadge size="lg" userId={profileId} username={username} />
             )}
           </div>
 

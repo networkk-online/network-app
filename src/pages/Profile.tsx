@@ -46,6 +46,12 @@ const Profile = () => {
     checkUser();
   }, [urlUserId]);
 
+  useEffect(() => {
+    if (profile?.id && user?.id) {
+      setIsOwnProfile(profile.id === user.id);
+    }
+  }, [profile?.id, user?.id]);
+
   const checkUser = async () => {
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -117,22 +123,26 @@ const Profile = () => {
 
   const loadProfile = async (userId: string, isOwn: boolean) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      let query = supabase.from('profiles').select('*');
+      query = uuidRegex.test(userId)
+        ? query.eq('id', userId)
+        : query.eq('username', userId.replace(/^@/, ''));
+      const { data, error } = await query.maybeSingle();
 
       if (error) throw error;
+
+      const resolvedId = data?.id || userId;
 
       // Get following count
       const { count: followingCount } = await supabase
         .from('follows')
         .select('*', { count: 'exact', head: true })
-        .eq('follower_id', userId);
+        .eq('follower_id', resolvedId);
 
       setProfile({
         ...data,
+        id: resolvedId,
         following_count: followingCount || 0
       });
 
@@ -468,7 +478,7 @@ const Profile = () => {
     posts: userPosts.length,
     bio: profile?.bio || 'لا يوجد وصف',
     phone: profile?.phone_number || '',
-    profileId: urlUserId || user?.id
+    profileId: profile?.id || urlUserId || user?.id
   };
 
   return (
@@ -492,6 +502,7 @@ const Profile = () => {
               website={profile?.website}
               socialLinks={profile?.social_links as any}
               affiliatedCompanyId={profile?.affiliated_company_id}
+              accountType={profile?.account_type}
             />
             
             {/* Story and Highlights Section */}

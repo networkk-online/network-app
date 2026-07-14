@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MessageCircle, Plus, Search, ArrowRight, MoreVertical } from 'lucide-react';
+import { MessageCircle, Plus, Search, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMessages } from '@/hooks/useMessages';
 import { ConversationList } from '@/components/ConversationList';
 import { EnhancedChatWindow } from '@/components/chat';
+import { ChatHeaderMenu } from '@/components/chat/ChatHeaderMenu';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -363,19 +364,16 @@ const Messages = () => {
                       variant="purple"
                     />
                   )}
-                  <motion.div 
-                    whileHover={{ scale: 1.1 }} 
-                    whileTap={{ scale: 0.9 }}
-                    transition={springConfig}
-                  >
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20"
-                    >
-                      <MoreVertical className="h-5 w-5 text-white/70" />
-                    </Button>
-                  </motion.div>
+                  <ChatHeaderMenu
+                    otherUser={otherUser}
+                    conversationId={selectedConversationId}
+                    currentUserId={currentUser?.id}
+                    onDeleted={() => {
+                      handleBack();
+                      loadConversations();
+                    }}
+                  />
+
                 </div>
               </motion.div>
               

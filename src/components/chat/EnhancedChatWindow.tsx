@@ -98,9 +98,13 @@ export const EnhancedChatWindow = ({
 
   const prevMessageCountRef = useRef(messages.length);
   const isReactionUpdateRef = useRef(false);
+  const didInitialScrollRef = useRef(false);
 
-  // Stable scroll position on new messages (prevent layout shift)
-  // Only scroll on NEW messages, not on reaction/read updates
+  // Instant jump to the newest message the first time we render this conversation
+  useEffect(() => {
+    didInitialScrollRef.current = false;
+  }, [conversationId]);
+
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -108,6 +112,18 @@ export const EnhancedChatWindow = ({
     const newCount = messages.length;
     const prevCount = prevMessageCountRef.current;
     prevMessageCountRef.current = newCount;
+
+    // First paint with messages → jump to bottom instantly, no arrow, no middle stop.
+    if (!didInitialScrollRef.current && newCount > 0) {
+      didInitialScrollRef.current = true;
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+        setIsAtBottom(true);
+        setShowScrollButton(false);
+      });
+      prevScrollHeightRef.current = container.scrollHeight;
+      return;
+    }
 
     // If message count didn't change, it's a reaction/read update — don't scroll
     if (newCount === prevCount) {
@@ -118,16 +134,16 @@ export const EnhancedChatWindow = ({
 
     const currentScrollHeight = container.scrollHeight;
     const scrollDiff = currentScrollHeight - prevScrollHeightRef.current;
-    
+
     // Only auto-scroll if user is at the bottom AND it's a new message
     if (isAtBottom && scrollDiff > 0) {
       requestAnimationFrame(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       });
     }
-    
+
     prevScrollHeightRef.current = currentScrollHeight;
-  }, [messages, isAtBottom]);
+  }, [messages, isAtBottom, conversationId]);
 
   // Track scroll position
   const handleScroll = useCallback(() => {
