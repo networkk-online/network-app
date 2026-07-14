@@ -358,11 +358,12 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
             )}
 
             <TikTokLiveOverlay
-              streamerName={agora.isHost ? 'أنت' : 'المضيف'}
+              streamerName={agora.isHost ? 'أنت' : (hostProfile?.username || 'المضيف')}
+              streamerAvatar={agora.isHost ? undefined : (hostProfile?.avatar_url || undefined)}
               viewerCount={agora.viewerCount}
               onClose={stopBroadcast}
               onSendComment={handleSendLiveComment}
-              onSendGift={handleGiftSent}
+              onSendGift={agora.isHost ? undefined : handleGiftSent}
               comments={liveComments}
               isHost={agora.isHost}
             />
