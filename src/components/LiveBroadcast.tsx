@@ -65,6 +65,8 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const [termsOpen, setTermsOpen] = useState(false);
   const [streamRowId, setStreamRowId] = useState<string | null>(null);
   const [hostUserId, setHostUserId] = useState<string | null>(null);
+  const [hostProfile, setHostProfile] = useState<{ username: string; avatar_url: string | null } | null>(null);
+  const isViewer = !!joinRoomId;
 
   useEffect(() => {
     if (agora.isInRoom) setStartedAt(Date.now());
@@ -73,6 +75,27 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setHostUserId(data.user?.id ?? null));
   }, []);
+
+  // Viewer: resolve host profile from live_streams by channel_name
+  useEffect(() => {
+    if (!joinRoomId) return;
+    (async () => {
+      const { data: stream } = await supabase
+        .from('live_streams')
+        .select('id, host_id')
+        .eq('channel_name', joinRoomId)
+        .eq('status', 'live')
+        .maybeSingle();
+      if (!stream) return;
+      setStreamRowId(stream.id);
+      const { data: prof } = await supabase
+        .from('profiles_public')
+        .select('username, avatar_url')
+        .eq('id', stream.host_id)
+        .maybeSingle();
+      if (prof) setHostProfile({ username: prof.username, avatar_url: prof.avatar_url });
+    })();
+  }, [joinRoomId]);
 
   // Listen for kill-switch on this stream
   useEffect(() => {
