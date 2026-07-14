@@ -55,6 +55,38 @@ const CreateStory = () => {
   const currentPreview = previews[currentFileIndex];
   const currentMediaType = mediaTypes[currentFileIndex];
 
+  // Preload embedded post thumbnail as the story background
+  useEffect(() => {
+    if (!embeddedPost?.thumbnailUrl || selectedFiles.length > 0) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(embeddedPost.thumbnailUrl!);
+        const blob = await res.blob();
+        const file = new File([blob], `shared-post-${embeddedPost.id}.jpg`, {
+          type: blob.type || 'image/jpeg',
+        });
+        if (cancelled) return;
+        const preview = URL.createObjectURL(file);
+        setSelectedFiles([file]);
+        setPreviews([preview]);
+        setMediaTypes(['image']);
+        setCurrentFileIndex(0);
+        toast({
+          title: 'تمت الإضافة للستوري',
+          description: `منشور @${embeddedPost.creatorName}`,
+        });
+      } catch (err) {
+        console.error('Failed to load shared post:', err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [embeddedPost?.id]);
+
+
   // Handle camera capture
   const handleCameraCapture = (file: File, type: 'image' | 'video') => {
     const preview = URL.createObjectURL(file);
