@@ -117,22 +117,26 @@ const Profile = () => {
 
   const loadProfile = async (userId: string, isOwn: boolean) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      let query = supabase.from('profiles').select('*');
+      query = uuidRegex.test(userId)
+        ? query.eq('id', userId)
+        : query.eq('username', userId.replace(/^@/, ''));
+      const { data, error } = await query.maybeSingle();
 
       if (error) throw error;
+
+      const resolvedId = data?.id || userId;
 
       // Get following count
       const { count: followingCount } = await supabase
         .from('follows')
         .select('*', { count: 'exact', head: true })
-        .eq('follower_id', userId);
+        .eq('follower_id', resolvedId);
 
       setProfile({
         ...data,
+        id: resolvedId,
         following_count: followingCount || 0
       });
 
