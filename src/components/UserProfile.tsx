@@ -70,6 +70,7 @@ interface UserProfileProps {
   website?: string;
   socialLinks?: SocialLinks;
   affiliatedCompanyId?: string | null;
+  accountType?: 'personal' | 'business' | 'government' | string | null;
 }
 
 // Animated Number Component
