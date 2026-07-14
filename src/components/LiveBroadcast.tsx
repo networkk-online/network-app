@@ -65,6 +65,8 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const [termsOpen, setTermsOpen] = useState(false);
   const [streamRowId, setStreamRowId] = useState<string | null>(null);
   const [hostUserId, setHostUserId] = useState<string | null>(null);
+  const [hostProfile, setHostProfile] = useState<{ username: string; avatar_url: string | null } | null>(null);
+  const isViewer = !!joinRoomId;
 
   useEffect(() => {
     if (agora.isInRoom) setStartedAt(Date.now());
@@ -73,6 +75,27 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setHostUserId(data.user?.id ?? null));
   }, []);
+
+  // Viewer: resolve host profile from live_streams by channel_name
+  useEffect(() => {
+    if (!joinRoomId) return;
+    (async () => {
+      const { data: stream } = await supabase
+        .from('live_streams')
+        .select('id, host_id')
+        .eq('channel_name', joinRoomId)
+        .eq('status', 'live')
+        .maybeSingle();
+      if (!stream) return;
+      setStreamRowId(stream.id);
+      const { data: prof } = await supabase
+        .from('profiles_public')
+        .select('username, avatar_url')
+        .eq('id', stream.host_id)
+        .maybeSingle();
+      if (prof) setHostProfile({ username: prof.username, avatar_url: prof.avatar_url });
+    })();
+  }, [joinRoomId]);
 
   // Listen for kill-switch on this stream
   useEffect(() => {
@@ -163,11 +186,11 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const [previewError, setPreviewError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!agora.isInRoom) {
+    if (!agora.isInRoom && !isViewer) {
       startPreview();
     }
     return () => stopPreview();
-  }, [agora.isInRoom]);
+  }, [agora.isInRoom, isViewer]);
 
   const startPreview = async () => {
     try {
@@ -335,11 +358,12 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
             )}
 
             <TikTokLiveOverlay
-              streamerName={agora.isHost ? 'أنت' : 'المضيف'}
+              streamerName={agora.isHost ? 'أنت' : (hostProfile?.username || 'المضيف')}
+              streamerAvatar={agora.isHost ? undefined : (hostProfile?.avatar_url || undefined)}
               viewerCount={agora.viewerCount}
               onClose={stopBroadcast}
               onSendComment={handleSendLiveComment}
-              onSendGift={handleGiftSent}
+              onSendGift={agora.isHost ? undefined : handleGiftSent}
               comments={liveComments}
               isHost={agora.isHost}
             />
@@ -461,28 +485,32 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
       {agora.isInRoom && (
         <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={agora.switchCamera}
-              className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-md border border-white/10"
-            >
-              <RotateCcw className="w-5 h-5 text-white" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={agora.toggleCamera}
-              className={`w-11 h-11 rounded-full ${
-                agora.isCameraOff ? 'bg-red-500/60' : 'bg-black/50'
-              } backdrop-blur-md border border-white/10`}
-            >
-              {agora.isCameraOff ? (
-                <VideoOff className="w-5 h-5 text-white" />
-              ) : (
-                <Video className="w-5 h-5 text-white" />
-              )}
-            </Button>
+            {agora.isHost && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={agora.switchCamera}
+                  className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-md border border-white/10"
+                >
+                  <RotateCcw className="w-5 h-5 text-white" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={agora.toggleCamera}
+                  className={`w-11 h-11 rounded-full ${
+                    agora.isCameraOff ? 'bg-red-500/60' : 'bg-black/50'
+                  } backdrop-blur-md border border-white/10`}
+                >
+                  {agora.isCameraOff ? (
+                    <VideoOff className="w-5 h-5 text-white" />
+                  ) : (
+                    <Video className="w-5 h-5 text-white" />
+                  )}
+                </Button>
+              </>
+            )}
             {agora.isHost ? (
               <motion.button
                 whileTap={{ scale: 0.95 }}
@@ -495,25 +523,27 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={stopBroadcast}
-                className="px-4 py-2.5 bg-red-500/80 rounded-full"
+                className="px-6 py-2.5 bg-red-500/80 rounded-full"
               >
-                <span className="text-white font-bold text-sm">مغادرة</span>
+                <span className="text-white font-bold">مغادرة</span>
               </motion.button>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={agora.toggleMute}
-              className={`w-11 h-11 rounded-full ${
-                agora.isMuted ? 'bg-red-500/60' : 'bg-black/50'
-              } backdrop-blur-md border border-white/10`}
-            >
-              {agora.isMuted ? (
-                <MicOff className="w-5 h-5 text-white" />
-              ) : (
-                <Mic className="w-5 h-5 text-white" />
-              )}
-            </Button>
+            {agora.isHost && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={agora.toggleMute}
+                className={`w-11 h-11 rounded-full ${
+                  agora.isMuted ? 'bg-red-500/60' : 'bg-black/50'
+                } backdrop-blur-md border border-white/10`}
+              >
+                {agora.isMuted ? (
+                  <MicOff className="w-5 h-5 text-white" />
+                ) : (
+                  <Mic className="w-5 h-5 text-white" />
+                )}
+              </Button>
+            )}
           </div>
         </div>
       )}
