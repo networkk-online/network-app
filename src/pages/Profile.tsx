@@ -46,6 +46,12 @@ const Profile = () => {
     checkUser();
   }, [urlUserId]);
 
+  useEffect(() => {
+    if (profile?.id && user?.id) {
+      setIsOwnProfile(profile.id === user.id);
+    }
+  }, [profile?.id, user?.id]);
+
   const checkUser = async () => {
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
