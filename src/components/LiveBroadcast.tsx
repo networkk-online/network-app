@@ -67,6 +67,16 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const [hostUserId, setHostUserId] = useState<string | null>(null);
   const [hostProfile, setHostProfile] = useState<{ username: string; avatar_url: string | null } | null>(null);
   const isViewer = !!joinRoomId;
+  const streamRowIdRef = useRef<string | null>(null);
+  const isHostRef = useRef(false);
+
+  useEffect(() => {
+    streamRowIdRef.current = streamRowId;
+  }, [streamRowId]);
+
+  useEffect(() => {
+    isHostRef.current = agora.isHost;
+  }, [agora.isHost]);
 
   useEffect(() => {
     if (agora.isInRoom) setStartedAt(Date.now());
@@ -83,8 +93,9 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
       const { data: stream } = await supabase
         .from('live_streams')
         .select('id, host_id')
-        .eq('channel_name', joinRoomId)
         .eq('status', 'live')
+        .or(`channel_name.eq.${joinRoomId},id.eq.${joinRoomId}`)
+        .gt('last_heartbeat_at', new Date(Date.now() - 90_000).toISOString())
         .maybeSingle();
       if (!stream) return;
       setStreamRowId(stream.id);
@@ -262,6 +273,7 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
             title: broadcastTitle || 'بث مباشر',
             status: 'live',
             viewer_count: 0,
+            last_heartbeat_at: new Date().toISOString(),
           })
           .select('id')
           .single();
@@ -274,17 +286,48 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
     if (streamRowId) {
       await supabase
         .from('live_streams')
-        .update({ status: 'ended', ended_at: new Date().toISOString() })
+        .update({ status: 'ended', ended_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString() })
         .eq('id', streamRowId);
     }
     await agora.leaveRoom();
     onClose();
   };
 
+  // Keep the database live status fresh while the host is actively broadcasting.
+  useEffect(() => {
+    if (!streamRowId || !agora.isInRoom || !agora.isHost) return;
+
+    const heartbeat = () => {
+      supabase
+        .from('live_streams')
+        .update({ last_heartbeat_at: new Date().toISOString() })
+        .eq('id', streamRowId)
+        .eq('status', 'live')
+        .then(() => undefined);
+    };
+
+    heartbeat();
+    const interval = window.setInterval(heartbeat, 25_000);
+    return () => window.clearInterval(interval);
+  }, [streamRowId, agora.isInRoom, agora.isHost]);
+
+  // If the host closes/navigates away without pressing End, clear the live flag immediately.
+  useEffect(() => {
+    return () => {
+      const id = streamRowIdRef.current;
+      if (!id || !isHostRef.current) return;
+      supabase
+        .from('live_streams')
+        .update({ status: 'ended', ended_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString() })
+        .eq('id', id)
+        .then(() => undefined);
+    };
+  }, []);
+
   // Sync viewer count to live_streams
   useEffect(() => {
     if (!streamRowId) return;
-    supabase.from('live_streams').update({ viewer_count: agora.viewerCount }).eq('id', streamRowId);
+    supabase.from('live_streams').update({ viewer_count: agora.viewerCount, last_heartbeat_at: new Date().toISOString() }).eq('id', streamRowId).eq('status', 'live');
   }, [agora.viewerCount, streamRowId]);
 
   return (
