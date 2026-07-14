@@ -260,6 +260,8 @@ const VaultUserDirectory = () => {
               <TableRow className="border-white/10">
                 <TableHead className="text-right text-gray-400">المستخدم</TableHead>
                 <TableHead className="text-right text-gray-400 hidden md:table-cell">الهاتف</TableHead>
+                <TableHead className="text-right text-gray-400">نوع الحساب</TableHead>
+                <TableHead className="text-right text-gray-400">توثيق</TableHead>
                 <TableHead className="text-right text-gray-400">الشارة</TableHead>
                 <TableHead className="text-right text-gray-400">الحالة</TableHead>
                 <TableHead className="text-right text-gray-400">الإجراءات</TableHead>
@@ -268,17 +270,21 @@ const VaultUserDirectory = () => {
             <TableBody>
               {users.map((u) => {
                 const currentBadge = fromVerificationType(u.verification_type);
+                const currentAccountType = (u.account_type as 'personal' | 'business' | 'government' | 'creator' | null) || 'personal';
                 return (
                   <TableRow key={u.id} className={cn('border-white/5 hover:bg-white/[0.02]', u.is_banned && 'opacity-60')}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-[#39FF14]">
+                        <div className={cn(
+                          'w-8 h-8 bg-white/10 flex items-center justify-center text-xs font-bold text-[#39FF14]',
+                          currentAccountType === 'business' ? 'rounded-2xl' : 'rounded-full'
+                        )}>
                           {(u.full_name || u.username || '?')[0].toUpperCase()}
                         </div>
                         <div>
                           <p className="text-white text-sm font-medium flex items-center gap-1.5">
                             {u.full_name || '-'}
-                            {renderBadgePreview(currentBadge)}
+                            {u.is_verified && renderBadgePreview(currentBadge)}
                           </p>
                           <p className="text-xs text-gray-500">@{u.username || 'N/A'}</p>
                         </div>
@@ -286,6 +292,27 @@ const VaultUserDirectory = () => {
                     </TableCell>
                     <TableCell className="text-gray-400 text-sm font-mono hidden md:table-cell">
                       {u.phone_number || '-'}
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={currentAccountType === 'creator' ? 'personal' : currentAccountType}
+                        onValueChange={(val) => updateAccountType(u, val as any)}
+                      >
+                        <SelectTrigger className="bg-white/5 border-white/10 text-white h-8 w-32 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-black border-white/10">
+                          <SelectItem value="personal">👤 شخصي</SelectItem>
+                          <SelectItem value="business">🏢 تجاري</SelectItem>
+                          <SelectItem value="government">🏛️ حكومي</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={!!u.is_verified}
+                        onCheckedChange={(next) => toggleVerified(u, next)}
+                      />
                     </TableCell>
                     <TableCell>
                       <Select
@@ -354,7 +381,7 @@ const VaultUserDirectory = () => {
               })}
               {users.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-gray-500">لا يوجد مستخدمون</TableCell>
+                  <TableCell colSpan={7} className="text-center py-12 text-gray-500">لا يوجد مستخدمون</TableCell>
                 </TableRow>
               )}
             </TableBody>
