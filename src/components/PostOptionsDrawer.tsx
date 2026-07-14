@@ -10,6 +10,7 @@ import {
   Pin,
   MessageCircleOff,
   Heart,
+  Download,
   X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,8 @@ interface PostOptionsDrawerProps {
   userId: string;
   currentUserId?: string;
   onPostDeleted?: () => void;
+  mediaUrl?: string | null;
+  contentType?: 'post' | 'reel' | 'video';
 }
 
 export const PostOptionsDrawer = ({
@@ -33,7 +36,9 @@ export const PostOptionsDrawer = ({
   postId,
   userId,
   currentUserId,
-  onPostDeleted
+  onPostDeleted,
+  mediaUrl,
+  contentType = 'post'
 }: PostOptionsDrawerProps) => {
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,6 +59,40 @@ export const PostOptionsDrawer = ({
         description: "فشل في نسخ الرابط",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleDownloadMedia = async () => {
+    if (!mediaUrl) {
+      toast({ title: 'لا يوجد فيديو', description: 'تعذر العثور على رابط الفيديو', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const response = await fetch(mediaUrl, { mode: 'cors' });
+      if (!response.ok) throw new Error('download_failed');
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `network-${contentType}-${postId}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(blobUrl);
+      toast({ title: 'بدأ التحميل', description: 'جاري تحميل الفيديو' });
+      onClose();
+    } catch (error) {
+      const link = document.createElement('a');
+      link.href = mediaUrl;
+      link.download = `network-${contentType}-${postId}.mp4`;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast({ title: 'تم فتح رابط التحميل', description: 'إذا لم يبدأ التحميل تلقائياً، احفظ الفيديو من المتصفح' });
+      onClose();
     }
   };
 
@@ -117,7 +156,10 @@ export const PostOptionsDrawer = ({
     }
   };
 
+  const downloadOption = mediaUrl ? [{ icon: Download, label: 'تحميل الفيديو', onClick: handleDownloadMedia }] : [];
+
   const options = isOwner ? [
+    ...downloadOption,
     { icon: Edit, label: 'تعديل المنشور', onClick: () => { toast({ title: "قريباً", description: "ميزة التعديل قيد التطوير" }); onClose(); } },
     { icon: Pin, label: 'تثبيت في الملف الشخصي', onClick: () => { toast({ title: "قريباً", description: "ميزة التثبيت قيد التطوير" }); onClose(); } },
     { icon: MessageCircleOff, label: 'إيقاف التعليقات', onClick: () => { toast({ title: "تم", description: "تم إيقاف التعليقات" }); onClose(); } },
@@ -125,6 +167,7 @@ export const PostOptionsDrawer = ({
     { icon: Link2, label: 'نسخ الرابط', onClick: handleCopyLink },
     { icon: Trash2, label: 'حذف المنشور', onClick: handleDeletePost, danger: true },
   ] : [
+    ...downloadOption,
     { icon: EyeOff, label: 'غير مهتم', onClick: handleNotInterested },
     { icon: Star, label: 'إضافة للمفضلة', onClick: handleAddToFavorites },
     { icon: UserCircle, label: 'عن هذا الحساب', onClick: handleAboutAccount },
