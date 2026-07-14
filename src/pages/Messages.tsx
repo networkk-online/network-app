@@ -366,19 +366,16 @@ const Messages = () => {
                       variant="purple"
                     />
                   )}
-                  <motion.div 
-                    whileHover={{ scale: 1.1 }} 
-                    whileTap={{ scale: 0.9 }}
-                    transition={springConfig}
-                  >
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20"
-                    >
-                      <MoreVertical className="h-5 w-5 text-white/70" />
-                    </Button>
-                  </motion.div>
+                  <ChatHeaderMenu
+                    otherUser={otherUser}
+                    conversationId={selectedConversationId}
+                    currentUserId={currentUser?.id}
+                    onDeleted={() => {
+                      handleBack();
+                      loadConversations();
+                    }}
+                  />
+
                 </div>
               </motion.div>
               
