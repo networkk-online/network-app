@@ -4125,6 +4125,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      owner_list_affiliates: {
+        Args: { _company_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+          is_verified: boolean
+          username: string
+        }[]
+      }
+      owner_set_affiliate: {
+        Args: { _attach: boolean; _company_id: string; _username: string }
+        Returns: Json
+      }
       redeem_family_code: { Args: { _code: string }; Returns: Json }
       refresh_profile_live_status: {
         Args: { _host_id: string }
