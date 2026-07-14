@@ -4125,6 +4125,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      owner_cancel_invite: { Args: { _request_id: string }; Returns: Json }
+      owner_invite_affiliate: {
+        Args: { _company_id: string; _username: string }
+        Returns: Json
+      }
       owner_list_affiliates: {
         Args: { _company_id: string }
         Returns: {
@@ -4132,6 +4137,17 @@ export type Database = {
           full_name: string
           id: string
           is_verified: boolean
+          username: string
+        }[]
+      }
+      owner_list_pending_invites: {
+        Args: { _company_id: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          full_name: string
+          request_id: string
+          user_id: string
           username: string
         }[]
       }
@@ -4164,6 +4180,20 @@ export type Database = {
         Returns: Json
       }
       update_all_fame_scores: { Args: never; Returns: undefined }
+      user_list_my_invites: {
+        Args: never
+        Returns: {
+          company_id: string
+          company_logo: string
+          company_name: string
+          created_at: string
+          request_id: string
+        }[]
+      }
+      user_respond_affiliation: {
+        Args: { _accept: boolean; _request_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       account_type_enum: "creator" | "personal" | "business" | "government"
