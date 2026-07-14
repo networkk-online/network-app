@@ -64,6 +64,7 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const [mutedUids, setMutedUids] = useState<Set<string>>(new Set());
   const [termsOpen, setTermsOpen] = useState(false);
   const [streamRowId, setStreamRowId] = useState<string | null>(null);
+  const [resolvedJoinChannel, setResolvedJoinChannel] = useState<string | null>(null);
   const [hostUserId, setHostUserId] = useState<string | null>(null);
   const [hostProfile, setHostProfile] = useState<{ username: string; avatar_url: string | null } | null>(null);
   const isViewer = !!joinRoomId;
@@ -90,15 +91,21 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   useEffect(() => {
     if (!joinRoomId) return;
     (async () => {
-      const { data: stream } = await supabase
+      const freshSince = new Date(Date.now() - 90_000).toISOString();
+      let query = supabase
         .from('live_streams')
-        .select('id, host_id')
+        .select('id, host_id, channel_name')
         .eq('status', 'live')
-        .or(`channel_name.eq.${joinRoomId},id.eq.${joinRoomId}`)
-        .gt('last_heartbeat_at', new Date(Date.now() - 90_000).toISOString())
-        .maybeSingle();
+        .gt('last_heartbeat_at', freshSince);
+
+      query = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(joinRoomId)
+        ? query.eq('id', joinRoomId)
+        : query.eq('channel_name', joinRoomId);
+
+      const { data: stream } = await query.maybeSingle();
       if (!stream) return;
       setStreamRowId(stream.id);
+      setResolvedJoinChannel(stream.channel_name);
       const { data: prof } = await supabase
         .from('profiles_public')
         .select('username, avatar_url')
@@ -242,10 +249,11 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   };
 
   useEffect(() => {
-    if (joinRoomId && !agora.isInRoom && !agora.isLoading) {
-      agora.joinRoom(joinRoomId);
+    const channelToJoin = resolvedJoinChannel || (/^network-live-/.test(joinRoomId || '') ? joinRoomId : null);
+    if (channelToJoin && !agora.isInRoom && !agora.isLoading) {
+      agora.joinRoom(channelToJoin);
     }
-  }, [joinRoomId]);
+  }, [joinRoomId, resolvedJoinChannel, agora.isInRoom, agora.isLoading]);
 
   const handleSendLiveComment = (raw: string) => {
     const message = sanitizeText(raw, 500);
