@@ -4034,6 +4034,7 @@ export type Database = {
           full_name: string | null
           id: string | null
           is_business_account: boolean | null
+          is_live: boolean | null
           is_verified: boolean | null
           social_links: Json | null
           specialty: string | null
@@ -4057,6 +4058,7 @@ export type Database = {
           full_name?: string | null
           id?: string | null
           is_business_account?: boolean | null
+          is_live?: boolean | null
           is_verified?: boolean | null
           social_links?: Json | null
           specialty?: string | null
@@ -4080,6 +4082,7 @@ export type Database = {
           full_name?: string | null
           id?: string | null
           is_business_account?: boolean | null
+          is_live?: boolean | null
           is_verified?: boolean | null
           social_links?: Json | null
           specialty?: string | null
