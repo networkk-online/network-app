@@ -588,6 +588,7 @@ const UserProfile = ({
                     <div className="absolute bottom-0 right-0 bg-primary rounded-full p-2 border-4 border-background group-hover:bg-primary/80 transition-colors shadow-lg">
                       <Camera className="h-5 w-5 text-primary-foreground" />
                     </div>
+                    <LiveRingOverlay userId={profileId} shape={accountType === 'business' ? '2xl' : 'full'} inset={5} badgeSize="md" clickable={false} />
                   </div>
                   <input
                     ref={fileInputRef}
