@@ -1604,6 +1604,7 @@ export type Database = {
           id: string
           killed_by: string | null
           killed_reason: string | null
+          last_heartbeat_at: string
           started_at: string
           status: string
           title: string | null
@@ -1618,6 +1619,7 @@ export type Database = {
           id?: string
           killed_by?: string | null
           killed_reason?: string | null
+          last_heartbeat_at?: string
           started_at?: string
           status?: string
           title?: string | null
@@ -1632,6 +1634,7 @@ export type Database = {
           id?: string
           killed_by?: string | null
           killed_reason?: string | null
+          last_heartbeat_at?: string
           started_at?: string
           status?: string
           title?: string | null
@@ -2235,6 +2238,7 @@ export type Database = {
           id: string
           is_banned: boolean
           is_business_account: boolean | null
+          is_live: boolean
           is_suspended: boolean
           is_verified: boolean | null
           location: string | null
@@ -2270,6 +2274,7 @@ export type Database = {
           id: string
           is_banned?: boolean
           is_business_account?: boolean | null
+          is_live?: boolean
           is_suspended?: boolean
           is_verified?: boolean | null
           location?: string | null
@@ -2305,6 +2310,7 @@ export type Database = {
           id?: string
           is_banned?: boolean
           is_business_account?: boolean | null
+          is_live?: boolean
           is_suspended?: boolean
           is_verified?: boolean | null
           location?: string | null
@@ -4114,6 +4120,10 @@ export type Database = {
         Returns: boolean
       }
       redeem_family_code: { Args: { _code: string }; Returns: Json }
+      refresh_profile_live_status: {
+        Args: { _host_id: string }
+        Returns: undefined
+      }
       send_tip: {
         Args: {
           receiver_id: string
