@@ -13,6 +13,9 @@ import BottomNav from '@/components/BottomNav';
 import CallButtons from '@/components/CallButtons';
 import { OnlineStatus } from '@/components/communication';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Ban, Trash2, User as UserIcon } from 'lucide-react';
+import { useBlockUser } from '@/hooks/useBlockUser';
 import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform } from 'framer-motion';
 
 const springConfig = {
