@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const CreateStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const embeddedPost = (location.state as any)?.embeddedPost as
+    | { id: string; thumbnailUrl?: string; creatorName: string; creatorAvatar?: string; caption?: string; url: string }
+    | undefined;
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -50,6 +54,38 @@ const CreateStory = () => {
   const currentFile = selectedFiles[currentFileIndex];
   const currentPreview = previews[currentFileIndex];
   const currentMediaType = mediaTypes[currentFileIndex];
+
+  // Preload embedded post thumbnail as the story background
+  useEffect(() => {
+    if (!embeddedPost?.thumbnailUrl || selectedFiles.length > 0) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(embeddedPost.thumbnailUrl!);
+        const blob = await res.blob();
+        const file = new File([blob], `shared-post-${embeddedPost.id}.jpg`, {
+          type: blob.type || 'image/jpeg',
+        });
+        if (cancelled) return;
+        const preview = URL.createObjectURL(file);
+        setSelectedFiles([file]);
+        setPreviews([preview]);
+        setMediaTypes(['image']);
+        setCurrentFileIndex(0);
+        toast({
+          title: 'تمت الإضافة للستوري',
+          description: `منشور @${embeddedPost.creatorName}`,
+        });
+      } catch (err) {
+        console.error('Failed to load shared post:', err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [embeddedPost?.id]);
+
 
   // Handle camera capture
   const handleCameraCapture = (file: File, type: 'image' | 'video') => {
@@ -426,6 +462,25 @@ const CreateStory = () => {
                 className="max-h-full max-w-full object-contain"
                 style={{ filter: getFilterStyle() }}
               />
+            )}
+
+            {/* Embedded Post Card */}
+            {embeddedPost && (
+              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-[80%] max-w-sm bg-black/60 backdrop-blur-xl rounded-2xl border border-white/20 p-3 shadow-2xl pointer-events-none">
+                <div className="flex items-center gap-2 mb-2">
+                  {embeddedPost.creatorAvatar && (
+                    <img
+                      src={embeddedPost.creatorAvatar}
+                      alt=""
+                      className="w-7 h-7 rounded-full border border-white/20"
+                    />
+                  )}
+                  <span className="text-white text-sm font-medium">@{embeddedPost.creatorName}</span>
+                </div>
+                {embeddedPost.caption && (
+                  <p className="text-white/80 text-xs line-clamp-2">{embeddedPost.caption}</p>
+                )}
+              </div>
             )}
 
             {/* Stickers Overlay */}
