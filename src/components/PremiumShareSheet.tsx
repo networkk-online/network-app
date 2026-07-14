@@ -1,15 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  X, 
-  Send, 
-  Check, 
+import {
+  Search,
+  X,
+  Send,
+  Check,
   MessageCircle,
   Copy,
   Link2,
   Image as ImageIcon,
-  Play
+  Play,
+  PlusCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
