@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface LiveRoom {
   id: string;
   host_id: string;
+  channel_name?: string;
   title: string;
   viewer_count: number;
   created_at: string;
@@ -22,10 +23,12 @@ export const LiveRoomsList = ({ onJoinRoom }: LiveRoomsListProps) => {
   const [loading, setLoading] = useState(true);
 
   const loadRooms = async () => {
+    const freshSince = new Date(Date.now() - 90_000).toISOString();
     const { data } = await supabase
-      .from('live_rooms')
-      .select('id, host_id, title, viewer_count, created_at')
+      .from('live_streams')
+      .select('id, host_id, channel_name, title, viewer_count, created_at')
       .eq('status', 'live')
+      .gt('last_heartbeat_at', freshSince)
       .order('created_at', { ascending: false });
 
     if (data) {
@@ -52,7 +55,7 @@ export const LiveRoomsList = ({ onJoinRoom }: LiveRoomsListProps) => {
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'live_rooms',
+        table: 'live_streams',
       }, () => loadRooms())
       .subscribe();
 
@@ -85,7 +88,7 @@ export const LiveRoomsList = ({ onJoinRoom }: LiveRoomsListProps) => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            onClick={() => onJoinRoom(room.id)}
+            onClick={() => onJoinRoom(room.channel_name || room.id)}
             className="relative bg-gradient-to-br from-[#0f0f1a] to-[#0a0a14] rounded-2xl overflow-hidden border border-white/5 hover:border-[#19e05b]/30 transition-colors text-right"
           >
             {/* Thumbnail area */}
