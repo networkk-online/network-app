@@ -1,5 +1,4 @@
 import { NetworkkAssistantChat } from '@/components/NetworkkAssistantChat';
-import BottomNav from '@/components/BottomNav';
 
 const NetworkkAssistant = () => {
   return (
@@ -7,7 +6,6 @@ const NetworkkAssistant = () => {
       <main className="flex-1 min-h-0 max-w-2xl w-full mx-auto">
         <NetworkkAssistantChat />
       </main>
-      <BottomNav />
     </div>
   );
 };

@@ -10,7 +10,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NewMessageDialog } from '@/components/NewMessageDialog';
-import BottomNav from '@/components/BottomNav';
 import CallButtons from '@/components/CallButtons';
 import { OnlineStatus } from '@/components/communication';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -423,20 +422,6 @@ const Messages = () => {
           </div>
         )}
       </main>
-
-      {/* Bottom Nav - Completely hidden in messages section */}
-      <AnimatePresence>
-        {!selectedConversationId && (
-          <motion.div
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            exit={{ y: 100 }}
-            transition={springConfig}
-          >
-            <BottomNav />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <NewMessageDialog
         open={showNewMessageDialog}

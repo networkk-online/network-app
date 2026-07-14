@@ -18,39 +18,6 @@ import { LiveReelCard } from '@/components/LiveReelCard';
 import { PostOptionsDrawer } from '@/components/PostOptionsDrawer';
 import ProfileOverlayContent from '@/components/ProfileOverlayContent';
 
-const MOCK_LIVE_STREAMS = [
-  {
-    id: 'live-1',
-    streamerId: 'user-1',
-    streamerName: 'أحمد محمد',
-    streamerAvatar: '/default-avatar.jpg',
-    viewerCount: 1234,
-    title: 'بث مباشر - نلعب ألعاب',
-    isActive: true,
-    startedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    topGifters: [
-      { name: 'سارة', avatar: '/default-avatar.jpg' },
-      { name: 'علي', avatar: '/default-avatar.jpg' },
-    ],
-    recentComments: [
-      { username: 'محمد', message: 'يا رائع! 🔥' },
-      { username: 'فاطمة', message: 'استمر!' },
-    ],
-  },
-  {
-    id: 'live-2',
-    streamerId: 'user-2',
-    streamerName: 'ليلى العراقية',
-    streamerAvatar: '/default-avatar.jpg',
-    viewerCount: 856,
-    title: 'أغاني عراقية حية',
-    isActive: true,
-    startedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-    topGifters: [],
-    recentComments: [{ username: 'أمير', message: 'صوتك حلو!' }],
-  },
-];
-
 interface ReelItemProps {
   reel: any;
   isActive: boolean;
@@ -159,6 +126,7 @@ const Shorts = () => {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [showOptionsDrawer, setShowOptionsDrawer] = useState(false);
   const [showProfileOverlay, setShowProfileOverlay] = useState(false);
+  const [liveStreams, setLiveStreams] = useState<any[]>([]);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const navigate = useNavigate();
@@ -166,13 +134,71 @@ const Shorts = () => {
 
   const { reels, loading, likedReels, toggleLike, incrementViews } = useReels(currentUserId);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadLiveStreams = async () => {
+      const freshSince = new Date(Date.now() - 90_000).toISOString();
+      const { data } = await supabase
+        .from('live_streams')
+        .select('id, host_id, channel_name, title, viewer_count, started_at, created_at, last_heartbeat_at')
+        .eq('status', 'live')
+        .gt('last_heartbeat_at', freshSince)
+        .order('last_heartbeat_at', { ascending: false })
+        .limit(5);
+
+      if (cancelled) return;
+      const profilesById = new Map<string, any>();
+      const hostIds = [...new Set((data || []).map((stream: any) => stream.host_id).filter(Boolean))];
+      if (hostIds.length) {
+        const { data: profiles } = await supabase
+          .from('profiles_public')
+          .select('id, username, full_name, avatar_url, is_verified')
+          .in('id', hostIds);
+        (profiles || []).forEach((profile: any) => profilesById.set(profile.id, profile));
+      }
+
+      if (cancelled) return;
+      setLiveStreams((data || []).map((stream: any) => {
+        const profile = profilesById.get(stream.host_id);
+        return {
+          id: stream.channel_name || stream.id,
+          streamId: stream.id,
+          streamerId: stream.host_id,
+          streamerName: profile?.username || profile?.full_name || 'مستخدم',
+          streamerAvatar: profile?.avatar_url || '/default-avatar.jpg',
+          streamerVerified: !!profile?.is_verified,
+          viewerCount: stream.viewer_count || 0,
+          title: stream.title || 'بث مباشر',
+          isActive: true,
+          startedAt: stream.started_at || stream.created_at,
+          recentComments: [],
+          topGifters: [],
+        };
+      }));
+    };
+
+    loadLiveStreams();
+    const channel = supabase
+      .channel('shorts-live-streams')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_streams' }, loadLiveStreams)
+      .subscribe();
+
+    const interval = window.setInterval(loadLiveStreams, 30_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const feedItems = useMemo(() => {
     const items: Array<{ type: 'reel' | 'live'; data: any }> = [];
     let liveIndex = 0;
     reels.forEach((reel, index) => {
       items.push({ type: 'reel', data: reel });
-      if ((index + 1) % 6 === 0 && liveIndex < MOCK_LIVE_STREAMS.length) {
-        const live = MOCK_LIVE_STREAMS[liveIndex];
+      if ((index + 1) % 6 === 0 && liveIndex < liveStreams.length) {
+        const live = liveStreams[liveIndex];
         if (live.isActive) {
           items.push({ type: 'live', data: live });
           liveIndex++;
@@ -180,7 +206,7 @@ const Shorts = () => {
       }
     });
     return items;
-  }, [reels]);
+  }, [reels, liveStreams]);
 
   const currentItem = feedItems[activeIndex];
   const currentReel = currentItem?.type === 'reel' ? currentItem.data : null;
@@ -222,7 +248,7 @@ const Shorts = () => {
     else itemRefs.current.delete(index);
   }, []);
 
-  const handleEnterLive = (streamId: string) => navigate(`/broadcast?liveId=${streamId}`);
+  const handleEnterLive = (streamId: string) => navigate(`/broadcast?join=${streamId}`);
 
   const handleSave = async () => {
     if (!currentUserId) {
@@ -443,6 +469,8 @@ const Shorts = () => {
           postId={currentReel.id}
           userId={currentReel.user_id}
           currentUserId={currentUserId}
+          mediaUrl={currentReel.video_url}
+          contentType="reel"
         />
       )}
 

@@ -64,9 +64,20 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const [mutedUids, setMutedUids] = useState<Set<string>>(new Set());
   const [termsOpen, setTermsOpen] = useState(false);
   const [streamRowId, setStreamRowId] = useState<string | null>(null);
+  const [resolvedJoinChannel, setResolvedJoinChannel] = useState<string | null>(null);
   const [hostUserId, setHostUserId] = useState<string | null>(null);
   const [hostProfile, setHostProfile] = useState<{ username: string; avatar_url: string | null } | null>(null);
   const isViewer = !!joinRoomId;
+  const streamRowIdRef = useRef<string | null>(null);
+  const isHostRef = useRef(false);
+
+  useEffect(() => {
+    streamRowIdRef.current = streamRowId;
+  }, [streamRowId]);
+
+  useEffect(() => {
+    isHostRef.current = agora.isHost;
+  }, [agora.isHost]);
 
   useEffect(() => {
     if (agora.isInRoom) setStartedAt(Date.now());
@@ -80,14 +91,21 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   useEffect(() => {
     if (!joinRoomId) return;
     (async () => {
-      const { data: stream } = await supabase
+      const freshSince = new Date(Date.now() - 90_000).toISOString();
+      let query = supabase
         .from('live_streams')
-        .select('id, host_id')
-        .eq('channel_name', joinRoomId)
+        .select('id, host_id, channel_name')
         .eq('status', 'live')
-        .maybeSingle();
+        .gt('last_heartbeat_at', freshSince);
+
+      query = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(joinRoomId)
+        ? query.eq('id', joinRoomId)
+        : query.eq('channel_name', joinRoomId);
+
+      const { data: stream } = await query.maybeSingle();
       if (!stream) return;
       setStreamRowId(stream.id);
+      setResolvedJoinChannel(stream.channel_name);
       const { data: prof } = await supabase
         .from('profiles_public')
         .select('username, avatar_url')
@@ -231,10 +249,11 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   };
 
   useEffect(() => {
-    if (joinRoomId && !agora.isInRoom && !agora.isLoading) {
-      agora.joinRoom(joinRoomId);
+    const channelToJoin = resolvedJoinChannel || (/^network-live-/.test(joinRoomId || '') ? joinRoomId : null);
+    if (channelToJoin && !agora.isInRoom && !agora.isLoading) {
+      agora.joinRoom(channelToJoin);
     }
-  }, [joinRoomId]);
+  }, [joinRoomId, resolvedJoinChannel, agora.isInRoom, agora.isLoading]);
 
   const handleSendLiveComment = (raw: string) => {
     const message = sanitizeText(raw, 500);
@@ -262,6 +281,7 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
             title: broadcastTitle || 'بث مباشر',
             status: 'live',
             viewer_count: 0,
+            last_heartbeat_at: new Date().toISOString(),
           })
           .select('id')
           .single();
@@ -271,21 +291,52 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   };
 
   const stopBroadcast = async () => {
-    if (streamRowId) {
+    if (streamRowId && agora.isHost) {
       await supabase
         .from('live_streams')
-        .update({ status: 'ended', ended_at: new Date().toISOString() })
+        .update({ status: 'ended', ended_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString() })
         .eq('id', streamRowId);
     }
     await agora.leaveRoom();
     onClose();
   };
 
+  // Keep the database live status fresh while the host is actively broadcasting.
+  useEffect(() => {
+    if (!streamRowId || !agora.isInRoom || !agora.isHost) return;
+
+    const heartbeat = () => {
+      supabase
+        .from('live_streams')
+        .update({ last_heartbeat_at: new Date().toISOString() })
+        .eq('id', streamRowId)
+        .eq('status', 'live')
+        .then(() => undefined);
+    };
+
+    heartbeat();
+    const interval = window.setInterval(heartbeat, 25_000);
+    return () => window.clearInterval(interval);
+  }, [streamRowId, agora.isInRoom, agora.isHost]);
+
+  // If the host closes/navigates away without pressing End, clear the live flag immediately.
+  useEffect(() => {
+    return () => {
+      const id = streamRowIdRef.current;
+      if (!id || !isHostRef.current) return;
+      supabase
+        .from('live_streams')
+        .update({ status: 'ended', ended_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString() })
+        .eq('id', id)
+        .then(() => undefined);
+    };
+  }, []);
+
   // Sync viewer count to live_streams
   useEffect(() => {
-    if (!streamRowId) return;
-    supabase.from('live_streams').update({ viewer_count: agora.viewerCount }).eq('id', streamRowId);
-  }, [agora.viewerCount, streamRowId]);
+    if (!streamRowId || !agora.isHost) return;
+    supabase.from('live_streams').update({ viewer_count: agora.viewerCount, last_heartbeat_at: new Date().toISOString() }).eq('id', streamRowId).eq('status', 'live');
+  }, [agora.viewerCount, streamRowId, agora.isHost]);
 
   return (
     <motion.div

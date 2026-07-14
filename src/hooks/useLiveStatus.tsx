@@ -7,7 +7,6 @@ export interface LiveInfo {
   channelName?: string;
 }
 
-const cache = new Map<string, LiveInfo>();
 let indicatorsEnabled: boolean | null = null;
 
 async function loadToggle(): Promise<boolean> {
@@ -26,7 +25,7 @@ async function loadToggle(): Promise<boolean> {
   return indicatorsEnabled;
 }
 
-/** Real-time live-status for a list of user ids. Verified through live_streams/live_rooms (G3142 kill-switch sets status!=live). */
+/** Real-time live-status for a list of user ids. Only fresh, heartbeating streams count as live. */
 export function useLiveStatus(userIds: string[] | undefined) {
   const [map, setMap] = useState<Record<string, LiveInfo>>({});
   const key = (userIds || []).filter(Boolean).sort().join(',');
@@ -39,10 +38,21 @@ export function useLiveStatus(userIds: string[] | undefined) {
     const fetchAll = async () => {
       const enabled = await loadToggle();
       if (!enabled) { if (!cancelled) setMap({}); return; }
+      const freshSince = new Date(Date.now() - 90_000).toISOString();
 
       const [streams, rooms] = await Promise.all([
-        supabase.from('live_streams').select('host_id, channel_name, id').in('host_id', ids).eq('status', 'live'),
-        supabase.from('live_rooms').select('host_id, id').in('host_id', ids).eq('status', 'live'),
+        supabase
+          .from('live_streams')
+          .select('host_id, channel_name, id, last_heartbeat_at')
+          .in('host_id', ids)
+          .eq('status', 'live')
+          .gt('last_heartbeat_at', freshSince),
+        supabase
+          .from('live_rooms')
+          .select('host_id, id, last_heartbeat_at')
+          .in('host_id', ids)
+          .eq('status', 'live')
+          .gt('last_heartbeat_at', freshSince),
       ]);
       if (cancelled) return;
       const next: Record<string, LiveInfo> = {};
@@ -53,7 +63,6 @@ export function useLiveStatus(userIds: string[] | undefined) {
       (rooms.data || []).forEach((r: any) => {
         if (!next[r.host_id]?.isLive) next[r.host_id] = { isLive: true, roomId: r.id };
       });
-      Object.entries(next).forEach(([k, v]) => cache.set(k, v));
       setMap(next);
     };
     fetchAll();
@@ -62,6 +71,7 @@ export function useLiveStatus(userIds: string[] | undefined) {
       .channel(`live-status-${key.slice(0, 30)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'live_streams' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'live_rooms' }, fetchAll)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, fetchAll)
       .subscribe();
     return () => { cancelled = true; supabase.removeChannel(ch); };
   }, [key]);
@@ -71,5 +81,5 @@ export function useLiveStatus(userIds: string[] | undefined) {
 
 export function useLiveStatusSingle(userId?: string): LiveInfo {
   const m = useLiveStatus(userId ? [userId] : []);
-  return (userId && m[userId]) || cache.get(userId || '') || { isLive: false };
+  return (userId && m[userId]) || { isLive: false };
 }
