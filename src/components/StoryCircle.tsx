@@ -42,8 +42,8 @@ const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, hasVie
               aria-hidden
               className="absolute -inset-[3px] rounded-full"
               style={{
-                background: 'conic-gradient(from 0deg, #39FF14, #08A045, #39FF14)',
-                boxShadow: '0 0 14px rgba(57,255,20,0.55), 0 0 28px rgba(57,255,20,0.3)',
+                background: 'conic-gradient(from 0deg, #FF1744, #FF4081, #F50057, #FF1744)',
+                boxShadow: '0 0 14px rgba(255,23,68,0.6), 0 0 28px rgba(245,0,87,0.35)',
                 willChange: 'transform',
               }}
               animate={{ rotate: 360 }}
@@ -54,7 +54,7 @@ const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, hasVie
               className="absolute -inset-[3px] rounded-full pointer-events-none"
               animate={{ opacity: [0.35, 0.9, 0.35] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-              style={{ boxShadow: '0 0 0 2px rgba(57,255,20,0.55)' }}
+              style={{ boxShadow: '0 0 0 2px rgba(255,64,129,0.55)' }}
             />
           </>
         )}
@@ -72,14 +72,20 @@ const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, hasVie
           <motion.div
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="absolute left-1/2 -translate-x-1/2 -bottom-1 px-1.5 py-[1px] rounded-md text-[9px] font-bold tracking-wider text-white z-10"
+            className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 px-2 py-[2px] rounded-md text-[10px] font-black tracking-wider text-white z-10"
             style={{
-              background: '#FF1744',
-              boxShadow: '0 2px 8px rgba(255,23,68,0.55), 0 0 0 1.5px #000',
+              background: 'linear-gradient(135deg, #FF1744, #F50057)',
+              boxShadow: '0 2px 10px rgba(255,23,68,0.6), 0 0 0 1.5px #000',
               fontFamily: 'system-ui, sans-serif',
             }}
           >
-            LIVE
+            <motion.span
+              className="inline-block"
+              animate={{ opacity: [1, 0.6, 1] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              LIVE
+            </motion.span>
           </motion.div>
         )}
 

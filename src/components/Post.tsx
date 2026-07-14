@@ -19,6 +19,7 @@ import AffiliationBadge from '@/components/AffiliationBadge';
 import { useAffiliation } from '@/hooks/useAffiliation';
 import PostMusicBar from '@/components/PostMusicBar';
 import type { PostSize } from '@/hooks/usePostSize';
+import LiveRingOverlay from '@/components/live/LiveRingOverlay';
 
 
 interface PostProps {
@@ -353,13 +354,16 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           className="flex items-center gap-3 cursor-pointer group"
           onClick={() => navigate(`/profile/${userId}`)}
         >
-          <img 
-            src={userAvatar} 
-            alt={`${username} profile picture`}
-            className={`rounded-full object-cover ring-[1.5px] ring-white/10 transition-all group-hover:ring-white/20 ${
-              displaySize === 'compact' ? 'w-7 h-7' : displaySize === 'large' ? 'w-12 h-12' : 'w-10 h-10'
-            }`}
-          />
+          <div className="relative">
+            <img 
+              src={userAvatar} 
+              alt={`${username} profile picture`}
+              className={`rounded-full object-cover ring-[1.5px] ring-white/10 transition-all group-hover:ring-white/20 ${
+                displaySize === 'compact' ? 'w-7 h-7' : displaySize === 'large' ? 'w-12 h-12' : 'w-10 h-10'
+              }`}
+            />
+            <LiveRingOverlay userId={userId} shape="full" inset={3} />
+          </div>
           <div>
             <div className="flex items-center gap-1.5">
               <p className="font-semibold text-white/95 text-sm tracking-wide">{username}</p>
