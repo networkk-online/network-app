@@ -102,7 +102,8 @@ const UserProfile = ({
   isVerified = false,
   website,
   socialLinks = {},
-  affiliatedCompanyId
+  affiliatedCompanyId,
+  accountType,
 }: UserProfileProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
