@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Ban, Trash2, Bell, Users, ChevronLeft, ChevronRight, ShieldCheck, Eye, EyeOff, Loader2, BadgeCheck, Lock, Unlock } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -85,6 +86,40 @@ const VaultUserDirectory = () => {
     }
     toast({ title: '✅ تم تحديث الشارة', description: badge === 'none' ? 'تمت الإزالة' : BADGE_META[badge].label });
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, verification_type: vType, is_verified: badge !== 'none' } : u));
+  };
+
+  // Account type helpers — auto-derive verification color from account type when verified
+  const accountTypeToBadge = (acc?: string | null): BadgeType => {
+    if (acc === 'business') return 'gold';
+    if (acc === 'government') return 'gray';
+    return 'blue'; // personal/creator/default => blue
+  };
+
+  const updateAccountType = async (u: any, newType: 'personal' | 'business' | 'government') => {
+    const patch: any = { account_type: newType };
+    // If already verified, re-color verification to match new account type
+    if (u.is_verified) {
+      patch.verification_type = toVerificationType(accountTypeToBadge(newType));
+    }
+    const { error } = await supabase.from('profiles').update(patch).eq('id', u.id);
+    if (error) {
+      toast({ title: '❌ فشل التحديث', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: '✅ تم تحديث نوع الحساب', description: newType });
+    setUsers(prev => prev.map(x => x.id === u.id ? { ...x, ...patch } : x));
+  };
+
+  const toggleVerified = async (u: any, next: boolean) => {
+    const patch: any = { is_verified: next };
+    patch.verification_type = next ? toVerificationType(accountTypeToBadge(u.account_type)) : null;
+    const { error } = await supabase.from('profiles').update(patch).eq('id', u.id);
+    if (error) {
+      toast({ title: '❌ فشل التحديث', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: next ? '✅ تم توثيق الحساب' : '🚫 تم إلغاء التوثيق' });
+    setUsers(prev => prev.map(x => x.id === u.id ? { ...x, ...patch } : x));
   };
 
   const toggleBan = async (u: any) => {
