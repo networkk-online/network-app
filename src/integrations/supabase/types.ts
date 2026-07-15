@@ -4102,6 +4102,25 @@ export type Database = {
       }
     }
     Functions: {
+      admin_list_users: {
+        Args: { _limit?: number; _offset?: number; _search?: string }
+        Returns: {
+          account_type: string
+          avatar_url: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          is_banned: boolean
+          is_suspended: boolean
+          is_verified: boolean
+          phone_number: string
+          role: string
+          total_count: number
+          username: string
+          verification_type: string
+        }[]
+      }
       calculate_fame_score: { Args: { user_id: string }; Returns: number }
       can_add_participant_to_conversation: {
         Args: { p_conversation_id: string; p_user_id: string }
