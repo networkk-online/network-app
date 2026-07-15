@@ -297,10 +297,24 @@ const VaultUserDirectory = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-gray-400 text-sm font-mono hidden md:table-cell">
+                    <TableCell className="text-gray-300 text-xs font-mono hidden lg:table-cell" dir="ltr">
+                      {u.email || <span className="text-gray-600">—</span>}
+                    </TableCell>
+                    <TableCell className="text-gray-400 text-sm font-mono hidden md:table-cell" dir="ltr">
                       {u.phone_number || '-'}
                     </TableCell>
+                    <TableCell className="text-gray-400 text-xs hidden lg:table-cell">
+                      {u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB') : '—'}
+                    </TableCell>
                     <TableCell>
+                      {u.role === 'admin' ? (
+                        <Badge className="bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 text-[10px]">Admin</Badge>
+                      ) : u.role === 'moderator' ? (
+                        <Badge className="bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px]">Moderator</Badge>
+                      ) : (
+                        <Badge className="bg-white/[0.04] text-gray-400 border border-white/10 text-[10px]">User</Badge>
+                      )}
+                    </TableCell>
                       <Select
                         value={currentAccountType === 'creator' ? 'personal' : currentAccountType}
                         onValueChange={(val) => updateAccountType(u, val as any)}
