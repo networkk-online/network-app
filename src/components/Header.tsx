@@ -1,4 +1,4 @@
-import { MessageCircle, Search, Video, Settings, LogOut, Bell, LayoutGrid } from 'lucide-react';
+import { MessageCircle, Search, Video, Settings, LogOut, Bell, LayoutGrid, Home, Compass, Clapperboard, Film, PlusSquare, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -111,6 +111,14 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
     navigate('/login');
   };
 
+  const primaryNavigationItems = [
+    { icon: Home, label: 'الرئيسية', path: '/' },
+    { icon: Compass, label: 'استكشف', path: '/explore' },
+    { icon: Clapperboard, label: 'سينما', path: '/network-tv' },
+    { icon: Film, label: 'ريلز', path: '/shorts' },
+    { icon: PlusSquare, label: 'إنشاء', path: '/create-post' },
+  ];
+
   const navigationItems = [
     { icon: MessageCircle, label: 'الرسائل', path: '/messages', showBadge: true },
     { icon: Video, label: 'البث', path: '/broadcast' },
@@ -160,6 +168,11 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-1">
+            {primaryNavigationItems.map((item) => (
+              <Button key={item.path} variant="ghost" size="sm" aria-label={item.label} className="p-2 rounded-full hover:bg-white/[0.04] interactive-element" onClick={() => navigate(item.path)}>
+                <item.icon className="w-5 h-5 text-white/60" strokeWidth={1.4} />
+              </Button>
+            ))}
             <Button variant="ghost" size="sm" aria-label="Notifications" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/notifications')}>
               <Bell className="w-5 h-5 text-white/60" strokeWidth={1.4} />
               {unreadNotifications > 0 && (
@@ -179,9 +192,17 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
               </Button>
             ))}
             {user ? (
-              <Button variant="ghost" size="sm" aria-label="Log out" className="p-2 rounded-full hover:bg-destructive/10 interactive-element" onClick={handleLogout}>
-                <LogOut className="w-5 h-5 text-destructive/70" strokeWidth={1.4} />
-              </Button>
+              <>
+                <Button variant="ghost" size="sm" aria-label="Profile" className="p-2 rounded-full hover:bg-white/[0.04] interactive-element" onClick={() => navigate('/profile')}>
+                  <Avatar className="w-5 h-5 ring-1 ring-white/20">
+                    <AvatarImage src={profile?.avatar_url || user.user_metadata?.avatar_url} />
+                    <AvatarFallback className="bg-white/5"><User className="w-3 h-3 text-white/50" /></AvatarFallback>
+                  </Avatar>
+                </Button>
+                <Button variant="ghost" size="sm" aria-label="Log out" className="p-2 rounded-full hover:bg-destructive/10 interactive-element" onClick={handleLogout}>
+                  <LogOut className="w-5 h-5 text-destructive/70" strokeWidth={1.4} />
+                </Button>
+              </>
             ) : (
               <Button variant="ghost" size="sm" aria-label="Log in" className="p-2 rounded-full hover:bg-white/[0.04] interactive-element" onClick={() => navigate('/login')}>
                 <LogOut className="w-5 h-5 text-white/60" strokeWidth={1.4} />
