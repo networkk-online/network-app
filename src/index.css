@@ -509,66 +509,35 @@
 }
 
 /* ═══════════════════════════════
-   Mobile / Capacitor Native Hardening
+   Mobile / Capacitor — Minimal
+   (kept intentionally light to avoid interfering with
+    Reels snap-scroll, Swiper, and native browser scrolling)
    ═══════════════════════════════ */
 
-/* 1) No horizontal scroll — ever */
-html, body, #root {
-  max-width: 100vw;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-/* 2) Smooth scroll with normal browser touch/mouse behavior */
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
+/* Prevent horizontal page scroll only, leave vertical fully native */
 html, body {
-  overscroll-behavior-y: auto;
-  overscroll-behavior-x: auto;
-  touch-action: auto;
+  overflow-x: hidden;
 }
 body {
-  -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 3) Minimum 44x44 touch targets on real touch devices */
-@media (hover: none) and (pointer: coarse) {
-  button, a[role="button"], [role="button"], input[type="button"], input[type="submit"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* 4) Native app running under Capacitor — get true safe areas + no selection */
-html.capacitor-native, html.capacitor-native body {
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-}
-html.capacitor-native input,
-html.capacitor-native textarea,
-html.capacitor-native [contenteditable="true"] {
-  user-select: text;
-  -webkit-user-select: text;
-}
+/* Capacitor native shell: safe-area padding only */
 html.capacitor-native body {
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* 5) Utility: guaranteed safe bottom padding for pages with fixed bottom nav */
+/* Utility: guaranteed safe bottom padding for pages with fixed bottom nav */
 .pb-safe-nav {
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
 }
 
-/* 6) Prevent iOS input zoom (fonts must be ≥16px on focus) */
+/* Prevent iOS input zoom (fonts must be ≥16px on focus) */
 @media (max-width: 767px) {
   input, select, textarea {
     font-size: 16px;
   }
 }
+
 
