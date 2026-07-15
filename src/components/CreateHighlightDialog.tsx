@@ -10,7 +10,7 @@ import { Upload } from 'lucide-react';
 interface CreateHighlightDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  userId: string;
+  userId?: string;
   onSuccess?: () => void;
   storyId?: string;
   initialHighlight?: {
@@ -56,6 +56,7 @@ export const CreateHighlightDialog = ({
 
   const uploadCoverImage = async () => {
     if (!coverImage) return coverPreview || '';
+    if (!userId) throw new Error('Missing user id');
 
     const fileExt = coverImage.name.split('.').pop();
     const fileName = `${userId}/${Date.now()}.${fileExt}`;
@@ -74,6 +75,15 @@ export const CreateHighlightDialog = ({
   };
 
   const handleSave = async () => {
+    if (!userId) {
+      toast({
+        title: "خطأ",
+        description: "يجب تسجيل الدخول لإدارة الهايلايت",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!title.trim()) {
       toast({
         title: "خطأ",

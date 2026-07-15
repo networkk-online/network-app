@@ -167,7 +167,7 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
           </div>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1">
             {primaryNavigationItems.map((item) => (
               <Button key={item.path} variant="ghost" size="sm" aria-label={item.label} className="p-2 rounded-full hover:bg-white/[0.04] interactive-element" onClick={() => navigate(item.path)}>
                 <item.icon className="w-5 h-5 text-white/60" strokeWidth={1.4} />
@@ -211,7 +211,7 @@ const Header = ({ postSize, onPostSizeChange }: HeaderProps = {}) => {
           </div>
 
           {/* Mobile Nav */}
-          <div className="flex lg:hidden items-center gap-1">
+          <div className="flex md:hidden items-center gap-1">
             <Button variant="ghost" size="sm" aria-label="Notifications" className="p-2 rounded-full hover:bg-white/[0.04] relative interactive-element" onClick={() => navigate('/notifications')}>
               <Bell className="w-5 h-5 text-white/60" strokeWidth={1.4} />
               {unreadNotifications > 0 && (
