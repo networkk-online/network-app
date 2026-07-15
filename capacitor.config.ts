@@ -35,7 +35,16 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     scrollEnabled: true,
+    // Disable overscroll bounce so the app feels native
+    limitsNavigationsToAppBoundDomains: true,
+  },
+  server: {
+    // Ensure SPA deep-links resolve to index.html when loading local files
+    androidScheme: 'https',
+    iosScheme: 'https',
+    cleartext: false,
   },
 };
 
 export default config;
+
