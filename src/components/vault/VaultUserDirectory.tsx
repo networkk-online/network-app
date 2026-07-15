@@ -61,15 +61,19 @@ const VaultUserDirectory = () => {
   const [deleting, setDeleting] = useState(false);
 
   const fetchUsers = async () => {
-    let query = supabase.from('profiles').select('*', { count: 'exact' });
-    if (search.trim()) {
-      query = query.or(`username.ilike.%${search}%,full_name.ilike.%${search}%,phone_number.ilike.%${search}%`);
+    const { data, error } = await (supabase as any).rpc('admin_list_users', {
+      _search: search.trim() || null,
+      _limit: PAGE_SIZE,
+      _offset: page * PAGE_SIZE,
+    });
+    if (error) {
+      toast({ title: '❌ فشل التحميل', description: error.message, variant: 'destructive' });
+      setUsers([]);
+      setTotal(0);
+      return;
     }
-    const { data, count } = await query
-      .order('created_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
     setUsers(data || []);
-    setTotal(count || 0);
+    setTotal(data && data.length > 0 ? Number(data[0].total_count || 0) : 0);
   };
 
   useEffect(() => { fetchUsers(); }, [page, search]);
