@@ -155,9 +155,9 @@ const BottomNav = () => {
       )}
 
       {/* Account Switcher Popup */}
-      <AccountSwitcher isOpen={showSwitcher} onClose={() => setShowSwitcher(false)} anchorPosition="bottom-nav" />
+      <AccountSwitcher key="account-switcher-popup" isOpen={showSwitcher} onClose={() => setShowSwitcher(false)} anchorPosition="bottom-nav" />
       {/* Create Sidebar */}
-      <CreateSidebar isOpen={showCreateMenu} onClose={() => setShowCreateMenu(false)} />
+      <CreateSidebar key="create-sidebar-popup" isOpen={showCreateMenu} onClose={() => setShowCreateMenu(false)} />
     </AnimatePresence>
   );
 };
