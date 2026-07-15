@@ -315,6 +315,7 @@ const VaultUserDirectory = () => {
                         <Badge className="bg-white/[0.04] text-gray-400 border border-white/10 text-[10px]">User</Badge>
                       )}
                     </TableCell>
+                    <TableCell>
                       <Select
                         value={currentAccountType === 'creator' ? 'personal' : currentAccountType}
                         onValueChange={(val) => updateAccountType(u, val as any)}
