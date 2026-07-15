@@ -240,7 +240,7 @@ const VaultUserDirectory = () => {
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
-            placeholder="بحث بالاسم، المستخدم، أو الهاتف..."
+            placeholder="بحث بالاسم، المستخدم، الإيميل، أو الهاتف..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0); }}
             className="bg-white/5 border-white/10 text-white pr-10"
