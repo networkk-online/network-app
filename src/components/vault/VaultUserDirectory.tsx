@@ -61,15 +61,19 @@ const VaultUserDirectory = () => {
   const [deleting, setDeleting] = useState(false);
 
   const fetchUsers = async () => {
-    let query = supabase.from('profiles').select('*', { count: 'exact' });
-    if (search.trim()) {
-      query = query.or(`username.ilike.%${search}%,full_name.ilike.%${search}%,phone_number.ilike.%${search}%`);
+    const { data, error } = await (supabase as any).rpc('admin_list_users', {
+      _search: search.trim() || null,
+      _limit: PAGE_SIZE,
+      _offset: page * PAGE_SIZE,
+    });
+    if (error) {
+      toast({ title: '❌ فشل التحميل', description: error.message, variant: 'destructive' });
+      setUsers([]);
+      setTotal(0);
+      return;
     }
-    const { data, count } = await query
-      .order('created_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
     setUsers(data || []);
-    setTotal(count || 0);
+    setTotal(data && data.length > 0 ? Number(data[0].total_count || 0) : 0);
   };
 
   useEffect(() => { fetchUsers(); }, [page, search]);
@@ -236,7 +240,7 @@ const VaultUserDirectory = () => {
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
-            placeholder="بحث بالاسم، المستخدم، أو الهاتف..."
+            placeholder="بحث بالاسم، المستخدم، الإيميل، أو الهاتف..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0); }}
             className="bg-white/5 border-white/10 text-white pr-10"
@@ -259,7 +263,10 @@ const VaultUserDirectory = () => {
             <TableHeader>
               <TableRow className="border-white/10">
                 <TableHead className="text-right text-gray-400">المستخدم</TableHead>
+                <TableHead className="text-right text-gray-400 hidden lg:table-cell">البريد الإلكتروني</TableHead>
                 <TableHead className="text-right text-gray-400 hidden md:table-cell">الهاتف</TableHead>
+                <TableHead className="text-right text-gray-400 hidden lg:table-cell">تاريخ التسجيل</TableHead>
+                <TableHead className="text-right text-gray-400">الدور</TableHead>
                 <TableHead className="text-right text-gray-400">نوع الحساب</TableHead>
                 <TableHead className="text-right text-gray-400">توثيق</TableHead>
                 <TableHead className="text-right text-gray-400">الشارة</TableHead>
@@ -290,8 +297,23 @@ const VaultUserDirectory = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-gray-400 text-sm font-mono hidden md:table-cell">
+                    <TableCell className="text-gray-300 text-xs font-mono hidden lg:table-cell" dir="ltr">
+                      {u.email || <span className="text-gray-600">—</span>}
+                    </TableCell>
+                    <TableCell className="text-gray-400 text-sm font-mono hidden md:table-cell" dir="ltr">
                       {u.phone_number || '-'}
+                    </TableCell>
+                    <TableCell className="text-gray-400 text-xs hidden lg:table-cell">
+                      {u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB') : '—'}
+                    </TableCell>
+                    <TableCell>
+                      {u.role === 'admin' ? (
+                        <Badge className="bg-[#39FF14]/15 text-[#39FF14] border border-[#39FF14]/30 text-[10px]">Admin</Badge>
+                      ) : u.role === 'moderator' ? (
+                        <Badge className="bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px]">Moderator</Badge>
+                      ) : (
+                        <Badge className="bg-white/[0.04] text-gray-400 border border-white/10 text-[10px]">User</Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Select
@@ -381,7 +403,7 @@ const VaultUserDirectory = () => {
               })}
               {users.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-gray-500">لا يوجد مستخدمون</TableCell>
+                  <TableCell colSpan={10} className="text-center py-12 text-gray-500">لا يوجد مستخدمون</TableCell>
                 </TableRow>
               )}
             </TableBody>
