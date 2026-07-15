@@ -36,6 +36,7 @@ const Profile = () => {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [highlights, setHighlights] = useState<any[]>([]);
   const [showCreateHighlight, setShowCreateHighlight] = useState(false);
+  const [editingHighlight, setEditingHighlight] = useState<any | null>(null);
   const [selectedHighlightId, setSelectedHighlightId] = useState<string | null>(null);
   const [showHighlightViewer, setShowHighlightViewer] = useState(false);
   const [showStoryViewer, setShowStoryViewer] = useState(false);
@@ -402,6 +403,26 @@ const Profile = () => {
     setShowHighlightViewer(true);
   };
 
+  const handleDeleteHighlight = async (highlight: any) => {
+    if (!user?.id || !highlight?.id) return;
+    const confirmed = window.confirm(`هل تريد حذف الهايلايت "${highlight.title}"؟`);
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from('highlights')
+      .delete()
+      .eq('id', highlight.id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast({ title: 'خطأ', description: 'فشل حذف الهايلايت', variant: 'destructive' });
+      return;
+    }
+
+    setHighlights((prev) => prev.filter((item) => item.id !== highlight.id));
+    toast({ title: 'تم الحذف', description: 'تم حذف الهايلايت بنجاح' });
+  };
+
   const handleProfileUpdate = async (data: any) => {
     if (!user) return;
 
@@ -545,12 +566,42 @@ const Profile = () => {
                     )}
                     
                     {highlights.map((highlight) => (
-                      <div key={highlight.id} className="flex-shrink-0">
+                      <div key={highlight.id} className="relative flex-shrink-0 group">
                         <HighlightCircle
                           title={highlight.title}
                           coverImage={highlight.cover_image}
                           onClick={() => handleHighlightClick(highlight.id)}
                         />
+                        {isOwnProfile && (
+                          <div className="absolute -top-2 -right-2 flex gap-1">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="secondary"
+                              aria-label="تعديل الهايلايت"
+                              className="h-8 w-8 rounded-full border border-white/10 bg-black/80 hover:bg-primary/20"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setEditingHighlight(highlight);
+                              }}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="destructive"
+                              aria-label="حذف الهايلايت"
+                              className="h-8 w-8 rounded-full"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleDeleteHighlight(highlight);
+                              }}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -961,6 +1012,21 @@ const Profile = () => {
           userId={user?.id}
           onSuccess={() => {
             loadHighlights(user?.id);
+          }}
+        />
+      )}
+
+      {isOwnProfile && editingHighlight && (
+        <CreateHighlightDialog
+          open={Boolean(editingHighlight)}
+          onOpenChange={(open) => {
+            if (!open) setEditingHighlight(null);
+          }}
+          userId={user?.id || ''}
+          initialHighlight={editingHighlight}
+          onSuccess={() => {
+            loadHighlights(user?.id);
+            setEditingHighlight(null);
           }}
         />
       )}
