@@ -403,7 +403,7 @@ const VaultUserDirectory = () => {
               })}
               {users.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-gray-500">لا يوجد مستخدمون</TableCell>
+                  <TableCell colSpan={10} className="text-center py-12 text-gray-500">لا يوجد مستخدمون</TableCell>
                 </TableRow>
               )}
             </TableBody>
