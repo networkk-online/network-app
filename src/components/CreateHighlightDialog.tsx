@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -13,6 +13,11 @@ interface CreateHighlightDialogProps {
   userId: string;
   onSuccess?: () => void;
   storyId?: string;
+  initialHighlight?: {
+    id: string;
+    title: string;
+    cover_image?: string | null;
+  } | null;
 }
 
 export const CreateHighlightDialog = ({ 
@@ -20,13 +25,22 @@ export const CreateHighlightDialog = ({
   onOpenChange, 
   userId, 
   onSuccess,
-  storyId 
+  storyId,
+  initialHighlight,
 }: CreateHighlightDialogProps) => {
   const [title, setTitle] = useState('');
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const isEditing = Boolean(initialHighlight?.id);
+
+  useEffect(() => {
+    if (!open) return;
+    setTitle(initialHighlight?.title || '');
+    setCoverImage(null);
+    setCoverPreview(initialHighlight?.cover_image || '');
+  }, [open, initialHighlight?.id, initialHighlight?.title, initialHighlight?.cover_image]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,7 +54,26 @@ export const CreateHighlightDialog = ({
     }
   };
 
-  const handleCreate = async () => {
+  const uploadCoverImage = async () => {
+    if (!coverImage) return coverPreview || '';
+
+    const fileExt = coverImage.name.split('.').pop();
+    const fileName = `${userId}/${Date.now()}.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('stories')
+      .upload(fileName, coverImage);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('stories')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  };
+
+  const handleSave = async () => {
     if (!title.trim()) {
       toast({
         title: "خطأ",
@@ -52,24 +85,28 @@ export const CreateHighlightDialog = ({
 
     setLoading(true);
     try {
-      let coverImageUrl = '';
+      const coverImageUrl = await uploadCoverImage();
 
-      // Upload cover image if provided
-      if (coverImage) {
-        const fileExt = coverImage.name.split('.').pop();
-        const fileName = `${userId}/${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('stories')
-          .upload(fileName, coverImage);
+      if (isEditing && initialHighlight) {
+        const { error: updateError } = await supabase
+          .from('highlights')
+          .update({
+            title: title.trim(),
+            cover_image: coverImageUrl || null,
+          })
+          .eq('id', initialHighlight.id)
+          .eq('user_id', userId);
 
-        if (uploadError) throw uploadError;
+        if (updateError) throw updateError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('stories')
-          .getPublicUrl(fileName);
+        toast({
+          title: "تم التعديل",
+          description: "تم تحديث الهايلايت بنجاح",
+        });
 
-        coverImageUrl = publicUrl;
+        onOpenChange(false);
+        onSuccess?.();
+        return;
       }
 
       // Create highlight
@@ -108,10 +145,10 @@ export const CreateHighlightDialog = ({
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
-      console.error('Error creating highlight:', error);
+      console.error('Error saving highlight:', error);
       toast({
         title: "خطأ",
-        description: "فشل إنشاء الهايلايت",
+        description: isEditing ? "فشل تعديل الهايلايت" : "فشل إنشاء الهايلايت",
         variant: "destructive",
       });
     } finally {
@@ -123,7 +160,7 @@ export const CreateHighlightDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-background border-border">
         <DialogHeader>
-          <DialogTitle>إنشاء هايلايت جديد</DialogTitle>
+          <DialogTitle>{isEditing ? 'تعديل الهايلايت' : 'إنشاء هايلايت جديد'}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
@@ -145,7 +182,7 @@ export const CreateHighlightDialog = ({
                 <div className="relative w-24 h-24 mx-auto">
                   <img 
                     src={coverPreview} 
-                    alt="Preview" 
+                    alt="معاينة غلاف الهايلايت" 
                     className="w-full h-full object-cover rounded-full"
                   />
                   <Button
@@ -184,11 +221,11 @@ export const CreateHighlightDialog = ({
               إلغاء
             </Button>
             <Button
-              onClick={handleCreate}
+              onClick={handleSave}
               disabled={loading}
               className="flex-1"
             >
-              {loading ? 'جاري الإنشاء...' : 'إنشاء'}
+              {loading ? 'جاري الحفظ...' : isEditing ? 'حفظ التعديل' : 'إنشاء'}
             </Button>
           </div>
         </div>
