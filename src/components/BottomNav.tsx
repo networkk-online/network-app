@@ -52,6 +52,7 @@ const BottomNav = () => {
     <AnimatePresence>
       {!shouldHideNav && (
         <motion.nav
+          key="mobile-bottom-nav"
           initial={{ y: 100 }}
           animate={{ y: 0 }}
           exit={{ y: 100 }}
@@ -76,7 +77,7 @@ const BottomNav = () => {
                   >
                     {active && (
                       <motion.div
-                        layoutId="navGlow"
+                        layoutId={`navGlow-${item.path}`}
                         className="absolute inset-0 rounded-full"
                         style={{ 
                           background: 'radial-gradient(circle, hsla(144, 90%, 33%, 0.12) 0%, transparent 70%)',
@@ -118,7 +119,7 @@ const BottomNav = () => {
               >
                 {isActive('/profile') && (
                   <motion.div
-                    layoutId="navGlow"
+                    layoutId="navGlow-profile"
                     className="absolute inset-0 rounded-full"
                     style={{ 
                       background: 'radial-gradient(circle, hsla(144, 90%, 33%, 0.12) 0%, transparent 70%)',
