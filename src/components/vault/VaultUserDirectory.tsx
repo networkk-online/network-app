@@ -263,7 +263,10 @@ const VaultUserDirectory = () => {
             <TableHeader>
               <TableRow className="border-white/10">
                 <TableHead className="text-right text-gray-400">المستخدم</TableHead>
+                <TableHead className="text-right text-gray-400 hidden lg:table-cell">البريد الإلكتروني</TableHead>
                 <TableHead className="text-right text-gray-400 hidden md:table-cell">الهاتف</TableHead>
+                <TableHead className="text-right text-gray-400 hidden lg:table-cell">تاريخ التسجيل</TableHead>
+                <TableHead className="text-right text-gray-400">الدور</TableHead>
                 <TableHead className="text-right text-gray-400">نوع الحساب</TableHead>
                 <TableHead className="text-right text-gray-400">توثيق</TableHead>
                 <TableHead className="text-right text-gray-400">الشارة</TableHead>
