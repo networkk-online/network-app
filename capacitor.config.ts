@@ -44,6 +44,7 @@ const config: CapacitorConfig = {
     iosScheme: 'https',
     cleartext: false,
   },
-
+};
 
 export default config;
+
