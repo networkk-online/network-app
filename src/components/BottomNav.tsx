@@ -56,7 +56,7 @@ const BottomNav = () => {
           animate={{ y: 0 }}
           exit={{ y: 100 }}
           transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-          className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom"
+          className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom md:hidden"
         >
           <div className="mx-4 mb-3 rounded-full border border-white/[0.08] bg-black/60 backdrop-blur-[30px]"
                style={{ boxShadow: '0 -4px 30px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.06)' }}>
