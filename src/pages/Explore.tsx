@@ -70,6 +70,24 @@ const Explore = () => {
     fetchPinned();
   }, []);
 
+  // Fetch reels for the reels category
+  useEffect(() => {
+    if (activeCategory !== 'reels') return;
+    let cancelled = false;
+    (async () => {
+      setReelsLoading(true);
+      const { data } = await supabase
+        .from('reels')
+        .select('id, video_url, thumbnail_url, caption, likes_count, views_count, user_id')
+        .order('created_at', { ascending: false })
+        .limit(60);
+      if (!cancelled) {
+        setReels(data || []);
+        setReelsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+
   const fetchPosts = useCallback(async (offset = 0, append = false) => {
     if (offset === 0) setLoading(true);
     else setLoadingMore(true);
