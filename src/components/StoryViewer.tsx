@@ -586,7 +586,12 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
               </PopoverContent>
             </Popover>
           )}
-          <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+          <button
+            onClick={onClose}
+            aria-label="إغلاق"
+            className="relative text-white hover:bg-white/20 p-2 rounded-full transition-colors"
+            style={{ zIndex: 50, pointerEvents: 'auto' }}
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
