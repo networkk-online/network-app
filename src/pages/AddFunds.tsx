@@ -540,3 +540,26 @@ function Row({ label, value, sub, highlight }: { label: string; value: string; s
     </div>
   );
 }
+
+function MethodRow({ label, gateway, lang }: { label: string; gateway: Gateway; lang: 'ar' | 'en' }) {
+  const logo = getGatewayLogo(gateway.key, gateway.name_en);
+  const name = lang === 'ar' ? gateway.name_ar : gateway.name_en;
+  return (
+    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+      <span className="text-xs uppercase tracking-widest text-white/40">{label}</span>
+      <span className="flex items-center gap-2 font-bold text-white">
+        {logo ? (
+          <span
+            className="w-7 h-7 rounded-md flex items-center justify-center border border-white/10 shrink-0"
+            style={{ background: logo.bg || '#fff' }}
+          >
+            <img src={logo.url} alt={logo.alt} className="max-w-[80%] max-h-[70%] object-contain" />
+          </span>
+        ) : gateway.icon ? (
+          <span className="text-lg">{gateway.icon}</span>
+        ) : null}
+        <span>{name}</span>
+      </span>
+    </div>
+  );
+}
