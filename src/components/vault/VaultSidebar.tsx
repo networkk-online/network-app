@@ -17,6 +17,15 @@ interface VaultSidebarProps {
 
 const menuGroups = [
   {
+    title: 'المالية',
+    items: [
+      { id: 'payment-gateways', label: 'بوابات الدفع', icon: CreditCard },
+      { id: 'gems-pricing', label: 'تسعير الجواهر', icon: Gift },
+      { id: 'finance', label: 'المالية والأصول', icon: Wallet },
+      { id: 'gifts', label: 'أكواد الهدايا', icon: Gift },
+    ],
+  },
+  {
     title: 'القيادة',
     items: [
       { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard },
@@ -40,14 +49,6 @@ const menuGroups = [
       { id: 'reels', label: 'إدارة الريلز', icon: Film },
       { id: 'live', label: 'مراقبة البث', icon: Radio },
       { id: 'matches', label: 'المباريات المباشرة', icon: Trophy },
-    ],
-  },
-  {
-    title: 'المالية',
-    items: [
-      { id: 'finance', label: 'المالية والأصول', icon: Wallet },
-      { id: 'payment-gateways', label: 'بوابات الدفع', icon: CreditCard },
-      { id: 'gifts', label: 'أكواد الهدايا', icon: Gift },
     ],
   },
   {

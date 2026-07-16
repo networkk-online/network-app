@@ -47,6 +47,8 @@ const isTallItem = (index: number) => {
 const Explore = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<ExplorePost[]>([]);
+  const [reels, setReels] = useState<any[]>([]);
+  const [reelsLoading, setReelsLoading] = useState(false);
   const [pinnedPostIds, setPinnedPostIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -67,6 +69,27 @@ const Explore = () => {
     };
     fetchPinned();
   }, []);
+
+  // Fetch reels for the reels category
+  useEffect(() => {
+    if (activeCategory !== 'reels') return;
+    let cancelled = false;
+    (async () => {
+      setReelsLoading(true);
+      const { data } = await supabase
+        .from('reels')
+        .select('id, video_url, thumbnail_url, caption, likes_count, views_count, user_id')
+        .order('created_at', { ascending: false })
+        .limit(60);
+      if (!cancelled) {
+        setReels(data || []);
+        setReelsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeCategory]);
+
+
 
   const fetchPosts = useCallback(async (offset = 0, append = false) => {
     if (offset === 0) setLoading(true);
@@ -284,7 +307,46 @@ const Explore = () => {
 
       {/* Instagram 3-Column Grid */}
       <main className="pb-24">
-        {loading ? (
+        {activeCategory === 'reels' ? (
+          reelsLoading ? (
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-[2px]">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <Skeleton key={i} className="aspect-[9/16] bg-white/[0.04]" />
+              ))}
+            </div>
+          ) : reels.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Film className="w-12 h-12 text-white/10 mb-3" />
+              <p className="text-white/30 text-sm">لا توجد ريلز بعد</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-[2px]">
+              {reels.map((r, i) => (
+                <motion.div
+                  key={r.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: Math.min(i * 0.02, 0.4) }}
+                  onClick={() => navigate(`/shorts?id=${r.id}`)}
+                  className="relative overflow-hidden cursor-pointer group active:opacity-80 aspect-[9/16] bg-black"
+                >
+                  {r.thumbnail_url ? (
+                    <img src={r.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <video src={r.video_url} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                  <div className="absolute top-1.5 right-1.5 z-10">
+                    <Play className="w-4 h-4 text-white drop-shadow-lg" fill="white" strokeWidth={0} />
+                  </div>
+                  <div className="absolute bottom-1.5 right-1.5 z-10 flex items-center gap-1 text-white text-[10px] font-semibold drop-shadow-lg">
+                    ▶ {r.views_count || 0}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )
+        ) : loading ? (
           <div className="grid grid-cols-3 md:grid-cols-5 gap-[2px]">
             {Array.from({ length: 15 }).map((_, i) => (
               <Skeleton

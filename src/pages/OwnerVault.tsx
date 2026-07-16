@@ -22,6 +22,7 @@ import VaultPagesContent from '@/components/vault/VaultPagesContent';
 import VaultCareersManager from '@/components/vault/VaultCareersManager';
 import VaultSupportCenter from '@/components/vault/VaultSupportCenter';
 import VaultPaymentGateways from '@/components/vault/VaultPaymentGateways';
+import VaultGemsPricing from '@/components/vault/VaultGemsPricing';
 import VaultSeoManager from '@/components/vault/VaultSeoManager';
 import VaultMatchesManager from '@/components/vault/VaultMatchesManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -122,6 +123,7 @@ const OwnerVault = () => {
     matches: 'المباريات المباشرة',
     finance: 'المالية والأصول',
     'payment-gateways': 'بوابات الدفع',
+    'gems-pricing': 'تسعير الجواهر',
     gifts: 'أكواد الهدايا',
     security: 'تدقيق الأمان',
     'ip-ban': 'حظر IP',
@@ -161,6 +163,8 @@ const OwnerVault = () => {
         return <VaultFinance />;
       case 'payment-gateways':
         return <VaultPaymentGateways />;
+      case 'gems-pricing':
+        return <VaultGemsPricing />;
       case 'pages-content':
         return <VaultPagesContent />;
       case 'careers':
