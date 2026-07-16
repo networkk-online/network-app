@@ -117,6 +117,7 @@ const UserProfile = ({
   
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
   const [verificationLoading, setVerificationLoading] = useState(false);
+  const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
