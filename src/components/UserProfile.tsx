@@ -895,14 +895,36 @@ const UserProfile = ({
 
               {verificationStatus === 'none' && (
                 <Button
-                  onClick={handleVerificationRequest}
-                  disabled={verificationLoading}
+                  onClick={() => setVerificationDialogOpen(true)}
                   variant="outline"
                   className="flex-1 rounded-lg font-semibold"
                 >
-                  {verificationLoading ? "جاري..." : "طلب التوثيق"}
+                  طلب التوثيق
                 </Button>
               )}
+              {verificationStatus === 'pending' && (
+                <Button
+                  disabled
+                  variant="outline"
+                  className="flex-1 rounded-lg font-semibold opacity-70"
+                >
+                  طلب التوثيق قيد المراجعة
+                </Button>
+              )}
+              {verificationStatus === 'rejected' && (
+                <Button
+                  onClick={() => setVerificationDialogOpen(true)}
+                  variant="outline"
+                  className="flex-1 rounded-lg font-semibold"
+                >
+                  إعادة تقديم طلب التوثيق
+                </Button>
+              )}
+              <VerificationRequestDialog
+                open={verificationDialogOpen}
+                onOpenChange={setVerificationDialogOpen}
+                onSubmitted={() => setVerificationStatus('pending')}
+              />
             </div>
           ) : (
             <div className="flex gap-2 mb-4">
