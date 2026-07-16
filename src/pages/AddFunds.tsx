@@ -499,9 +499,10 @@ export default function AddFunds() {
 
               <div className="space-y-3 mb-6">
                 <Row label={t.selectedPackage} value={`${pkg.coins} ${t.coins}`} sub={`$${pkg.priceUSD}`} />
-                <Row
+                <MethodRow
                   label={t.method}
-                  value={`${selectedGw.icon ?? ''} ${lang === 'ar' ? selectedGw.name_ar : selectedGw.name_en}`}
+                  gateway={selectedGw}
+                  lang={lang}
                 />
                 {bonusCoins > 0 && (
                   <Row label={t.bonus} value={`+${bonusCoins} ${t.coins}`} highlight />
