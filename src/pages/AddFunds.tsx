@@ -192,15 +192,25 @@ export default function AddFunds() {
         `- رمز شحنتي (ID): ${shortId}`,
       ];
       const waMessage = encodeURIComponent(lines.join('\n'));
-      const waUrl = `https://wa.me/9647737318706?text=${waMessage}`;
+      // Universal WhatsApp API URL — most compatible across mobile WebViews
+      const waUrl = `https://api.whatsapp.com/send?phone=9647737318706&text=${waMessage}`;
 
       toast({
         title: t.success,
         description: `${pkg.coins} ${t.coins} — ${methodName} ($${pkg.priceUSD})`,
       });
 
-      // Open WhatsApp in a new tab (works on mobile & desktop)
-      window.open(waUrl, '_blank', 'noopener,noreferrer');
+      // Mobile browsers block window.open popups — use direct navigation on mobile,
+      // and a new tab on desktop.
+      const isMobile = /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+      if (isMobile) {
+        window.location.href = waUrl;
+      } else {
+        const win = window.open(waUrl, '_blank', 'noopener,noreferrer');
+        if (!win) window.location.href = waUrl;
+      }
     } catch (err: any) {
       console.error('AddFunds handlePay error:', err);
       toast({
