@@ -129,15 +129,18 @@ const queryClient = new QueryClient();
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 
 const AppContent = () => {
+  const location = useLocation();
   useNativeApp();
   useFinanceNotifications();
   useRealtimeNotifications();
-  
-  
+
+  const hideNavbarPaths = ['/add-funds', '/withdraw', '/recharge'];
+  const shouldHideNavbar = hideNavbarPaths.includes(location.pathname);
+
   return (
     <>
       <AdminRouteBlocker />
-      <BottomNav />
+      {!shouldHideNavbar && <BottomNav />}
       <FloatingAdminButton />
       <InstallPWAButton />
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
