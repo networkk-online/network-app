@@ -642,10 +642,23 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
         </div>
       )}
 
-      {/* Click areas for navigation */}
-      <div className="absolute inset-0 flex">
-        <div className="flex-1" onClick={onPrev} />
-        <div className="flex-1" onClick={onNext} />
+      {/* Instagram-style tap zones: left 30% → prev, right 70% → next.
+          Sits above media but below header/reply/action bar (those use z-10). */}
+      <div className="absolute inset-0 flex pointer-events-none select-none">
+        <button
+          type="button"
+          aria-label="القصة السابقة"
+          onClick={onPrev}
+          className="h-full pointer-events-auto bg-transparent focus:outline-none"
+          style={{ width: '30%', WebkitTapHighlightColor: 'transparent' }}
+        />
+        <button
+          type="button"
+          aria-label="القصة التالية"
+          onClick={onNext}
+          className="h-full pointer-events-auto bg-transparent focus:outline-none"
+          style={{ width: '70%', WebkitTapHighlightColor: 'transparent' }}
+        />
       </div>
 
       {/* Interactive Elements */}
