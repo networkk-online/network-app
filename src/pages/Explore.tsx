@@ -87,6 +87,9 @@ const Explore = () => {
       }
     })();
     return () => { cancelled = true; };
+  }, [activeCategory]);
+
+
 
   const fetchPosts = useCallback(async (offset = 0, append = false) => {
     if (offset === 0) setLoading(true);
