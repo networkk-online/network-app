@@ -162,6 +162,8 @@ const OwnerVault = () => {
         return <VaultFinance />;
       case 'payment-gateways':
         return <VaultPaymentGateways />;
+      case 'gems-pricing':
+        return <VaultGemsPricing />;
       case 'pages-content':
         return <VaultPagesContent />;
       case 'careers':
