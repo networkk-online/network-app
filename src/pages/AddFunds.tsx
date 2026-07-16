@@ -113,16 +113,20 @@ export default function AddFunds() {
       if (cancelled) return;
       const list = (data as Gateway[]) ?? [];
       setGateways(list);
-      // Pick first eligible (in price range) by default
-      if (pkg) {
-        const eligible = list.find((g) => pkg.priceUSD >= g.min_amount && pkg.priceUSD <= g.max_amount);
-        setSelectedGwId(eligible?.id ?? list[0]?.id ?? '');
-      }
+      // Only set default if no valid selection yet — never overwrite an active user pick.
+      setSelectedGwId((prev) => {
+        if (prev && list.some((g) => g.id === prev)) return prev;
+        if (pkg) {
+          const eligible = list.find((g) => pkg.priceUSD >= g.min_amount && pkg.priceUSD <= g.max_amount);
+          return eligible?.id ?? list[0]?.id ?? '';
+        }
+        return list[0]?.id ?? '';
+      });
       setLoadingGw(false);
     };
     load();
 
-    // Live updates: if admin toggles a gateway, reflect immediately
+    // Live updates: if admin toggles a gateway, reflect immediately (without wiping selection)
     const ch = supabase
       .channel('payment_gateways_live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'payment_gateways' }, load)
@@ -141,12 +145,72 @@ export default function AddFunds() {
   const handlePay = async () => {
     if (!pkg || !selectedGw || !inRange) return;
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    toast({
-      title: t.success,
-      description: `${pkg.coins} ${t.coins} — ${lang === 'ar' ? selectedGw.name_ar : selectedGw.name_en} ($${pkg.priceUSD})`,
-    });
-    setSubmitting(false);
+    try {
+      // 1. Ensure user is signed in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: lang === 'ar' ? 'يجب تسجيل الدخول' : 'Please sign in',
+          description: lang === 'ar' ? 'سجّل الدخول لإتمام عملية الشحن' : 'Sign in to complete top-up',
+          variant: 'destructive',
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      // 2. Fetch username for the WhatsApp message
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username, full_name')
+        .eq('id', user.id)
+        .maybeSingle();
+      const displayName = profile?.username || profile?.full_name || user.email || 'مستخدم';
+
+      // 3. Create a pending deposit record
+      const { data: deposit, error: depErr } = await supabase
+        .from('deposits')
+        .insert({
+          user_id: user.id,
+          amount: pkg.priceUSD,
+          status: 'pending',
+        })
+        .select('id')
+        .single();
+
+      if (depErr) throw depErr;
+
+      const shortId = (deposit?.id || '').slice(0, 8).toUpperCase();
+      const methodName = lang === 'ar' ? selectedGw.name_ar : selectedGw.name_en;
+
+      // 4. Build pre-filled WhatsApp message and open chat
+      const lines = [
+        'مرحباً إدارة Networkk، أود تأكيد عملية شحن حسابي. التفاصيل:',
+        `- اسم المستخدم: ${displayName}`,
+        `- الباقة المحددة: ${pkg.coins} عملة`,
+        `- المبلغ المطلوب: $${pkg.priceUSD}`,
+        `- طريقة الدفع: ${methodName}`,
+        `- رمز شحنتي (ID): ${shortId}`,
+      ];
+      const waMessage = encodeURIComponent(lines.join('\n'));
+      const waUrl = `https://wa.me/9647737318706?text=${waMessage}`;
+
+      toast({
+        title: t.success,
+        description: `${pkg.coins} ${t.coins} — ${methodName} ($${pkg.priceUSD})`,
+      });
+
+      // Open WhatsApp in a new tab (works on mobile & desktop)
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+    } catch (err: any) {
+      console.error('AddFunds handlePay error:', err);
+      toast({
+        title: lang === 'ar' ? 'خطأ' : 'Error',
+        description: err?.message || (lang === 'ar' ? 'فشل إنشاء طلب الشحن' : 'Failed to create top-up request'),
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const goBack = () => {
@@ -435,9 +499,10 @@ export default function AddFunds() {
 
               <div className="space-y-3 mb-6">
                 <Row label={t.selectedPackage} value={`${pkg.coins} ${t.coins}`} sub={`$${pkg.priceUSD}`} />
-                <Row
+                <MethodRow
                   label={t.method}
-                  value={`${selectedGw.icon ?? ''} ${lang === 'ar' ? selectedGw.name_ar : selectedGw.name_en}`}
+                  gateway={selectedGw}
+                  lang={lang}
                 />
                 {bonusCoins > 0 && (
                   <Row label={t.bonus} value={`+${bonusCoins} ${t.coins}`} highlight />
@@ -471,6 +536,29 @@ function Row({ label, value, sub, highlight }: { label: string; value: string; s
       <span className="text-xs uppercase tracking-widest text-white/40">{label}</span>
       <span className="font-bold" style={{ color: highlight ? NEON : '#fff' }}>
         {value} {sub && <span className="text-white/40 text-xs ms-1">({sub})</span>}
+      </span>
+    </div>
+  );
+}
+
+function MethodRow({ label, gateway, lang }: { label: string; gateway: Gateway; lang: 'ar' | 'en' }) {
+  const logo = getGatewayLogo(gateway.key, gateway.name_en);
+  const name = lang === 'ar' ? gateway.name_ar : gateway.name_en;
+  return (
+    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+      <span className="text-xs uppercase tracking-widest text-white/40">{label}</span>
+      <span className="flex items-center gap-2 font-bold text-white">
+        {logo ? (
+          <span
+            className="w-7 h-7 rounded-md flex items-center justify-center border border-white/10 shrink-0"
+            style={{ background: logo.bg || '#fff' }}
+          >
+            <img src={logo.url} alt={logo.alt} className="max-w-[80%] max-h-[70%] object-contain" />
+          </span>
+        ) : gateway.icon ? (
+          <span className="text-lg">{gateway.icon}</span>
+        ) : null}
+        <span>{name}</span>
       </span>
     </div>
   );
