@@ -123,6 +123,7 @@ const OwnerVault = () => {
     matches: 'المباريات المباشرة',
     finance: 'المالية والأصول',
     'payment-gateways': 'بوابات الدفع',
+    'gems-pricing': 'تسعير الجواهر',
     gifts: 'أكواد الهدايا',
     security: 'تدقيق الأمان',
     'ip-ban': 'حظر IP',
