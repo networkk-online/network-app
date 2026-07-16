@@ -586,7 +586,12 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
               </PopoverContent>
             </Popover>
           )}
-          <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors">
+          <button
+            onClick={onClose}
+            aria-label="إغلاق"
+            className="relative text-white hover:bg-white/20 p-2 rounded-full transition-colors"
+            style={{ zIndex: 50, pointerEvents: 'auto' }}
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -643,23 +648,28 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
       )}
 
       {/* Instagram-style tap zones: left 30% → prev, right 70% → next.
-          Sits above media but below header/reply/action bar (those use z-10). */}
-      <div className="absolute inset-0 flex pointer-events-none select-none">
+          Constrained vertically so they NEVER cover the header (close/menu) or
+          the bottom reply/action bar — those must always stay clickable. */}
+      <div
+        className="absolute left-0 right-0 flex select-none"
+        style={{ top: 80, bottom: 96, zIndex: 5, pointerEvents: 'none' }}
+      >
         <button
           type="button"
           aria-label="القصة السابقة"
           onClick={onPrev}
-          className="h-full pointer-events-auto bg-transparent focus:outline-none"
-          style={{ width: '30%', WebkitTapHighlightColor: 'transparent' }}
+          className="h-full bg-transparent focus:outline-none"
+          style={{ width: '30%', pointerEvents: 'auto', WebkitTapHighlightColor: 'transparent' }}
         />
         <button
           type="button"
           aria-label="القصة التالية"
           onClick={onNext}
-          className="h-full pointer-events-auto bg-transparent focus:outline-none"
-          style={{ width: '70%', WebkitTapHighlightColor: 'transparent' }}
+          className="h-full bg-transparent focus:outline-none"
+          style={{ width: '70%', pointerEvents: 'auto', WebkitTapHighlightColor: 'transparent' }}
         />
       </div>
+
 
       {/* Interactive Elements */}
       {currentStory.story_type === 'question' && currentStory.question_text && (
