@@ -47,6 +47,8 @@ const isTallItem = (index: number) => {
 const Explore = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<ExplorePost[]>([]);
+  const [reels, setReels] = useState<any[]>([]);
+  const [reelsLoading, setReelsLoading] = useState(false);
   const [pinnedPostIds, setPinnedPostIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
