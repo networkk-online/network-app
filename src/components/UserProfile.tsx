@@ -25,6 +25,7 @@ import CallButtons from '@/components/CallButtons';
 import AffiliationBadge from '@/components/AffiliationBadge';
 import { PremiumShareButton } from '@/components/PremiumShareButton';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
+import VerificationRequestDialog from '@/components/VerificationRequestDialog';
 
 // Social media icons
 const TikTokIcon = () => (
@@ -116,6 +117,7 @@ const UserProfile = ({
   
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
   const [verificationLoading, setVerificationLoading] = useState(false);
+  const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -893,14 +895,36 @@ const UserProfile = ({
 
               {verificationStatus === 'none' && (
                 <Button
-                  onClick={handleVerificationRequest}
-                  disabled={verificationLoading}
+                  onClick={() => setVerificationDialogOpen(true)}
                   variant="outline"
                   className="flex-1 rounded-lg font-semibold"
                 >
-                  {verificationLoading ? "جاري..." : "طلب التوثيق"}
+                  طلب التوثيق
                 </Button>
               )}
+              {verificationStatus === 'pending' && (
+                <Button
+                  disabled
+                  variant="outline"
+                  className="flex-1 rounded-lg font-semibold opacity-70"
+                >
+                  طلب التوثيق قيد المراجعة
+                </Button>
+              )}
+              {verificationStatus === 'rejected' && (
+                <Button
+                  onClick={() => setVerificationDialogOpen(true)}
+                  variant="outline"
+                  className="flex-1 rounded-lg font-semibold"
+                >
+                  إعادة تقديم طلب التوثيق
+                </Button>
+              )}
+              <VerificationRequestDialog
+                open={verificationDialogOpen}
+                onOpenChange={setVerificationDialogOpen}
+                onSubmitted={() => setVerificationStatus('pending')}
+              />
             </div>
           ) : (
             <div className="flex gap-2 mb-4">
