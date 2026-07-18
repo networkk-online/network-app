@@ -69,8 +69,8 @@ const SignUp = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     const u = username.trim().toLowerCase();
-    if (u.length < 1) {
-      toast({ title: 'خطأ', description: 'اسم المستخدم مطلوب', variant: 'destructive' });
+    if (u.length < 5) {
+      toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون من 5 أحرف أو أكثر. اليوزرات الرباعية فما دون غير مسموحة.', variant: 'destructive' });
       return;
     }
     if (!password) {
