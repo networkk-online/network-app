@@ -13,7 +13,6 @@ interface VaultOverviewProps {
 
 const VaultOverview = ({ stats, maintenanceMode, onToggleMaintenance, lastSecurityLog }: VaultOverviewProps) => {
   const statCards = [
-    { label: 'إجمالي المستخدمين', value: stats.users, icon: Users, color: '#39FF14', glow: 'rgba(57,255,20,0.15)' },
     { label: 'المنشورات', value: stats.posts, icon: Activity, color: '#00D4FF', glow: 'rgba(0,212,255,0.15)' },
     { label: 'إيداعات معلقة', value: stats.deposits, icon: DollarSign, color: '#FFD700', glow: 'rgba(255,215,0,0.15)' },
     { label: 'المشرفون', value: stats.mods, icon: Shield, color: '#A855F7', glow: 'rgba(168,85,247,0.15)' },
