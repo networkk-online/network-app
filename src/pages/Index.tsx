@@ -14,7 +14,7 @@ import { useStories } from '@/hooks/useStories';
 import { useReels } from '@/hooks/useReels';
 import { usePostSize } from '@/hooks/usePostSize';
 import LocalFameRankSection from '@/components/LocalFameRankSection';
-import PublicUserCounter from '@/components/PublicUserCounter';
+
 import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
 import { Film, Feather } from 'lucide-react';
 import SeoHead from '@/components/seo/SeoHead';
@@ -265,10 +265,6 @@ const Index = () => {
               )}
             </div>
 
-            {/* Public Stats Section */}
-            <div className="mb-6">
-              <PublicUserCounter />
-            </div>
 
             {/* Tweets Section Link */}
             <div className="mb-6">
