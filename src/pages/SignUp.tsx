@@ -69,8 +69,8 @@ const SignUp = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     const u = username.trim().toLowerCase();
-    if (u.length < 1) {
-      toast({ title: 'خطأ', description: 'اسم المستخدم مطلوب', variant: 'destructive' });
+    if (u.length < 5) {
+      toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون من 5 أحرف أو أكثر. اليوزرات الرباعية فما دون غير مسموحة.', variant: 'destructive' });
       return;
     }
     if (!password) {
@@ -168,11 +168,11 @@ const SignUp = () => {
 
         <form onSubmit={handleSignUp} className="space-y-4">
           <Input
-            type="text" placeholder="اسم المستخدم (حرف واحد على الأقل)"
+            type="text" placeholder="اسم المستخدم (5 أحرف على الأقل)"
             value={username} onChange={(e) => setUsername(e.target.value)}
             className="h-13 bg-white/[0.04] border-white/[0.08] text-white/90 placeholder-white/20 rounded-2xl text-sm text-right focus:border-primary/30"
             style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}
-            required disabled={isLoading} dir="rtl" minLength={1}
+            required disabled={isLoading} dir="rtl" minLength={5}
           />
           <Input
             type="text" placeholder="الاسم الكامل (اختياري)"
