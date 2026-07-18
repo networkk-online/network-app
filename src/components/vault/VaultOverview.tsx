@@ -21,7 +21,7 @@ const VaultOverview = ({ stats, maintenanceMode, onToggleMaintenance, lastSecuri
   return (
     <div className="space-y-6">
       {/* Live Counters */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map((s) => (
           <Card key={s.label} className="bg-white/[0.03] border-white/[0.08] backdrop-blur-sm overflow-hidden relative group hover:border-white/20 transition-all">
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `radial-gradient(circle at 50% 50%, ${s.glow}, transparent 70%)` }} />
