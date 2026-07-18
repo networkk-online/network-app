@@ -429,10 +429,6 @@ const Profile = () => {
     const updateData: any = {};
     
     if (data.username) {
-      if (data.username.trim().length < 5) {
-        toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون من 5 أحرف أو أكثر. اليوزرات الرباعية فما دون غير مسموحة.', variant: 'destructive' });
-        return;
-      }
       updateData.username = data.username.trim();
     }
     if (data.displayName) updateData.full_name = data.displayName;
