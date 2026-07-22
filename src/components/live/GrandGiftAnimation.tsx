@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-export type GrandGiftType = 'lion' | 'whale' | 'supercar';
+export type GrandGiftType = 'lion' | 'whale' | 'supercar' | 'falcon';
 
 export interface GrandGift {
   id: string;
@@ -20,7 +20,9 @@ const GIFT_NAMES: Record<GrandGiftType, string> = {
   lion: 'THE LION 🦁',
   whale: 'THE WHALE 🐋',
   supercar: 'THE SUPERCAR 🏎️',
+  falcon: 'THE FALCON 🦅',
 };
+
 
 const playGiftSound = (giftType: GrandGiftType) => {
   // Placeholder for sound integration
@@ -210,7 +212,48 @@ const SupercarAnimation = ({ onComplete }: { onComplete: () => void }) => {
   );
 };
 
+// ─── Falcon Animation ───
+const FalconAnimation = ({ onComplete }: { onComplete: () => void }) => {
+  useEffect(() => {
+    const t = setTimeout(onComplete, 3200);
+    return () => clearTimeout(t);
+  }, [onComplete]);
+
+  return (
+    <motion.div className="fixed inset-0 z-[100] pointer-events-none overflow-hidden">
+      <motion.div
+        className="absolute inset-0 bg-black/70"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      />
+      {/* Falcon diving across */}
+      <motion.div
+        initial={{ left: '-15%', top: '10%', rotate: 20, scale: 0.7 }}
+        animate={{ left: '105%', top: '55%', rotate: -10, scale: 1.1 }}
+        transition={{ duration: 1.6, ease: [0.4, 0, 0.2, 1] }}
+        className="absolute"
+        style={{ fontSize: 110 }}
+      >
+        <span className="drop-shadow-[0_0_30px_rgba(255,215,120,0.6)]">🦅</span>
+      </motion.div>
+      {/* Wind streaks */}
+      <motion.div
+        className="absolute top-1/3 left-0 right-0 h-[2px]"
+        style={{
+          background: 'linear-gradient(to right, transparent, #ffd77080, transparent)',
+          filter: 'blur(2px)',
+        }}
+        initial={{ opacity: 0, scaleX: 0.5 }}
+        animate={{ opacity: [0, 0.9, 0], scaleX: [0.5, 1.4, 1.6] }}
+        transition={{ duration: 1.4, delay: 0.2 }}
+      />
+    </motion.div>
+  );
+};
+
 // ─── User Recognition Banner ───
+
 const RecognitionBanner = ({ senderName, giftType }: { senderName: string; giftType: GrandGiftType }) => (
   <motion.div
     className="fixed top-16 left-1/2 -translate-x-1/2 z-[101] pointer-events-none"
@@ -283,6 +326,8 @@ export const GrandGiftAnimationEngine = ({ gifts, onGiftComplete }: GrandGiftAni
           {current.giftType === 'lion' && <LionAnimation onComplete={handleComplete} />}
           {current.giftType === 'whale' && <WhaleAnimation onComplete={handleComplete} />}
           {current.giftType === 'supercar' && <SupercarAnimation onComplete={handleComplete} />}
+          {current.giftType === 'falcon' && <FalconAnimation onComplete={handleComplete} />}
+
         </>
       )}
     </AnimatePresence>

@@ -16,9 +16,13 @@ import { useAgoraRoom } from '@/hooks/useAgoraRoom';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import type { LiveComment } from './live';
+import { GrandGiftAnimationEngine, type GrandGift, type GrandGiftType } from './live/GrandGiftAnimation';
 import { TermsConsentModal } from './legal/TermsConsentModal';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeText } from '@/lib/sanitize';
+
+const PREMIUM_GIFT_TYPES = new Set<GrandGiftType>(['lion', 'whale', 'supercar', 'falcon']);
+
 
 const GIFT_META: Record<string, { icon: string; name: string; price: number }> = {
   rose: { icon: '🌹', name: 'وردة', price: 1 },
@@ -29,6 +33,8 @@ const GIFT_META: Record<string, { icon: string; name: string; price: number }> =
   lion: { icon: '🦁', name: 'أسد الملك', price: 500 },
   whale: { icon: '🐋', name: 'الحوت', price: 1000 },
   supercar: { icon: '🏎️', name: 'سوبركار', price: 2000 },
+  falcon: { icon: '🦅', name: 'الصقر', price: 750 },
+
   rocket: { icon: '🚀', name: 'صاروخ', price: 500 },
   galaxy: { icon: '🌌', name: 'مجرة', price: 1000 },
 };
@@ -52,6 +58,8 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
 
   // === Tiered gifts + session metrics ===
   const [tieredEvents, setTieredEvents] = useState<TieredGiftEvent[]>([]);
+  const [grandGifts, setGrandGifts] = useState<GrandGift[]>([]);
+
   const [gemsCollected, setGemsCollected] = useState(0);
   const [startedAt, setStartedAt] = useState<number>(Date.now());
   const [beautyOn, setBeautyOn] = useState(false);
@@ -133,6 +141,40 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
     return () => { ch.unsubscribe(); };
   }, [streamRowId]);
 
+  // Premium gift realtime channel — shared by host + viewers for FIFO 3D animations.
+  const giftChannelKey = streamRowId || agora.channelName || null;
+  const giftChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  useEffect(() => {
+    if (!giftChannelKey) return;
+    const ch = supabase.channel(`live-gifts-${giftChannelKey}`, {
+      config: { broadcast: { self: false } },
+    });
+    ch.on('broadcast', { event: 'premium_gift' }, ({ payload }) => {
+      const p = payload as { giftType?: GrandGiftType; senderName?: string; senderAvatar?: string; id?: string };
+      if (!p?.giftType || !PREMIUM_GIFT_TYPES.has(p.giftType)) return;
+      setGrandGifts(prev => [
+        ...prev,
+        {
+          id: p.id || `${Date.now()}-${Math.random()}`,
+          giftType: p.giftType!,
+          senderName: p.senderName || 'ضيف',
+          senderAvatar: p.senderAvatar,
+        },
+      ]);
+    });
+    ch.subscribe();
+    giftChannelRef.current = ch;
+    return () => {
+      giftChannelRef.current = null;
+      supabase.removeChannel(ch);
+    };
+  }, [giftChannelKey]);
+
+  const completeGrandGift = (id: string) =>
+    setGrandGifts(prev => prev.filter(g => g.id !== id));
+
+
+
   const handleGiftSent = async (giftId: string, amount: number) => {
     const meta = GIFT_META[giftId] || { icon: '🎁', name: 'هدية', price: 1 };
     const totalPrice = meta.price * amount;
@@ -155,6 +197,24 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
       ...prev,
       { id: Date.now().toString(), username: 'أنت', message: `أرسل ${meta.name} ${meta.icon}`, isVIP: true },
     ]);
+
+    // Premium/luxury gifts trigger fullscreen 3D animation for everyone in the room.
+    if (PREMIUM_GIFT_TYPES.has(giftId as GrandGiftType)) {
+      const eventId = `${Date.now()}-${Math.random()}`;
+      const senderName = 'أنت';
+      // Local playback (self:false broadcast won't come back to us).
+      setGrandGifts(prev => [
+        ...prev,
+        { id: eventId, giftType: giftId as GrandGiftType, senderName },
+      ]);
+      giftChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'premium_gift',
+        payload: { id: eventId, giftType: giftId, senderName },
+      });
+    }
+
+
 
     // Server-side authoritative ledger entry (only when there is a remote creator)
     const creator = agora.participants.find(p => !p.isLocal);
@@ -371,6 +431,10 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
 
             {/* Tiered gift animations */}
             <TieredGiftOverlay events={tieredEvents} onComplete={completeGift} />
+
+            {/* Fullscreen 3D premium gift engine (Lion / Whale / Falcon / Supercar) — FIFO queue */}
+            <GrandGiftAnimationEngine gifts={grandGifts} onGiftComplete={completeGrandGift} />
+
 
             {/* Host-only top bar + tools */}
             {agora.isHost && (
