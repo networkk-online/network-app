@@ -326,6 +326,8 @@ export const GrandGiftAnimationEngine = ({ gifts, onGiftComplete }: GrandGiftAni
           {current.giftType === 'lion' && <LionAnimation onComplete={handleComplete} />}
           {current.giftType === 'whale' && <WhaleAnimation onComplete={handleComplete} />}
           {current.giftType === 'supercar' && <SupercarAnimation onComplete={handleComplete} />}
+          {current.giftType === 'falcon' && <FalconAnimation onComplete={handleComplete} />}
+
         </>
       )}
     </AnimatePresence>
