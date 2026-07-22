@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-export type GrandGiftType = 'lion' | 'whale' | 'supercar';
+export type GrandGiftType = 'lion' | 'whale' | 'supercar' | 'falcon';
 
 export interface GrandGift {
   id: string;
@@ -20,7 +20,9 @@ const GIFT_NAMES: Record<GrandGiftType, string> = {
   lion: 'THE LION 🦁',
   whale: 'THE WHALE 🐋',
   supercar: 'THE SUPERCAR 🏎️',
+  falcon: 'THE FALCON 🦅',
 };
+
 
 const playGiftSound = (giftType: GrandGiftType) => {
   // Placeholder for sound integration
