@@ -16,9 +16,13 @@ import { useAgoraRoom } from '@/hooks/useAgoraRoom';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import type { LiveComment } from './live';
+import { GrandGiftAnimationEngine, type GrandGift, type GrandGiftType } from './live/GrandGiftAnimation';
 import { TermsConsentModal } from './legal/TermsConsentModal';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeText } from '@/lib/sanitize';
+
+const PREMIUM_GIFT_TYPES = new Set<GrandGiftType>(['lion', 'whale', 'supercar', 'falcon']);
+
 
 const GIFT_META: Record<string, { icon: string; name: string; price: number }> = {
   rose: { icon: '🌹', name: 'وردة', price: 1 },
