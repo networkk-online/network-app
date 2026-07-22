@@ -33,6 +33,8 @@ const GIFT_META: Record<string, { icon: string; name: string; price: number }> =
   lion: { icon: '🦁', name: 'أسد الملك', price: 500 },
   whale: { icon: '🐋', name: 'الحوت', price: 1000 },
   supercar: { icon: '🏎️', name: 'سوبركار', price: 2000 },
+  falcon: { icon: '🦅', name: 'الصقر', price: 750 },
+
   rocket: { icon: '🚀', name: 'صاروخ', price: 500 },
   galaxy: { icon: '🌌', name: 'مجرة', price: 1000 },
 };
