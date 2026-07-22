@@ -58,6 +58,8 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
 
   // === Tiered gifts + session metrics ===
   const [tieredEvents, setTieredEvents] = useState<TieredGiftEvent[]>([]);
+  const [grandGifts, setGrandGifts] = useState<GrandGift[]>([]);
+
   const [gemsCollected, setGemsCollected] = useState(0);
   const [startedAt, setStartedAt] = useState<number>(Date.now());
   const [beautyOn, setBeautyOn] = useState(false);
