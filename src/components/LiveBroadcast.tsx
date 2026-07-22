@@ -432,6 +432,10 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
             {/* Tiered gift animations */}
             <TieredGiftOverlay events={tieredEvents} onComplete={completeGift} />
 
+            {/* Fullscreen 3D premium gift engine (Lion / Whale / Falcon / Supercar) — FIFO queue */}
+            <GrandGiftAnimationEngine gifts={grandGifts} onGiftComplete={completeGrandGift} />
+
+
             {/* Host-only top bar + tools */}
             {agora.isHost && (
               <>
