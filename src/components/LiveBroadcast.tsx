@@ -141,6 +141,40 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
     return () => { ch.unsubscribe(); };
   }, [streamRowId]);
 
+  // Premium gift realtime channel — shared by host + viewers for FIFO 3D animations.
+  const giftChannelKey = streamRowId || agora.channelName || null;
+  const giftChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  useEffect(() => {
+    if (!giftChannelKey) return;
+    const ch = supabase.channel(`live-gifts-${giftChannelKey}`, {
+      config: { broadcast: { self: false } },
+    });
+    ch.on('broadcast', { event: 'premium_gift' }, ({ payload }) => {
+      const p = payload as { giftType?: GrandGiftType; senderName?: string; senderAvatar?: string; id?: string };
+      if (!p?.giftType || !PREMIUM_GIFT_TYPES.has(p.giftType)) return;
+      setGrandGifts(prev => [
+        ...prev,
+        {
+          id: p.id || `${Date.now()}-${Math.random()}`,
+          giftType: p.giftType!,
+          senderName: p.senderName || 'ضيف',
+          senderAvatar: p.senderAvatar,
+        },
+      ]);
+    });
+    ch.subscribe();
+    giftChannelRef.current = ch;
+    return () => {
+      giftChannelRef.current = null;
+      supabase.removeChannel(ch);
+    };
+  }, [giftChannelKey]);
+
+  const completeGrandGift = (id: string) =>
+    setGrandGifts(prev => prev.filter(g => g.id !== id));
+
+
+
   const handleGiftSent = async (giftId: string, amount: number) => {
     const meta = GIFT_META[giftId] || { icon: '🎁', name: 'هدية', price: 1 };
     const totalPrice = meta.price * amount;
