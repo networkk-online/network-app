@@ -198,6 +198,24 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
       { id: Date.now().toString(), username: 'أنت', message: `أرسل ${meta.name} ${meta.icon}`, isVIP: true },
     ]);
 
+    // Premium/luxury gifts trigger fullscreen 3D animation for everyone in the room.
+    if (PREMIUM_GIFT_TYPES.has(giftId as GrandGiftType)) {
+      const eventId = `${Date.now()}-${Math.random()}`;
+      const senderName = 'أنت';
+      // Local playback (self:false broadcast won't come back to us).
+      setGrandGifts(prev => [
+        ...prev,
+        { id: eventId, giftType: giftId as GrandGiftType, senderName },
+      ]);
+      giftChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'premium_gift',
+        payload: { id: eventId, giftType: giftId, senderName },
+      });
+    }
+
+
+
     // Server-side authoritative ledger entry (only when there is a remote creator)
     const creator = agora.participants.find(p => !p.isLocal);
     if (!creator || agora.isHost) return; // hosts don't tip themselves
