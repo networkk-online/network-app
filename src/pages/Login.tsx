@@ -64,17 +64,39 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const trimmed = identifier.trim();
+      // Strip a leading '@' so '@M' == 'M' for username lookups
+      const trimmed = identifier.trim().replace(/^@+/, '');
       const isEmail = trimmed.includes('@');
       const isPhone = /^[\d\+٠-٩]/.test(trimmed);
       const isUsername = !isEmail && !isPhone;
+
+      const friendlyAuthError = (err: any): { title: string; description: string } => {
+        const msg = (err?.message || '').toLowerCase();
+        if (msg.includes('invalid login') || msg.includes('invalid credentials')) {
+          return { title: 'بيانات غير صحيحة', description: 'تحقق من اسم المستخدم/البريد وكلمة المرور.' };
+        }
+        if (msg.includes('email not confirmed')) {
+          return { title: 'لم يتم تأكيد البريد', description: 'يرجى تأكيد بريدك الإلكتروني أولاً.' };
+        }
+        if (msg.includes('user not found') || msg.includes('no user')) {
+          return { title: 'الحساب غير موجود', description: 'لم نعثر على حساب بهذه البيانات. سجّل حساباً جديداً.' };
+        }
+        if (msg.includes('rate') || msg.includes('too many')) {
+          return { title: 'محاولات كثيرة', description: 'يرجى المحاولة بعد قليل.' };
+        }
+        return { title: 'خطأ في تسجيل الدخول', description: err?.message || 'حدث خطأ غير متوقع' };
+      };
 
       if (isUsername) {
         const { data: r, error: rErr } = await supabase.functions.invoke('lookup-username', {
           body: { username: trimmed.toLowerCase(), password },
         });
         if (rErr || !r?.session) {
-          toast({ title: 'خطأ في تسجيل الدخول', description: r?.error || 'اسم المستخدم أو كلمة المرور غير صحيحة', variant: 'destructive' });
+          toast({
+            title: 'بيانات غير صحيحة',
+            description: r?.error || 'اسم المستخدم أو كلمة المرور غير صحيحة',
+            variant: 'destructive',
+          });
           return;
         }
         const { data: setData, error: setErr } = await supabase.auth.setSession({
@@ -86,7 +108,6 @@ const Login = () => {
           return;
         }
         logLogin(setData.session.user.id);
-
         navigate(postLoginPath);
         return;
       }
@@ -97,6 +118,8 @@ const Login = () => {
         if (phone.startsWith('07')) phone = '+964' + phone.slice(1);
         else if (phone.startsWith('964')) phone = '+' + phone;
         loginIdentifier = phone;
+      } else {
+        loginIdentifier = trimmed.toLowerCase();
       }
       const credentials = isPhone
         ? ({ phone: loginIdentifier, password } as any)
@@ -104,14 +127,17 @@ const Login = () => {
 
       const { data, error } = await supabase.auth.signInWithPassword(credentials);
       if (error || !data.session) {
-        toast({ title: 'خطأ في تسجيل الدخول', description: 'البيانات غير صحيحة', variant: 'destructive' });
+        const f = friendlyAuthError(error);
+        toast({ title: f.title, description: f.description, variant: 'destructive' });
         return;
       }
       logLogin(data.session.user.id);
-
       navigate(postLoginPath);
-    } catch { toast({ title: 'خطأ', description: 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' }); }
-    finally { setIsLoading(false); }
+    } catch (err: any) {
+      toast({ title: 'خطأ', description: err?.message || 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
 
