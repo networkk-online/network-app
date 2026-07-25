@@ -68,7 +68,8 @@ const SignUp = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const u = username.trim().toLowerCase();
+    // Normalize: strip leading @ and lowercase so '@M' and 'M' behave identically
+    const u = username.trim().replace(/^@+/, '').toLowerCase();
     if (u.length < 5) {
       toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون من 5 أحرف أو أكثر. اليوزرات الرباعية فما دون غير مسموحة.', variant: 'destructive' });
       return;
@@ -94,12 +95,19 @@ const SignUp = () => {
       }
     }
 
+    const goToLogin = () => setTimeout(() => navigate('/login'), 1200);
+
     setIsLoading(true);
     try {
       const { data: existing } = await supabase
         .from('profiles').select('id').eq('username', u).maybeSingle();
       if (existing) {
-        toast({ title: 'خطأ', description: 'اسم المستخدم مستخدم بالفعل', variant: 'destructive' });
+        toast({
+          title: 'هذا الحساب موجود بالفعل',
+          description: 'اسم المستخدم مسجّل. يرجى تسجيل الدخول بدلاً من ذلك.',
+          variant: 'destructive',
+        });
+        goToLogin();
         setIsLoading(false);
         return;
       }
@@ -113,14 +121,36 @@ const SignUp = () => {
       };
 
       if (mode === 'email') {
-        signUpPayload.email = email.trim();
+        signUpPayload.email = email.trim().toLowerCase();
       } else {
         signUpPayload.phone = toE164(rule, phone);
       }
 
       const { data, error } = await supabase.auth.signUp(signUpPayload);
       if (error) {
-        toast({ title: 'خطأ في التسجيل', description: error.message, variant: 'destructive' });
+        const msg = (error.message || '').toLowerCase();
+        const isDup =
+          msg.includes('already registered') ||
+          msg.includes('already been registered') ||
+          msg.includes('already exists') ||
+          msg.includes('user already') ||
+          (error as any).status === 409 ||
+          (error as any).code === 'user_already_exists';
+        if (isDup) {
+          toast({
+            title: 'هذا الحساب موجود بالفعل',
+            description: 'هذا البريد أو الرقم مسجّل مسبقاً. يرجى تسجيل الدخول بدلاً من ذلك.',
+          });
+          goToLogin();
+        } else if (msg.includes('password')) {
+          toast({ title: 'كلمة مرور ضعيفة', description: 'اختر كلمة مرور أقوى (6 أحرف على الأقل).', variant: 'destructive' });
+        } else if (msg.includes('email')) {
+          toast({ title: 'بريد غير صالح', description: 'يرجى إدخال بريد إلكتروني صحيح.', variant: 'destructive' });
+        } else if (msg.includes('phone')) {
+          toast({ title: 'رقم غير صالح', description: 'يرجى إدخال رقم هاتف صحيح.', variant: 'destructive' });
+        } else {
+          toast({ title: 'تعذّر إنشاء الحساب', description: error.message, variant: 'destructive' });
+        }
         return;
       }
 
@@ -136,7 +166,7 @@ const SignUp = () => {
       if (data.session) navigate('/');
       else navigate('/login');
     } catch (err: any) {
-      toast({ title: 'خطأ', description: err?.message || 'حدث خطأ', variant: 'destructive' });
+      toast({ title: 'خطأ غير متوقع', description: err?.message || 'حدث خطأ أثناء التسجيل', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
