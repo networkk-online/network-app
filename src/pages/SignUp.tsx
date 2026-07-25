@@ -268,7 +268,7 @@ const SignUp = () => {
             value={username} onChange={(e) => setUsername(e.target.value)}
             className="h-13 bg-white/[0.04] border-white/[0.08] text-white/90 placeholder-white/20 rounded-2xl text-sm text-right focus:border-primary/30"
             style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}
-            required disabled={isLoading} dir="rtl" minLength={5}
+            required disabled={isLoading} dir="rtl"
           />
           <Input
             type="text" placeholder="الاسم الكامل (اختياري)"
