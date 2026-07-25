@@ -19,22 +19,38 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    const normalizedUsername = username.replace(/^@+/, '').trim().toLowerCase()
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { data: profile } = await supabase
-      .from('profiles').select('id')
-      .eq('username', username.trim().toLowerCase()).maybeSingle()
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles').select('id, is_suspended, is_banned')
+      .ilike('username', normalizedUsername).maybeSingle()
+    if (profileError) {
+      console.error('SUPABASE AUTH ERROR:', profileError)
+      return new Response(JSON.stringify({ error: profileError.message, raw: profileError }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
     if (!profile) {
       return new Response(JSON.stringify({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
+    if (profile.is_suspended || profile.is_banned) {
+      return new Response(JSON.stringify({ error: 'هذا الحساب مجمد حالياً.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
 
     // ---- Mode 1: sign-in by username (public path) ----
     if (typeof password === 'string' && password.length > 0) {
-      const { data: u } = await supabase.auth.admin.getUserById(profile.id)
+      const { data: u, error: getUserError } = await supabase.auth.admin.getUserById(profile.id)
+      if (getUserError) {
+        console.error('SUPABASE AUTH ERROR:', getUserError)
+        return new Response(JSON.stringify({ error: getUserError.message, raw: getUserError }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
       if (!u?.user?.email) {
         return new Response(JSON.stringify({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -44,7 +60,8 @@ Deno.serve(async (req) => {
         email: u.user.email, password,
       })
       if (signErr || !signin.session) {
-        return new Response(JSON.stringify({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' }),
+        if (signErr) console.error('SUPABASE AUTH ERROR:', signErr)
+        return new Response(JSON.stringify({ error: signErr?.message || 'اسم المستخدم أو كلمة المرور غير صحيحة', raw: signErr }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
       return new Response(JSON.stringify({ session: signin.session }),
@@ -74,8 +91,10 @@ Deno.serve(async (req) => {
     const { data: u } = await supabase.auth.admin.getUserById(profile.id)
     return new Response(JSON.stringify({ email: u?.user?.email ?? null }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  } catch (_e) {
-    return new Response(JSON.stringify({ error: 'حدث خطأ في الخادم' }),
+  } catch (e) {
+    console.error('SUPABASE AUTH ERROR:', e)
+    const message = e instanceof Error ? e.message : 'حدث خطأ في الخادم'
+    return new Response(JSON.stringify({ error: message, raw: String(e) }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   }
 })

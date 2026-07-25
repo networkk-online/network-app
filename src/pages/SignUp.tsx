@@ -60,6 +60,19 @@ const SignUp = () => {
   const [specialty, setSpecialty] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const normalizeUsername = (value: string) => value.replace(/^@+/, '').trim().toLowerCase();
+
+  const reportAuthError = (error: unknown, title = 'SUPABASE AUTH ERROR') => {
+    console.error('SUPABASE AUTH ERROR:', error);
+    const message = error instanceof Error
+      ? error.message
+      : typeof error === 'object' && error !== null && 'message' in error
+        ? String((error as { message?: unknown }).message || JSON.stringify(error))
+        : String(error || 'Unknown auth error');
+    toast({ title, description: message, variant: 'destructive' });
+    return message;
+  };
+
   const rule = useMemo(() => getCountryRule(countryCode), [countryCode]);
   const expectedLengths = Array.isArray(rule.nationalLength) ? rule.nationalLength : [rule.nationalLength];
   const maxLen = Math.max(...expectedLengths);
@@ -69,11 +82,7 @@ const SignUp = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     // Normalize: strip leading @ and lowercase so '@M' and 'M' behave identically
-    const u = username.trim().replace(/^@+/, '').toLowerCase();
-    if (u.length < 5) {
-      toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون من 5 أحرف أو أكثر. اليوزرات الرباعية فما دون غير مسموحة.', variant: 'destructive' });
-      return;
-    }
+    const u = normalizeUsername(username);
     if (!password) {
       toast({ title: 'خطأ', description: 'كلمة المرور مطلوبة', variant: 'destructive' });
       return;
@@ -99,16 +108,44 @@ const SignUp = () => {
 
     setIsLoading(true);
     try {
-      const { data: existing } = await supabase
-        .from('profiles').select('id').eq('username', u).maybeSingle();
+      const { data: existing, error: existingError } = await supabase
+        .from('profiles').select('id').ilike('username', u).maybeSingle();
+
+      if (existingError) {
+        reportAuthError(existingError, 'PROFILE LOOKUP ERROR');
+      }
+
       if (existing) {
-        toast({
-          title: 'هذا الحساب موجود بالفعل',
-          description: 'اسم المستخدم مسجّل. يرجى تسجيل الدخول بدلاً من ذلك.',
-          variant: 'destructive',
-        });
-        goToLogin();
-        setIsLoading(false);
+        const credentials = mode === 'phone'
+          ? ({ phone: toE164(rule, phone), password } as any)
+          : { email: email.trim().toLowerCase(), password };
+        const { data: existingSignIn, error: existingSignInError } = await supabase.auth.signInWithPassword(credentials);
+        if (existingSignInError || !existingSignIn.session) {
+          if (existingSignInError) {
+            const raw = reportAuthError(existingSignInError);
+            if (raw.toLowerCase().includes('email not confirmed')) {
+              toast({
+                title: 'Email not confirmed',
+                description: 'Please confirm your email address or disable Email Confirmation in Supabase settings.',
+                variant: 'destructive',
+              });
+            }
+          }
+          toast({
+            title: 'هذا الحساب موجود بالفعل',
+            description: 'اسم المستخدم مسجّل. يرجى تسجيل الدخول بدلاً من ذلك.',
+            variant: 'destructive',
+          });
+          goToLogin();
+          return;
+        }
+        toast({ title: 'تم تسجيل الدخول', description: 'الحساب موجود بالفعل وتم تسجيل دخولك.' });
+        navigate('/');
+        return;
+      }
+
+      if (u.length < 5) {
+        toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون من 5 أحرف أو أكثر. اليوزرات الرباعية فما دون غير مسموحة.', variant: 'destructive' });
         return;
       }
 
@@ -128,6 +165,7 @@ const SignUp = () => {
 
       const { data, error } = await supabase.auth.signUp(signUpPayload);
       if (error) {
+        console.error('SUPABASE AUTH ERROR:', error);
         const msg = (error.message || '').toLowerCase();
         const isDup =
           msg.includes('already registered') ||
@@ -137,36 +175,64 @@ const SignUp = () => {
           (error as any).status === 409 ||
           (error as any).code === 'user_already_exists';
         if (isDup) {
-          toast({
-            title: 'هذا الحساب موجود بالفعل',
-            description: 'هذا البريد أو الرقم مسجّل مسبقاً. يرجى تسجيل الدخول بدلاً من ذلك.',
-          });
-          goToLogin();
+          const credentials = mode === 'phone'
+            ? ({ phone: toE164(rule, phone), password } as any)
+            : { email: email.trim().toLowerCase(), password };
+
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword(credentials);
+          if (signInError || !signInData.session) {
+            if (signInError) {
+              const raw = reportAuthError(signInError);
+              if (raw.toLowerCase().includes('email not confirmed')) {
+                toast({
+                  title: 'Email not confirmed',
+                  description: 'Please confirm your email address or disable Email Confirmation in Supabase settings.',
+                  variant: 'destructive',
+                });
+              }
+            } else {
+              toast({ title: 'SUPABASE AUTH ERROR', description: error.message, variant: 'destructive' });
+            }
+            goToLogin();
+            return;
+          }
+          toast({ title: 'تم تسجيل الدخول', description: 'الحساب موجود بالفعل وتم تسجيل دخولك.' });
+          navigate('/');
         } else if (msg.includes('password')) {
-          toast({ title: 'كلمة مرور ضعيفة', description: 'اختر كلمة مرور أقوى (6 أحرف على الأقل).', variant: 'destructive' });
+          toast({ title: 'SUPABASE AUTH ERROR', description: error.message, variant: 'destructive' });
         } else if (msg.includes('email')) {
-          toast({ title: 'بريد غير صالح', description: 'يرجى إدخال بريد إلكتروني صحيح.', variant: 'destructive' });
+          if (msg.includes('email not confirmed')) {
+            toast({
+              title: 'Email not confirmed',
+              description: 'Please confirm your email address or disable Email Confirmation in Supabase settings.',
+              variant: 'destructive',
+            });
+          } else {
+            toast({ title: 'SUPABASE AUTH ERROR', description: error.message, variant: 'destructive' });
+          }
         } else if (msg.includes('phone')) {
-          toast({ title: 'رقم غير صالح', description: 'يرجى إدخال رقم هاتف صحيح.', variant: 'destructive' });
+          toast({ title: 'SUPABASE AUTH ERROR', description: error.message, variant: 'destructive' });
         } else {
-          toast({ title: 'تعذّر إنشاء الحساب', description: error.message, variant: 'destructive' });
+          toast({ title: 'SUPABASE AUTH ERROR', description: error.message, variant: 'destructive' });
         }
         return;
       }
 
       // Persist account_type + specialty on the profile (created by handle_new_user trigger)
       if (data.user) {
-        await supabase
+        const { error: profileUpdateError } = await supabase
           .from('profiles')
           .update({ account_type: accountType, specialty: specialty || null })
           .eq('id', data.user.id);
+
+        if (profileUpdateError) reportAuthError(profileUpdateError, 'PROFILE UPDATE ERROR');
       }
 
       toast({ title: 'تم إنشاء الحساب', description: 'مرحباً بك في Network' });
       if (data.session) navigate('/');
       else navigate('/login');
     } catch (err: any) {
-      toast({ title: 'خطأ غير متوقع', description: err?.message || 'حدث خطأ أثناء التسجيل', variant: 'destructive' });
+      reportAuthError(err);
     } finally {
       setIsLoading(false);
     }
@@ -202,7 +268,7 @@ const SignUp = () => {
             value={username} onChange={(e) => setUsername(e.target.value)}
             className="h-13 bg-white/[0.04] border-white/[0.08] text-white/90 placeholder-white/20 rounded-2xl text-sm text-right focus:border-primary/30"
             style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}
-            required disabled={isLoading} dir="rtl" minLength={5}
+            required disabled={isLoading} dir="rtl"
           />
           <Input
             type="text" placeholder="الاسم الكامل (اختياري)"
