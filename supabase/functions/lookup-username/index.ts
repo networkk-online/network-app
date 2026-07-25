@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles').select('id, is_suspended, is_banned')
-      .eq('username', normalizedUsername).maybeSingle()
+      .ilike('username', normalizedUsername).maybeSingle()
     if (profileError) {
       console.error('SUPABASE AUTH ERROR:', profileError)
       return new Response(JSON.stringify({ error: profileError.message, raw: profileError }),

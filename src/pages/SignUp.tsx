@@ -83,10 +83,6 @@ const SignUp = () => {
     e.preventDefault();
     // Normalize: strip leading @ and lowercase so '@M' and 'M' behave identically
     const u = normalizeUsername(username);
-    if (u.length < 5) {
-      toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون من 5 أحرف أو أكثر. اليوزرات الرباعية فما دون غير مسموحة.', variant: 'destructive' });
-      return;
-    }
     if (!password) {
       toast({ title: 'خطأ', description: 'كلمة المرور مطلوبة', variant: 'destructive' });
       return;
@@ -113,20 +109,43 @@ const SignUp = () => {
     setIsLoading(true);
     try {
       const { data: existing, error: existingError } = await supabase
-        .from('profiles').select('id').eq('username', u).maybeSingle();
+        .from('profiles').select('id').ilike('username', u).maybeSingle();
 
       if (existingError) {
         reportAuthError(existingError, 'PROFILE LOOKUP ERROR');
       }
 
       if (existing) {
-        toast({
-          title: 'هذا الحساب موجود بالفعل',
-          description: 'اسم المستخدم مسجّل. يرجى تسجيل الدخول بدلاً من ذلك.',
-          variant: 'destructive',
-        });
-        goToLogin();
-        setIsLoading(false);
+        const credentials = mode === 'phone'
+          ? ({ phone: toE164(rule, phone), password } as any)
+          : { email: email.trim().toLowerCase(), password };
+        const { data: existingSignIn, error: existingSignInError } = await supabase.auth.signInWithPassword(credentials);
+        if (existingSignInError || !existingSignIn.session) {
+          if (existingSignInError) {
+            const raw = reportAuthError(existingSignInError);
+            if (raw.toLowerCase().includes('email not confirmed')) {
+              toast({
+                title: 'Email not confirmed',
+                description: 'Please confirm your email address or disable Email Confirmation in Supabase settings.',
+                variant: 'destructive',
+              });
+            }
+          }
+          toast({
+            title: 'هذا الحساب موجود بالفعل',
+            description: 'اسم المستخدم مسجّل. يرجى تسجيل الدخول بدلاً من ذلك.',
+            variant: 'destructive',
+          });
+          goToLogin();
+          return;
+        }
+        toast({ title: 'تم تسجيل الدخول', description: 'الحساب موجود بالفعل وتم تسجيل دخولك.' });
+        navigate('/');
+        return;
+      }
+
+      if (u.length < 5) {
+        toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون من 5 أحرف أو أكثر. اليوزرات الرباعية فما دون غير مسموحة.', variant: 'destructive' });
         return;
       }
 

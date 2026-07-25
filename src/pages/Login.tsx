@@ -107,7 +107,7 @@ const Login = () => {
         const { data: profileLookup, error: profileLookupError } = await supabase
           .from('profiles')
           .select('id, username, is_suspended, is_banned')
-          .eq('username', normalizedUsername)
+          .ilike('username', normalizedUsername)
           .maybeSingle();
 
         if (profileLookupError) {
