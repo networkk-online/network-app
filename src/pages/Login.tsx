@@ -23,6 +23,19 @@ const Login = () => {
   const isUsernameInput = !isPhoneInput && !isEmailInput && identifier.trim().length > 0;
   const inputMode = isPhoneInput ? 'tel' as const : 'text' as const;
 
+  const normalizeUsername = (value: string) => value.replace(/^@+/, '').trim().toLowerCase();
+
+  const reportAuthError = (error: unknown, title = 'SUPABASE AUTH ERROR') => {
+    console.error('SUPABASE AUTH ERROR:', error);
+    const message = error instanceof Error
+      ? error.message
+      : typeof error === 'object' && error !== null && 'message' in error
+        ? String((error as { message?: unknown }).message || JSON.stringify(error))
+        : String(error || 'Unknown auth error');
+    toast({ title, description: message, variant: 'destructive' });
+    return message;
+  };
+
   const resolveEmail = async (input: string): Promise<string | null> => {
     const trimmed = input.trim();
     if (trimmed.includes('@')) return trimmed;
@@ -33,10 +46,12 @@ const Login = () => {
       return phone;
     }
     try {
-      const { data, error } = await supabase.functions.invoke('lookup-username', { body: { username: trimmed.toLowerCase() } });
-      if (error || !data?.email) { toast({ title: 'خطأ', description: 'اسم المستخدم غير موجود', variant: 'destructive' }); return null; }
+      const username = normalizeUsername(trimmed);
+      const { data, error } = await supabase.functions.invoke('lookup-username', { body: { username } });
+      if (error) reportAuthError(error);
+      if (error || !data?.email) { toast({ title: 'خطأ', description: data?.error || error?.message || 'اسم المستخدم غير موجود', variant: 'destructive' }); return null; }
       return data.email;
-    } catch { toast({ title: 'خطأ', description: 'تعذر البحث عن اسم المستخدم', variant: 'destructive' }); return null; }
+    } catch (error) { reportAuthError(error); return null; }
   };
 
   const redirectPath = searchParams.get('redirect');
@@ -76,7 +91,7 @@ const Login = () => {
           return { title: 'بيانات غير صحيحة', description: 'تحقق من اسم المستخدم/البريد وكلمة المرور.' };
         }
         if (msg.includes('email not confirmed')) {
-          return { title: 'لم يتم تأكيد البريد', description: 'يرجى تأكيد بريدك الإلكتروني أولاً.' };
+          return { title: 'Email not confirmed', description: 'Please confirm your email address or disable Email Confirmation in Supabase settings.' };
         }
         if (msg.includes('user not found') || msg.includes('no user')) {
           return { title: 'الحساب غير موجود', description: 'لم نعثر على حساب بهذه البيانات. سجّل حساباً جديداً.' };
@@ -88,13 +103,30 @@ const Login = () => {
       };
 
       if (isUsername) {
+        const normalizedUsername = normalizeUsername(trimmed);
+        const { data: profileLookup, error: profileLookupError } = await supabase
+          .from('profiles')
+          .select('id, username, is_suspended, is_banned')
+          .eq('username', normalizedUsername)
+          .maybeSingle();
+
+        if (profileLookupError) {
+          reportAuthError(profileLookupError, 'PROFILE LOOKUP ERROR');
+        }
+
+        if (profileLookup?.is_suspended || profileLookup?.is_banned) {
+          toast({ title: 'الحساب موقوف', description: 'هذا الحساب مجمد حالياً.', variant: 'destructive' });
+          return;
+        }
+
         const { data: r, error: rErr } = await supabase.functions.invoke('lookup-username', {
-          body: { username: trimmed.toLowerCase(), password },
+          body: { username: normalizedUsername, password },
         });
         if (rErr || !r?.session) {
+          if (rErr) reportAuthError(rErr);
           toast({
-            title: 'بيانات غير صحيحة',
-            description: r?.error || 'اسم المستخدم أو كلمة المرور غير صحيحة',
+            title: 'SUPABASE AUTH ERROR',
+            description: r?.error || rErr?.message || 'اسم المستخدم أو كلمة المرور غير صحيحة',
             variant: 'destructive',
           });
           return;
@@ -104,7 +136,8 @@ const Login = () => {
           refresh_token: r.session.refresh_token,
         });
         if (setErr || !setData.session) {
-          toast({ title: 'خطأ', description: 'تعذر إنشاء الجلسة', variant: 'destructive' });
+          if (setErr) reportAuthError(setErr);
+          toast({ title: 'SUPABASE AUTH ERROR', description: setErr?.message || 'تعذر إنشاء الجلسة', variant: 'destructive' });
           return;
         }
         logLogin(setData.session.user.id);
@@ -127,14 +160,15 @@ const Login = () => {
 
       const { data, error } = await supabase.auth.signInWithPassword(credentials);
       if (error || !data.session) {
+        if (error) reportAuthError(error);
         const f = friendlyAuthError(error);
-        toast({ title: f.title, description: f.description, variant: 'destructive' });
+        toast({ title: f.title, description: error?.message || f.description, variant: 'destructive' });
         return;
       }
       logLogin(data.session.user.id);
       navigate(postLoginPath);
     } catch (err: any) {
-      toast({ title: 'خطأ', description: err?.message || 'حدث خطأ أثناء تسجيل الدخول', variant: 'destructive' });
+      reportAuthError(err);
     } finally {
       setIsLoading(false);
     }
