@@ -128,31 +128,18 @@ const Login = () => {
 
       if (isUsername) {
         const normalizedUsername = normalizeUsername(trimmed);
-        const { data: profileLookup, error: profileLookupError } = await supabase
-          .from('profiles')
-          .select('id, username, is_suspended, is_banned')
-          .ilike('username', normalizedUsername)
-          .maybeSingle();
-
-        if (profileLookupError) {
-          reportAuthError(profileLookupError, 'PROFILE LOOKUP ERROR');
-        }
-
-        if (profileLookup?.is_suspended || profileLookup?.is_banned) {
-          toast({ title: 'الحساب موقوف', description: 'هذا الحساب مجمد حالياً.', variant: 'destructive' });
+        if (!password) {
+          toast({ title: 'كلمة المرور مطلوبة', description: 'أدخل كلمة المرور للمتابعة', variant: 'destructive' });
           return;
         }
 
         const { data: r, error: rErr } = await supabase.functions.invoke('lookup-username', {
           body: { username: normalizedUsername, password },
         });
+        const bodyErr = rErr ? await readInvokeError(rErr) : null;
         if (rErr || !r?.session) {
-          if (rErr) reportAuthError(rErr);
-          toast({
-            title: 'SUPABASE AUTH ERROR',
-            description: r?.error || rErr?.message || 'اسم المستخدم أو كلمة المرور غير صحيحة',
-            variant: 'destructive',
-          });
+          const description = r?.error || bodyErr || rErr?.message || 'اسم المستخدم أو كلمة المرور غير صحيحة';
+          toast({ title: 'خطأ في تسجيل الدخول', description, variant: 'destructive' });
           return;
         }
         const { data: setData, error: setErr } = await supabase.auth.setSession({
@@ -160,14 +147,14 @@ const Login = () => {
           refresh_token: r.session.refresh_token,
         });
         if (setErr || !setData.session) {
-          if (setErr) reportAuthError(setErr);
-          toast({ title: 'SUPABASE AUTH ERROR', description: setErr?.message || 'تعذر إنشاء الجلسة', variant: 'destructive' });
+          toast({ title: 'خطأ في تسجيل الدخول', description: setErr?.message || 'تعذر إنشاء الجلسة', variant: 'destructive' });
           return;
         }
         logLogin(setData.session.user.id);
         navigate(postLoginPath);
         return;
       }
+
 
       let loginIdentifier = trimmed;
       if (isPhone) {
