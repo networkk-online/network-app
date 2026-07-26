@@ -111,11 +111,15 @@ const Login = () => {
 
       const friendlyAuthError = (err: any): { title: string; description: string } => {
         const msg = (err?.message || '').toLowerCase();
-        if (msg.includes('invalid login') || msg.includes('invalid credentials')) {
-          return { title: 'بيانات غير صحيحة', description: 'تحقق من اسم المستخدم/البريد وكلمة المرور.' };
+        const code = (err?.code || '').toString().toLowerCase();
+        if (code === 'weak_password' || msg.includes('weak_password') || msg.includes('pwned') || msg.includes('known to be weak')) {
+          return { title: 'كلمة مرور ضعيفة', description: 'كلمة المرور مسرّبة سابقاً. يرجى إعادة تعيين كلمة المرور من "نسيت كلمة المرور؟" واختيار كلمة أقوى.' };
+        }
+        if (msg.includes('invalid login') || msg.includes('invalid credentials') || code === 'invalid_credentials') {
+          return { title: 'بيانات غير صحيحة', description: 'اسم المستخدم/البريد أو كلمة المرور غير صحيحة. جرّب "نسيت كلمة المرور؟" لإعادة التعيين.' };
         }
         if (msg.includes('email not confirmed')) {
-          return { title: 'Email not confirmed', description: 'Please confirm your email address or disable Email Confirmation in Supabase settings.' };
+          return { title: 'البريد غير مؤكد', description: 'يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.' };
         }
         if (msg.includes('user not found') || msg.includes('no user')) {
           return { title: 'الحساب غير موجود', description: 'لم نعثر على حساب بهذه البيانات. سجّل حساباً جديداً.' };
@@ -171,9 +175,9 @@ const Login = () => {
 
       const { data, error } = await supabase.auth.signInWithPassword(credentials);
       if (error || !data.session) {
-        if (error) reportAuthError(error);
         const f = friendlyAuthError(error);
-        toast({ title: f.title, description: error?.message || f.description, variant: 'destructive' });
+        toast({ title: f.title, description: f.description, variant: 'destructive' });
+        console.error('AUTH ERROR:', error);
         return;
       }
       logLogin(data.session.user.id);
