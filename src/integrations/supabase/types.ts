@@ -1518,6 +1518,143 @@ export type Database = {
           },
         ]
       }
+      live_entrance_events: {
+        Row: {
+          created_at: string
+          effect_key: string | null
+          host_id: string
+          id: string
+          stream_id: string | null
+          viewer_id: string
+          vip_tier: string
+        }
+        Insert: {
+          created_at?: string
+          effect_key?: string | null
+          host_id: string
+          id?: string
+          stream_id?: string | null
+          viewer_id: string
+          vip_tier?: string
+        }
+        Update: {
+          created_at?: string
+          effect_key?: string | null
+          host_id?: string
+          id?: string
+          stream_id?: string | null
+          viewer_id?: string
+          vip_tier?: string
+        }
+        Relationships: []
+      }
+      live_gift_catalog: {
+        Row: {
+          animation_key: string | null
+          category: string
+          combo_enabled: boolean
+          created_at: string
+          emoji: string | null
+          icon_url: string | null
+          id: string
+          is_active: boolean
+          leaderboard_points: number
+          name: string
+          name_ar: string | null
+          price_coins: number
+          sort_order: number
+          sound_key: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          animation_key?: string | null
+          category: string
+          combo_enabled?: boolean
+          created_at?: string
+          emoji?: string | null
+          icon_url?: string | null
+          id: string
+          is_active?: boolean
+          leaderboard_points?: number
+          name: string
+          name_ar?: string | null
+          price_coins?: number
+          sort_order?: number
+          sound_key?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          animation_key?: string | null
+          category?: string
+          combo_enabled?: boolean
+          created_at?: string
+          emoji?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean
+          leaderboard_points?: number
+          name?: string
+          name_ar?: string | null
+          price_coins?: number
+          sort_order?: number
+          sound_key?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      live_goals: {
+        Row: {
+          created_at: string
+          current_count: number
+          host_id: string
+          id: string
+          is_completed: boolean
+          reward_coins: number
+          stream_id: string
+          target_count: number
+          target_gift_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_count?: number
+          host_id: string
+          id?: string
+          is_completed?: boolean
+          reward_coins?: number
+          stream_id: string
+          target_count: number
+          target_gift_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_count?: number
+          host_id?: string
+          id?: string
+          is_completed?: boolean
+          reward_coins?: number
+          stream_id?: string
+          target_count?: number
+          target_gift_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_goals_target_gift_id_fkey"
+            columns: ["target_gift_id"]
+            isOneToOne: false
+            referencedRelation: "live_gift_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_join_requests: {
         Row: {
           created_at: string
@@ -1552,6 +1689,98 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      live_quest_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          ends_at: string | null
+          host_id: string
+          id: string
+          is_completed: boolean
+          progress: number
+          quest_id: string
+          stream_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          ends_at?: string | null
+          host_id: string
+          id?: string
+          is_completed?: boolean
+          progress?: number
+          quest_id: string
+          stream_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          ends_at?: string | null
+          host_id?: string
+          id?: string
+          is_completed?: boolean
+          progress?: number
+          quest_id?: string
+          stream_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_quest_progress_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "live_quests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_quests: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          is_active: boolean
+          metric: string
+          reward_coins: number
+          sort_order: number
+          target_value: number
+          title: string
+          title_ar: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_active?: boolean
+          metric: string
+          reward_coins?: number
+          sort_order?: number
+          target_value: number
+          title: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_active?: boolean
+          metric?: string
+          reward_coins?: number
+          sort_order?: number
+          target_value?: number
+          title?: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       live_rooms: {
         Row: {
@@ -1595,6 +1824,45 @@ export type Database = {
           title?: string | null
           updated_at?: string
           viewer_count?: number | null
+        }
+        Relationships: []
+      }
+      live_rounds: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          host_id: string
+          id: string
+          round_name: string
+          round_number: number
+          score: Json
+          started_at: string
+          stream_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          host_id: string
+          id?: string
+          round_name: string
+          round_number: number
+          score?: Json
+          started_at?: string
+          stream_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          host_id?: string
+          id?: string
+          round_name?: string
+          round_number?: number
+          score?: Json
+          started_at?: string
+          stream_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1643,6 +1911,128 @@ export type Database = {
           title?: string | null
           updated_at?: string
           viewer_count?: number
+        }
+        Relationships: []
+      }
+      live_summary: {
+        Row: {
+          chart_data: Json
+          coins_earned: number
+          comments_count: number
+          created_at: string
+          duration_seconds: number
+          estimated_revenue_iqd: number
+          followers_gained: number
+          gift_income_coins: number
+          host_id: string
+          id: string
+          likes_count: number
+          peak_viewers: number
+          stream_id: string
+          top_supporters: Json
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          chart_data?: Json
+          coins_earned?: number
+          comments_count?: number
+          created_at?: string
+          duration_seconds?: number
+          estimated_revenue_iqd?: number
+          followers_gained?: number
+          gift_income_coins?: number
+          host_id: string
+          id?: string
+          likes_count?: number
+          peak_viewers?: number
+          stream_id: string
+          top_supporters?: Json
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          chart_data?: Json
+          coins_earned?: number
+          comments_count?: number
+          created_at?: string
+          duration_seconds?: number
+          estimated_revenue_iqd?: number
+          followers_gained?: number
+          gift_income_coins?: number
+          host_id?: string
+          id?: string
+          likes_count?: number
+          peak_viewers?: number
+          stream_id?: string
+          top_supporters?: Json
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
+      live_super_gift_events: {
+        Row: {
+          created_at: string
+          gift_id: string
+          host_id: string
+          id: string
+          quantity: number
+          sender_id: string
+          stream_id: string | null
+          vip_level: string | null
+        }
+        Insert: {
+          created_at?: string
+          gift_id: string
+          host_id: string
+          id?: string
+          quantity?: number
+          sender_id: string
+          stream_id?: string | null
+          vip_level?: string | null
+        }
+        Update: {
+          created_at?: string
+          gift_id?: string
+          host_id?: string
+          id?: string
+          quantity?: number
+          sender_id?: string
+          stream_id?: string | null
+          vip_level?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_super_gift_events_gift_id_fkey"
+            columns: ["gift_id"]
+            isOneToOne: false
+            referencedRelation: "live_gift_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_vip_levels: {
+        Row: {
+          entrance_effect: string | null
+          lifetime_spend: number
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          entrance_effect?: string | null
+          lifetime_spend?: number
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          entrance_effect?: string | null
+          lifetime_spend?: number
+          tier?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
