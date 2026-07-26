@@ -125,15 +125,27 @@ const Profile = () => {
   const loadProfile = async (userId: string, isOwn: boolean) => {
     try {
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      let query = supabase.from('profiles').select('*');
-      query = uuidRegex.test(userId)
-        ? query.eq('id', userId)
-        : query.eq('username', userId.replace(/^@/, ''));
-      const { data, error } = await query.maybeSingle();
+      let data: any = null;
+      let error: any = null;
+      if (isOwn) {
+        // Owner: fetch full row (including PII) via SECURITY DEFINER RPC
+        const res = await supabase.rpc('get_own_profile');
+        data = Array.isArray(res.data) ? res.data[0] : res.data;
+        error = res.error;
+      } else {
+        // Public: fetch the non-PII view
+        let query = supabase.from('profiles_public').select('*');
+        query = uuidRegex.test(userId)
+          ? query.eq('id', userId)
+          : query.eq('username', userId.replace(/^@/, ''));
+        const res = await query.maybeSingle();
+        data = res.data; error = res.error;
+      }
 
       if (error) throw error;
 
       const resolvedId = data?.id || userId;
+
 
       // Get following count
       const { count: followingCount } = await supabase
