@@ -351,9 +351,37 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
       ...prev,
       { id: Date.now().toString(), username: 'أنت', message, isHost: agora.isHost },
     ]);
+    setSessionComments(c => c + 1);
   };
 
   const requestStart = () => setTermsOpen(true);
+
+  // Track peak viewers for the summary snapshot
+  useEffect(() => {
+    setPeakViewers(p => Math.max(p, agora.viewerCount));
+  }, [agora.viewerCount]);
+
+  // Viewer: register an entrance event on join (fires the VIP entrance banner for everyone)
+  useEffect(() => {
+    if (!isViewer || !agora.isInRoom || !hostUserId || !streamRowId) return;
+    supabase.auth.getUser().then(async ({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      const { data: vip } = await supabase
+        .from('live_vip_levels')
+        .select('tier,entrance_effect')
+        .eq('user_id', uid)
+        .maybeSingle();
+      if (!vip || !vip.tier || vip.tier === 'none') return;
+      supabase.from('live_entrance_events').insert({
+        stream_id: streamRowId,
+        host_id: hostUserId,
+        viewer_id: uid,
+        vip_tier: vip.tier,
+        effect_key: vip.entrance_effect,
+      }).then(() => {});
+    });
+  }, [isViewer, agora.isInRoom, hostUserId, streamRowId]);
 
   const startBroadcast = async () => {
     stopPreview();
@@ -379,12 +407,51 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
     }
   };
 
+  const buildSummary = (): LiveSummary => {
+    const durationSeconds = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+    const supporters = Object.values(topSupporters)
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 10);
+    return {
+      duration_seconds: durationSeconds,
+      views_count: agora.viewerCount,
+      peak_viewers: peakViewers,
+      likes_count: sessionLikes,
+      comments_count: sessionComments,
+      followers_gained: sessionFollowers,
+      gift_income_coins: gemsCollected,
+      coins_earned: Math.floor(gemsCollected * 0.8),
+      estimated_revenue_iqd: Math.floor(gemsCollected * 0.8 * 15),
+      top_supporters: supporters,
+    };
+  };
+
   const stopBroadcast = async () => {
     if (streamRowId && agora.isHost) {
+      const s = buildSummary();
+      setSummaryData(s);
+      setShowSummary(true);
+      // Persist snapshot (best-effort)
+      supabase.from('live_summary').upsert({
+        stream_id: streamRowId,
+        host_id: hostUserId,
+        duration_seconds: s.duration_seconds,
+        views_count: s.views_count,
+        peak_viewers: s.peak_viewers,
+        likes_count: s.likes_count,
+        comments_count: s.comments_count,
+        followers_gained: s.followers_gained,
+        gift_income_coins: s.gift_income_coins,
+        coins_earned: s.coins_earned,
+        estimated_revenue_iqd: s.estimated_revenue_iqd,
+        top_supporters: s.top_supporters,
+      }, { onConflict: 'stream_id' }).then(() => {});
       await supabase
         .from('live_streams')
         .update({ status: 'ended', ended_at: new Date().toISOString(), last_heartbeat_at: new Date().toISOString() })
         .eq('id', streamRowId);
+      await agora.leaveRoom();
+      return; // Keep summary open; user closes via LiveSummaryScreen
     }
     await agora.leaveRoom();
     onClose();
