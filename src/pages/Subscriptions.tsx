@@ -542,17 +542,21 @@ const Subscriptions = () => {
               brands, and mission-critical organizations.
             </p>
             <Button
-              asChild
+              onClick={() => setWaPlan(WHATSAPP_PLANS.government)}
               size="lg"
               className="mt-8 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-black font-semibold hover:opacity-95"
             >
-              <a href="mailto:enterprise@networkk.online">
-                Contact Sales <ArrowRight className="ml-1 h-4 w-4" />
-              </a>
+              Contact Government Sales <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
         </section>
       </div>
+
+      <WhatsAppSubscribeDialog
+        plan={waPlan}
+        open={!!waPlan}
+        onOpenChange={(o) => !o && setWaPlan(null)}
+      />
     </div>
   );
 };
