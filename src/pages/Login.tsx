@@ -175,9 +175,9 @@ const Login = () => {
 
       const { data, error } = await supabase.auth.signInWithPassword(credentials);
       if (error || !data.session) {
-        if (error) reportAuthError(error);
         const f = friendlyAuthError(error);
-        toast({ title: f.title, description: error?.message || f.description, variant: 'destructive' });
+        toast({ title: f.title, description: f.description, variant: 'destructive' });
+        console.error('AUTH ERROR:', error);
         return;
       }
       logLogin(data.session.user.id);
