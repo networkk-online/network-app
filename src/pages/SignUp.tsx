@@ -144,10 +144,11 @@ const SignUp = () => {
         return;
       }
 
-      if (u.length < 5) {
-        toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون من 5 أحرف أو أكثر. اليوزرات الرباعية فما دون غير مسموحة.', variant: 'destructive' });
+      if (u.length < 3) {
+        toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل. الأسماء ذات الحرف أو الحرفين محجوزة للحسابات القديمة.', variant: 'destructive' });
         return;
       }
+
 
       const signUpPayload: any = {
         password,
