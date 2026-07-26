@@ -4461,12 +4461,10 @@ export type Database = {
           followers_count: number | null
           following_count: number | null
           full_name: string | null
-          gender: string | null
           id: string | null
           is_business_account: boolean | null
           is_live: boolean | null
           is_verified: boolean | null
-          location: string | null
           profession: string | null
           school: string | null
           social_links: Json | null
@@ -4490,12 +4488,10 @@ export type Database = {
           followers_count?: number | null
           following_count?: number | null
           full_name?: string | null
-          gender?: string | null
           id?: string | null
           is_business_account?: boolean | null
           is_live?: boolean | null
           is_verified?: boolean | null
-          location?: string | null
           profession?: string | null
           school?: string | null
           social_links?: Json | null
@@ -4519,12 +4515,10 @@ export type Database = {
           followers_count?: number | null
           following_count?: number | null
           full_name?: string | null
-          gender?: string | null
           id?: string | null
           is_business_account?: boolean | null
           is_live?: boolean | null
           is_verified?: boolean | null
-          location?: string | null
           profession?: string | null
           school?: string | null
           social_links?: Json | null
@@ -4546,6 +4540,51 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_profile_pii: {
+        Args: { _user_id: string }
+        Returns: {
+          account_type: Database["public"]["Enums"]["account_type_enum"] | null
+          affiliated_company_id: string | null
+          avatar_url: string | null
+          bio: string | null
+          birth_date: string | null
+          business_category: string | null
+          business_description: string | null
+          business_email: string | null
+          business_hours: Json | null
+          business_website: string | null
+          cover_url: string | null
+          created_at: string
+          fame_score: number | null
+          followers_count: number | null
+          following_count: number | null
+          full_name: string | null
+          gender: string | null
+          id: string
+          is_banned: boolean
+          is_business_account: boolean | null
+          is_live: boolean
+          is_suspended: boolean
+          is_verified: boolean | null
+          location: string | null
+          phone_country_code: string | null
+          phone_number: string | null
+          profession: string | null
+          school: string | null
+          social_links: Json | null
+          specialty: string | null
+          updated_at: string
+          username: string | null
+          verification_type: string | null
+          website: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_list_users: {
         Args: { _limit?: number; _offset?: number; _search?: string }
         Returns: {
@@ -4576,6 +4615,51 @@ export type Database = {
           phone_country_code: string
           phone_number: string
         }[]
+      }
+      get_own_profile: {
+        Args: never
+        Returns: {
+          account_type: Database["public"]["Enums"]["account_type_enum"] | null
+          affiliated_company_id: string | null
+          avatar_url: string | null
+          bio: string | null
+          birth_date: string | null
+          business_category: string | null
+          business_description: string | null
+          business_email: string | null
+          business_hours: Json | null
+          business_website: string | null
+          cover_url: string | null
+          created_at: string
+          fame_score: number | null
+          followers_count: number | null
+          following_count: number | null
+          full_name: string | null
+          gender: string | null
+          id: string
+          is_banned: boolean
+          is_business_account: boolean | null
+          is_live: boolean
+          is_suspended: boolean
+          is_verified: boolean | null
+          location: string | null
+          phone_country_code: string | null
+          phone_number: string | null
+          profession: string | null
+          school: string | null
+          social_links: Json | null
+          specialty: string | null
+          updated_at: string
+          username: string | null
+          verification_type: string | null
+          website: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_user_conversation_ids: {
         Args: { p_user_id: string }

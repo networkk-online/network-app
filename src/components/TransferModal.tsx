@@ -64,14 +64,17 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
 
   const searchUsers = async (query: string) => {
     setSearching(true);
+    // Search by username / full_name only. Phone-number lookup was removed to
+    // avoid leaking PII across accounts.
     const { data } = await supabase
-      .from('profiles')
+      .from('profiles_public')
       .select('id, username, full_name, avatar_url')
-      .or(`username.ilike.%${query}%,full_name.ilike.%${query}%,phone_number.ilike.%${query}%`)
+      .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
       .limit(5);
     setSearchResults(data || []);
     setSearching(false);
   };
+
 
   const selectRecipient = (profile: any) => {
     setRecipientProfile(profile);
