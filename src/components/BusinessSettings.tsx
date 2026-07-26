@@ -53,18 +53,16 @@ export const BusinessSettings = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data } = await supabase
-      .from('profiles')
-      .select('is_business_account, business_category, business_description, business_email, business_website, business_hours')
-      .eq('id', user.id)
-      .single();
+    // business_email is PII (server-side revoked); fetch full row via owner RPC
+    const { data: rows } = await supabase.rpc('get_own_profile');
+    const data: any = Array.isArray(rows) ? rows[0] : rows;
 
     if (data) {
       setIsBusinessAccount(data.is_business_account || false);
       const hoursData = typeof data.business_hours === 'object' && data.business_hours !== null
         ? data.business_hours as any
         : businessData.hours;
-      
+
       setBusinessData({
         category: data.business_category || '',
         description: data.business_description || '',
@@ -74,6 +72,7 @@ export const BusinessSettings = () => {
       });
     }
   };
+
 
   const handleSave = async () => {
     setLoading(true);
