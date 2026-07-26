@@ -199,8 +199,17 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
     const meta = GIFT_META[giftId] || { icon: '🎁', name: 'هدية', price: 1 };
     const totalPrice = meta.price * amount;
 
-    // Optimistic UI
+    // Optimistic UI + engagement counters
     setGemsCollected(g => g + totalPrice);
+    setSessionGifts(g => g + amount);
+    if (giftId === 'rose') setSessionRoses(r => r + amount);
+    if (giftId === 'diamond') setSessionDiamonds(d => d + amount);
+    setTopSupporters(prev => {
+      const next = { ...prev };
+      const key = 'أنت';
+      next[key] = { username: key, amount: (next[key]?.amount ?? 0) + totalPrice };
+      return next;
+    });
     setTieredEvents(prev => [
       ...prev,
       {
