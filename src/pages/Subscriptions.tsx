@@ -396,16 +396,15 @@ const Subscriptions = () => {
                 </div>
 
                 <Button
-                  asChild
+                  onClick={() => setWaPlan(WHATSAPP_PLANS[plan.id] ?? null)}
                   className={cn(
                     "mt-6 w-full rounded-2xl bg-gradient-to-r text-white font-semibold shadow-lg hover:opacity-95 transition",
                     plan.gradient
                   )}
                 >
-                  <Link to={plan.ctaHref}>
-                    {plan.cta} <ArrowRight className="ml-1 h-4 w-4" />
-                  </Link>
+                  {plan.cta} <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
+
 
                 <div className="mt-6 space-y-4 text-sm">
                   {plan.groups.map((g, gi) => (
