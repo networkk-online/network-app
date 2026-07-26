@@ -531,6 +531,27 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
             {/* Fullscreen 3D premium gift engine (Lion / Whale / Falcon / Supercar) — FIFO queue */}
             <GrandGiftAnimationEngine gifts={grandGifts} onGiftComplete={completeGrandGift} />
 
+            {/* ═══ PREMIUM LIVE LAYERS ═══ */}
+            <LiveQuestPanel
+              streamId={streamRowId}
+              hostId={hostUserId}
+              isHost={agora.isHost}
+              counters={{
+                likes: sessionLikes,
+                roses: sessionRoses,
+                followers: sessionFollowers,
+                diamonds: sessionDiamonds,
+                shares: sessionShares,
+                comments: sessionComments,
+                gifts: sessionGifts,
+                duration_minutes: Math.floor((Date.now() - startedAt) / 60000),
+              }}
+            />
+            <LiveGoalCard streamId={streamRowId} />
+            <LiveRoundBanner streamId={streamRowId} />
+            <VIPEntranceEffect streamId={streamRowId} />
+
+
 
             {/* Host-only top bar + tools */}
             {agora.isHost && (
