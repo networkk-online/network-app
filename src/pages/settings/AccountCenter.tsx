@@ -52,11 +52,13 @@ const AccountCenter = () => {
         return;
       }
 
-      const [{ data: profile }, { data: history }] = await Promise.all([
-        supabase.from('profiles').select('username, phone_number, phone_country_code').eq('id', user.id).maybeSingle(),
+      const [{ data: profileRows }, { data: history }] = await Promise.all([
+        supabase.rpc('get_own_profile'),
         supabase.from('login_history').select('id, device_label, city, country, ip_address, is_new_device, is_new_ip, created_at')
           .eq('user_id', user.id).order('created_at', { ascending: false }).limit(15),
       ]);
+
+      const profile: any = Array.isArray(profileRows) ? profileRows[0] : profileRows;
 
       setContact({
         email: user.email ?? null,
@@ -64,6 +66,7 @@ const AccountCenter = () => {
         phone_country_code: profile?.phone_country_code ?? null,
         username: profile?.username ?? null,
       });
+
       setLogins(history ?? []);
     } catch (e) {
       console.error(e);
