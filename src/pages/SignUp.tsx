@@ -144,10 +144,11 @@ const SignUp = () => {
         return;
       }
 
-      if (u.length < 5) {
-        toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون من 5 أحرف أو أكثر. اليوزرات الرباعية فما دون غير مسموحة.', variant: 'destructive' });
+      if (u.length < 3) {
+        toast({ title: 'اسم مستخدم غير صالح', description: 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل. الأسماء ذات الحرف أو الحرفين محجوزة للحسابات القديمة.', variant: 'destructive' });
         return;
       }
+
 
       const signUpPayload: any = {
         password,
@@ -264,7 +265,7 @@ const SignUp = () => {
 
         <form onSubmit={handleSignUp} className="space-y-4">
           <Input
-            type="text" placeholder="اسم المستخدم (5 أحرف على الأقل)"
+            type="text" placeholder="اسم المستخدم (3 أحرف على الأقل)"
             value={username} onChange={(e) => setUsername(e.target.value)}
             className="h-13 bg-white/[0.04] border-white/[0.08] text-white/90 placeholder-white/20 rounded-2xl text-sm text-right focus:border-primary/30"
             style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}
