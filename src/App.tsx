@@ -123,6 +123,8 @@ import InstallPWAButton from "./components/InstallPWAButton";
 // ... keep existing code
 import MaintenanceGuard from "./components/MaintenanceGuard";
 import AdminRouteBlocker from "./components/guards/AdminRouteBlocker";
+const Subscriptions = lazy(() => import("./pages/Subscriptions"));
+const SubscriptionManage = lazy(() => import("./pages/SubscriptionManage"));
 
 const queryClient = new QueryClient();
 
@@ -272,6 +274,9 @@ const AppContent = () => {
         <Route path="/engineering-blog" element={<DynamicPage slug="engineering-blog" />} />
         <Route path="/advertising" element={<DynamicPage slug="advertising" />} />
         <Route path="/resources" element={<DynamicPage slug="resources" />} />
+        <Route path="/subscriptions" element={<Subscriptions />} />
+        <Route path="/pricing" element={<Subscriptions />} />
+        <Route path="/subscriptions/manage" element={<SubscriptionManage />} />
         <Route path="/p/:slug" element={<DynamicPage slug="" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
