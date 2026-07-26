@@ -25,15 +25,35 @@ const Login = () => {
 
   const normalizeUsername = (value: string) => value.replace(/^@+/, '').trim().toLowerCase();
 
-  const reportAuthError = (error: unknown, title = 'SUPABASE AUTH ERROR') => {
-    console.error('SUPABASE AUTH ERROR:', error);
+  const reportAuthError = (error: unknown, title = 'خطأ في تسجيل الدخول') => {
+    console.error('AUTH ERROR:', error);
     const message = error instanceof Error
       ? error.message
       : typeof error === 'object' && error !== null && 'message' in error
         ? String((error as { message?: unknown }).message || JSON.stringify(error))
-        : String(error || 'Unknown auth error');
+        : String(error || 'حدث خطأ غير متوقع');
     toast({ title, description: message, variant: 'destructive' });
     return message;
+  };
+
+  // supabase.functions.invoke drops the JSON body on non-2xx responses.
+  // Try to read it from the FunctionsHttpError context if present.
+  const readInvokeError = async (err: any): Promise<string | null> => {
+    try {
+      const ctx = err?.context;
+      if (ctx && typeof ctx.json === 'function') {
+        const body = await ctx.json();
+        if (body?.error) return String(body.error);
+      }
+      if (ctx && typeof ctx.text === 'function') {
+        const txt = await ctx.text();
+        if (txt) {
+          try { const parsed = JSON.parse(txt); if (parsed?.error) return String(parsed.error); } catch {}
+          return txt;
+        }
+      }
+    } catch {}
+    return null;
   };
 
   const resolveEmail = async (input: string): Promise<string | null> => {
@@ -48,11 +68,15 @@ const Login = () => {
     try {
       const username = normalizeUsername(trimmed);
       const { data, error } = await supabase.functions.invoke('lookup-username', { body: { username } });
-      if (error) reportAuthError(error);
-      if (error || !data?.email) { toast({ title: 'خطأ', description: data?.error || error?.message || 'اسم المستخدم غير موجود', variant: 'destructive' }); return null; }
+      const bodyErr = error ? await readInvokeError(error) : null;
+      if (error || !data?.email) {
+        toast({ title: 'خطأ', description: data?.error || bodyErr || error?.message || 'اسم المستخدم غير موجود', variant: 'destructive' });
+        return null;
+      }
       return data.email;
     } catch (error) { reportAuthError(error); return null; }
   };
+
 
   const redirectPath = searchParams.get('redirect');
   const isSafeRedirect = (p: string | null): p is string =>
