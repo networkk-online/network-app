@@ -84,6 +84,21 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
   const streamRowIdRef = useRef<string | null>(null);
   const isHostRef = useRef(false);
 
+  // Session engagement counters (drives quests)
+  const [sessionLikes, setSessionLikes] = useState(0);
+  const [sessionComments, setSessionComments] = useState(0);
+  const [sessionFollowers, setSessionFollowers] = useState(0);
+  const [sessionGifts, setSessionGifts] = useState(0);
+  const [sessionRoses, setSessionRoses] = useState(0);
+  const [sessionDiamonds, setSessionDiamonds] = useState(0);
+  const [sessionShares, setSessionShares] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
+  const [topSupporters, setTopSupporters] = useState<Record<string, { username: string; amount: number }>>({});
+
+  // Post-stream summary
+  const [showSummary, setShowSummary] = useState(false);
+  const [summaryData, setSummaryData] = useState<LiveSummary | null>(null);
+
   useEffect(() => {
     streamRowIdRef.current = streamRowId;
   }, [streamRowId]);
