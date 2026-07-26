@@ -226,6 +226,7 @@ const faqs = [
 
 const Subscriptions = () => {
   const [yearly, setYearly] = useState(false);
+  const [waPlan, setWaPlan] = useState<WhatsAppPlan | null>(null);
 
   const formatPrice = (p: number | "custom") => {
     if (p === "custom") return "Custom";
@@ -236,6 +237,7 @@ const Subscriptions = () => {
     p === "custom" ? "" : yearly ? "/year" : "/month";
 
   const currentPlanId = "plus";
+
 
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
