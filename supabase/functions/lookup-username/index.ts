@@ -5,96 +5,102 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const json = (body: Record<string, unknown>, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+
 // This function supports two modes:
 //   1) Sign-in by username (public): { username, password } -> returns auth session.
 //      The email is never returned to the client, preventing enumeration.
 //   2) Email lookup (admin-only): { username } with admin Bearer token -> returns email.
+//
+// IMPORTANT: All expected failures return HTTP 200 with an `error` field so that
+// `supabase.functions.invoke()` on the client receives the JSON body in `data`
+// (non-2xx responses are surfaced only as a generic "non-2xx status code" error
+// with the body dropped by supabase-js). Only unexpected server issues use 5xx.
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
   try {
-    const { username, password } = await req.json()
+    let body: any = {}
+    try { body = await req.json() } catch { /* ignore */ }
+    const { username, password } = body || {}
+
     if (!username || typeof username !== 'string') {
-      return new Response(JSON.stringify({ error: 'اسم المستخدم مطلوب' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return json({ error: 'اسم المستخدم مطلوب' })
     }
 
     const normalizedUsername = username.replace(/^@+/, '').trim().toLowerCase()
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+    const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const ANON = Deno.env.get('SUPABASE_ANON_KEY')
+    if (!SUPABASE_URL || !SERVICE_ROLE || !ANON) {
+      console.error('lookup-username: missing env vars')
+      return json({ error: 'إعدادات الخادم غير مكتملة' }, 500)
+    }
+
+    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE)
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles').select('id, is_suspended, is_banned')
       .ilike('username', normalizedUsername).maybeSingle()
+
     if (profileError) {
-      console.error('SUPABASE AUTH ERROR:', profileError)
-      return new Response(JSON.stringify({ error: profileError.message, raw: profileError }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      console.error('profile lookup error:', profileError)
+      return json({ error: 'تعذر التحقق من الحساب' }, 500)
     }
     if (!profile) {
-      return new Response(JSON.stringify({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' })
     }
     if (profile.is_suspended || profile.is_banned) {
-      return new Response(JSON.stringify({ error: 'هذا الحساب مجمد حالياً.' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return json({ error: 'هذا الحساب مجمد حالياً.' })
     }
 
     // ---- Mode 1: sign-in by username (public path) ----
     if (typeof password === 'string' && password.length > 0) {
       const { data: u, error: getUserError } = await supabase.auth.admin.getUserById(profile.id)
       if (getUserError) {
-        console.error('SUPABASE AUTH ERROR:', getUserError)
-        return new Response(JSON.stringify({ error: getUserError.message, raw: getUserError }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        console.error('getUserById error:', getUserError)
+        return json({ error: 'تعذر تسجيل الدخول، حاول لاحقاً' }, 500)
       }
       if (!u?.user?.email) {
-        return new Response(JSON.stringify({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        return json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' })
       }
-      const anon = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!)
+      const anon = createClient(SUPABASE_URL, ANON)
       const { data: signin, error: signErr } = await anon.auth.signInWithPassword({
         email: u.user.email, password,
       })
       if (signErr || !signin.session) {
-        if (signErr) console.error('SUPABASE AUTH ERROR:', signErr)
-        return new Response(JSON.stringify({ error: signErr?.message || 'اسم المستخدم أو كلمة المرور غير صحيحة', raw: signErr }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        return json({ error: signErr?.message || 'اسم المستخدم أو كلمة المرور غير صحيحة' })
       }
-      return new Response(JSON.stringify({ session: signin.session }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return json({ session: signin.session })
     }
 
     // ---- Mode 2: email lookup (admin-only) ----
     const authHeader = req.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return json({ error: 'Unauthorized' })
     }
-    const userClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!,
+    const userClient = createClient(SUPABASE_URL, ANON,
       { global: { headers: { Authorization: authHeader } } })
     const { data: claims } = await userClient.auth.getClaims(authHeader.replace('Bearer ', ''))
     const callerId = claims?.claims?.sub as string | undefined
     if (!callerId) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return json({ error: 'Unauthorized' })
     }
     const { data: isAdmin } = await supabase.from('user_roles')
       .select('role').eq('user_id', callerId).eq('role', 'admin').maybeSingle()
     if (callerId !== profile.id && !isAdmin) {
-      return new Response(JSON.stringify({ error: 'Forbidden' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return json({ error: 'Forbidden' })
     }
     const { data: u } = await supabase.auth.admin.getUserById(profile.id)
-    return new Response(JSON.stringify({ email: u?.user?.email ?? null }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    return json({ email: u?.user?.email ?? null })
   } catch (e) {
-    console.error('SUPABASE AUTH ERROR:', e)
+    console.error('lookup-username unexpected error:', e)
     const message = e instanceof Error ? e.message : 'حدث خطأ في الخادم'
-    return new Response(JSON.stringify({ error: message, raw: String(e) }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    return json({ error: message }, 500)
   }
 })
