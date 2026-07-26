@@ -3702,6 +3702,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          billing_cycle: string
+          canceled_at: string | null
+          created_at: string
+          id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          r_coins: number
+          renews_at: string | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_cycle?: string
+          canceled_at?: string | null
+          created_at?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          r_coins?: number
+          renews_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_cycle?: string
+          canceled_at?: string | null
+          created_at?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          r_coins?: number
+          renews_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       verification_logs: {
         Row: {
           action: string
@@ -4232,6 +4271,8 @@ export type Database = {
     Enums: {
       account_type_enum: "creator" | "personal" | "business" | "government"
       app_role: "admin" | "moderator" | "user"
+      subscription_plan: "free" | "plus" | "creator" | "business" | "government"
+      subscription_status: "active" | "pending" | "canceled" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4361,6 +4402,8 @@ export const Constants = {
     Enums: {
       account_type_enum: ["creator", "personal", "business", "government"],
       app_role: ["admin", "moderator", "user"],
+      subscription_plan: ["free", "plus", "creator", "business", "government"],
+      subscription_status: ["active", "pending", "canceled", "expired"],
     },
   },
 } as const
