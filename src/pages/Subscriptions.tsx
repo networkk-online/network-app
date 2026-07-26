@@ -13,6 +13,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import BackButton from "@/components/BackButton";
+import {
+  WhatsAppSubscribeDialog,
+  WHATSAPP_PLANS,
+  type WhatsAppPlan,
+} from "@/components/subscription/WhatsAppSubscribeDialog";
+
 
 type Plan = {
   id: string;
