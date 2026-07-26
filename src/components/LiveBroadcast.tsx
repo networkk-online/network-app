@@ -20,6 +20,11 @@ import { GrandGiftAnimationEngine, type GrandGift, type GrandGiftType } from './
 import { TermsConsentModal } from './legal/TermsConsentModal';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeText } from '@/lib/sanitize';
+import { LiveQuestPanel } from './live/LiveQuestPanel';
+import { LiveGoalCard } from './live/LiveGoalCard';
+import { LiveRoundBanner } from './live/LiveRoundBanner';
+import { VIPEntranceEffect } from './live/VIPEntranceEffect';
+import { LiveSummaryScreen, type LiveSummary } from './live/LiveSummaryScreen';
 
 const PREMIUM_GIFT_TYPES = new Set<GrandGiftType>(['lion', 'whale', 'supercar', 'falcon']);
 
