@@ -797,6 +797,13 @@ const LiveBroadcast = ({ onClose, joinRoomId }: LiveBroadcastProps) => {
         onAccept={() => { setTermsOpen(false); startBroadcast(); }}
         onCancel={() => setTermsOpen(false)}
       />
+
+      {showSummary && summaryData && (
+        <LiveSummaryScreen
+          summary={summaryData}
+          onClose={() => { setShowSummary(false); onClose(); }}
+        />
+      )}
     </motion.div>
   );
 };
