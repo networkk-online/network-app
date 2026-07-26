@@ -166,15 +166,18 @@ const SignUp = () => {
 
       const { data, error } = await supabase.auth.signUp(signUpPayload);
       if (error) {
-        console.error('SUPABASE AUTH ERROR:', error);
+        console.error('SIGNUP ERROR:', error);
         const msg = (error.message || '').toLowerCase();
+        const code = ((error as any).code || '').toString().toLowerCase();
         const isDup =
           msg.includes('already registered') ||
           msg.includes('already been registered') ||
           msg.includes('already exists') ||
           msg.includes('user already') ||
           (error as any).status === 409 ||
-          (error as any).code === 'user_already_exists';
+          code === 'user_already_exists';
+        const isWeak = code === 'weak_password' || msg.includes('pwned') || msg.includes('known to be weak') || msg.includes('weak_password');
+
         if (isDup) {
           const credentials = mode === 'phone'
             ? ({ phone: toE164(rule, phone), password } as any)
@@ -182,39 +185,26 @@ const SignUp = () => {
 
           const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword(credentials);
           if (signInError || !signInData.session) {
-            if (signInError) {
-              const raw = reportAuthError(signInError);
-              if (raw.toLowerCase().includes('email not confirmed')) {
-                toast({
-                  title: 'Email not confirmed',
-                  description: 'Please confirm your email address or disable Email Confirmation in Supabase settings.',
-                  variant: 'destructive',
-                });
-              }
-            } else {
-              toast({ title: 'SUPABASE AUTH ERROR', description: error.message, variant: 'destructive' });
-            }
+            toast({
+              title: 'هذا الحساب موجود بالفعل',
+              description: 'الحساب مسجّل مسبقاً وكلمة المرور لا تطابق. سجّل الدخول أو استخدم "نسيت كلمة المرور؟".',
+              variant: 'destructive',
+            });
             goToLogin();
             return;
           }
           toast({ title: 'تم تسجيل الدخول', description: 'الحساب موجود بالفعل وتم تسجيل دخولك.' });
           navigate('/');
-        } else if (msg.includes('password')) {
-          toast({ title: 'SUPABASE AUTH ERROR', description: error.message, variant: 'destructive' });
-        } else if (msg.includes('email')) {
-          if (msg.includes('email not confirmed')) {
-            toast({
-              title: 'Email not confirmed',
-              description: 'Please confirm your email address or disable Email Confirmation in Supabase settings.',
-              variant: 'destructive',
-            });
-          } else {
-            toast({ title: 'SUPABASE AUTH ERROR', description: error.message, variant: 'destructive' });
-          }
-        } else if (msg.includes('phone')) {
-          toast({ title: 'SUPABASE AUTH ERROR', description: error.message, variant: 'destructive' });
+        } else if (isWeak) {
+          toast({
+            title: 'كلمة مرور ضعيفة',
+            description: 'كلمة المرور هذه شائعة أو مسرّبة. اختر كلمة مرور أقوى (8+ أحرف مع أرقام ورموز).',
+            variant: 'destructive',
+          });
+        } else if (msg.includes('email not confirmed')) {
+          toast({ title: 'البريد غير مؤكد', description: 'يرجى تأكيد بريدك الإلكتروني.', variant: 'destructive' });
         } else {
-          toast({ title: 'SUPABASE AUTH ERROR', description: error.message, variant: 'destructive' });
+          toast({ title: 'خطأ في إنشاء الحساب', description: error.message || 'حدث خطأ غير متوقع', variant: 'destructive' });
         }
         return;
       }
