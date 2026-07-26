@@ -123,6 +123,8 @@ import InstallPWAButton from "./components/InstallPWAButton";
 // ... keep existing code
 import MaintenanceGuard from "./components/MaintenanceGuard";
 import AdminRouteBlocker from "./components/guards/AdminRouteBlocker";
+const Subscriptions = lazy(() => import("./pages/Subscriptions"));
+const SubscriptionManage = lazy(() => import("./pages/SubscriptionManage"));
 
 const queryClient = new QueryClient();
 
