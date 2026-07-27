@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Networkk</string>
+    <string name="title_activity_main">Networkk</string>
+    <string name="package_name">com.networkk.online</string>
+    <string name="custom_url_scheme">com.networkk.online</string>
+</resources>
