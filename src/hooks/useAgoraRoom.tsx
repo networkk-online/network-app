@@ -21,12 +21,16 @@ export interface AgoraStats {
   rtt: number; // ms
 }
 
+export type AgoraConnectionState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTING';
+
 export const useAgoraRoom = () => {
   const { toast } = useToast();
   const clientRef = useRef<IAgoraRTCClient | null>(null);
   const localAudioRef = useRef<IMicrophoneAudioTrack | null>(null);
   const localVideoRef = useRef<ICameraVideoTrack | null>(null);
   const statsIntervalRef = useRef<number | null>(null);
+  const currentChannelRef = useRef<string | null>(null);
+  const currentRoleRef = useRef<'host' | 'audience' | null>(null);
 
   const [isInRoom, setIsInRoom] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +40,7 @@ export const useAgoraRoom = () => {
   const [viewerCount, setViewerCount] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
+  const [connectionState, setConnectionState] = useState<AgoraConnectionState>('DISCONNECTED');
   const [stats, setStats] = useState<AgoraStats>({ bitrateKbps: 0, fps: 0, packetLoss: 0, rtt: 0 });
 
   const getAgoraCredentials = async (channel: string) => {
@@ -130,7 +135,62 @@ export const useAgoraRoom = () => {
     setParticipants(parts);
   };
 
+  const attachClientHandlers = (client: IAgoraRTCClient, role: 'host' | 'audience') => {
+    client.on('user-published', async (user, mediaType) => {
+      try {
+        await client.subscribe(user, mediaType);
+      } catch (e) {
+        // Ignore transient subscribe races (user unpublished before subscribe completed)
+      }
+      updateParticipants(client);
+    });
+    client.on('user-unpublished', () => updateParticipants(client));
+    client.on('user-joined', () => {
+      // NOTE: In 'live' mode, user-joined only fires for HOSTS joining, not audience.
+      // Real viewer count is tracked via Supabase presence in LiveScreenV3.
+      if (role === 'host') setViewerCount((prev) => prev + 1);
+      updateParticipants(client);
+    });
+    client.on('user-left', () => {
+      if (role === 'host') setViewerCount((prev) => Math.max(0, prev - 1));
+      updateParticipants(client);
+    });
+    client.on('connection-state-change', (cur) => {
+      setConnectionState(cur as AgoraConnectionState);
+    });
+    // Token renewal ~30s before expiry — critical for streams >1hr
+    client.on('token-privilege-will-expire', async () => {
+      try {
+        const channel = currentChannelRef.current;
+        if (!channel) return;
+        const creds = await getAgoraCredentials(channel);
+        if (creds?.token) {
+          await client.renewToken(creds.token);
+        }
+      } catch (e) {
+        console.warn('Agora token renewal failed', e);
+      }
+    });
+    client.on('token-privilege-did-expire', async () => {
+      // Full rejoin as last resort
+      const channel = currentChannelRef.current;
+      if (!channel) return;
+      try {
+        const creds = await getAgoraCredentials(channel);
+        if (creds?.appId && creds?.token) {
+          await client.join(String(creds.appId), channel, creds.token, Number(creds.uid) || 0);
+        }
+      } catch (e) {
+        toast({ title: 'انقطع البث', description: 'يرجى إعادة الانضمام', variant: 'destructive' });
+      }
+    });
+  };
+
   const createRoom = useCallback(async (title?: string) => {
+    // Prevent concurrent createRoom calls that would leak a second client
+    if (clientRef.current || isLoading) {
+      return currentChannelRef.current;
+    }
     setIsLoading(true);
     try {
       // 1. Request camera/mic FIRST (preserves user gesture context)
@@ -151,10 +211,11 @@ export const useAgoraRoom = () => {
       localAudioRef.current = audioTrack;
       localVideoRef.current = videoTrack;
 
-      // 2. Get credentials from edge function
       // 2. Network preflight + credentials
       await preflightGateway();
       const channel = `network-live-${Date.now()}`;
+      currentChannelRef.current = channel;
+      currentRoleRef.current = 'host';
       const creds = await getAgoraCredentials(channel);
       if (!creds.appId) throw new Error('Missing Agora App ID');
 
@@ -162,20 +223,7 @@ export const useAgoraRoom = () => {
       const client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8' });
       client.setClientRole('host');
       clientRef.current = client;
-
-      client.on('user-published', async (user, mediaType) => {
-        await client.subscribe(user, mediaType);
-        updateParticipants(client);
-      });
-      client.on('user-unpublished', () => updateParticipants(client));
-      client.on('user-joined', () => {
-        setViewerCount(prev => prev + 1);
-        updateParticipants(client);
-      });
-      client.on('user-left', () => {
-        setViewerCount(prev => Math.max(0, prev - 1));
-        updateParticipants(client);
-      });
+      attachClientHandlers(client, 'host');
 
       // If certificate is enabled the edge function returns a token; in testing mode token is null.
       await client.join(String(creds.appId), channel, creds.token ?? null, Number(creds.uid) || 0);
@@ -197,31 +245,35 @@ export const useAgoraRoom = () => {
       localVideoRef.current?.close();
       localAudioRef.current = null;
       localVideoRef.current = null;
+      currentChannelRef.current = null;
+      currentRoleRef.current = null;
       toast({ title: 'خطأ في البث', description: err.message, variant: 'destructive' });
       return null;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isLoading]);
 
   const joinRoom = useCallback(async (channel: string) => {
+    // Idempotent: same channel + already in room = no-op
+    if (clientRef.current && currentChannelRef.current === channel) return;
+    // Different channel or leaked client: leave first
+    if (clientRef.current) {
+      try { await clientRef.current.leave(); } catch {}
+      clientRef.current = null;
+    }
     setIsLoading(true);
     try {
       await preflightGateway();
+      currentChannelRef.current = channel;
+      currentRoleRef.current = 'audience';
       const creds = await getAgoraCredentials(channel);
       if (!creds.appId) throw new Error('Missing Agora App ID');
 
       const client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8' });
-      client.setClientRole('audience');
+      client.setClientRole('audience', { level: 1 } as any);
       clientRef.current = client;
-
-      client.on('user-published', async (user, mediaType) => {
-        await client.subscribe(user, mediaType);
-        updateParticipants(client);
-      });
-      client.on('user-unpublished', () => updateParticipants(client));
-      client.on('user-joined', () => updateParticipants(client));
-      client.on('user-left', () => updateParticipants(client));
+      attachClientHandlers(client, 'audience');
 
       await client.join(String(creds.appId), channel, creds.token ?? null, Number(creds.uid) || 0);
 
@@ -232,6 +284,8 @@ export const useAgoraRoom = () => {
       startStatsPolling(client);
     } catch (err: any) {
       console.error('Agora joinRoom error:', err);
+      currentChannelRef.current = null;
+      currentRoleRef.current = null;
       toast({ title: 'خطأ في الانضمام', description: err.message, variant: 'destructive' });
     } finally {
       setIsLoading(false);
@@ -246,9 +300,12 @@ export const useAgoraRoom = () => {
     localVideoRef.current = null;
 
     if (clientRef.current) {
-      await clientRef.current.leave();
+      try { clientRef.current.removeAllListeners(); } catch {}
+      try { await clientRef.current.leave(); } catch {}
       clientRef.current = null;
     }
+    currentChannelRef.current = null;
+    currentRoleRef.current = null;
 
     setIsInRoom(false);
     setIsHost(false);
@@ -257,6 +314,7 @@ export const useAgoraRoom = () => {
     setViewerCount(0);
     setIsMuted(false);
     setIsCameraOff(false);
+    setConnectionState('DISCONNECTED');
   }, []);
 
   const toggleMute = useCallback(async () => {
@@ -310,5 +368,6 @@ export const useAgoraRoom = () => {
     toggleCamera,
     switchCamera,
     stats,
+    connectionState,
   };
 };

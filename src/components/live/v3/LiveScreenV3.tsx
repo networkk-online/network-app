@@ -111,6 +111,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const totalGiftCoinsRef = useRef<number>(0);
   const peakViewersRef = useRef<number>(0);
+  const [presenceCount, setPresenceCount] = useState(0);
 
   // Video containers
   const localVideoRef = useRef<HTMLDivElement | null>(null);
@@ -269,22 +270,25 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
   useEffect(() => {
     if (!streamRowId || !agora.isHost) return;
     const iv = window.setInterval(() => {
-      // Track peak viewers locally for accurate summary
-      if (agora.viewerCount > peakViewersRef.current) peakViewersRef.current = agora.viewerCount;
+      // presenceCount subtracts 1 for the host themselves
+      const viewers = Math.max(0, presenceCount - 1);
+      if (viewers > peakViewersRef.current) peakViewersRef.current = viewers;
       supabase
         .from('live_streams')
-        .update({ viewer_count: agora.viewerCount, last_heartbeat_at: new Date().toISOString() })
+        .update({ viewer_count: viewers, last_heartbeat_at: new Date().toISOString() })
         .eq('id', streamRowId)
         .eq('status', 'live')
         .then();
     }, 15000);
     return () => window.clearInterval(iv);
-  }, [streamRowId, agora.isHost, agora.viewerCount]);
+  }, [streamRowId, agora.isHost, presenceCount]);
 
-  // Keep peak viewers ref updated live
+  // Keep peak viewers ref updated live from presence
   useEffect(() => {
-    if (agora.viewerCount > peakViewersRef.current) peakViewersRef.current = agora.viewerCount;
-  }, [agora.viewerCount]);
+    const viewers = Math.max(0, presenceCount - 1);
+    if (viewers > peakViewersRef.current) peakViewersRef.current = viewers;
+  }, [presenceCount]);
+
 
   // ─── Attach local + remote video tracks ──────────────
   useEffect(() => {
@@ -301,12 +305,17 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     }
   }, [agora.participants]);
 
-  // ─── Realtime chat via broadcast channel (subscribed ref, dedup) ────
+  // ─── Realtime chat + presence-backed viewer count ────
   useEffect(() => {
-    if (!streamRowId) return;
+    if (!streamRowId || !me?.id) return;
     chatIdsRef.current = new Set();
     const ch = supabase
-      .channel(`live-chat-${streamRowId}`, { config: { broadcast: { self: false } } })
+      .channel(`live-chat-${streamRowId}`, {
+        config: {
+          broadcast: { self: false },
+          presence: { key: me.id },
+        },
+      })
       .on('broadcast', { event: 'chat' }, ({ payload }) => {
         const msg = payload as LiveChatMsg;
         if (!msg?.id || chatIdsRef.current.has(msg.id)) return;
@@ -332,13 +341,31 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
       .on('broadcast', { event: 'entrance' }, ({ payload }) => {
         setVipQueue((q) => (q.length > 5 ? [...q.slice(-5), payload as VIPEntrance] : [...q, payload as VIPEntrance]));
       })
-      .subscribe();
+      .on('presence', { event: 'sync' }, () => {
+        // Real viewer count — Agora's user-joined does NOT fire for audience in live mode,
+        // so presence on the shared realtime channel is the source of truth.
+        const state = ch.presenceState();
+        setPresenceCount(Object.keys(state).length);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await ch.track({ user_id: me.id, is_host: agora.isHost, joined_at: Date.now() });
+        }
+      });
     channelRef.current = ch;
     return () => {
       channelRef.current = null;
       supabase.removeChannel(ch);
     };
-  }, [streamRowId]);
+  }, [streamRowId, me?.id, agora.isHost]);
+
+  // ─── Reconnect UX feedback ───────────────────────────
+  useEffect(() => {
+    if (agora.connectionState === 'RECONNECTING') {
+      toast({ title: 'جاري إعادة الاتصال...', description: 'تحقق من الشبكة' });
+    }
+  }, [agora.connectionState]);
+
 
   // Auto-scroll chat via rAF (coalesces bursts, no smooth pileup)
   useEffect(() => {
@@ -519,7 +546,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
           stream_id: streamRowId,
           host_id: me?.id,
           duration_seconds: duration,
-          peak_viewers: Math.max(peakViewersRef.current, agora.viewerCount),
+          peak_viewers: Math.max(peakViewersRef.current, Math.max(0, presenceCount - 1)),
           total_likes: likeCount,
           total_gifts_coins: totalCoins,
         } as any);
@@ -712,7 +739,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
                 </div>
                 <div className="flex items-center gap-2 text-[10px] text-white/60">
                   <Users className="w-2.5 h-2.5" />
-                  <span>{agora.viewerCount.toLocaleString()}</span>
+                  <span>{Math.max(0, presenceCount - 1).toLocaleString()}</span>
                   <span className="opacity-40">·</span>
                   <span>{formatDuration(duration)}</span>
                 </div>
