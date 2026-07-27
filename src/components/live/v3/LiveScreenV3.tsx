@@ -169,6 +169,25 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
           .eq('following_id', stream.host_id)
           .maybeSingle();
         setFollowingHost(!!follow);
+
+        // Read viewer's VIP tier and broadcast entrance
+        const { data: vip } = await supabase
+          .from('live_vip_levels')
+          .select('tier')
+          .eq('user_id', me.id)
+          .maybeSingle();
+        const tier = (vip?.tier as any) || 'none';
+        if (tier !== 'none' && ['gold', 'diamond', 'legend', 'platinum', 'royal', 'silver', 'bronze'].includes(tier)) {
+          const mappedTier: any = ['platinum', 'royal'].includes(tier) ? 'diamond' : tier;
+          // slight delay so channel is subscribed before broadcasting
+          setTimeout(() => {
+            supabase.channel(`live-chat-${stream.id}`).send({
+              type: 'broadcast',
+              event: 'entrance',
+              payload: { id: `${Date.now()}`, username: me.username, tier: mappedTier, avatarUrl: me.avatarUrl },
+            });
+          }, 800);
+        }
       }
       await agora.joinRoom(joinRoomId);
       startedAtRef.current = Date.now();
