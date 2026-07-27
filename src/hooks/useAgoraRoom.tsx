@@ -368,5 +368,6 @@ export const useAgoraRoom = () => {
     toggleCamera,
     switchCamera,
     stats,
+    connectionState,
   };
 };
