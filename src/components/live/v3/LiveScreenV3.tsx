@@ -546,7 +546,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
           stream_id: streamRowId,
           host_id: me?.id,
           duration_seconds: duration,
-          peak_viewers: Math.max(peakViewersRef.current, agora.viewerCount),
+          peak_viewers: Math.max(peakViewersRef.current, Math.max(0, presenceCount - 1)),
           total_likes: likeCount,
           total_gifts_coins: totalCoins,
         } as any);
