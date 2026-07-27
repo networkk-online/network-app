@@ -1518,6 +1518,44 @@ export type Database = {
           },
         ]
       }
+      live_bans: {
+        Row: {
+          banned_by: string
+          created_at: string
+          host_id: string
+          id: string
+          reason: string | null
+          stream_id: string
+          user_id: string
+        }
+        Insert: {
+          banned_by: string
+          created_at?: string
+          host_id: string
+          id?: string
+          reason?: string | null
+          stream_id: string
+          user_id: string
+        }
+        Update: {
+          banned_by?: string
+          created_at?: string
+          host_id?: string
+          id?: string
+          reason?: string | null
+          stream_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_bans_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_entrance_events: {
         Row: {
           created_at: string
@@ -1655,6 +1693,53 @@ export type Database = {
           },
         ]
       }
+      live_guest_slots: {
+        Row: {
+          created_at: string
+          guest_user_id: string | null
+          host_id: string
+          id: string
+          joined_at: string | null
+          requested_at: string | null
+          slot_index: number
+          status: string
+          stream_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          guest_user_id?: string | null
+          host_id: string
+          id?: string
+          joined_at?: string | null
+          requested_at?: string | null
+          slot_index: number
+          status?: string
+          stream_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          guest_user_id?: string | null
+          host_id?: string
+          id?: string
+          joined_at?: string | null
+          requested_at?: string | null
+          slot_index?: number
+          status?: string
+          stream_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_guest_slots_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_join_requests: {
         Row: {
           created_at: string
@@ -1689,6 +1774,246 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      live_leaderboard_snapshots: {
+        Row: {
+          computed_at: string
+          created_at: string
+          id: string
+          kind: string
+          period: string
+          rank: number
+          score: number
+          user_id: string
+        }
+        Insert: {
+          computed_at?: string
+          created_at?: string
+          id?: string
+          kind: string
+          period: string
+          rank: number
+          score?: number
+          user_id: string
+        }
+        Update: {
+          computed_at?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          period?: string
+          rank?: number
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      live_mission_progress: {
+        Row: {
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          mission_id: string
+          progress: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          mission_id: string
+          progress?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          mission_id?: string
+          progress?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_mission_progress_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "live_missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_missions: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          kind: string
+          requirement_target: number
+          requirement_type: string
+          reward_coins: number
+          sort_order: number
+          title: string
+          title_ar: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          kind: string
+          requirement_target?: number
+          requirement_type: string
+          reward_coins?: number
+          sort_order?: number
+          title: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          requirement_target?: number
+          requirement_type?: string
+          reward_coins?: number
+          sort_order?: number
+          title?: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      live_moderators: {
+        Row: {
+          created_at: string
+          granted_by: string
+          host_id: string
+          id: string
+          stream_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by: string
+          host_id: string
+          id?: string
+          stream_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string
+          host_id?: string
+          id?: string
+          stream_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_moderators_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_pinned_messages: {
+        Row: {
+          created_at: string
+          host_id: string
+          id: string
+          message: string
+          pinned_by: string
+          stream_id: string
+        }
+        Insert: {
+          created_at?: string
+          host_id: string
+          id?: string
+          message: string
+          pinned_by: string
+          stream_id: string
+        }
+        Update: {
+          created_at?: string
+          host_id?: string
+          id?: string
+          message?: string
+          pinned_by?: string
+          stream_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_pinned_messages_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_pk_battles: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          host_id: string
+          host_score: number
+          host_stream_id: string | null
+          id: string
+          opponent_id: string | null
+          opponent_score: number
+          opponent_stream_id: string | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          host_id: string
+          host_score?: number
+          host_stream_id?: string | null
+          id?: string
+          opponent_id?: string | null
+          opponent_score?: number
+          opponent_stream_id?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          host_id?: string
+          host_score?: number
+          host_stream_id?: string | null
+          id?: string
+          opponent_id?: string | null
+          opponent_score?: number
+          opponent_stream_id?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: []
       }
       live_quest_progress: {
         Row: {
@@ -2008,6 +2333,50 @@ export type Database = {
             columns: ["gift_id"]
             isOneToOne: false
             referencedRelation: "live_gift_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_treasure_box: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          host_id: string
+          id: string
+          opened_at: string | null
+          opened_by: string | null
+          reward_coins: number
+          stream_id: string
+          tier: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          host_id: string
+          id?: string
+          opened_at?: string | null
+          opened_by?: string | null
+          reward_coins?: number
+          stream_id: string
+          tier?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          host_id?: string
+          id?: string
+          opened_at?: string | null
+          opened_by?: string | null
+          reward_coins?: number
+          stream_id?: string
+          tier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_treasure_box_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
             referencedColumns: ["id"]
           },
         ]
