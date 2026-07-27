@@ -55,7 +55,7 @@ export const CinematicGiftLayer = ({
         {/* Emoji stage */}
         <motion.div
           initial={{ scale: 0.2, y: 100, rotate: -20, opacity: 0 }}
-          animate={{ scale: [0.2, 1.4, 1.1], y: [100, -20, 0], rotate: [−20, 8, 0] as any, opacity: 1 }}
+          animate={{ scale: [0.2, 1.4, 1.1], y: [100, -20, 0], rotate: [-20, 8, 0], opacity: 1 }}
           transition={{ duration: 1.2, ease: [0.2, 0.9, 0.3, 1] }}
           className="relative text-[180px] drop-shadow-[0_0_60px_hsl(var(--vip-gold-glow)/0.9)]"
         >
