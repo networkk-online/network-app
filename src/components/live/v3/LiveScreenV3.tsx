@@ -86,6 +86,8 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
   const [chat, setChat] = useState<LiveChatMsg[]>([]);
   const [chatInput, setChatInput] = useState('');
   const chatBottomRef = useRef<HTMLDivElement | null>(null);
+  const chatIdsRef = useRef<Set<string>>(new Set());
+  const lastChatAtRef = useRef<number>(0);
 
   const [giftDrawerOpen, setGiftDrawerOpen] = useState(false);
   const [balance, setBalance] = useState(0);
@@ -96,6 +98,8 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
   const comboTimerRef = useRef<number | null>(null);
   const [heartPulse, setHeartPulse] = useState(0);
   const [likeCount, setLikeCount] = useState(0);
+  const pendingLikesRef = useRef<number>(0);
+  const likeFlushTimerRef = useRef<number | null>(null);
   const [guestSlots, setGuestSlots] = useState<GuestSlot[]>([]);
 
   const [openPanel, setOpenPanel] = useState<
@@ -103,6 +107,10 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
   >(null);
   const [duration, setDuration] = useState(0);
   const startedAtRef = useRef<number>(0);
+  const agoraJoinedRef = useRef<string | null>(null);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const totalGiftCoinsRef = useRef<number>(0);
+  const peakViewersRef = useRef<number>(0);
 
   // Video containers
   const localVideoRef = useRef<HTMLDivElement | null>(null);
