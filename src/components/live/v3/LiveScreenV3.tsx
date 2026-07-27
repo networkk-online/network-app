@@ -892,12 +892,10 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
         open={openPanel === 'viewers'}
         onClose={() => setOpenPanel(null)}
         isHost={isHost}
-        viewers={agora.participants.filter((p) => !p.isLocal).map((p) => ({ uid: p.uid, username: `مشاهد ${String(p.uid).slice(0, 4)}` }))}
+        viewers={identifiedViewers}
         onKick={async (uid) => {
-          if (!streamRowId) return;
-          const userId = typeof uid === 'string' ? uid : null;
-          if (!userId) return;
-          await supabase.rpc('live_ban_user', { _stream_id: streamRowId, _user_id: userId, _reason: 'kicked' });
+          if (!streamRowId || typeof uid !== 'string') return;
+          await supabase.rpc('live_ban_user', { _stream_id: streamRowId, _user_id: uid, _reason: 'kicked' });
           toast({ title: 'تم الطرد' });
         }}
         onMute={async (uid) => {
@@ -905,13 +903,12 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
           if (slot && streamRowId) await supabase.rpc('live_toggle_mute_guest', { _stream_id: streamRowId, _slot_index: slot.slot_index });
         }}
         onPromoteMod={async (uid) => {
-          if (!streamRowId) return;
-          const userId = typeof uid === 'string' ? uid : null;
-          if (!userId) return;
-          await supabase.rpc('live_grant_moderator', { _stream_id: streamRowId, _user_id: userId });
+          if (!streamRowId || typeof uid !== 'string') return;
+          await supabase.rpc('live_grant_moderator', { _stream_id: streamRowId, _user_id: uid });
           toast({ title: 'تم منح صلاحية الإشراف' });
         }}
       />
+
       <PKBattlePanel
         open={openPanel === 'pk'}
         onClose={() => setOpenPanel(null)}
