@@ -269,6 +269,8 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
   useEffect(() => {
     if (!streamRowId || !agora.isHost) return;
     const iv = window.setInterval(() => {
+      // Track peak viewers locally for accurate summary
+      if (agora.viewerCount > peakViewersRef.current) peakViewersRef.current = agora.viewerCount;
       supabase
         .from('live_streams')
         .update({ viewer_count: agora.viewerCount, last_heartbeat_at: new Date().toISOString() })
@@ -278,6 +280,11 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     }, 15000);
     return () => window.clearInterval(iv);
   }, [streamRowId, agora.isHost, agora.viewerCount]);
+
+  // Keep peak viewers ref updated live
+  useEffect(() => {
+    if (agora.viewerCount > peakViewersRef.current) peakViewersRef.current = agora.viewerCount;
+  }, [agora.viewerCount]);
 
   // ─── Attach local + remote video tracks ──────────────
   useEffect(() => {
@@ -294,22 +301,28 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     }
   }, [agora.participants]);
 
-  // ─── Realtime chat via broadcast channel ─────────────
+  // ─── Realtime chat via broadcast channel (subscribed ref, dedup) ────
   useEffect(() => {
     if (!streamRowId) return;
+    chatIdsRef.current = new Set();
     const ch = supabase
-      .channel(`live-chat-${streamRowId}`)
+      .channel(`live-chat-${streamRowId}`, { config: { broadcast: { self: false } } })
       .on('broadcast', { event: 'chat' }, ({ payload }) => {
-        setChat((prev) => [...prev.slice(-99), payload as LiveChatMsg]);
+        const msg = payload as LiveChatMsg;
+        if (!msg?.id || chatIdsRef.current.has(msg.id)) return;
+        chatIdsRef.current.add(msg.id);
+        if (chatIdsRef.current.size > 500) chatIdsRef.current = new Set(Array.from(chatIdsRef.current).slice(-250));
+        setChat((prev) => [...prev.slice(-99), msg]);
       })
-      .on('broadcast', { event: 'like' }, () => {
-        setLikeCount((c) => c + 1);
-        setHeartPulse((n) => n + 1);
+      .on('broadcast', { event: 'like' }, ({ payload }) => {
+        const n = Math.max(1, Math.min(50, Number((payload as any)?.n) || 1));
+        setLikeCount((c) => c + n);
+        setHeartPulse((k) => k + 1);
       })
       .on('broadcast', { event: 'gift' }, ({ payload }) => {
-        const g = payload as CinematicGift;
+        const g = payload as CinematicGift & { cost?: number };
         if (g.tier === 'super' || g.tier === 'legendary') {
-          setCinematicQueue((q) => [...q, g]);
+          setCinematicQueue((q) => (q.length > 8 ? [...q.slice(-8), g] : [...q, g]));
         }
         setComboGiftEmoji(g.emoji);
         setComboCount((c) => c + 1);
@@ -317,17 +330,23 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
         comboTimerRef.current = window.setTimeout(() => setComboCount(0), 2000);
       })
       .on('broadcast', { event: 'entrance' }, ({ payload }) => {
-        setVipQueue((q) => [...q, payload as VIPEntrance]);
+        setVipQueue((q) => (q.length > 5 ? [...q.slice(-5), payload as VIPEntrance] : [...q, payload as VIPEntrance]));
       })
       .subscribe();
+    channelRef.current = ch;
     return () => {
+      channelRef.current = null;
       supabase.removeChannel(ch);
     };
   }, [streamRowId]);
 
-  // Auto-scroll chat
+  // Auto-scroll chat via rAF (coalesces bursts, no smooth pileup)
   useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    let raf: number | null = requestAnimationFrame(() => {
+      chatBottomRef.current?.scrollIntoView({ block: 'end' });
+      raf = null;
+    });
+    return () => { if (raf) cancelAnimationFrame(raf); };
   }, [chat.length]);
 
   // ─── Guest slots realtime ────────────────────────────
@@ -351,13 +370,22 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     };
   }, [streamRowId]);
 
+  // Cleanup like flush + combo timers on unmount
+  useEffect(() => {
+    return () => {
+      if (likeFlushTimerRef.current) window.clearTimeout(likeFlushTimerRef.current);
+      if (comboTimerRef.current) window.clearTimeout(comboTimerRef.current);
+    };
+  }, []);
+
   // ─── Actions ─────────────────────────────────────────
   const broadcast = useCallback(
     (event: string, payload: any) => {
-      if (!streamRowId) return;
-      supabase.channel(`live-chat-${streamRowId}`).send({ type: 'broadcast', event, payload });
+      const ch = channelRef.current;
+      if (!ch) return;
+      ch.send({ type: 'broadcast', event, payload });
     },
-    [streamRowId],
+    [],
   );
 
   const sendChat = () => {
