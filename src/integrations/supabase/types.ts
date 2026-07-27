@@ -4909,6 +4909,7 @@ export type Database = {
       }
     }
     Functions: {
+      _compute_vip_tier: { Args: { _spend: number }; Returns: string }
       admin_get_profile_pii: {
         Args: { _user_id: string }
         Returns: {
@@ -5041,6 +5042,53 @@ export type Database = {
         }
         Returns: boolean
       }
+      live_approve_guest: {
+        Args: { _slot_index: number; _stream_id: string }
+        Returns: Json
+      }
+      live_ban_user: {
+        Args: { _reason?: string; _stream_id: string; _user_id: string }
+        Returns: Json
+      }
+      live_grant_moderator: {
+        Args: { _stream_id: string; _user_id: string }
+        Returns: Json
+      }
+      live_increment_mission: {
+        Args: { _amount?: number; _requirement_type: string; _user_id: string }
+        Returns: undefined
+      }
+      live_kick_guest: {
+        Args: { _slot_index: number; _stream_id: string }
+        Returns: Json
+      }
+      live_request_guest_seat: { Args: { _stream_id: string }; Returns: Json }
+      live_revoke_moderator: {
+        Args: { _stream_id: string; _user_id: string }
+        Returns: Json
+      }
+      live_tap_like: {
+        Args: { _amount?: number; _stream_id: string }
+        Returns: undefined
+      }
+      live_toggle_mute_guest: {
+        Args: { _slot_index: number; _stream_id: string }
+        Returns: Json
+      }
+      live_top_supporters: {
+        Args: { _limit?: number; _stream_id: string }
+        Returns: {
+          avatar_url: string
+          gifts_count: number
+          total_coins: number
+          user_id: string
+          username: string
+        }[]
+      }
+      live_unban_user: {
+        Args: { _stream_id: string; _user_id: string }
+        Returns: Json
+      }
       owner_cancel_invite: { Args: { _request_id: string }; Returns: Json }
       owner_invite_affiliate: {
         Args: { _company_id: string; _username: string }
@@ -5075,6 +5123,10 @@ export type Database = {
       refresh_profile_live_status: {
         Args: { _host_id: string }
         Returns: undefined
+      }
+      send_live_gift: {
+        Args: { _gift_id: string; _quantity?: number; _stream_id: string }
+        Returns: Json
       }
       send_tip: {
         Args: {

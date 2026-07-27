@@ -169,6 +169,25 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
           .eq('following_id', stream.host_id)
           .maybeSingle();
         setFollowingHost(!!follow);
+
+        // Read viewer's VIP tier and broadcast entrance
+        const { data: vip } = await supabase
+          .from('live_vip_levels')
+          .select('tier')
+          .eq('user_id', me.id)
+          .maybeSingle();
+        const tier = (vip?.tier as any) || 'none';
+        if (tier !== 'none' && ['gold', 'diamond', 'legend', 'platinum', 'royal', 'silver', 'bronze'].includes(tier)) {
+          const mappedTier: any = ['platinum', 'royal'].includes(tier) ? 'diamond' : tier;
+          // slight delay so channel is subscribed before broadcasting
+          setTimeout(() => {
+            supabase.channel(`live-chat-${stream.id}`).send({
+              type: 'broadcast',
+              event: 'entrance',
+              payload: { id: `${Date.now()}`, username: me.username, tier: mappedTier, avatarUrl: me.avatarUrl },
+            });
+          }, 800);
+        }
       }
       await agora.joinRoom(joinRoomId);
       startedAtRef.current = Date.now();
@@ -328,16 +347,48 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     setHeartPulse((n) => n + 1);
     broadcast('like', {});
     if (navigator.vibrate) navigator.vibrate(15);
+    // Backend mission progress (throttled — 1 call per tap batch)
+    if (streamRowId) {
+      supabase.rpc('live_tap_like', { _stream_id: streamRowId, _amount: 1 }).then();
+    }
   };
 
   const sendGift = async (gift: CatalogGift, quantity: number) => {
-    if (!me || !hostInfo) return;
+    if (!me || !hostInfo || !streamRowId) return;
     const totalCost = gift.price_coins * quantity;
     if (balance < totalCost) {
       toast({ title: 'رصيد غير كافٍ', description: 'قم بشحن العملات', variant: 'destructive' });
       return;
     }
-    setBalance((b) => b - totalCost);
+
+    // Atomic backend call — debits gems, credits host, logs ledger, bumps goals/missions/VIP
+    const { data, error } = await supabase.rpc('send_live_gift', {
+      _stream_id: streamRowId,
+      _gift_id: gift.id,
+      _quantity: quantity,
+    });
+
+    if (error) {
+      toast({ title: 'فشل إرسال الهدية', description: error.message, variant: 'destructive' });
+      return;
+    }
+    const res = data as { success: boolean; error?: string; new_balance?: number; vip_tier?: string };
+    if (!res?.success) {
+      const map: Record<string, string> = {
+        insufficient_coins: 'رصيد غير كافٍ',
+        stream_not_live: 'انتهى البث',
+        cannot_gift_self: 'لا يمكن إهداء نفسك',
+        banned: 'أنت محظور من هذا البث',
+        gift_not_found: 'الهدية غير متاحة',
+        unauthenticated: 'يرجى تسجيل الدخول',
+      };
+      toast({ title: map[res?.error || ''] || 'فشل إرسال الهدية', variant: 'destructive' });
+      return;
+    }
+
+    // Optimistic local balance sync from server truth
+    if (typeof res.new_balance === 'number') setBalance(res.new_balance);
+
     const cinematic: CinematicGift = {
       id: `${Date.now()}`,
       giftId: gift.id,
@@ -355,22 +406,10 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     if (comboTimerRef.current) window.clearTimeout(comboTimerRef.current);
     comboTimerRef.current = window.setTimeout(() => setComboCount(0), 2000);
 
-    // Best-effort backend record (ignore if RPC missing)
-    try {
-      await supabase.from('live_super_gift_events').insert({
-        stream_id: streamRowId,
-        sender_id: me.id,
-        host_id: hostInfo.id,
-        gift_id: gift.id,
-        tier: gift.tier,
-        total_coins: totalCost,
-        quantity,
-      } as any);
-    } catch {}
-
     setGiftDrawerOpen(false);
     toast({ title: 'تم إرسال الهدية', description: `${cinematic.name} × ${quantity}` });
   };
+
 
   const followHost = async () => {
     if (!me || !hostInfo || followingHost) return;
@@ -508,6 +547,24 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
             layout={guestLayout}
             slots={guestSlots}
             isHost={isHost}
+            onInvite={async (slotIndex) => {
+              // Host approves the pending request at that slot, or opens viewers sheet
+              const slot = guestSlots.find((s) => s.slot_index === slotIndex);
+              if (slot?.status === 'requested' && streamRowId) {
+                await supabase.rpc('live_approve_guest', { _stream_id: streamRowId, _slot_index: slotIndex });
+                toast({ title: 'تم قبول الضيف' });
+              } else {
+                setOpenPanel('viewers');
+              }
+            }}
+            onKick={async (slotIndex) => {
+              if (!streamRowId) return;
+              await supabase.rpc('live_kick_guest', { _stream_id: streamRowId, _slot_index: slotIndex });
+            }}
+            onToggleMute={async (slotIndex) => {
+              if (!streamRowId) return;
+              await supabase.rpc('live_toggle_mute_guest', { _stream_id: streamRowId, _slot_index: slotIndex });
+            }}
           />
         </div>
       )}
@@ -632,13 +689,32 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
         >
           <Users className="w-5 h-5 text-white" />
         </motion.button>
-        {isHost && (
+        {isHost ? (
           <motion.button
             whileTap={{ scale: 0.85 }}
             onClick={() => setOpenPanel('moderation')}
             className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 flex items-center justify-center"
           >
             <Shield className="w-5 h-5 text-white" />
+          </motion.button>
+        ) : (
+          <motion.button
+            whileTap={{ scale: 0.85 }}
+            onClick={async () => {
+              if (!streamRowId) return;
+              const { data, error } = await supabase.rpc('live_request_guest_seat', { _stream_id: streamRowId });
+              const res = data as { success: boolean; error?: string; slot_index?: number };
+              if (error || !res?.success) {
+                const map: Record<string, string> = { no_slots: 'لا توجد مقاعد شاغرة', banned: 'أنت محظور', stream_not_live: 'انتهى البث' };
+                toast({ title: map[res?.error || ''] || 'تعذر الطلب', variant: 'destructive' });
+              } else {
+                toast({ title: 'تم إرسال طلب الانضمام', description: 'انتظر موافقة المضيف' });
+              }
+            }}
+            className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 flex items-center justify-center"
+            title="طلب الانضمام كضيف"
+          >
+            <Radio className="w-5 h-5 text-emerald-400" />
           </motion.button>
         )}
         <motion.button
@@ -750,6 +826,24 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
         onClose={() => setOpenPanel(null)}
         isHost={isHost}
         viewers={agora.participants.filter((p) => !p.isLocal).map((p) => ({ uid: p.uid, username: `مشاهد ${String(p.uid).slice(0, 4)}` }))}
+        onKick={async (uid) => {
+          if (!streamRowId) return;
+          const userId = typeof uid === 'string' ? uid : null;
+          if (!userId) return;
+          await supabase.rpc('live_ban_user', { _stream_id: streamRowId, _user_id: userId, _reason: 'kicked' });
+          toast({ title: 'تم الطرد' });
+        }}
+        onMute={async (uid) => {
+          const slot = guestSlots.find((s) => s.guest_user_id === String(uid));
+          if (slot && streamRowId) await supabase.rpc('live_toggle_mute_guest', { _stream_id: streamRowId, _slot_index: slot.slot_index });
+        }}
+        onPromoteMod={async (uid) => {
+          if (!streamRowId) return;
+          const userId = typeof uid === 'string' ? uid : null;
+          if (!userId) return;
+          await supabase.rpc('live_grant_moderator', { _stream_id: streamRowId, _user_id: userId });
+          toast({ title: 'تم منح صلاحية الإشراف' });
+        }}
       />
       <PKBattlePanel
         open={openPanel === 'pk'}
