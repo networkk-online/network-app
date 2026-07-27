@@ -110,6 +110,20 @@
     --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.1);
     --glass-inner-shine: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
     --glass-deep-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.12);
+
+    /* Live Streaming v3 — Emerald + Gold VIP */
+    --live-emerald: 144 90% 33%;
+    --live-emerald-glow: 144 90% 45%;
+    --vip-gold: 45 100% 50%;
+    --vip-gold-glow: 45 100% 65%;
+    --legendary-red: 350 90% 55%;
+    --legendary-violet: 280 90% 60%;
+    --gradient-vip: linear-gradient(135deg, hsl(45 100% 50%), hsl(35 100% 45%));
+    --gradient-legendary: linear-gradient(135deg, hsl(280 90% 60%), hsl(350 90% 55%), hsl(45 100% 50%));
+    --gradient-emerald: linear-gradient(135deg, hsl(144 90% 33%), hsl(144 90% 45%));
+    --glass-live-panel: rgba(255, 255, 255, 0.04);
+    --glass-live-border: rgba(255, 255, 255, 0.08);
+    --glass-live-vip-border: rgba(255, 215, 0, 0.35);
   }
 }
 
