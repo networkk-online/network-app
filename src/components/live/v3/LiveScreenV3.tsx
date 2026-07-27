@@ -144,15 +144,31 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     if (!joinRoomId) return;
     let cancelled = false;
     (async () => {
-      const { data: stream } = await supabase
+      // joinRoomId can be either a live_streams.id (UUID) or a channel_name.
+      // Look up by both so viewers coming from Explore (which passes stream.id)
+      // and legacy links (channel_name) both resolve.
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(joinRoomId);
+      const baseQuery = supabase
         .from('live_streams')
-        .select('id, host_id, title, channel_name, viewer_count')
-        .eq('channel_name', joinRoomId)
-        .eq('status', 'live')
-        .maybeSingle();
+        .select('id, host_id, title, channel_name, viewer_count, status, ended_at')
+        .limit(1);
+      const { data: stream, error: streamErr } = await (isUuid
+        ? baseQuery.eq('id', joinRoomId)
+        : baseQuery.eq('channel_name', joinRoomId)
+      ).maybeSingle();
       if (cancelled) return;
+      if (streamErr) console.warn('[live] stream lookup error', streamErr);
+
+      // Only treat as ended when the server confirms it. Never expire based on
+      // age or missing heartbeat — a viewer with a stale cache would otherwise
+      // get kicked out of a healthy stream.
       if (!stream) {
-        toast({ title: 'البث غير متاح', description: 'انتهى البث أو الرابط غير صحيح', variant: 'destructive' });
+        toast({ title: 'البث غير متاح', description: 'الرابط غير صحيح أو تم حذف البث', variant: 'destructive' });
+        onClose();
+        return;
+      }
+      if (stream.status !== 'live' || stream.ended_at) {
+        toast({ title: 'انتهى البث', description: 'أنهى المضيف البث المباشر', variant: 'destructive' });
         onClose();
         return;
       }
@@ -173,11 +189,12 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
           verificationType: (hostProfile.verification_type as any) || null,
         });
       }
-      // Guard: only join Agora ONCE per joinRoomId (protects StrictMode + me?.id resolution)
-      if (agoraJoinedRef.current !== joinRoomId) {
-        agoraJoinedRef.current = joinRoomId;
+      // Guard: join Agora ONCE per channel (protects StrictMode + late me?.id).
+      const agoraChannel = stream.channel_name;
+      if (agoraChannel && agoraJoinedRef.current !== agoraChannel) {
+        agoraJoinedRef.current = agoraChannel;
         try {
-          await agora.joinRoom(joinRoomId);
+          await agora.joinRoom(agoraChannel);
         } catch (e: any) {
           if (!cancelled) toast({ title: 'تعذر الانضمام', description: e?.message, variant: 'destructive' });
         }

@@ -8,10 +8,38 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// iOS Safari (especially private mode / in-app WebViews like Instagram/Facebook
+// browsers) can throw when touching localStorage. Fall back to an in-memory
+// store so auth never crashes on iPhone. Also probe once at boot.
+const memoryStore: Record<string, string> = {};
+const makeSafeStorage = () => {
+  const canUseLocal = (() => {
+    try {
+      const k = '__nk_ls_test__';
+      window.localStorage.setItem(k, '1');
+      window.localStorage.removeItem(k);
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+  if (canUseLocal) return window.localStorage;
+  if (typeof console !== 'undefined') {
+    console.warn('[auth] localStorage unavailable; using in-memory session store');
+  }
+  return {
+    getItem: (k: string) => (k in memoryStore ? memoryStore[k] : null),
+    setItem: (k: string, v: string) => { memoryStore[k] = v; },
+    removeItem: (k: string) => { delete memoryStore[k]; },
+  } as Storage;
+};
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: makeSafeStorage(),
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce',
   }
 });
