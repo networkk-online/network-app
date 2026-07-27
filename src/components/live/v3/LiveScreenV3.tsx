@@ -689,13 +689,32 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
         >
           <Users className="w-5 h-5 text-white" />
         </motion.button>
-        {isHost && (
+        {isHost ? (
           <motion.button
             whileTap={{ scale: 0.85 }}
             onClick={() => setOpenPanel('moderation')}
             className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 flex items-center justify-center"
           >
             <Shield className="w-5 h-5 text-white" />
+          </motion.button>
+        ) : (
+          <motion.button
+            whileTap={{ scale: 0.85 }}
+            onClick={async () => {
+              if (!streamRowId) return;
+              const { data, error } = await supabase.rpc('live_request_guest_seat', { _stream_id: streamRowId });
+              const res = data as { success: boolean; error?: string; slot_index?: number };
+              if (error || !res?.success) {
+                const map: Record<string, string> = { no_slots: 'لا توجد مقاعد شاغرة', banned: 'أنت محظور', stream_not_live: 'انتهى البث' };
+                toast({ title: map[res?.error || ''] || 'تعذر الطلب', variant: 'destructive' });
+              } else {
+                toast({ title: 'تم إرسال طلب الانضمام', description: 'انتظر موافقة المضيف' });
+              }
+            }}
+            className="w-11 h-11 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 flex items-center justify-center"
+            title="طلب الانضمام كضيف"
+          >
+            <Radio className="w-5 h-5 text-emerald-400" />
           </motion.button>
         )}
         <motion.button
