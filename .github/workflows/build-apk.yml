@@ -17,6 +17,11 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Sync Capacitor
+        run: |
+          npm install
+          npx cap sync android
+
       - name: Build APK
         run: |
           cd android
