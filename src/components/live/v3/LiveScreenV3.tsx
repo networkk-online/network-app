@@ -328,16 +328,48 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     setHeartPulse((n) => n + 1);
     broadcast('like', {});
     if (navigator.vibrate) navigator.vibrate(15);
+    // Backend mission progress (throttled — 1 call per tap batch)
+    if (streamRowId) {
+      supabase.rpc('live_tap_like', { _stream_id: streamRowId, _amount: 1 }).then();
+    }
   };
 
   const sendGift = async (gift: CatalogGift, quantity: number) => {
-    if (!me || !hostInfo) return;
+    if (!me || !hostInfo || !streamRowId) return;
     const totalCost = gift.price_coins * quantity;
     if (balance < totalCost) {
       toast({ title: 'رصيد غير كافٍ', description: 'قم بشحن العملات', variant: 'destructive' });
       return;
     }
-    setBalance((b) => b - totalCost);
+
+    // Atomic backend call — debits gems, credits host, logs ledger, bumps goals/missions/VIP
+    const { data, error } = await supabase.rpc('send_live_gift', {
+      _stream_id: streamRowId,
+      _gift_id: gift.id,
+      _quantity: quantity,
+    });
+
+    if (error) {
+      toast({ title: 'فشل إرسال الهدية', description: error.message, variant: 'destructive' });
+      return;
+    }
+    const res = data as { success: boolean; error?: string; new_balance?: number; vip_tier?: string };
+    if (!res?.success) {
+      const map: Record<string, string> = {
+        insufficient_coins: 'رصيد غير كافٍ',
+        stream_not_live: 'انتهى البث',
+        cannot_gift_self: 'لا يمكن إهداء نفسك',
+        banned: 'أنت محظور من هذا البث',
+        gift_not_found: 'الهدية غير متاحة',
+        unauthenticated: 'يرجى تسجيل الدخول',
+      };
+      toast({ title: map[res?.error || ''] || 'فشل إرسال الهدية', variant: 'destructive' });
+      return;
+    }
+
+    // Optimistic local balance sync from server truth
+    if (typeof res.new_balance === 'number') setBalance(res.new_balance);
+
     const cinematic: CinematicGift = {
       id: `${Date.now()}`,
       giftId: gift.id,
@@ -355,22 +387,10 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     if (comboTimerRef.current) window.clearTimeout(comboTimerRef.current);
     comboTimerRef.current = window.setTimeout(() => setComboCount(0), 2000);
 
-    // Best-effort backend record (ignore if RPC missing)
-    try {
-      await supabase.from('live_super_gift_events').insert({
-        stream_id: streamRowId,
-        sender_id: me.id,
-        host_id: hostInfo.id,
-        gift_id: gift.id,
-        tier: gift.tier,
-        total_coins: totalCost,
-        quantity,
-      } as any);
-    } catch {}
-
     setGiftDrawerOpen(false);
     toast({ title: 'تم إرسال الهدية', description: `${cinematic.name} × ${quantity}` });
   };
+
 
   const followHost = async () => {
     if (!me || !hostInfo || followingHost) return;
