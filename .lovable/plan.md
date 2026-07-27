@@ -1,77 +1,97 @@
-## Scope
+# Live Streaming v3.0 — Full Rebuild
 
-Two major workstreams:
-1. **Consolidate admin routes** into the existing Owner Vault at `/G3142-AF26-0x99` and redirect legacy routes.
-2. **Footer-driven content system**: create ~20 public pages (Careers, About, Help, etc.), wire each to a dynamic content store, and add admin CRUD managers inside the Vault — including a Support Center content manager.
+Complete replacement of the Live experience with a premium Emerald+Gold VIP theme. Existing backend tables (`live_streams`, `live_gift_catalog`, `live_super_gift_events`, `live_entrance_events`, `live_vip_levels`, `live_quests`, `live_quest_progress`, `live_goals`, `live_rounds`, `live_summary`) stay intact — we add what's missing and rebuild the UI on top.
 
-## Workstream 1 — Admin Consolidation
+## Scope confirmed
 
-**Redirects (no business-logic change)**
-- `/admin` → `/G3142-AF26-0x99`
-- `/admin-control` → `/G3142-AF26-0x99`
-- `/admin-control-panel-secret` → `/G3142-AF26-0x99`
-- Replace each page component with a `<Navigate to="/G3142-AF26-0x99" replace />` (kept as files so any deep import still resolves). Keep `AdminAuthGuard` on the vault as today.
+- **Only Live Streaming** rebuilt this round (Auth, Home, Profile, Settings, Wallet stay as-is).
+- **Direct replacement** — old `LiveBroadcast.tsx` + `TikTokLiveOverlay.tsx` removed.
+- **Backend + UI** for new features.
+- **Emerald (#08A045) + Gold (#FFD700 VIP)** on pure black glass.
 
-**Vault sidebar embedding** (`src/pages/OwnerVault.tsx` + `VaultSidebar.tsx`)
-- Under **المالية والأصول**: mount `AdminContentManager`'s Payment Gateways card grid (new `finance` sub-tab "بوابات الدفع").
-- Under **مركز التنفيذ**: add tabs for `pages-content` (CMS for footer pages), `careers` (jobs CRUD), `support-center` (support page content + phone + WhatsApp link CRUD).
-- All tabs render via the existing `activeTab` switch — no hard refresh.
+## Backend additions (one migration)
 
-**Theme pass**: ensure new panels use `bg-[#080808]`, glass cards `bg-[#0d0d0d]/80 border border-white/5`, accents `#00e676` (matches existing vault tokens; minor tweak only).
+New tables + GRANTs + RLS + Realtime:
 
-## Workstream 2 — Footer Pages + CMS
+- `live_missions` (catalog: daily/weekly/monthly, requirement, reward_coins)
+- `live_mission_progress` (user_id, mission_id, progress, completed_at)
+- `live_leaderboard_snapshots` (period: daily/weekly/monthly/all, kind: gifter/supporter/viewer, rank, user_id, score)
+- `live_pk_battles` (host_id, opponent_id, host_score, opponent_score, winner_id, status, started_at, ended_at)
+- `live_treasure_box` (stream_id, tier, opened_by, reward_coins, opened_at)
+- `live_pinned_messages` (stream_id, message, pinned_by, pinned_at)
+- `live_moderators` (stream_id, user_id, granted_by) — for kick/mute/ban permissions
+- `live_bans` (stream_id, user_id, banned_by, reason)
+- `live_guest_slots` (stream_id, slot_index 0..8, guest_user_id, status) — supports 1/2/4/9 guest layouts
 
-**Database (single migration)**
-- `site_pages` (slug PK-ish unique, title, body_md, body_html, meta_description, updated_at, updated_by). Seeded with all footer slugs.
-- `careers_jobs` (id, title, department, location, employment_type, description, requirements, is_open, posted_at).
-- `support_settings` (singleton row: support_phone, whatsapp_url, hero_title, hero_subtitle, sections JSONB).
-- RLS: public `SELECT` on all three; `INSERT/UPDATE/DELETE` restricted to `has_role(auth.uid(),'admin')`.
-- Grants: `anon, authenticated` SELECT; `authenticated` full CRUD (guarded by RLS); `service_role` ALL.
+Seed `live_missions` with daily/weekly starter set. Seed `live_gift_catalog` with the new gift roster (Rose, Heart, Coffee, Cake, Teddy, Car, Motorcycle, Yacht, Jet, Lion, Dragon, Castle, Crown, Galaxy, Phoenix) organized by category (Popular/VIP/Luxury/Legendary/Funny/Seasonal).
 
-**Public routes** (each fetches its row from `site_pages` by slug; Careers fetches jobs list)
+## New UI architecture
+
+Replaces `LiveBroadcast.tsx` (811 lines) and `TikTokLiveOverlay.tsx` (324 lines) with a modular structure under `src/components/live/v3/`:
+
+```text
+LiveScreen (root, full-screen video, routes host vs viewer)
+├── VideoStage (Agora grid / guest slots 1/2/4/9 via GuestSlots)
+├── overlays/
+│   ├── TopBar         (LIVE badge · host · verified · VIP · duration · viewers · quality · share · close)
+│   ├── LeftRail       (Missions · Rounds · PK · TreasureBox · Leaderboard · Goals)
+│   ├── RightRail      (Like · Gift · Join · Viewers · Share · Settings · Moderation)
+│   ├── BottomChat     (premium chat: emoji/gif/voice/mention/reply · pinned · typing)
+│   └── HostControl    (mute/ban/kick/pin/invite/filters/cam/mic/beauty/analytics/end)
+├── panels/
+│   ├── PremiumGiftDrawer  (categories tabs · particles · sound · combos · fullscreen anims)
+│   ├── MissionsSheet
+│   ├── LeaderboardSheet   (top fans/supporters/gifters/viewers · daily/weekly/monthly/all)
+│   ├── ViewersSheet
+│   ├── ModerationSheet
+│   ├── PKBattlePanel      (countdown · rounds · scores · winner anim · history)
+│   ├── TreasureBoxSheet
+│   └── GoalsSheet
+└── effects/
+    ├── CinematicGiftLayer (fullscreen 3D for legendary/luxury)
+    ├── VIPEntranceLayer
+    ├── FlyingHeartsLayer
+    ├── ComboBanner
+    └── LevelUpBurst
 ```
-/careers, /platform-status, /accessibility, /download
-/about, /newsroom, /investors
-/help, /using-networkk, /manage-account, /terms, /contact
-/developers, /docs, /engineering-blog
-/advertising, /business, /resources
-```
-- One shared `<DynamicPage slug="…" />` component renders title + markdown body for the static ones.
-- `Careers.tsx` lists `careers_jobs where is_open=true` with a clean card UI.
-- Add routes to `src/App.tsx`; lazy load.
 
-**Vault CMS panels** (inside `OwnerVault`, glass theme)
-- `VaultPagesContent.tsx`: list site_pages, edit title/body/meta, save → updates row (no rebuild needed; consumers re-fetch).
-- `VaultCareersManager.tsx`: full CRUD on `careers_jobs` (create, edit, toggle open, delete).
-- `VaultSupportCenter.tsx`: edit phone, WhatsApp URL, hero text, section cards.
+Old components in `src/components/live/` (Agora grid, Daily grid, sync helpers, WatchTogether) are kept and imported by the new stage. Old overlay files (`HostTopBar`, `LiveComments`, `TopGiftersBar`, `GiftPanel`, `GiftAnimation`, `GrandGiftAnimation`, `PKBattle`, `TikTokLiveOverlay`) are removed.
 
-**Footer**: update existing footer (if present) so every link points to the new routes; otherwise add a `SiteFooter` with the columns from the screenshot.
+## Route wiring
 
-## Out of scope / explicit notes
-- `https://support.networkk.online` is a separate subdomain not in this repo. We expose a **shared `support_settings` table + public read endpoint** so that subdomain can fetch the same data. We will not deploy to that subdomain here.
-- No payment-gateway logic changes — only relocate the existing manager UI into the vault sidebar.
-- No auth changes; Vault keeps its 123456 secondary password.
+`src/pages/Broadcast.tsx` mounts `<LiveScreen mode="host|viewer" joinRoomId={...} />`. Existing `is_live` heartbeat, kill-switch subscription, and `live_streams` registry logic port straight into the new root — no route or DB contract changes.
 
-## Technical sections
+## Design system (Emerald + Gold VIP)
 
-**Files created**
-- `supabase/migrations/<ts>_cms_and_admin_consolidation.sql`
-- `src/components/vault/VaultPagesContent.tsx`
-- `src/components/vault/VaultCareersManager.tsx`
-- `src/components/vault/VaultSupportCenter.tsx`
-- `src/components/vault/VaultPaymentGateways.tsx` (wrapper that mounts existing gateway UI from `AdminContentManager`)
-- `src/components/public/DynamicPage.tsx`
-- `src/pages/public/Careers.tsx` + ~17 thin page files (or one route that takes `:slug`)
-- `src/components/SiteFooter.tsx` (if missing)
+Extend `src/index.css` / `tailwind.config.ts` with:
 
-**Files edited**
-- `src/App.tsx` — add public routes, add redirect routes for legacy admin paths.
-- `src/pages/OwnerVault.tsx` — register new tabs.
-- `src/components/vault/VaultSidebar.tsx` — add menu items (pages-content, careers, support-center, payment-gateways).
-- `src/pages/AdminControl.tsx`, `src/pages/ControlPanel.tsx`, `src/pages/SecureAdminPanel.tsx`, `src/pages/AdminDashboard.tsx` (if linked) — replaced with `<Navigate>` redirect.
+- `--live-emerald: 144 90% 33%` (existing primary)
+- `--vip-gold: 45 100% 50%`
+- `--vip-gold-glow: 45 100% 65%`
+- gradient tokens: `--gradient-vip`, `--gradient-legendary`
+- glass tokens: `--glass-live-panel` (bg-white/[0.04] + blur-2xl + gold rim for VIP)
 
-**Single slug-driven route to keep things lean**
-Instead of 17 separate page files, use one `<Route path="/p/:slug" element={<DynamicPage/>}/>` plus explicit aliases (`/about`, `/careers`, etc.) that render the same component with a fixed slug.
+All new components consume tokens — no hardcoded colors. Framer Motion for every enter/exit, combo scale-bump, cinematic gift entry.
 
-## Confirm before I build
-The plan touches a lot of surface area (1 migration, ~6 new components, ~17 new routes, sidebar/vault refactor, 4 redirects). Approve and I'll execute it as a single batch, then verify the build.
+## Delivery order (this turn)
+
+1. Migration: new tables, GRANTs, RLS, Realtime, catalog seeds.
+2. Design tokens (index.css + tailwind config).
+3. `LiveScreen` root + `TopBar` + `LeftRail` + `RightRail` + `BottomChat` + `HostControl`.
+4. `PremiumGiftDrawer` (categorized) + `CinematicGiftLayer` + `ComboBanner`.
+5. `MissionsSheet` + `LeaderboardSheet` + `ViewersSheet` + `ModerationSheet` + `PKBattlePanel` + `GoalsSheet` + `TreasureBoxSheet`.
+6. `GuestSlots` (1/2/4/9 layouts).
+7. Remove old `LiveBroadcast.tsx`, `TikTokLiveOverlay.tsx`, and dead overlay files. Point `pages/Broadcast.tsx` at the new root.
+8. Verify: typecheck + Playwright screenshot of `/broadcast` host preview + viewer join.
+
+## What stays untouched
+
+Auth, Home, Profile, Messages, Stories, Reels, Wallet, Subscriptions, Settings, Admin panel, and all other Supabase functions/tables. Nothing outside `src/components/live/**`, `src/components/LiveBroadcast.tsx`, `src/components/TikTokLiveOverlay.tsx`, `src/pages/Broadcast.tsx`, plus the one migration and token additions.
+
+## Risks
+
+- Guest slots (1/2/4/9) need Agora multi-publisher tokens — UI ships this turn, token role plumbing may need a follow-up if Agora token function only issues host tokens today.
+- Cinematic gifts for the full 15-item roster: base engine ships this turn; individual per-gift 3D scenes for Dragon/Phoenix/Galaxy/Castle are stubbed with premium particle bursts and can be upgraded in a follow-up without touching the wiring.
+- Existing sessions currently open will need a page refresh after deploy — Realtime channels are re-keyed.
+
+Reply "approve" and I ship the migration first, then the UI in one continuous pass.

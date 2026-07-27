@@ -1,17 +1,12 @@
-import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import LiveBroadcast from '@/components/LiveBroadcast';
+import LiveScreenV3 from '@/components/live/v3/LiveScreenV3';
 
 const Broadcast = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const joinRoomId = searchParams.get('join') || undefined;
 
-  const handleClose = () => {
-    navigate('/');
-  };
-
-  return <LiveBroadcast onClose={handleClose} joinRoomId={joinRoomId} />;
+  return <LiveScreenV3 joinRoomId={joinRoomId} onClose={() => navigate('/')} />;
 };
 
 export default Broadcast;
