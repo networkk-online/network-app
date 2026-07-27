@@ -17,9 +17,18 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Sync Capacitor
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install and Build Web App
         run: |
           npm install
+          npm run build
+
+      - name: Sync Capacitor
+        run: |
           npx cap sync android
 
       - name: Build APK
