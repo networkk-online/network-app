@@ -300,9 +300,12 @@ export const useAgoraRoom = () => {
     localVideoRef.current = null;
 
     if (clientRef.current) {
-      await clientRef.current.leave();
+      try { clientRef.current.removeAllListeners(); } catch {}
+      try { await clientRef.current.leave(); } catch {}
       clientRef.current = null;
     }
+    currentChannelRef.current = null;
+    currentRoleRef.current = null;
 
     setIsInRoom(false);
     setIsHost(false);
@@ -311,6 +314,7 @@ export const useAgoraRoom = () => {
     setViewerCount(0);
     setIsMuted(false);
     setIsCameraOff(false);
+    setConnectionState('DISCONNECTED');
   }, []);
 
   const toggleMute = useCallback(async () => {
