@@ -840,35 +840,8 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
       )}
 
       {/* ═══ CHAT STREAM (bottom-left overlay) ═══ */}
-      <div className="absolute left-3 right-20 bottom-16 max-h-[38%] z-10 pointer-events-none">
-        <div className="flex flex-col justify-end h-full gap-1 overflow-y-auto no-scrollbar">
-          {chat.slice(-25).map((m) => (
-            <motion.div
-              key={m.id}
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              className="pointer-events-auto max-w-[85%]"
-            >
-              <div
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl backdrop-blur-md border"
-                style={{
-                  background: m.isSystem ? 'hsl(var(--live-emerald) / 0.15)' : 'rgba(0,0,0,0.5)',
-                  borderColor: m.isSystem ? 'hsl(var(--live-emerald) / 0.4)' : 'rgba(255,255,255,0.08)',
-                }}
-              >
-                <span
-                  className="text-[11px] font-bold"
-                  style={{ color: m.vipTier ? 'hsl(var(--vip-gold))' : m.isSystem ? 'hsl(var(--live-emerald))' : 'hsl(var(--live-emerald-glow))' }}
-                >
-                  {m.username}
-                </span>
-                <span className="text-[13px] text-white/90 break-words">{m.text}</span>
-              </div>
-            </motion.div>
-          ))}
-          <div ref={chatBottomRef} />
-        </div>
-      </div>
+      <ChatStream chat={chat} bottomRef={chatBottomRef} />
+
 
       {/* ═══ BOTTOM INPUT ═══ */}
       <div className="absolute inset-x-0 bottom-0 z-30 p-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
