@@ -366,9 +366,8 @@ export const GoalsSheet = ({
       stream_id: streamId,
       host_id: hostId,
       title,
-      target_amount: parseInt(target, 10),
-      current_amount: 0,
-      status: 'active',
+      target_count: parseInt(target, 10),
+      current_count: 0,
     });
     setTitle('');
     setTarget('');
