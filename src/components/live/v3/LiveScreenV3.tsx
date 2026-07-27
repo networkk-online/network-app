@@ -431,6 +431,10 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
 
   const sendGift = async (gift: CatalogGift, quantity: number) => {
     if (!me || !hostInfo || !streamRowId) return;
+    if (agora.isHost || me.id === hostInfo.id) {
+      toast({ title: 'لا يمكن إهداء نفسك', variant: 'destructive' });
+      return;
+    }
     const totalCost = gift.price_coins * quantity;
     if (balance < totalCost) {
       toast({ title: 'رصيد غير كافٍ', description: 'قم بشحن العملات', variant: 'destructive' });
@@ -448,7 +452,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
       toast({ title: 'فشل إرسال الهدية', description: error.message, variant: 'destructive' });
       return;
     }
-    const res = data as { success: boolean; error?: string; new_balance?: number; vip_tier?: string };
+    const res = data as { success: boolean; error?: string; new_balance?: number; vip_tier?: string; total_cost?: number };
     if (!res?.success) {
       const map: Record<string, string> = {
         insufficient_coins: 'رصيد غير كافٍ',
@@ -464,9 +468,10 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
 
     // Optimistic local balance sync from server truth
     if (typeof res.new_balance === 'number') setBalance(res.new_balance);
+    if (typeof res.total_cost === 'number') totalGiftCoinsRef.current += res.total_cost;
 
     const cinematic: CinematicGift = {
-      id: `${Date.now()}`,
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       giftId: gift.id,
       emoji: gift.emoji || '🎁',
       name: gift.name_ar || gift.name,
@@ -475,7 +480,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     };
     broadcast('gift', cinematic);
     if (gift.tier === 'super' || gift.tier === 'legendary') {
-      setCinematicQueue((q) => [...q, cinematic]);
+      setCinematicQueue((q) => (q.length > 8 ? [...q.slice(-8), cinematic] : [...q, cinematic]));
     }
     setComboGiftEmoji(cinematic.emoji);
     setComboCount((c) => c + quantity);
@@ -496,18 +501,31 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
 
   const endLive = async () => {
     if (streamRowId && agora.isHost) {
+      // Flush any pending likes before ending
+      if (likeFlushTimerRef.current) { window.clearTimeout(likeFlushTimerRef.current); likeFlushTimerRef.current = null; }
+      // Aggregate actual gift coins from ledger for accurate summary
+      let totalCoins = totalGiftCoinsRef.current;
+      try {
+        const { data: agg } = await supabase
+          .from('gift_ledger')
+          .select('total_price')
+          .eq('stream_id', streamRowId)
+          .eq('status', 'confirmed');
+        if (agg) totalCoins = agg.reduce((s, r: any) => s + Number(r.total_price || 0), 0);
+      } catch {}
       await supabase.from('live_streams').update({ status: 'ended', ended_at: new Date().toISOString() }).eq('id', streamRowId);
       try {
         await supabase.from('live_summary').insert({
           stream_id: streamRowId,
           host_id: me?.id,
           duration_seconds: duration,
-          peak_viewers: agora.viewerCount,
+          peak_viewers: Math.max(peakViewersRef.current, agora.viewerCount),
           total_likes: likeCount,
-          total_gifts_coins: 0,
+          total_gifts_coins: totalCoins,
         } as any);
       } catch {}
     }
+    agoraJoinedRef.current = null;
     await agora.leaveRoom();
     onClose();
   };
