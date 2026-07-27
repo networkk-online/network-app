@@ -399,13 +399,13 @@ export const GoalsSheet = ({
       )}
       <div className="space-y-2">
         {goals.map((g) => {
-          const pct = Math.min(100, (g.current_amount / g.target_amount) * 100);
+          const pct = Math.min(100, (g.current_count / g.target_count) * 100);
           return (
             <div key={g.id} className="p-3 rounded-2xl bg-white/[0.03] border border-white/10">
               <div className="flex items-center justify-between mb-1.5">
                 <div className="text-sm font-semibold text-white">{g.title}</div>
                 <div className="text-[10px] text-white/50">
-                  {g.current_amount}/{g.target_amount} 💎
+                  {g.current_count}/{g.target_count} 💎
                 </div>
               </div>
               <div className="h-2 rounded-full bg-white/5 overflow-hidden">
