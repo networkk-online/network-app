@@ -21,12 +21,16 @@ export interface AgoraStats {
   rtt: number; // ms
 }
 
+export type AgoraConnectionState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTING';
+
 export const useAgoraRoom = () => {
   const { toast } = useToast();
   const clientRef = useRef<IAgoraRTCClient | null>(null);
   const localAudioRef = useRef<IMicrophoneAudioTrack | null>(null);
   const localVideoRef = useRef<ICameraVideoTrack | null>(null);
   const statsIntervalRef = useRef<number | null>(null);
+  const currentChannelRef = useRef<string | null>(null);
+  const currentRoleRef = useRef<'host' | 'audience' | null>(null);
 
   const [isInRoom, setIsInRoom] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +40,7 @@ export const useAgoraRoom = () => {
   const [viewerCount, setViewerCount] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
+  const [connectionState, setConnectionState] = useState<AgoraConnectionState>('DISCONNECTED');
   const [stats, setStats] = useState<AgoraStats>({ bitrateKbps: 0, fps: 0, packetLoss: 0, rtt: 0 });
 
   const getAgoraCredentials = async (channel: string) => {
