@@ -390,25 +390,42 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
 
   const sendChat = () => {
     if (!chatInput.trim() || !me) return;
+    const now = Date.now();
+    if (now - lastChatAtRef.current < 700) {
+      toast({ title: 'أبطئ قليلاً', description: 'الرجاء الانتظار قبل إرسال رسالة أخرى' });
+      return;
+    }
+    lastChatAtRef.current = now;
     const msg: LiveChatMsg = {
-      id: `${Date.now()}-${Math.random()}`,
+      id: `${now}-${Math.random().toString(36).slice(2, 8)}`,
       username: me.username,
       avatarUrl: me.avatarUrl,
-      text: chatInput.trim(),
+      text: chatInput.trim().slice(0, 200),
     };
+    chatIdsRef.current.add(msg.id);
     setChat((prev) => [...prev.slice(-99), msg]);
     broadcast('chat', msg);
     setChatInput('');
   };
 
+  const flushLikes = useCallback(() => {
+    const n = pendingLikesRef.current;
+    pendingLikesRef.current = 0;
+    likeFlushTimerRef.current = null;
+    if (n <= 0 || !streamRowId) return;
+    broadcast('like', { n });
+    supabase.rpc('live_tap_like', { _stream_id: streamRowId, _amount: Math.min(50, n) }).then();
+  }, [streamRowId, broadcast]);
+
   const tapLike = () => {
+    // Host cannot like own stream (server would reject; skip client work)
+    if (agora.isHost) return;
     setLikeCount((c) => c + 1);
     setHeartPulse((n) => n + 1);
-    broadcast('like', {});
-    if (navigator.vibrate) navigator.vibrate(15);
-    // Backend mission progress (throttled — 1 call per tap batch)
-    if (streamRowId) {
-      supabase.rpc('live_tap_like', { _stream_id: streamRowId, _amount: 1 }).then();
+    if (navigator.vibrate) navigator.vibrate(12);
+    pendingLikesRef.current += 1;
+    if (!likeFlushTimerRef.current) {
+      likeFlushTimerRef.current = window.setTimeout(flushLikes, 600);
     }
   };
 
