@@ -7,8 +7,8 @@ import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import SeoHead from '@/components/seo/SeoHead';
-import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+
 
 // Escape select() literals so supabase-js does not do heavy type-parsing
 const sel = (s: string): string => s;
