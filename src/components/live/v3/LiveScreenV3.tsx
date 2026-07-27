@@ -807,7 +807,42 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
         onClose={() => setOpenPanel(null)}
         isHost={isHost}
         viewers={agora.participants.filter((p) => !p.isLocal).map((p) => ({ uid: p.uid, username: `مشاهد ${String(p.uid).slice(0, 4)}` }))}
+        onKick={async (uid) => {
+          if (!streamRowId) return;
+          const userId = typeof uid === 'string' ? uid : null;
+          if (!userId) return;
+          await supabase.rpc('live_ban_user', { _stream_id: streamRowId, _user_id: userId, _reason: 'kicked' });
+          toast({ title: 'تم الطرد' });
+        }}
+        onMute={async (uid) => {
+          const slot = guestSlots.find((s) => s.guest_user_id === String(uid));
+          if (slot && streamRowId) await supabase.rpc('live_toggle_mute_guest', { _stream_id: streamRowId, _slot_index: slot.slot_index });
+        }}
+        onPromoteMod={async (uid) => {
+          if (!streamRowId) return;
+          const userId = typeof uid === 'string' ? uid : null;
+          if (!userId) return;
+          await supabase.rpc('live_grant_moderator', { _stream_id: streamRowId, _user_id: userId });
+          toast({ title: 'تم منح صلاحية الإشراف' });
+        }}
       />
+      <PKBattlePanel
+        open={openPanel === 'pk'}
+        onClose={() => setOpenPanel(null)}
+        hostScore={0}
+        opponentScore={0}
+        hostName={hostInfo?.username || 'مضيف'}
+        opponentName="—"
+        timeLeft={0}
+      />
+      <GoalsSheet open={openPanel === 'goals'} onClose={() => setOpenPanel(null)} isHost={isHost} streamId={streamRowId} hostId={hostInfo?.id || null} />
+      <ModerationSheet open={openPanel === 'moderation'} onClose={() => setOpenPanel(null)} streamId={streamRowId} />
+      <TreasureBoxSheet open={openPanel === 'treasure'} onClose={() => setOpenPanel(null)} isHost={isHost} streamId={streamRowId} hostId={hostInfo?.id || null} />
+    </div>
+  );
+};
+
+export default LiveScreenV3;
       <PKBattlePanel
         open={openPanel === 'pk'}
         onClose={() => setOpenPanel(null)}
