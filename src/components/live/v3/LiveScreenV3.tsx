@@ -547,6 +547,24 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
             layout={guestLayout}
             slots={guestSlots}
             isHost={isHost}
+            onInvite={async (slotIndex) => {
+              // Host approves the pending request at that slot, or opens viewers sheet
+              const slot = guestSlots.find((s) => s.slot_index === slotIndex);
+              if (slot?.status === 'requested' && streamRowId) {
+                await supabase.rpc('live_approve_guest', { _stream_id: streamRowId, _slot_index: slotIndex });
+                toast({ title: 'تم قبول الضيف' });
+              } else {
+                setOpenPanel('viewers');
+              }
+            }}
+            onKick={async (slotIndex) => {
+              if (!streamRowId) return;
+              await supabase.rpc('live_kick_guest', { _stream_id: streamRowId, _slot_index: slotIndex });
+            }}
+            onToggleMute={async (slotIndex) => {
+              if (!streamRowId) return;
+              await supabase.rpc('live_toggle_mute_guest', { _stream_id: streamRowId, _slot_index: slotIndex });
+            }}
           />
         </div>
       )}
