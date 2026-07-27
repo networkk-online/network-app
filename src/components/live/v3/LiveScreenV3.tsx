@@ -843,20 +843,3 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
 };
 
 export default LiveScreenV3;
-      <PKBattlePanel
-        open={openPanel === 'pk'}
-        onClose={() => setOpenPanel(null)}
-        hostScore={0}
-        opponentScore={0}
-        hostName={hostInfo?.username || 'مضيف'}
-        opponentName="—"
-        timeLeft={0}
-      />
-      <GoalsSheet open={openPanel === 'goals'} onClose={() => setOpenPanel(null)} isHost={isHost} streamId={streamRowId} hostId={hostInfo?.id || null} />
-      <ModerationSheet open={openPanel === 'moderation'} onClose={() => setOpenPanel(null)} streamId={streamRowId} />
-      <TreasureBoxSheet open={openPanel === 'treasure'} onClose={() => setOpenPanel(null)} isHost={isHost} streamId={streamRowId} hostId={hostInfo?.id || null} />
-    </div>
-  );
-};
-
-export default LiveScreenV3;
