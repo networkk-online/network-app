@@ -549,6 +549,16 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     return { color: 'hsl(0 90% 55%)', label: 'ضعيف', bars: 1 };
   }, [agora.stats.packetLoss]);
 
+  // Only identified users (guests with real UUIDs) are actionable via kick/ban RPCs
+  const identifiedViewers = useMemo(
+    () =>
+      guestSlots
+        .filter((s) => !!s.guest_user_id)
+        .map((s) => ({ uid: s.guest_user_id as string, username: `ضيف #${s.slot_index}` })),
+    [guestSlots],
+  );
+
+
   const formatDuration = (s: number) =>
     `${Math.floor(s / 3600).toString().padStart(2, '0')}:${Math.floor((s % 3600) / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
