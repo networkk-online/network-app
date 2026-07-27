@@ -270,22 +270,25 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
   useEffect(() => {
     if (!streamRowId || !agora.isHost) return;
     const iv = window.setInterval(() => {
-      // Track peak viewers locally for accurate summary
-      if (agora.viewerCount > peakViewersRef.current) peakViewersRef.current = agora.viewerCount;
+      // presenceCount subtracts 1 for the host themselves
+      const viewers = Math.max(0, presenceCount - 1);
+      if (viewers > peakViewersRef.current) peakViewersRef.current = viewers;
       supabase
         .from('live_streams')
-        .update({ viewer_count: agora.viewerCount, last_heartbeat_at: new Date().toISOString() })
+        .update({ viewer_count: viewers, last_heartbeat_at: new Date().toISOString() })
         .eq('id', streamRowId)
         .eq('status', 'live')
         .then();
     }, 15000);
     return () => window.clearInterval(iv);
-  }, [streamRowId, agora.isHost, agora.viewerCount]);
+  }, [streamRowId, agora.isHost, presenceCount]);
 
-  // Keep peak viewers ref updated live
+  // Keep peak viewers ref updated live from presence
   useEffect(() => {
-    if (agora.viewerCount > peakViewersRef.current) peakViewersRef.current = agora.viewerCount;
-  }, [agora.viewerCount]);
+    const viewers = Math.max(0, presenceCount - 1);
+    if (viewers > peakViewersRef.current) peakViewersRef.current = viewers;
+  }, [presenceCount]);
+
 
   // ─── Attach local + remote video tracks ──────────────
   useEffect(() => {
