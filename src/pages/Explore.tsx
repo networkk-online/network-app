@@ -103,7 +103,13 @@ const isVideoUrl = (u: string | null | undefined): boolean =>
 
 const Explore = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const [user, setUser] = useState<{ id: string } | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user ? { id: data.user.id } : null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ? { id: s.user.id } : null));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
 
   const [chip, setChip] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
