@@ -111,6 +111,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const totalGiftCoinsRef = useRef<number>(0);
   const peakViewersRef = useRef<number>(0);
+  const [presenceCount, setPresenceCount] = useState(0);
 
   // Video containers
   const localVideoRef = useRef<HTMLDivElement | null>(null);
