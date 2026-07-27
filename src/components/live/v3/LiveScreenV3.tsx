@@ -739,7 +739,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
                 </div>
                 <div className="flex items-center gap-2 text-[10px] text-white/60">
                   <Users className="w-2.5 h-2.5" />
-                  <span>{agora.viewerCount.toLocaleString()}</span>
+                  <span>{Math.max(0, presenceCount - 1).toLocaleString()}</span>
                   <span className="opacity-40">·</span>
                   <span>{formatDuration(duration)}</span>
                 </div>
