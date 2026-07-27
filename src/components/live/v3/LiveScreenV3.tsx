@@ -301,12 +301,17 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
     }
   }, [agora.participants]);
 
-  // ─── Realtime chat via broadcast channel (subscribed ref, dedup) ────
+  // ─── Realtime chat + presence-backed viewer count ────
   useEffect(() => {
-    if (!streamRowId) return;
+    if (!streamRowId || !me?.id) return;
     chatIdsRef.current = new Set();
     const ch = supabase
-      .channel(`live-chat-${streamRowId}`, { config: { broadcast: { self: false } } })
+      .channel(`live-chat-${streamRowId}`, {
+        config: {
+          broadcast: { self: false },
+          presence: { key: me.id },
+        },
+      })
       .on('broadcast', { event: 'chat' }, ({ payload }) => {
         const msg = payload as LiveChatMsg;
         if (!msg?.id || chatIdsRef.current.has(msg.id)) return;
@@ -332,13 +337,31 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
       .on('broadcast', { event: 'entrance' }, ({ payload }) => {
         setVipQueue((q) => (q.length > 5 ? [...q.slice(-5), payload as VIPEntrance] : [...q, payload as VIPEntrance]));
       })
-      .subscribe();
+      .on('presence', { event: 'sync' }, () => {
+        // Real viewer count — Agora's user-joined does NOT fire for audience in live mode,
+        // so presence on the shared realtime channel is the source of truth.
+        const state = ch.presenceState();
+        setPresenceCount(Object.keys(state).length);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await ch.track({ user_id: me.id, is_host: agora.isHost, joined_at: Date.now() });
+        }
+      });
     channelRef.current = ch;
     return () => {
       channelRef.current = null;
       supabase.removeChannel(ch);
     };
-  }, [streamRowId]);
+  }, [streamRowId, me?.id, agora.isHost]);
+
+  // ─── Reconnect UX feedback ───────────────────────────
+  useEffect(() => {
+    if (agora.connectionState === 'RECONNECTING') {
+      toast({ title: 'جاري إعادة الاتصال...', description: 'تحقق من الشبكة' });
+    }
+  }, [agora.connectionState]);
+
 
   // Auto-scroll chat via rAF (coalesces bursts, no smooth pileup)
   useEffect(() => {
