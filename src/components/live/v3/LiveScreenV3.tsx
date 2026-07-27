@@ -141,6 +141,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
   // ─── Viewer: resolve host from join room id ───────────
   useEffect(() => {
     if (!joinRoomId) return;
+    let cancelled = false;
     (async () => {
       const { data: stream } = await supabase
         .from('live_streams')
@@ -148,6 +149,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
         .eq('channel_name', joinRoomId)
         .eq('status', 'live')
         .maybeSingle();
+      if (cancelled) return;
       if (!stream) {
         toast({ title: 'البث غير متاح', description: 'انتهى البث أو الرابط غير صحيح', variant: 'destructive' });
         onClose();
@@ -160,6 +162,7 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
         .select('id, username, avatar_url, is_verified, verification_type')
         .eq('id', stream.host_id)
         .maybeSingle();
+      if (cancelled) return;
       if (hostProfile) {
         setHostInfo({
           id: hostProfile.id,
@@ -169,38 +172,58 @@ export const LiveScreenV3 = ({ joinRoomId, onClose }: LiveScreenV3Props) => {
           verificationType: (hostProfile.verification_type as any) || null,
         });
       }
-      if (me?.id) {
-        const { data: follow } = await supabase
-          .from('follows')
-          .select('id')
-          .eq('follower_id', me.id)
-          .eq('following_id', stream.host_id)
-          .maybeSingle();
-        setFollowingHost(!!follow);
-
-        // Read viewer's VIP tier and broadcast entrance
-        const { data: vip } = await supabase
-          .from('live_vip_levels')
-          .select('tier')
-          .eq('user_id', me.id)
-          .maybeSingle();
-        const tier = (vip?.tier as any) || 'none';
-        if (tier !== 'none' && ['gold', 'diamond', 'legend', 'platinum', 'royal', 'silver', 'bronze'].includes(tier)) {
-          const mappedTier: any = ['platinum', 'royal'].includes(tier) ? 'diamond' : tier;
-          // slight delay so channel is subscribed before broadcasting
-          setTimeout(() => {
-            supabase.channel(`live-chat-${stream.id}`).send({
-              type: 'broadcast',
-              event: 'entrance',
-              payload: { id: `${Date.now()}`, username: me.username, tier: mappedTier, avatarUrl: me.avatarUrl },
-            });
-          }, 800);
+      // Guard: only join Agora ONCE per joinRoomId (protects StrictMode + me?.id resolution)
+      if (agoraJoinedRef.current !== joinRoomId) {
+        agoraJoinedRef.current = joinRoomId;
+        try {
+          await agora.joinRoom(joinRoomId);
+        } catch (e: any) {
+          if (!cancelled) toast({ title: 'تعذر الانضمام', description: e?.message, variant: 'destructive' });
         }
+        startedAtRef.current = Date.now();
       }
-      await agora.joinRoom(joinRoomId);
-      startedAtRef.current = Date.now();
     })();
-  }, [joinRoomId, me?.id]);
+    return () => { cancelled = true; };
+  }, [joinRoomId]);
+
+  // ─── Viewer: follow state + VIP entrance (once me resolves) ──
+  useEffect(() => {
+    if (!joinRoomId || !me?.id || !hostInfo?.id || !streamRowId) return;
+    let cancelled = false;
+    (async () => {
+      const { data: follow } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('follower_id', me.id)
+        .eq('following_id', hostInfo.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setFollowingHost(!!follow);
+
+      const { data: vip } = await supabase
+        .from('live_vip_levels')
+        .select('tier')
+        .eq('user_id', me.id)
+        .maybeSingle();
+      const tier = (vip?.tier as any) || 'none';
+      if (
+        tier !== 'none' &&
+        ['gold', 'diamond', 'legend', 'platinum', 'royal', 'silver', 'bronze'].includes(tier) &&
+        channelRef.current
+      ) {
+        const mappedTier: any = ['platinum', 'royal'].includes(tier) ? 'diamond' : tier;
+        // Fire on the subscribed channel so payload actually delivers
+        setTimeout(() => {
+          channelRef.current?.send({
+            type: 'broadcast',
+            event: 'entrance',
+            payload: { id: `${Date.now()}`, username: me.username, tier: mappedTier, avatarUrl: me.avatarUrl },
+          });
+        }, 900);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [joinRoomId, me?.id, hostInfo?.id, streamRowId]);
 
   // ─── Host: create stream row when going live ──────────
   const startHostStream = async () => {
