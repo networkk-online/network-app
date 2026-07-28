@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import introVideo from '@/assets/networkk-intro.mov.asset.json';
+import { useNavigate, useLocation } from 'react-router-dom';
+import introVideo from '@/assets/networkk-intro.mp4.asset.json';
+import { supabase } from '@/integrations/supabase/client';
 
 const SESSION_KEY = 'networkk_intro_played';
 const MAX_MS = 15000;
@@ -11,14 +13,31 @@ const IntroSplash = () => {
   const [fading, setFading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<number | null>(null);
+  const finishedRef = useRef(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const routeAfterIntro = async () => {
+    try {
+      const { data } = await supabase.auth.getSession();
+      const isLoggedIn = !!data?.session?.user;
+      // Only redirect if user is sitting at root; don't hijack deep links.
+      const path = location.pathname;
+      if (path === '/' || path === '') {
+        if (!isLoggedIn) navigate('/login', { replace: true });
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   const finish = () => {
-    setFading((f) => {
-      if (f) return f;
-      try { sessionStorage.setItem(SESSION_KEY, '1'); } catch {}
-      window.setTimeout(() => setShown(false), 500);
-      return true;
-    });
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch {}
+    setFading(true);
+    routeAfterIntro();
+    window.setTimeout(() => setShown(false), 500);
   };
 
   useEffect(() => {
@@ -34,7 +53,6 @@ const IntroSplash = () => {
     const playPromise = v.play();
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise.catch(() => {
-        // Browser blocked unmuted autoplay — start muted, then unmute on first user gesture.
         v.muted = true;
         v.play().catch(() => finish());
         const unlock = () => {
@@ -59,6 +77,7 @@ const IntroSplash = () => {
   return (
     <div
       className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center transition-opacity duration-500 ${fading ? 'opacity-0' : 'opacity-100'}`}
+      style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <video
         ref={videoRef}
@@ -66,6 +85,8 @@ const IntroSplash = () => {
         autoPlay
         playsInline
         preload="auto"
+        controls={false}
+        disablePictureInPicture
         onEnded={finish}
         onError={finish}
         className="w-full h-full object-cover"
