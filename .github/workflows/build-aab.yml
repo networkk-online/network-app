@@ -15,39 +15,38 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: '21'
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm install
 
-      - name: Build Web App
+      - name: Build web
         run: npm run build
 
       - name: Sync Capacitor
         run: npx cap sync android
 
       - name: Restore Keystore
-        shell: bash
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/networkk-release.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/networkk-release.jks
 
-      - name: Build Signed AAB
+      - name: Build AAB
         run: |
           cd android
           chmod +x gradlew
           ./gradlew bundleRelease \
-            -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/android/app/networkk-release.jks" \
-            -Pandroid.injected.signing.store.password="${{ secrets.KEYSTORE_PASSWORD }}" \
-            -Pandroid.injected.signing.key.alias="${{ secrets.KEY_ALIAS }}" \
-            -Pandroid.injected.signing.key.password="${{ secrets.KEY_PASSWORD }}"
+          -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/android/app/networkk-release.jks" \
+          -Pandroid.injected.signing.store.password="${{ secrets.KEYSTORE_PASSWORD }}" \
+          -Pandroid.injected.signing.key.alias="${{ secrets.KEY_ALIAS }}" \
+          -Pandroid.injected.signing.key.password="${{ secrets.KEY_PASSWORD }}"
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: networkk-release-aab
+          name: app-release-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
