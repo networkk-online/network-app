@@ -459,6 +459,9 @@ const Settings = () => {
             <Row isRTL={isRTL} icon={<Download className="w-4 h-4" />}
               title={t({ ar: 'الأرشفة والتنزيل', en: 'Archive & download' })}
               onClick={() => navigate('/settings/archive')} />
+            <Row isRTL={isRTL} icon={<Shield className="w-4 h-4" />}
+              title={t({ ar: 'معايير سلامة الأطفال', en: 'Child safety standards' })}
+              onClick={() => navigate('/child-safety')} />
             <Row isRTL={isRTL} icon={<Accessibility className="w-4 h-4" />}
               title={t({ ar: 'حول Networkk', en: 'About Networkk' })}
               onClick={() => navigate('/about')} />

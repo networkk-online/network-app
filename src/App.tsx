@@ -114,6 +114,7 @@ import Careers from "./pages/public/Careers";
 import Matches from "./pages/Matches";
 import MatchDetails from "./pages/MatchDetails";
 import SupportCenter from "./pages/public/SupportCenter";
+import ChildSafety from "./pages/public/ChildSafety";
 import DynamicPage from "./components/public/DynamicPage";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
@@ -260,6 +261,7 @@ const AppContent = () => {
         {/* Public footer pages (admin-editable) */}
         <Route path="/careers" element={<Careers />} />
         <Route path="/help" element={<SupportCenter />} />
+        <Route path="/child-safety" element={<ChildSafety />} />
         <Route path="/platform-status" element={<DynamicPage slug="platform-status" />} />
         <Route path="/accessibility" element={<DynamicPage slug="accessibility" />} />
         <Route path="/download" element={<DynamicPage slug="download" />} />

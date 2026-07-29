@@ -26,6 +26,7 @@ const columns = [
       { label: 'Using NETWORKK', to: '/using-networkk' },
       { label: 'Manage Account', to: '/manage-account' },
       { label: 'Terms & Policies', to: '/terms' },
+      { label: 'Child Safety Standards', to: '/child-safety' },
       { label: 'Contact Us', to: '/contact' },
     ],
   },
