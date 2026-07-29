@@ -114,6 +114,7 @@ import Careers from "./pages/public/Careers";
 import Matches from "./pages/Matches";
 import MatchDetails from "./pages/MatchDetails";
 import SupportCenter from "./pages/public/SupportCenter";
+import ChildSafety from "./pages/public/ChildSafety";
 import DynamicPage from "./components/public/DynamicPage";
 import BottomNav from "./components/BottomNav";
 import SplashScreen from "./components/SplashScreen";
