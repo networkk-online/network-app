@@ -50,6 +50,18 @@ const SupportCenter = () => {
           </a>
         </div>
 
+        <Link to="/child-safety" className="block mb-10 bg-[#0d0d0d]/80 border border-[#00e676]/20 hover:border-[#00e676]/50 rounded-2xl p-6 backdrop-blur-xl transition">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-[#00e676]/10 border border-[#00e676]/30 flex items-center justify-center">
+              <LifeBuoy className="h-6 w-6 text-[#00e676]" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-white font-semibold mb-1">معايير سلامة الأطفال</h3>
+              <p className="text-white/50 text-sm">سياستنا لحماية الأطفال ومنع الاستغلال</p>
+            </div>
+          </div>
+        </Link>
+
         <div className="grid gap-4">
           {(data?.sections || []).map((s: any, i: number) => (
             <div key={i} className="bg-[#0d0d0d]/80 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
