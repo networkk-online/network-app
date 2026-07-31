@@ -8,6 +8,10 @@ import { useNativeApp } from "@/hooks/useNativeApp";
 import useFinanceNotifications from "@/hooks/useFinanceNotifications";
 import { ChimeCallProvider } from "@/components/ChimeCallProvider";
 import { AgoraCallProvider } from "@/components/calls/AgoraCallProvider";
+import { SubscriptionProvider } from "@/hooks/useSubscription";
+import FeatureGate from "@/components/subscription/FeatureGate";
+
+
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Explore from "./pages/Explore";
@@ -153,7 +157,7 @@ const AppContent = () => {
         <Route path="/explore" element={<Explore />} />
         <Route path="/explore/feed/:postId" element={<ExploreFeed />} />
         <Route path="/broadcast" element={<Broadcast />} />
-        <Route path="/business" element={<BusinessAccount />} />
+        <Route path="/business" element={<FeatureGate feature="business_dashboard" title="لوحة الأعمال" description="لوحة الأعمال والإحصائيات وأدوات الترويج متاحة ضمن باقة الأعمال أو الحكومية."><BusinessAccount /></FeatureGate>} />
         <Route path="/business/:companyId/affiliates" element={<BusinessAffiliates />} />
         <Route path="/pages" element={<Pages />} />
         <Route path="/shorts" element={<Shorts />} />
@@ -245,7 +249,7 @@ const AppContent = () => {
         <Route path="/about" element={<About />} />
         <Route path="/network-tv" element={<NetworkTV />} />
         <Route path="/watch/:videoId" element={<VideoPlayer />} />
-        <Route path="/creator-studio" element={<CreatorStudio />} />
+        <Route path="/creator-studio" element={<FeatureGate feature="analytics" title="الإحصائيات والتحليلات" description="التحليلات المتقدمة متاحة ضمن الباقات المدفوعة."><CreatorStudio /></FeatureGate>} />
         <Route path="/tweets" element={<Tweets />} />
         <Route path="/admin-control" element={<AdminControl />} />
         <Route path="/admin-networkk-online" element={<NotFound />} />
@@ -298,9 +302,12 @@ const App = () => (
           <MaintenanceGuard>
             <ChimeCallProvider>
               <AgoraCallProvider>
-                <AppContent />
+                <SubscriptionProvider>
+                  <AppContent />
+                </SubscriptionProvider>
               </AgoraCallProvider>
             </ChimeCallProvider>
+
           </MaintenanceGuard>
         </ErrorBoundary>
       </BrowserRouter>

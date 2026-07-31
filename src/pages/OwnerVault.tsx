@@ -23,6 +23,8 @@ import VaultCareersManager from '@/components/vault/VaultCareersManager';
 import VaultSupportCenter from '@/components/vault/VaultSupportCenter';
 import VaultPaymentGateways from '@/components/vault/VaultPaymentGateways';
 import VaultGemsPricing from '@/components/vault/VaultGemsPricing';
+import VaultSubscriptions from '@/components/vault/VaultSubscriptions';
+
 import VaultSeoManager from '@/components/vault/VaultSeoManager';
 import VaultMatchesManager from '@/components/vault/VaultMatchesManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -165,6 +167,9 @@ const OwnerVault = () => {
         return <VaultPaymentGateways />;
       case 'gems-pricing':
         return <VaultGemsPricing />;
+      case 'subscriptions':
+        return <VaultSubscriptions />;
+
       case 'pages-content':
         return <VaultPagesContent />;
       case 'careers':

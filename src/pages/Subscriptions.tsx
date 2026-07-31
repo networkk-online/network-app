@@ -1,4 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useSubscription } from "@/hooks/useSubscription";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -224,19 +227,47 @@ const faqs = [
   },
 ];
 
+type DbPlan = {
+  id: string; name: string; name_ar: string; tagline: string | null; tagline_ar: string | null;
+  price_usd: number; price_yearly_usd: number | null; icon: string; gradient: string;
+  sort_order: number; is_public: boolean;
+};
+type DbFeature = { key: string; name: string; name_ar: string; sort_order: number };
+type DbEnt = { plan_id: string; feature_key: string; enabled: boolean };
+
+const ICONS: Record<string, React.ElementType> = {
+  sparkles: Sparkles, zap: Zap, crown: Crown, building: Building2, landmark: Landmark,
+  shield: Shield, rocket: Rocket, star: Star, coins: Coins,
+};
+
 const Subscriptions = () => {
   const [yearly, setYearly] = useState(false);
   const [waPlan, setWaPlan] = useState<WhatsAppPlan | null>(null);
+  const [allPlans, setAllPlans] = useState<DbPlan[]>([]);
+  const [allFeatures, setAllFeatures] = useState<DbFeature[]>([]);
+  const [entitlements, setEntitlements] = useState<DbEnt[]>([]);
+  const { planId: currentPlanId } = useSubscription();
 
-  const formatPrice = (p: number | "custom") => {
-    if (p === "custom") return "Custom";
-    const value = yearly ? Math.round(p * 12 * 0.8) : p;
-    return `$${value}`;
-  };
-  const suffix = (p: number | "custom") =>
-    p === "custom" ? "" : yearly ? "/year" : "/month";
+  useEffect(() => {
+    (async () => {
+      const [p, f, e] = await Promise.all([
+        supabase.from("subscription_plans").select("*").eq("is_active", true).order("sort_order"),
+        supabase.from("plan_features").select("key,name,name_ar,sort_order").order("sort_order"),
+        supabase.from("plan_entitlements").select("plan_id,feature_key,enabled"),
+      ]);
+      setAllPlans((p.data as DbPlan[]) || []);
+      setAllFeatures((f.data as DbFeature[]) || []);
+      setEntitlements((e.data as DbEnt[]) || []);
+    })();
+  }, []);
 
-  const currentPlanId = "plus";
+  const dbPlans = useMemo(() => allPlans.filter((p) => p.is_public), [allPlans]);
+  const hasFeature = (planId: string, key: string) =>
+    entitlements.some((x) => x.plan_id === planId && x.feature_key === key && x.enabled);
+  const featuresOf = (planId: string) =>
+    allFeatures.filter((f) => hasFeature(planId, f.key));
+
+
 
 
   return (
@@ -340,11 +371,14 @@ const Subscriptions = () => {
           </div>
         </motion.section>
 
-        {/* Plans */}
-        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {plans.map((plan, i) => {
-            const Icon = plan.icon;
+        {/* Plans — loaded dynamically from the database (admin-manageable) */}
+        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {dbPlans.map((plan, i) => {
+            const Icon = ICONS[plan.icon] ?? Sparkles;
             const isCurrent = plan.id === currentPlanId;
+            const price = yearly
+              ? (plan.price_yearly_usd ?? Math.round(Number(plan.price_usd) * 12 * 0.8))
+              : Number(plan.price_usd);
             return (
               <motion.div
                 key={plan.id}
@@ -354,18 +388,9 @@ const Subscriptions = () => {
                 whileHover={{ y: -6 }}
                 className={cn(
                   "group relative rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-6 flex flex-col",
-                  "ring-1 ring-white/5 hover:ring-2 transition-all",
-                  plan.ring,
-                  plan.glow
+                  "ring-1 ring-white/5 hover:ring-2 transition-all"
                 )}
               >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 px-3 py-1 text-[11px] font-semibold text-white shadow-lg">
-                      MOST POPULAR
-                    </span>
-                  </div>
-                )}
                 {isCurrent && (
                   <div className="absolute -top-3 right-4">
                     <span className="rounded-full bg-emerald-500/90 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg">
@@ -383,48 +408,43 @@ const Subscriptions = () => {
                   <Icon className="h-6 w-6" />
                 </div>
 
-                <h3 className="mt-5 text-xl font-semibold">{plan.name}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{plan.tagline}</p>
+                <h3 className="mt-5 text-xl font-semibold">{plan.name_ar} · {plan.name}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{plan.tagline_ar || plan.tagline}</p>
 
                 <div className="mt-6 flex items-baseline gap-1">
                   <span className="text-4xl font-bold tracking-tight">
-                    {formatPrice(plan.price)}
+                    {price > 0 ? `$${price}` : "Custom"}
                   </span>
-                  <span className="text-sm text-muted-foreground">
-                    {suffix(plan.price)}
-                  </span>
+                  {price > 0 && (
+                    <span className="text-sm text-muted-foreground">
+                      {yearly ? "/year" : "/month"}
+                    </span>
+                  )}
                 </div>
 
                 <Button
-                  onClick={() => setWaPlan(WHATSAPP_PLANS[plan.id] ?? null)}
+                  disabled={isCurrent}
+                  onClick={() => setWaPlan(WHATSAPP_PLANS[plan.id] ?? {
+                    id: plan.id, name: plan.name, price: price || "custom",
+                    description: plan.tagline_ar || plan.tagline || "",
+                    message: `مرحبًا، أرغب بالاشتراك في باقة ${plan.name_ar}.`,
+                  })}
                   className={cn(
                     "mt-6 w-full rounded-2xl bg-gradient-to-r text-white font-semibold shadow-lg hover:opacity-95 transition",
                     plan.gradient
                   )}
                 >
-                  {plan.cta} <ArrowRight className="ml-1 h-4 w-4" />
+                  {isCurrent ? "باقتك الحالية" : "اشترك الآن"} <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
 
-
-                <div className="mt-6 space-y-4 text-sm">
-                  {plan.groups.map((g, gi) => (
-                    <div key={gi}>
-                      {g.title && (
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          {g.title}
-                        </p>
-                      )}
-                      <ul className="space-y-2">
-                        {g.features.map((f) => (
-                          <li key={f} className="flex items-start gap-2">
-                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                            <span className="text-foreground/85">{f}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                <ul className="mt-6 space-y-2 text-sm">
+                  {featuresOf(plan.id).map((f) => (
+                    <li key={f.key} className="flex items-start gap-2">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span className="text-foreground/85">{f.name_ar}</span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </motion.div>
             );
           })}
@@ -449,40 +469,31 @@ const Subscriptions = () => {
                     <th className="text-left px-6 py-4 font-medium text-muted-foreground">
                       Feature
                     </th>
-                    {["Free", "Plus", "Creator", "Business", "Government"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="px-4 py-4 text-center font-semibold"
-                        >
-                          {h}
-                        </th>
-                      )
-                    )}
+                    {allPlans.map((p) => (
+                      <th key={p.id} className="px-4 py-4 text-center font-semibold">
+                        {p.name_ar}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {comparisonRows.map((row, i) => (
+                  {allFeatures.map((row, i) => (
                     <tr
-                      key={row.label}
+                      key={row.key}
                       className={cn(
                         "border-b border-white/5 last:border-0",
                         i % 2 === 0 ? "bg-white/[0.01]" : ""
                       )}
                     >
                       <td className="px-6 py-4 font-medium text-foreground/90">
-                        {row.label}
+                        {row.name_ar}
                       </td>
-                      {row.values.map((v, vi) => (
-                        <td key={vi} className="px-4 py-4 text-center">
-                          {typeof v === "boolean" ? (
-                            v ? (
-                              <Check className="mx-auto h-5 w-5 text-emerald-400" />
-                            ) : (
-                              <X className="mx-auto h-5 w-5 text-muted-foreground/40" />
-                            )
+                      {allPlans.map((p) => (
+                        <td key={p.id} className="px-4 py-4 text-center">
+                          {hasFeature(p.id, row.key) ? (
+                            <Check className="mx-auto h-5 w-5 text-emerald-400" />
                           ) : (
-                            <span className="text-foreground/85">{v}</span>
+                            <X className="mx-auto h-5 w-5 text-muted-foreground/40" />
                           )}
                         </td>
                       ))}
@@ -493,6 +504,7 @@ const Subscriptions = () => {
             </div>
           </div>
         </section>
+
 
         {/* FAQ */}
         <section className="mt-28 max-w-3xl mx-auto">
