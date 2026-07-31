@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Shield, Gift, Settings, Eye, FileText,
   ChevronLeft, ChevronRight, Power, LogOut, UserCheck, Wallet, BarChart3,
   Film, Compass, Ban, BookOpen, Zap, Radio, Activity, Megaphone,
-  CreditCard, Briefcase, LifeBuoy, FileEdit, Search, Trophy
+  CreditCard, Briefcase, LifeBuoy, FileEdit, Search, Trophy, Crown
 } from 'lucide-react';
 
 interface VaultSidebarProps {
@@ -20,7 +20,9 @@ const menuGroups = [
     title: 'المالية',
     items: [
       { id: 'payment-gateways', label: 'بوابات الدفع', icon: CreditCard },
+      { id: 'subscriptions', label: 'الاشتراكات والباقات', icon: Crown },
       { id: 'gems-pricing', label: 'تسعير الجواهر', icon: Gift },
+
       { id: 'finance', label: 'المالية والأصول', icon: Wallet },
       { id: 'gifts', label: 'أكواد الهدايا', icon: Gift },
     ],

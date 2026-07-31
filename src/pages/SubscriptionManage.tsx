@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -15,29 +15,33 @@ import {
 import { cn } from "@/lib/utils";
 import BackButton from "@/components/BackButton";
 import { toast } from "@/hooks/use-toast";
+import { useSubscription } from "@/hooks/useSubscription";
 
-const currentSub = {
-  plan: "Networkk Creator",
-  tagline: "Perfect for creators",
-  price: 15,
+const staticSub = {
+  plan: "Networkk",
+  tagline: "Your Networkk plan",
+  price: 0,
   billing: "monthly" as const,
-  renews: "August 12, 2026",
+  renews: "—",
   status: "active" as const,
   rCoins: 342,
   rCoinsMonthly: 500,
   gradient: "from-sky-400 via-blue-500 to-indigo-600",
 };
 
-const benefits = [
-  "Audience Insights",
-  "AI Caption Generator",
-  "Schedule Posts",
-  "500 R Coins monthly",
-  "Advertising Discounts",
-  "Early Access Features",
-  "4K HDR Upload",
-  "Premium Themes",
-];
+const FEATURE_LABELS: Record<string, string> = {
+  verification_badge: "شارة التوثيق",
+  analytics: "الإحصائيات المتقدمة",
+  business_dashboard: "لوحة الأعمال",
+  government_features: "الميزات الحكومية",
+  priority_support: "الدعم ذو الأولوية",
+  advanced_privacy: "الخصوصية المتقدمة",
+  promotion_tools: "أدوات الترويج",
+  extended_uploads: "حدود رفع موسعة",
+  ad_free: "بدون إعلانات",
+  team_members: "أعضاء الفريق",
+};
+
 
 const invoices = [
   { id: "INV-20260712", date: "Jul 12, 2026", amount: 15, status: "Paid" },
@@ -54,8 +58,25 @@ const paymentMethods = [
 const SubscriptionManage = () => {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelled, setCancelled] = useState(false);
+  const sub = useSubscription();
+
+  // Live, server-resolved plan state (falls back to the static shell while loading)
+  const currentSub = useMemo(() => ({
+    ...staticSub,
+    plan: `${sub.planNameAr} · ${sub.planName}`,
+    status: sub.status as typeof staticSub.status,
+    renews: sub.expiresAt
+      ? new Date(sub.expiresAt).toLocaleDateString("ar-IQ")
+      : "—",
+  }), [sub.planNameAr, sub.planName, sub.status, sub.expiresAt]);
+
+  const benefits = useMemo(
+    () => Object.keys(sub.features).map((k) => FEATURE_LABELS[k] ?? k),
+    [sub.features]
+  );
 
   const coinsPct = Math.round((currentSub.rCoins / currentSub.rCoinsMonthly) * 100);
+
 
   const handleCancel = () => {
     setCancelled(true);

@@ -2868,6 +2868,78 @@ export type Database = {
           },
         ]
       }
+      plan_entitlements: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          feature_key: string
+          id: string
+          limit_value: number | null
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          feature_key: string
+          id?: string
+          limit_value?: number | null
+          plan_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          feature_key?: string
+          id?: string
+          limit_value?: number | null
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_entitlements_feature_key_fkey"
+            columns: ["feature_key"]
+            isOneToOne: false
+            referencedRelation: "plan_features"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "plan_entitlements_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_features: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          key: string
+          name: string
+          name_ar: string
+          sort_order: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          key: string
+          name: string
+          name_ar: string
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          key?: string
+          name?: string
+          name_ar?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       post_tips: {
         Row: {
           amount: number
@@ -3952,6 +4024,63 @@ export type Database = {
           },
         ]
       }
+      subscription_plans: {
+        Row: {
+          accent: string
+          badge_color: string | null
+          created_at: string
+          gradient: string
+          icon: string
+          id: string
+          is_active: boolean
+          is_public: boolean
+          name: string
+          name_ar: string
+          price_usd: number
+          price_yearly_usd: number | null
+          sort_order: number
+          tagline: string | null
+          tagline_ar: string | null
+          updated_at: string
+        }
+        Insert: {
+          accent?: string
+          badge_color?: string | null
+          created_at?: string
+          gradient?: string
+          icon?: string
+          id: string
+          is_active?: boolean
+          is_public?: boolean
+          name: string
+          name_ar: string
+          price_usd?: number
+          price_yearly_usd?: number | null
+          sort_order?: number
+          tagline?: string | null
+          tagline_ar?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accent?: string
+          badge_color?: string | null
+          created_at?: string
+          gradient?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          name?: string
+          name_ar?: string
+          price_usd?: number
+          price_yearly_usd?: number | null
+          sort_order?: number
+          tagline?: string | null
+          tagline_ar?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       support_settings: {
         Row: {
           call_url: string | null
@@ -4463,37 +4592,52 @@ export type Database = {
       }
       user_subscriptions: {
         Row: {
+          activated_by: string | null
           billing_cycle: string
           canceled_at: string | null
           created_at: string
+          expires_at: string | null
           id: string
+          payment_ref: string | null
           plan: Database["public"]["Enums"]["subscription_plan"]
+          plan_id: string
           r_coins: number
           renews_at: string | null
+          started_at: string
           status: Database["public"]["Enums"]["subscription_status"]
           updated_at: string
           user_id: string
         }
         Insert: {
+          activated_by?: string | null
           billing_cycle?: string
           canceled_at?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
+          payment_ref?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
+          plan_id?: string
           r_coins?: number
           renews_at?: string | null
+          started_at?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           updated_at?: string
           user_id: string
         }
         Update: {
+          activated_by?: string | null
           billing_cycle?: string
           canceled_at?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
+          payment_ref?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
+          plan_id?: string
           r_coins?: number
           renews_at?: string | null
+          started_at?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           updated_at?: string
           user_id?: string
@@ -4974,11 +5118,23 @@ export type Database = {
           verification_type: string
         }[]
       }
+      admin_set_subscription: {
+        Args: {
+          _billing_cycle?: string
+          _months?: number
+          _payment_ref?: string
+          _plan_id: string
+          _user_id: string
+        }
+        Returns: Json
+      }
       calculate_fame_score: { Args: { user_id: string }; Returns: number }
       can_add_participant_to_conversation: {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
       }
+      expire_subscriptions: { Args: never; Returns: number }
+      get_effective_plan: { Args: { _user_id: string }; Returns: string }
       get_my_phone: {
         Args: never
         Returns: {
@@ -5035,6 +5191,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: string[]
       }
+      has_feature: {
+        Args: { _feature_key: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -5088,6 +5248,20 @@ export type Database = {
       live_unban_user: {
         Args: { _stream_id: string; _user_id: string }
         Returns: Json
+      }
+      my_entitlements: {
+        Args: never
+        Returns: {
+          accent: string
+          badge_color: string
+          expires_at: string
+          feature_key: string
+          limit_value: number
+          plan_id: string
+          plan_name: string
+          plan_name_ar: string
+          status: string
+        }[]
       }
       owner_cancel_invite: { Args: { _request_id: string }; Returns: Json }
       owner_invite_affiliate: {
