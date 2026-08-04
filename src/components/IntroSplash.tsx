@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import introVideo from '@/assets/networkk-intro.mp4.asset.json';
-import { supabase } from '@/integrations/supabase/client';
+import { hasCachedSession } from '@/lib/authBoot';
 
 const SESSION_KEY = 'networkk_intro_played';
-const MAX_MS = 15000;
+const MAX_MS = 4000;
 
 const IntroSplash = () => {
   const [shown, setShown] = useState(() => {
@@ -17,18 +17,11 @@ const IntroSplash = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const routeAfterIntro = async () => {
-    try {
-      const { data } = await supabase.auth.getSession();
-      const isLoggedIn = !!data?.session?.user;
-      // Only redirect if user is sitting at root; don't hijack deep links.
-      const path = location.pathname;
-      if (path === '/' || path === '') {
-        if (!isLoggedIn) navigate('/login', { replace: true });
-      }
-    } catch {
-      // ignore
-    }
+  // Decide the destination synchronously at mount — no network round-trip.
+  const routeAfterIntro = () => {
+    const path = location.pathname;
+    if (path !== '/' && path !== '') return; // never hijack deep links
+    if (!hasCachedSession()) navigate('/login', { replace: true });
   };
 
   const finish = () => {
@@ -37,8 +30,16 @@ const IntroSplash = () => {
     try { sessionStorage.setItem(SESSION_KEY, '1'); } catch {}
     setFading(true);
     routeAfterIntro();
-    window.setTimeout(() => setShown(false), 500);
+    window.setTimeout(() => setShown(false), 300);
   };
+
+  // Route immediately on first paint so the correct screen is already mounted
+  // behind the splash — no blank frame when the intro fades out.
+  useEffect(() => {
+    if (!shown) return;
+    routeAfterIntro();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!shown) return;
@@ -76,8 +77,9 @@ const IntroSplash = () => {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center transition-opacity duration-500 ${fading ? 'opacity-0' : 'opacity-100'}`}
+      className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center transition-opacity duration-300 ${fading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
       style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      onClick={finish}
     >
       <video
         ref={videoRef}
@@ -89,6 +91,7 @@ const IntroSplash = () => {
         disablePictureInPicture
         onEnded={finish}
         onError={finish}
+        onStalled={finish}
         className="w-full h-full object-cover"
       />
     </div>
