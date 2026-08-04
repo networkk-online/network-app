@@ -18,6 +18,8 @@ import LocalFameRankSection from '@/components/LocalFameRankSection';
 import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
 import { Film, Feather } from 'lucide-react';
 import SeoHead from '@/components/seo/SeoHead';
+import { hasCachedSession } from '@/lib/authBoot';
+
 
 const Index = () => {
   const { toast } = useToast();
