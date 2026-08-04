@@ -37,6 +37,12 @@ const Index = () => {
   const { reels: feedReels, loading: reelsLoading, likedReels, toggleLike } = useReels(userId, true);
 
   useEffect(() => {
+    // Instant, network-free auth routing — no blank screen while we wait.
+    if (!hasCachedSession()) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
     // Check if first time user
     const hasSeenSplash = localStorage.getItem('hasSeenSplash');
     if (!hasSeenSplash) {
@@ -47,6 +53,7 @@ const Index = () => {
     getCurrentUser();
     loadPosts();
     loadFeaturedPosts();
+
     
     // Subscribe to realtime changes
     const channel = supabase
