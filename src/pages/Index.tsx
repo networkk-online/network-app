@@ -79,7 +79,10 @@ const Index = () => {
   }, [navigate]);
 
   const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    // getSession() reads the cached session locally (no network round-trip).
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+
     if (user) {
       setUserId(user.id);
       
