@@ -18,6 +18,8 @@ import LocalFameRankSection from '@/components/LocalFameRankSection';
 import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
 import { Film, Feather } from 'lucide-react';
 import SeoHead from '@/components/seo/SeoHead';
+import { hasCachedSession } from '@/lib/authBoot';
+
 
 const Index = () => {
   const { toast } = useToast();
@@ -37,6 +39,12 @@ const Index = () => {
   const { reels: feedReels, loading: reelsLoading, likedReels, toggleLike } = useReels(userId, true);
 
   useEffect(() => {
+    // Instant, network-free auth routing — no blank screen while we wait.
+    if (!hasCachedSession()) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
     // Check if first time user
     const hasSeenSplash = localStorage.getItem('hasSeenSplash');
     if (!hasSeenSplash) {
@@ -47,6 +55,7 @@ const Index = () => {
     getCurrentUser();
     loadPosts();
     loadFeaturedPosts();
+
     
     // Subscribe to realtime changes
     const channel = supabase
@@ -70,7 +79,10 @@ const Index = () => {
   }, [navigate]);
 
   const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    // getSession() reads the cached session locally (no network round-trip).
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+
     if (user) {
       setUserId(user.id);
       

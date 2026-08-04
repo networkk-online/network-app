@@ -6,38 +6,53 @@ interface Props {
   children: React.ReactNode;
 }
 
+const CACHE_KEY = 'networkk_maintenance_mode';
+
+const readCache = (): boolean => {
+  try { return localStorage.getItem(CACHE_KEY) === '1'; } catch { return false; }
+};
+
 const MaintenanceGuard = ({ children }: Props) => {
-  const [maintenance, setMaintenance] = useState(false);
+  // Start from the cached value so the app renders on the very first frame.
+  // The live check runs in the background and never blocks startup.
+  const [maintenance, setMaintenance] = useState(readCache);
   const [isOwner, setIsOwner] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const check = async () => {
-      const { data: settings } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'maintenance_mode')
-        .single();
+      try {
+        const { data: settings } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'maintenance_mode')
+          .maybeSingle();
 
-      const enabled = (settings?.value as any)?.enabled === true;
-      setMaintenance(enabled);
+        const enabled = (settings?.value as any)?.enabled === true;
+        if (cancelled) return;
+        setMaintenance(enabled);
+        try { localStorage.setItem(CACHE_KEY, enabled ? '1' : '0'); } catch {}
 
-      if (enabled) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: roles } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', user.id);
-          setIsOwner(!!roles?.some(r => r.role === 'admin'));
+        if (enabled) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && !cancelled) {
+            const { data: roles } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', user.id);
+            if (!cancelled) setIsOwner(!!roles?.some(r => r.role === 'admin'));
+          }
         }
+      } catch {
+        // Backend unreachable/paused — fail open so the app still starts.
+        if (!cancelled) setMaintenance(false);
       }
-      setLoading(false);
     };
     check();
+    return () => { cancelled = true; };
   }, []);
 
-  if (loading) return null;
+
 
   if (maintenance && !isOwner) {
     return (
