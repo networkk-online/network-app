@@ -317,7 +317,7 @@ export const TikTokLiveOverlay = ({
           creatorName: streamerName,
           creatorAvatar: streamerAvatar
         }}
-        shareUrl={`https://network-app.lovable.app/live/${streamerName}`}
+        shareUrl={`https://networkk.online/live/${streamerName}`}
       />
     </div>
   );
