@@ -1,8 +1,17 @@
-# Welcome to your Lovable project
+# Networkk.online
+
+Production site: <https://networkk.online>
+
+React + Vite + TypeScript + Tailwind SPA. Backend (auth, database, storage,
+realtime, RPCs, edge functions) runs entirely on Supabase. Android is built with
+Capacitor from the local `dist/` bundle.
+
+**Independent deployment (Vercel / Netlify / Android) — see [DEPLOYMENT.md](./DEPLOYMENT.md).**
+Environment variables are documented in [.env.example](./.env.example).
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/561c8d1c-2374-4539-9d5d-b1ad09a68e68
+
 
 ## How can I edit this code?
 
