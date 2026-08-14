@@ -143,6 +143,7 @@ const FeedReelCard = ({
         muted={isMuted}
         loop
         playsInline
+        preload="none"
       />
       
       {/* Overlay */}
