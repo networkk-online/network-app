@@ -12,6 +12,9 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import ReasonDialog from './ReasonDialog';
+import { adminUserAction, adminErrorMessage } from '@/lib/adminApi';
+
 
 type BadgeType = 'blue' | 'gold' | 'gray' | 'none';
 
@@ -42,6 +45,8 @@ const VaultUserDirectory = () => {
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const PAGE_SIZE = 20;
+  const [banTarget, setBanTarget] = useState<any | null>(null);
+
 
   const [resetModal, setResetModal] = useState<{ open: boolean; user: any | null }>({ open: false, user: null });
   const [newPassword, setNewPassword] = useState('');
@@ -126,16 +131,20 @@ const VaultUserDirectory = () => {
     setUsers(prev => prev.map(x => x.id === u.id ? { ...x, ...patch } : x));
   };
 
-  const toggleBan = async (u: any) => {
+  const confirmBan = async (reason: string) => {
+    const u = banTarget;
+    if (!u) return;
     const next = !u.is_banned;
-    const { error } = await supabase.from('profiles').update({ is_banned: next } as any).eq('id', u.id);
+    const { error } = await adminUserAction(u.id, next ? 'ban' : 'unban', reason);
     if (error) {
-      toast({ title: '❌ فشل', description: error.message, variant: 'destructive' });
+      toast({ title: adminErrorMessage(error.message), variant: 'destructive' });
       return;
     }
-    toast({ title: next ? '🔒 تم حظر الحساب' : '🔓 تم رفع الحظر' });
+    toast({ title: next ? '🔒 تم حظر الحساب وتسجيل الإجراء' : '🔓 تم رفع الحظر' });
     setUsers(prev => prev.map(x => x.id === u.id ? { ...x, is_banned: next } : x));
+    setBanTarget(null);
   };
+
 
   const sendNotification = async () => {
     if (!notifyText.trim() || (!notifyModal.user && !notifyAll)) return;
@@ -368,7 +377,7 @@ const VaultUserDirectory = () => {
                           variant="ghost" size="icon"
                           className={cn('h-7 w-7', u.is_banned ? 'text-red-400 hover:text-red-300' : 'text-gray-500 hover:text-red-400')}
                           title={u.is_banned ? 'رفع الحظر' : 'حظر / تعليق'}
-                          onClick={() => toggleBan(u)}
+                          onClick={() => setBanTarget(u)}
                         >
                           {u.is_banned ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
                         </Button>
