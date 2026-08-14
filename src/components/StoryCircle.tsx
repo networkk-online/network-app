@@ -63,6 +63,8 @@ const StoryCircle = ({ username, avatar, hasStory = false, isOwn = false, hasVie
             <img
               src={avatar}
               alt={username}
+              loading="lazy"
+              decoding="async"
               className="w-[62px] h-[62px] rounded-full object-cover"
             />
           </div>

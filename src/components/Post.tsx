@@ -358,6 +358,8 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
             <img 
               src={userAvatar} 
               alt={`${username} profile picture`}
+              loading="lazy"
+              decoding="async"
               className={`rounded-full object-cover ring-[1.5px] ring-white/10 transition-all group-hover:ring-white/20 ${
                 displaySize === 'compact' ? 'w-7 h-7' : displaySize === 'large' ? 'w-12 h-12' : 'w-10 h-10'
               }`}
@@ -403,6 +405,8 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
           <img 
             src={image} 
             alt={caption ? `${username}: ${caption.slice(0, 100)}` : `Post by ${username}`}
+            loading="lazy"
+            decoding="async"
             className={`w-full object-cover transition-all duration-300 ${
               displaySize === 'compact' ? 'h-48' : displaySize === 'large' ? 'h-[500px]' : 'h-96'
             }`}
