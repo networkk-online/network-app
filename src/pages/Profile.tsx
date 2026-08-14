@@ -972,6 +972,8 @@ const Profile = () => {
                           src={reel.video_url}
                           className="w-full h-full object-cover rounded-sm lg:rounded-md"
                           muted
+                          playsInline
+                          preload="metadata"
                         />
                       )}
                       {/* Play Icon - Top of thumbnail */}

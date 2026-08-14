@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import AgoraRTC, {
+import type {
   IAgoraRTCClient,
   ICameraVideoTrack,
   IMicrophoneAudioTrack,
 } from 'agora-rtc-sdk-ng';
+import { loadAgora } from '@/lib/lazySdk';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -197,7 +198,7 @@ export const useAgoraRoom = () => {
       let audioTrack: IMicrophoneAudioTrack;
       let videoTrack: ICameraVideoTrack;
       try {
-        [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks(
+        [audioTrack, videoTrack] = await (await loadAgora()).createMicrophoneAndCameraTracks(
           {},
           { encoderConfig: '720p_2' }
         );
@@ -220,7 +221,7 @@ export const useAgoraRoom = () => {
       if (!creds.appId) throw new Error('Missing Agora App ID');
 
       // 3. Create client and join
-      const client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8' });
+      const client = (await loadAgora()).createClient({ mode: 'live', codec: 'vp8' });
       client.setClientRole('host');
       clientRef.current = client;
       attachClientHandlers(client, 'host');
@@ -270,7 +271,7 @@ export const useAgoraRoom = () => {
       const creds = await getAgoraCredentials(channel);
       if (!creds.appId) throw new Error('Missing Agora App ID');
 
-      const client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8' });
+      const client = (await loadAgora()).createClient({ mode: 'live', codec: 'vp8' });
       client.setClientRole('audience', { level: 1 } as any);
       clientRef.current = client;
       attachClientHandlers(client, 'audience');
@@ -335,7 +336,7 @@ export const useAgoraRoom = () => {
 
   const switchCamera = useCallback(async () => {
     if (localVideoRef.current) {
-      const cameras = await AgoraRTC.getCameras();
+      const cameras = await (await loadAgora()).getCameras();
       if (cameras.length > 1) {
         const currentLabel = localVideoRef.current.getMediaStreamTrack().label;
         const nextCamera = cameras.find(c => c.label !== currentLabel) || cameras[0];

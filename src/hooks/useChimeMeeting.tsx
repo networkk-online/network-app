@@ -1,16 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import {
-  ConsoleLogger,
-  DefaultDeviceController,
+import type {
   DefaultMeetingSession,
-  LogLevel,
-  MeetingSessionConfiguration,
   AudioVideoFacade,
   MeetingSessionStatus,
-  MeetingSessionStatusCode,
 } from 'amazon-chime-sdk-js';
+import { loadChime } from '@/lib/lazySdk';
 
 interface ChimeMeetingState {
   isInitialized: boolean;
@@ -181,6 +177,14 @@ export const useChimeMeeting = () => {
       }
 
       // Initialize Chime meeting session
+      const {
+        ConsoleLogger,
+        DefaultDeviceController,
+        DefaultMeetingSession,
+        LogLevel,
+        MeetingSessionConfiguration,
+        MeetingSessionStatusCode,
+      } = await loadChime();
       const logger = new ConsoleLogger('ChimeMeeting', LogLevel.WARN);
       const deviceController = new DefaultDeviceController(logger);
 
@@ -301,6 +305,14 @@ export const useChimeMeeting = () => {
       };
 
       // Initialize Chime session
+      const {
+        ConsoleLogger,
+        DefaultDeviceController,
+        DefaultMeetingSession,
+        LogLevel,
+        MeetingSessionConfiguration,
+        MeetingSessionStatusCode,
+      } = await loadChime();
       const logger = new ConsoleLogger('ChimeMeeting', LogLevel.WARN);
       const deviceController = new DefaultDeviceController(logger);
 
