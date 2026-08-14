@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, Shield, Gift, Settings, Eye, FileText,
   ChevronLeft, ChevronRight, Power, LogOut, UserCheck, Wallet, BarChart3,
   Film, Compass, Ban, BookOpen, Zap, Radio, Activity, Megaphone,
-  CreditCard, Briefcase, LifeBuoy, FileEdit, Search, Trophy, Crown
+  CreditCard, Briefcase, LifeBuoy, FileEdit, Search, Trophy, Crown, Flag, Lock, FileLock2
 } from 'lucide-react';
 
 interface VaultSidebarProps {
@@ -54,13 +54,23 @@ const menuGroups = [
     ],
   },
   {
+    title: 'الإشراف والسلامة',
+    items: [
+      { id: 'moderation', label: 'الإشراف على المحتوى', icon: Shield },
+      { id: 'reports', label: 'البلاغات والسلامة', icon: Flag },
+    ],
+  },
+  {
     title: 'الأمان',
     items: [
+      { id: 'security-center', label: 'مركز الأمان', icon: Lock },
+      { id: 'audit', label: 'سجل التدقيق', icon: FileLock2 },
       { id: 'security', label: 'تدقيق الأمان', icon: Eye },
       { id: 'ip-ban', label: 'حظر IP', icon: Ban },
       { id: 'logs', label: 'سجلات الوصول', icon: FileText },
     ],
   },
+
   {
     title: 'النظام',
     items: [

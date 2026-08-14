@@ -561,8 +561,18 @@ const VaultUserDirectory = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <ReasonDialog
+        open={!!banTarget}
+        title={banTarget?.is_banned ? 'رفع الحظر عن الحساب' : 'حظر الحساب'}
+        description={`الحساب: @${banTarget?.username || ''} — يتطلب سبباً وإعادة تأكيد كلمة المرور.`}
+        requireReauth
+        confirmLabel={banTarget?.is_banned ? 'رفع الحظر' : 'حظر'}
+        onCancel={() => setBanTarget(null)}
+        onConfirm={confirmBan}
+      />
     </div>
   );
+
 };
 
 export default VaultUserDirectory;
