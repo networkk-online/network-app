@@ -112,69 +112,84 @@ export const useMessages = (conversationId?: string) => {
         return;
       }
 
-      // Get conversation details
+      // Get conversation details (paginated — most recent 30 threads)
       const { data: convData, error: convError } = await supabase
         .from('conversations')
         .select('*')
         .in('id', conversationIds)
-        .order('updated_at', { ascending: false });
+        .order('updated_at', { ascending: false })
+        .limit(30);
 
       if (convError) throw convError;
 
-      // Get conversation details with participants
-      const conversationsWithDetails = await Promise.all(
-        (convData || []).map(async (conv) => {
-          // Get ALL participants for this conversation (not filtered by user)
-          const { data: allParts } = await supabase
-            .from('conversation_participants')
-            .select('user_id')
-            .eq('conversation_id', conv.id);
+      const convIds = (convData || []).map(c => c.id);
+      if (convIds.length === 0) {
+        setConversations([]);
+        return;
+      }
 
-          const participantIds = allParts?.map(p => p.user_id) || [];
-          const otherUserIds = participantIds.filter(id => id !== currentUser.id);
+      // --- Batched fetches (no N+1): 3 queries total instead of 3 per thread ---
+      const [{ data: allParts }, { data: recentMsgs }, { data: unreadRows }] = await Promise.all([
+        supabase
+          .from('conversation_participants')
+          .select('conversation_id, user_id')
+          .in('conversation_id', convIds),
+        supabase
+          .from('messages')
+          .select(`
+            *,
+            sender:profiles!messages_sender_id_fkey ( username, full_name, avatar_url )
+          `)
+          .in('conversation_id', convIds)
+          .order('created_at', { ascending: false })
+          .limit(convIds.length * 5),
+        supabase
+          .from('messages')
+          .select('conversation_id')
+          .in('conversation_id', convIds)
+          .eq('is_read', false)
+          .neq('sender_id', currentUser.id),
+      ]);
 
-          // Get profiles for other users
-          let participants: any[] = [];
-          if (otherUserIds.length > 0) {
-            const { data: profiles } = await supabase
-              .from('profiles')
-              .select('id, username, full_name, avatar_url, is_verified')
-              .in('id', otherUserIds);
-            participants = profiles || [];
-          }
+      const otherIds = Array.from(new Set(
+        (allParts || []).filter(p => p.user_id !== currentUser.id).map(p => p.user_id)
+      ));
 
-          // Get last message
-          const { data: lastMsg } = await supabase
-            .from('messages')
-            .select(`
-              *,
-              sender:profiles!messages_sender_id_fkey (
-                username,
-                full_name,
-                avatar_url
-              )
-            `)
-            .eq('conversation_id', conv.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+      let profileMap = new Map<string, any>();
+      if (otherIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url, is_verified')
+          .in('id', otherIds);
+        profileMap = new Map((profiles || []).map(p => [p.id, p]));
+      }
 
-          // Get unread count
-          const { count: unreadCount } = await supabase
-            .from('messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('conversation_id', conv.id)
-            .eq('is_read', false)
-            .neq('sender_id', currentUser.id);
+      const lastMsgMap = new Map<string, any>();
+      for (const m of recentMsgs || []) {
+        if (!lastMsgMap.has(m.conversation_id)) lastMsgMap.set(m.conversation_id, m);
+      }
 
-          return {
-            ...conv,
-            participants,
-            last_message: lastMsg,
-            unread_count: unreadCount || 0
-          };
-        })
-      );
+      const unreadMap = new Map<string, number>();
+      for (const r of unreadRows || []) {
+        unreadMap.set(r.conversation_id, (unreadMap.get(r.conversation_id) || 0) + 1);
+      }
+
+      const partsByConv = new Map<string, string[]>();
+      for (const p of allParts || []) {
+        const arr = partsByConv.get(p.conversation_id) || [];
+        arr.push(p.user_id);
+        partsByConv.set(p.conversation_id, arr);
+      }
+
+      const conversationsWithDetails = (convData || []).map((conv) => ({
+        ...conv,
+        participants: (partsByConv.get(conv.id) || [])
+          .filter(id => id !== currentUser.id)
+          .map(id => profileMap.get(id))
+          .filter(Boolean),
+        last_message: lastMsgMap.get(conv.id) || null,
+        unread_count: unreadMap.get(conv.id) || 0,
+      }));
 
       setConversations(conversationsWithDetails);
     } catch (error) {
@@ -197,11 +212,13 @@ export const useMessages = (conversationId?: string) => {
           )
         `)
         .eq('conversation_id', convId)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (error) throw error;
 
-      setMessages(data || []);
+      // Fetched newest-first for an indexed, bounded read; render oldest-first.
+      setMessages((data || []).slice().reverse());
 
       // Mark messages as read
       await supabase

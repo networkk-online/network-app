@@ -3,8 +3,10 @@
 // No external email provider, no Resend API key required.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { enforceRateLimit, clientIp } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
+  'Cache-Control': 'no-store',
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
@@ -23,6 +25,12 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Abuse protection: 5 OTP requests / 10 min per email, 20 / 10 min per IP
+    const limited =
+      (await enforceRateLimit({ bucket: "login-otp-email", identifier: String(email).toLowerCase(), max: 5, windowSeconds: 600, corsHeaders })) ||
+      (await enforceRateLimit({ bucket: "login-otp-ip", identifier: clientIp(req), max: 20, windowSeconds: 600, corsHeaders }));
+    if (limited) return limited;
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

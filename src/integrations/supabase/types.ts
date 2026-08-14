@@ -3277,6 +3277,36 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          bucket: string
+          created_at: string
+          hits: number
+          id: string
+          identifier: string
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          created_at?: string
+          hits?: number
+          id?: string
+          identifier: string
+          updated_at?: string
+          window_start?: string
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          hits?: number
+          id?: string
+          identifier?: string
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       reel_comments: {
         Row: {
           content: string
@@ -5132,6 +5162,15 @@ export type Database = {
       can_add_participant_to_conversation: {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
+      }
+      consume_rate_limit: {
+        Args: {
+          _bucket: string
+          _identifier: string
+          _max_hits: number
+          _window_seconds: number
+        }
+        Returns: Json
       }
       expire_subscriptions: { Args: never; Returns: number }
       get_effective_plan: { Args: { _user_id: string }; Returns: string }
