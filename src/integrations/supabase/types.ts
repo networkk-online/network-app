@@ -184,6 +184,45 @@ export type Database = {
           },
         ]
       }
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json
+          reason: string | null
+          resource_id: string | null
+          resource_type: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          reason?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          reason?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
       admin_otp_codes: {
         Row: {
           code: string
@@ -5148,6 +5187,30 @@ export type Database = {
           verification_type: string
         }[]
       }
+      admin_log_action: {
+        Args: {
+          _action: string
+          _metadata?: Json
+          _reason?: string
+          _resource_id?: string
+          _resource_type?: string
+          _target_user_id?: string
+        }
+        Returns: string
+      }
+      admin_moderate_content: {
+        Args: {
+          _action: string
+          _reason: string
+          _resource_id: string
+          _resource_type: string
+        }
+        Returns: Json
+      }
+      admin_resolve_report: {
+        Args: { _reason: string; _report_id: string; _status: string }
+        Returns: Json
+      }
       admin_set_subscription: {
         Args: {
           _billing_cycle?: string
@@ -5156,6 +5219,10 @@ export type Database = {
           _plan_id: string
           _user_id: string
         }
+        Returns: Json
+      }
+      admin_user_action: {
+        Args: { _action: string; _reason: string; _user_id: string }
         Returns: Json
       }
       calculate_fame_score: { Args: { user_id: string }; Returns: number }
@@ -5378,7 +5445,7 @@ export type Database = {
     }
     Enums: {
       account_type_enum: "creator" | "personal" | "business" | "government"
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "super_admin"
       subscription_plan: "free" | "plus" | "creator" | "business" | "government"
       subscription_status: "active" | "pending" | "canceled" | "expired"
     }
@@ -5509,7 +5576,7 @@ export const Constants = {
   public: {
     Enums: {
       account_type_enum: ["creator", "personal", "business", "government"],
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "super_admin"],
       subscription_plan: ["free", "plus", "creator", "business", "government"],
       subscription_status: ["active", "pending", "canceled", "expired"],
     },

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import OwnerRouteGuard from '@/components/guards/OwnerRouteGuard';
@@ -26,6 +26,10 @@ import VaultGemsPricing from '@/components/vault/VaultGemsPricing';
 import VaultSubscriptions from '@/components/vault/VaultSubscriptions';
 
 import VaultSeoManager from '@/components/vault/VaultSeoManager';
+const VaultModeration = lazy(() => import('@/components/vault/VaultModeration'));
+const VaultReports = lazy(() => import('@/components/vault/VaultReports'));
+const VaultSecurityCenter = lazy(() => import('@/components/vault/VaultSecurityCenter'));
+const VaultAuditLog = lazy(() => import('@/components/vault/VaultAuditLog'));
 import VaultMatchesManager from '@/components/vault/VaultMatchesManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -139,6 +143,10 @@ const OwnerVault = () => {
     seo: 'SEO والكلمات المفتاحية',
     docs: 'الوثائق',
     settings: 'الإعدادات',
+    moderation: 'الإشراف على المحتوى',
+    reports: 'البلاغات والسلامة',
+    'security-center': 'مركز الأمان',
+    audit: 'سجل التدقيق',
   };
 
   const renderContent = () => {
@@ -180,6 +188,14 @@ const OwnerVault = () => {
         return <VaultSeoManager />;
       case 'gifts':
         return <MasterGiftCodes />;
+      case 'moderation':
+        return <VaultModeration />;
+      case 'reports':
+        return <VaultReports />;
+      case 'security-center':
+        return <VaultSecurityCenter />;
+      case 'audit':
+        return <VaultAuditLog />;
       case 'security':
       case 'ip-ban':
       case 'logs':
@@ -265,7 +281,11 @@ const OwnerVault = () => {
               </div>
             </header>
 
-            <div className="p-6">{renderContent()}</div>
+            <div className="p-4 md:p-6">
+              <Suspense fallback={<div className="py-20 text-center text-white/30 text-sm">جارٍ التحميل…</div>}>
+                {renderContent()}
+              </Suspense>
+            </div>
           </main>
         </div>
       )}
