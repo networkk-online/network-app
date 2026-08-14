@@ -212,11 +212,13 @@ export const useMessages = (conversationId?: string) => {
           )
         `)
         .eq('conversation_id', convId)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (error) throw error;
 
-      setMessages(data || []);
+      // Fetched newest-first for an indexed, bounded read; render oldest-first.
+      setMessages((data || []).slice().reverse());
 
       // Mark messages as read
       await supabase
