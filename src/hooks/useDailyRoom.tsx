@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import DailyIframe, { DailyCall, DailyParticipant, DailyEventObjectParticipant } from '@daily-co/daily-js';
+import type { DailyCall, DailyParticipant, DailyEventObjectParticipant } from '@daily-co/daily-js';
+import { loadDaily } from '@/lib/lazySdk';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -68,7 +69,7 @@ export function useDailyRoom() {
       });
       if (fnError) throw fnError;
 
-      const call = DailyIframe.createCallObject({
+      const call = (await loadDaily()).createCallObject({
         audioSource: true,
         videoSource: true,
       });
@@ -109,7 +110,7 @@ export function useDailyRoom() {
       });
       if (fnError) throw fnError;
 
-      const call = DailyIframe.createCallObject({
+      const call = (await loadDaily()).createCallObject({
         audioSource: false,
         videoSource: false,
       });

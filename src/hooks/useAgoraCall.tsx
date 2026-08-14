@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import AgoraRTC, {
+import type {
   IAgoraRTCClient,
   IAgoraRTCRemoteUser,
   ICameraVideoTrack,
   IMicrophoneAudioTrack,
   ILocalVideoTrack,
 } from 'agora-rtc-sdk-ng';
+import { loadAgora } from '@/lib/lazySdk';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -460,7 +461,7 @@ export const useAgoraCall = () => {
     setConnectionMessage(reconnecting ? 'جاري إعادة الاتصال بالمكالمة...' : null);
     try {
       const creds = await getAgoraCreds(call.channel_name);
-      const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+      const client = (await loadAgora()).createClient({ mode: 'rtc', codec: 'vp8' });
       clientRef.current = client;
 
       client.on('user-published', async (user, mediaType) => {
@@ -512,7 +513,7 @@ export const useAgoraCall = () => {
       await client.join(creds.appId, call.channel_name, creds.token ?? null, creds.uid || null);
 
       try {
-        const audio = await AgoraRTC.createMicrophoneAudioTrack({
+        const audio = await (await loadAgora()).createMicrophoneAudioTrack({
           encoderConfig: 'music_standard',
           AEC: true,
           ANS: true,
@@ -528,7 +529,7 @@ export const useAgoraCall = () => {
 
       if (call.call_type === 'video') {
         try {
-          const video = await AgoraRTC.createCameraVideoTrack({
+          const video = await (await loadAgora()).createCameraVideoTrack({
             encoderConfig: '720p_2',
             facingMode: 'user',
           });
@@ -685,7 +686,7 @@ export const useAgoraCall = () => {
   const flipCamera = useCallback(async () => {
     if (!localVideoRef.current) return;
     try {
-      const devices = await AgoraRTC.getCameras();
+      const devices = await (await loadAgora()).getCameras();
       if (devices.length < 2) {
         toast({ title: 'كاميرا واحدة فقط متاحة' });
         return;
