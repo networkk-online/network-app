@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { enforceRateLimit, clientIp } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,6 +16,12 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Abuse protection: 10 verification attempts / 10 min per email, 40 per IP
+    const limited =
+      (await enforceRateLimit({ bucket: "verify-otp-email", identifier: String(email).toLowerCase(), max: 10, windowSeconds: 600, corsHeaders })) ||
+      (await enforceRateLimit({ bucket: "verify-otp-ip", identifier: clientIp(req), max: 40, windowSeconds: 600, corsHeaders }));
+    if (limited) return limited;
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { enforceRateLimit, clientIp } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +20,12 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { action, email, password, code, userId } = body;
+
+    // Abuse protection on admin OTP issue/verify
+    const limited =
+      (await enforceRateLimit({ bucket: `admin-otp-${action}`, identifier: String(email ?? userId ?? "unknown").toLowerCase(), max: 8, windowSeconds: 600, corsHeaders })) ||
+      (await enforceRateLimit({ bucket: "admin-otp-ip", identifier: clientIp(req), max: 30, windowSeconds: 600, corsHeaders }));
+    if (limited) return limited;
 
     if (action === "send") {
       // Verify email + password

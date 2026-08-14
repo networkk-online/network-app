@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
 import { corsHeaders } from '../_shared/cors.ts'
+import { enforceRateLimit } from '../_shared/rate-limit.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -36,6 +37,12 @@ Deno.serve(async (req) => {
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    // Abuse protection: 10 password changes / hour per admin
+    const limited = await enforceRateLimit({
+      bucket: 'admin-update-password', identifier: user.id, max: 10, windowSeconds: 3600, corsHeaders,
+    })
+    if (limited) return limited
 
     // Check admin role
     const { data: roles } = await supabaseAdmin

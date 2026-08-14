@@ -1,8 +1,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
+import { enforceRateLimit } from '../_shared/rate-limit.ts';
 
-const rateLimiter = new Map<string, { count: number; reset: number }>();
-const RATE_LIMIT = 60; // gifts/min per user
+const RATE_LIMIT = 60; // gifts/min per user (durable, shared across instances)
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -24,15 +24,12 @@ Deno.serve(async (req) => {
     if (cErr || !claims?.claims) return json({ error: 'Unauthorized' }, 401);
     const senderId = claims.claims.sub as string;
 
-    // rate limit
-    const now = Date.now();
-    const rl = rateLimiter.get(senderId);
-    if (!rl || rl.reset < now) {
-      rateLimiter.set(senderId, { count: 1, reset: now + 60_000 });
-    } else {
-      rl.count += 1;
-      if (rl.count > RATE_LIMIT) return json({ error: 'Rate limit exceeded' }, 429);
-    }
+    // Durable rate limit (survives cold starts / multiple instances)
+    const limited = await enforceRateLimit({
+      bucket: 'process-gift', identifier: senderId, max: RATE_LIMIT, windowSeconds: 60,
+      corsHeaders, message: 'Rate limit exceeded',
+    });
+    if (limited) return limited;
 
     const body = await req.json();
     const {

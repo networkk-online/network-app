@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
+import { enforceRateLimit, clientIp } from "../_shared/rate-limit.ts";
 
 type CreateConversationBody = {
   otherUserId?: string;
@@ -34,6 +35,11 @@ serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    const limited = await enforceRateLimit({
+      bucket: "create-conversation", identifier: clientIp(req), max: 60, windowSeconds: 600, corsHeaders,
+    });
+    if (limited) return limited;
 
     const body = (await req.json()) as CreateConversationBody;
     const otherUserId = body?.otherUserId;

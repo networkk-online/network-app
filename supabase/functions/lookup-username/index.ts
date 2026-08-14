@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { enforceRateLimit, clientIp } from '../_shared/rate-limit.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,6 +34,12 @@ Deno.serve(async (req) => {
     }
 
     const normalizedUsername = username.replace(/^@+/, '').trim().toLowerCase()
+
+    // Abuse protection: 15 attempts / 10 min per username, 60 per IP
+    const limited =
+      (await enforceRateLimit({ bucket: 'lookup-username', identifier: normalizedUsername, max: 15, windowSeconds: 600, corsHeaders })) ||
+      (await enforceRateLimit({ bucket: 'lookup-username-ip', identifier: clientIp(req), max: 60, windowSeconds: 600, corsHeaders }))
+    if (limited) return limited
 
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
     const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
