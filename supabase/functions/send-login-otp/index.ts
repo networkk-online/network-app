@@ -6,6 +6,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { enforceRateLimit, clientIp } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
+  'Cache-Control': 'no-store',
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
