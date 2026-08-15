@@ -580,6 +580,11 @@ const VaultUserDirectory = () => {
         onCancel={() => setBanTarget(null)}
         onConfirm={confirmBan}
       />
+      <FollowerOverrideDialog
+        open={!!followerTarget}
+        user={followerTarget}
+        onClose={() => setFollowerTarget(null)}
+      />
     </div>
   );
 
