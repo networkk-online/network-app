@@ -5280,6 +5280,7 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
       }
+      claim_treasure_box: { Args: { _box_id: string }; Returns: Json }
       consume_rate_limit: {
         Args: {
           _bucket: string
