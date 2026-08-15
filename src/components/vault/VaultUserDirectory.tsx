@@ -7,12 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Ban, Trash2, Bell, Users, ChevronLeft, ChevronRight, ShieldCheck, Eye, EyeOff, Loader2, BadgeCheck, Lock, Unlock } from 'lucide-react';
+import { Search, Ban, Trash2, Bell, Users, ChevronLeft, ChevronRight, ShieldCheck, Eye, EyeOff, Loader2, BadgeCheck, Lock, Unlock, UserCog } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import ReasonDialog from './ReasonDialog';
+import FollowerOverrideDialog from './FollowerOverrideDialog';
 import { adminUserAction, adminErrorMessage } from '@/lib/adminApi';
 
 
