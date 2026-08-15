@@ -58,85 +58,24 @@ const RedeemGiftCard = () => {
       return;
     }
 
-    // Find the code
-    const { data: giftCode, error } = await supabase
-      .from('gift_codes')
-      .select('*')
-      .eq('code', fullCode)
-      .eq('status', 'active')
-      .maybeSingle();
+    // Server-side atomic redemption (validates code, credits gems, logs audit)
+    const { data, error } = await supabase.rpc('redeem_gift_code' as never, { _code: fullCode } as never);
+    const result = data as { success?: boolean; coin_amount?: number; balance?: number; error?: string } | null;
 
-    if (!giftCode || error) {
+    if (error || !result?.success) {
       setRedeemResult({ success: false });
       setIsRedeeming(false);
       return;
     }
 
-    // Check expiration
-    if (giftCode.expires_at && new Date(giftCode.expires_at) < new Date()) {
-      setRedeemResult({ success: false });
-      setIsRedeeming(false);
-      return;
-    }
-
-    // Mark code as used
-    await supabase.from('gift_codes').update({
-      status: 'used',
-      redeemed_by: user.id,
-      redeemed_at: new Date().toISOString(),
-    }).eq('id', giftCode.id);
-
-    // Add to user gems
-    const { data: existing } = await supabase
-      .from('user_gems')
-      .select('balance, total_earned')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (existing) {
-      await supabase.from('user_gems').update({
-        balance: existing.balance + giftCode.coin_amount,
-        total_earned: existing.total_earned + giftCode.coin_amount,
-      }).eq('user_id', user.id);
-    } else {
-      await supabase.from('user_gems').insert({
-        user_id: user.id,
-        balance: giftCode.coin_amount,
-        total_earned: giftCode.coin_amount,
-      });
-    }
-
-    // Record redemption
-    await supabase.from('gift_redemptions').insert({
-      user_id: user.id,
-      code: fullCode,
-      coin_amount: giftCode.coin_amount,
-    });
-
-    // Record transaction
-    const { data: currentFinance } = await supabase
-      .from('user_finances')
-      .select('balance')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    await supabase.from('transactions').insert({
-      user_id: user.id,
-      admin_id: user.id,
-      amount: giftCode.coin_amount,
-      type: 'topup',
-      status: 'completed',
-      notes: 'شحن كود هدية - ' + fullCode,
-    });
-
-    const newBalance = (currentFinance?.balance ? Number(currentFinance.balance) : 0) + giftCode.coin_amount;
-    setRedeemResult({ success: true, amount: giftCode.coin_amount, newBalance });
+    setRedeemResult({ success: true, amount: result.coin_amount ?? 0, newBalance: result.balance ?? 0 });
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 4000);
     setCode(['', '', '']);
     loadHistory();
     setIsRedeeming(false);
   };
+
 
   // Confetti particles
   const confettiColors = ['#08A045', '#00ff41', '#0f0', '#22c55e', '#4ade80'];

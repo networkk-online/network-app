@@ -153,6 +153,26 @@ const RewardsWheel = () => {
 
     setSpinning(true);
 
+    // Server决 decides the prize — client never sends an amount
+    const { data, error } = await supabase.rpc('spin_wheel' as never, {} as never);
+    const result = data as { success?: boolean; prize?: number; balance?: number; spins_left?: number; error?: string } | null;
+
+    if (error || !result?.success) {
+      setSpinning(false);
+      if (result?.error === 'daily_limit_reached') {
+        toast.error('لقد استنفدت محاولاتك لهذا اليوم');
+        setCanSpin(false);
+      } else if (result?.error === 'wheel_disabled') {
+        toast.error('العجلة غير متاحة حالياً');
+        setCanSpin(false);
+      } else {
+        toast.error('تعذر تنفيذ الدوران، حاول لاحقاً');
+      }
+      return;
+    }
+
+    const pointsWon = result.prize ?? 0;
+
     // Calculate rotation: land on WINNING_SLICE_INDEX (10 Points)
     const sliceAngle = 360 / SLICES.length;
     const targetAngle = 360 - (WINNING_SLICE_INDEX * sliceAngle) - sliceAngle / 2;
@@ -170,14 +190,10 @@ const RewardsWheel = () => {
     setRotation(prev => prev + totalRotation);
 
     // After spin completes
-    setTimeout(async () => {
+    setTimeout(() => {
       clearInterval(tickInterval);
       setSpinning(false);
-      const pointsWon = 10;
       setWonPoints(pointsWon);
-
-      // Save to DB
-      await supabase.from('wheel_spins').insert({ user_id: user.id, points_won: pointsWon });
 
       // Haptic feedback
       if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
@@ -190,15 +206,16 @@ const RewardsWheel = () => {
       setTimeout(() => {
         setFlyingPoints(true);
         setTimeout(() => {
-          setGems(prev => prev + pointsWon);
+          setGems(result.balance ?? 0);
           setFlyingPoints(false);
-          setCanSpin(false);
+          setCanSpin((result.spins_left ?? 0) > 0);
         }, 800);
       }, 500);
 
       setTimeout(() => setShowWin(false), 3000);
     }, 4500);
   };
+
 
   const sliceAngle = 360 / SLICES.length;
 
