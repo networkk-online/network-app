@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import UserProfile from '@/components/UserProfile';
 import { Skeleton } from '@/components/ui/skeleton';
+import { displayedFollowers } from '@/lib/followerDisplay';
 
 interface ProfileOverlayContentProps {
   profileId: string;
@@ -45,7 +46,7 @@ const ProfileOverlayContent = ({ profileId, currentUserId }: ProfileOverlayConte
       username={profile.username || ''}
       displayName={profile.full_name || profile.username || ''}
       avatar={profile.avatar_url || '/default-avatar.jpg'}
-      followers={profile.followers_count || 0}
+      followers={displayedFollowers(profile)}
       following={profile.following_count || 0}
       posts={postCount}
       bio={profile.bio || ''}

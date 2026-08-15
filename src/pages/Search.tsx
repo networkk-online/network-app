@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
+import { displayedFollowers } from '@/lib/followerDisplay';
 
 interface SearchProfile {
   id: string;
@@ -206,7 +207,7 @@ const Search = () => {
         </div>
       </div>
       <div className="text-right">
-        <p className="text-gray-400 text-sm">{user.followers_count || 0} متابع</p>
+        <p className="text-gray-400 text-sm">{displayedFollowers(user as any)} متابع</p>
       </div>
     </div>
   );

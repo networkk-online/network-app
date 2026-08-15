@@ -16,6 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStories } from '@/hooks/useStories';
 import StoryCircle from '@/components/StoryCircle';
 import StoryViewer from '@/components/StoryViewer';
+import { displayedFollowers } from '@/lib/followerDisplay';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -508,7 +509,7 @@ const Profile = () => {
     username: profile?.username || user?.user_metadata?.username || 'مستخدم',
     displayName: profile?.full_name || user?.user_metadata?.full_name || 'مستخدم',
     avatar: profile?.avatar_url || user?.user_metadata?.avatar_url || '/default-avatar.jpg',
-    followers: profile?.followers_count || 0,
+    followers: displayedFollowers(profile as any),
     following: profile?.following_count || 0,
     posts: userPosts.length,
     bio: profile?.bio || 'لا يوجد وصف',
