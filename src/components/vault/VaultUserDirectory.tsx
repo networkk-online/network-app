@@ -46,6 +46,7 @@ const VaultUserDirectory = () => {
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const PAGE_SIZE = 20;
+  const [banTarget, setBanTarget] = useState<any | null>(null);
   const [followerTarget, setFollowerTarget] = useState<any | null>(null);
 
 
