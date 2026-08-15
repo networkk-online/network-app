@@ -5043,6 +5043,7 @@ export type Database = {
           cover_url: string | null
           created_at: string | null
           fame_score: number | null
+          follower_count_override: number | null
           followers_count: number | null
           following_count: number | null
           full_name: string | null
@@ -5070,6 +5071,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string | null
           fame_score?: number | null
+          follower_count_override?: number | null
           followers_count?: number | null
           following_count?: number | null
           full_name?: string | null
@@ -5097,6 +5099,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string | null
           fame_score?: number | null
+          follower_count_override?: number | null
           followers_count?: number | null
           following_count?: number | null
           full_name?: string | null
