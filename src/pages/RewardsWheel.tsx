@@ -153,7 +153,7 @@ const RewardsWheel = () => {
 
     setSpinning(true);
 
-    // Server决 decides the prize — client never sends an amount
+    // Server decides the prize — client never sends an amount
     const { data, error } = await supabase.rpc('spin_wheel' as never, {} as never);
     const result = data as { success?: boolean; prize?: number; balance?: number; spins_left?: number; error?: string } | null;
 
