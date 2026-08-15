@@ -7,12 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Ban, Trash2, Bell, Users, ChevronLeft, ChevronRight, ShieldCheck, Eye, EyeOff, Loader2, BadgeCheck, Lock, Unlock } from 'lucide-react';
+import { Search, Ban, Trash2, Bell, Users, ChevronLeft, ChevronRight, ShieldCheck, Eye, EyeOff, Loader2, BadgeCheck, Lock, Unlock, UserCog } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import ReasonDialog from './ReasonDialog';
+import FollowerOverrideDialog from './FollowerOverrideDialog';
 import { adminUserAction, adminErrorMessage } from '@/lib/adminApi';
 
 
@@ -46,6 +47,7 @@ const VaultUserDirectory = () => {
   const [total, setTotal] = useState(0);
   const PAGE_SIZE = 20;
   const [banTarget, setBanTarget] = useState<any | null>(null);
+  const [followerTarget, setFollowerTarget] = useState<any | null>(null);
 
 
   const [resetModal, setResetModal] = useState<{ open: boolean; user: any | null }>({ open: false, user: null });
@@ -383,6 +385,14 @@ const VaultUserDirectory = () => {
                         </Button>
                         <Button
                           variant="ghost" size="icon"
+                          className="h-7 w-7 text-gray-500 hover:text-amber-400"
+                          title="إدارة المتابعين"
+                          onClick={() => setFollowerTarget(u)}
+                        >
+                          <UserCog className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost" size="icon"
                           className="h-7 w-7 text-gray-500 hover:text-cyan-400"
                           title="إرسال إشعار"
                           onClick={() => { setNotifyAll(false); setNotifyTitle(''); setNotifyText(''); setNotifyModal({ open: true, user: u }); }}
@@ -569,6 +579,11 @@ const VaultUserDirectory = () => {
         confirmLabel={banTarget?.is_banned ? 'رفع الحظر' : 'حظر'}
         onCancel={() => setBanTarget(null)}
         onConfirm={confirmBan}
+      />
+      <FollowerOverrideDialog
+        open={!!followerTarget}
+        user={followerTarget}
+        onClose={() => setFollowerTarget(null)}
       />
     </div>
   );

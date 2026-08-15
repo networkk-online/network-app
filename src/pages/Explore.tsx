@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import SeoHead from '@/components/seo/SeoHead';
 import { toast } from 'sonner';
+import { displayedFollowers } from '@/lib/followerDisplay';
 
 
 // Escape select() literals so supabase-js does not do heavy type-parsing
@@ -21,6 +22,7 @@ interface ProfileLite {
   is_verified: boolean;
   is_live?: boolean | null;
   followers_count?: number | null;
+  follower_count_override?: number | null;
   account_type?: string | null;
 }
 
@@ -152,7 +154,7 @@ const Explore = () => {
         // Top public users (exclude banned/suspended)
         const usersRes = await supabase
           .from('profiles')
-          .select(sel('id, username, full_name, avatar_url, is_verified, is_live, followers_count, account_type'))
+          .select(sel('id, username, full_name, avatar_url, is_verified, is_live, followers_count, follower_count_override, account_type'))
           .eq('is_banned', false)
           .eq('is_suspended', false)
           .order('followers_count', { ascending: false, nullsFirst: false })
@@ -186,7 +188,7 @@ const Explore = () => {
         if (hostIds.length) {
           const { data } = await supabase
             .from('profiles')
-            .select(sel('id, username, full_name, avatar_url, is_verified, is_live, followers_count, account_type'))
+            .select(sel('id, username, full_name, avatar_url, is_verified, is_live, followers_count, follower_count_override, account_type'))
             .in('id', hostIds)
             .returns<ProfileLite[]>();
           hostProfiles = data ?? [];
@@ -252,7 +254,7 @@ const Explore = () => {
       if (!ids.length) return rows;
       const { data } = await supabase
         .from('profiles')
-        .select(sel('id, username, full_name, avatar_url, is_verified, is_live, followers_count, account_type'))
+        .select(sel('id, username, full_name, avatar_url, is_verified, is_live, followers_count, follower_count_override, account_type'))
         .in('id', ids)
         .returns<ProfileLite[]>();
       const map = new Map((data ?? []).map((p) => [p.id, p]));
@@ -417,7 +419,7 @@ const Explore = () => {
         const [uRes, pRes, rRes, lRes] = await Promise.all([
           supabase
             .from('profiles')
-            .select(sel('id, username, full_name, avatar_url, is_verified, is_live, followers_count, account_type'))
+            .select(sel('id, username, full_name, avatar_url, is_verified, is_live, followers_count, follower_count_override, account_type'))
             .or(`username.ilike.${like},full_name.ilike.${like}`)
             .order('followers_count', { ascending: false, nullsFirst: false })
             .limit(15)
@@ -454,7 +456,7 @@ const Explore = () => {
             if (!ids.length) return rows;
             const { data } = await supabase
               .from('profiles')
-              .select(sel('id, username, full_name, avatar_url, is_verified, is_live, followers_count, account_type'))
+              .select(sel('id, username, full_name, avatar_url, is_verified, is_live, followers_count, follower_count_override, account_type'))
               .in('id', ids)
               .returns<ProfileLite[]>();
             const m = new Map((data ?? []).map((p) => [p.id, p]));
@@ -908,7 +910,7 @@ const UserCard = ({
         {user.is_verified && <VerifiedBadge size="sm" />}
       </div>
       <VipChip tier={vipTier} />
-      <span className="text-white/40 text-[9px]">{formatCount(user.followers_count)} متابع</span>
+      <span className="text-white/40 text-[9px]">{formatCount(displayedFollowers(user))} متابع</span>
       <FollowBtn isFollowing={isFollowing} isSelf={isSelf} busy={busy} onClick={onFollow} compact />
     </motion.div>
   );
@@ -950,7 +952,7 @@ const UserRow = ({
           {user.is_verified && <VerifiedBadge size="sm" />}
           <VipChip tier={vipTier} />
         </div>
-        <span className="text-white/40 text-xs">@{user.username ?? 'user'} · {formatCount(user.followers_count)} متابع</span>
+        <span className="text-white/40 text-xs">@{user.username ?? 'user'} · {formatCount(displayedFollowers(user))} متابع</span>
       </div>
       <FollowBtn isFollowing={isFollowing} isSelf={isSelf} busy={busy} onClick={onFollow} />
     </div>

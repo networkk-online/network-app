@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { PremiumShareButton } from '@/components/PremiumShareButton';
+import { displayedFollowers } from '@/lib/followerDisplay';
 
 const NEON = '#39FF14';
 
@@ -369,7 +370,7 @@ const VideoPlayer = () => {
                 )}
                 <div className="min-w-0">
                   <p className="text-foreground text-sm font-semibold truncate">{profile?.full_name || profile?.username || 'مبدع'}</p>
-                  <p className="text-muted-foreground text-[11px]">{formatViews(profile?.followers_count || 0)} مشترك</p>
+                  <p className="text-muted-foreground text-[11px]">{formatViews(displayedFollowers(profile))} مشترك</p>
                 </div>
                 {!isOwnChannel && (
                   <motion.button
