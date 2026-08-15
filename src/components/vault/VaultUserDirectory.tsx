@@ -385,6 +385,14 @@ const VaultUserDirectory = () => {
                         </Button>
                         <Button
                           variant="ghost" size="icon"
+                          className="h-7 w-7 text-gray-500 hover:text-amber-400"
+                          title="إدارة المتابعين"
+                          onClick={() => setFollowerTarget(u)}
+                        >
+                          <UserCog className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost" size="icon"
                           className="h-7 w-7 text-gray-500 hover:text-cyan-400"
                           title="إرسال إشعار"
                           onClick={() => { setNotifyAll(false); setNotifyTitle(''); setNotifyText(''); setNotifyModal({ open: true, user: u }); }}
