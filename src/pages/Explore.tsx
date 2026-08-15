@@ -22,6 +22,7 @@ interface ProfileLite {
   is_verified: boolean;
   is_live?: boolean | null;
   followers_count?: number | null;
+  follower_count_override?: number | null;
   account_type?: string | null;
 }
 
