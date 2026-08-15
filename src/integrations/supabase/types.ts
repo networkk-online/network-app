@@ -1259,6 +1259,45 @@ export type Database = {
         }
         Relationships: []
       }
+      finance_audit_log: {
+        Row: {
+          actor_id: string | null
+          amount: number | null
+          balance_after: number | null
+          balance_before: number | null
+          created_at: string
+          id: string
+          metadata: Json
+          operation: string
+          user_id: string | null
+          wallet: string
+        }
+        Insert: {
+          actor_id?: string | null
+          amount?: number | null
+          balance_after?: number | null
+          balance_before?: number | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          operation: string
+          user_id?: string | null
+          wallet: string
+        }
+        Update: {
+          actor_id?: string | null
+          amount?: number | null
+          balance_after?: number | null
+          balance_before?: number | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          operation?: string
+          user_id?: string | null
+          wallet?: string
+        }
+        Relationships: []
+      }
       financial_alerts: {
         Row: {
           alert_type: string
@@ -5241,6 +5280,7 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
       }
+      claim_treasure_box: { Args: { _box_id: string }; Returns: Json }
       consume_rate_limit: {
         Args: {
           _bucket: string
@@ -5367,6 +5407,18 @@ export type Database = {
         Args: { _stream_id: string; _user_id: string }
         Returns: Json
       }
+      log_finance_event: {
+        Args: {
+          _after: number
+          _amount: number
+          _before: number
+          _metadata?: Json
+          _operation: string
+          _user_id: string
+          _wallet: string
+        }
+        Returns: undefined
+      }
       my_entitlements: {
         Args: never
         Returns: {
@@ -5412,12 +5464,26 @@ export type Database = {
         Returns: Json
       }
       redeem_family_code: { Args: { _code: string }; Returns: Json }
+      redeem_gift_code: { Args: { _code: string }; Returns: Json }
       refresh_profile_live_status: {
         Args: { _host_id: string }
         Returns: undefined
       }
+      send_broadcast_donation: {
+        Args: {
+          _amount: number
+          _broadcast_id: string
+          _creator_user_id: string
+          _message?: string
+        }
+        Returns: Json
+      }
       send_live_gift: {
         Args: { _gift_id: string; _quantity?: number; _stream_id: string }
+        Returns: Json
+      }
+      send_post_tip: {
+        Args: { _amount: number; _message?: string; _post_id: string }
         Returns: Json
       }
       send_tip: {
@@ -5439,6 +5505,7 @@ export type Database = {
         }
         Returns: Json
       }
+      spin_wheel: { Args: never; Returns: Json }
       update_all_fame_scores: { Args: never; Returns: undefined }
       user_list_my_invites: {
         Args: never
