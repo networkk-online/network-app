@@ -3104,6 +3104,7 @@ export type Database = {
           cover_url: string | null
           created_at: string
           fame_score: number | null
+          follower_count_override: number | null
           followers_count: number | null
           following_count: number | null
           full_name: string | null
@@ -3140,6 +3141,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           fame_score?: number | null
+          follower_count_override?: number | null
           followers_count?: number | null
           following_count?: number | null
           full_name?: string | null
@@ -3176,6 +3178,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           fame_score?: number | null
+          follower_count_override?: number | null
           followers_count?: number | null
           following_count?: number | null
           full_name?: string | null
@@ -5139,6 +5142,7 @@ export type Database = {
           cover_url: string | null
           created_at: string
           fame_score: number | null
+          follower_count_override: number | null
           followers_count: number | null
           following_count: number | null
           full_name: string | null
@@ -5211,6 +5215,10 @@ export type Database = {
         Args: { _reason: string; _report_id: string; _status: string }
         Returns: Json
       }
+      admin_set_follower_count_override: {
+        Args: { new_count: number; reason: string; target_user_id: string }
+        Returns: Json
+      }
       admin_set_subscription: {
         Args: {
           _billing_cycle?: string
@@ -5264,6 +5272,7 @@ export type Database = {
           cover_url: string | null
           created_at: string
           fame_score: number | null
+          follower_count_override: number | null
           followers_count: number | null
           following_count: number | null
           full_name: string | null
