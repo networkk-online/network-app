@@ -495,14 +495,12 @@ export const TreasureBoxSheet = ({
   const open_ = async (id: string) => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return;
-    await supabase
-      .from('live_treasure_box')
-      .update({ opened_by: userData.user.id, opened_at: new Date().toISOString() })
-      .eq('id', id)
-      .is('opened_by', null);
+    // Atomic server-side claim: first claimer wins, reward credited server-side
+    await supabase.rpc('claim_treasure_box' as never, { _box_id: id } as never);
     const { data } = await supabase.from('live_treasure_box').select('*').eq('stream_id', streamId!).order('created_at', { ascending: false });
     setBoxes(data || []);
   };
+
   return (
     <Sheet open={open} onClose={onClose} title="صندوق الكنز" icon={<Gift className="w-5 h-5" style={{ color: 'hsl(var(--vip-gold))' }} />} accent="gold">
       {isHost && (

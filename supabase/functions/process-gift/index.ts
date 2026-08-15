@@ -35,28 +35,44 @@ Deno.serve(async (req) => {
     const {
       creator_id,
       gift_id,
-      gift_name,
-      unit_price,
       quantity = 1,
       channel_name,
       stream_id,
     } = body || {};
 
-    if (!creator_id || !gift_id || typeof unit_price !== 'number' || unit_price < 0) {
+    if (!creator_id || !gift_id) {
       return json({ error: 'Invalid payload' }, 400);
     }
     if (creator_id === senderId) {
       return json({ error: 'Cannot gift yourself' }, 400);
     }
-    if (quantity < 1 || quantity > 999) return json({ error: 'Invalid quantity' }, 400);
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 999) {
+      return json({ error: 'Invalid quantity' }, 400);
+    }
 
-    const total = Number((unit_price * quantity).toFixed(2));
-
-    // Service role for ledger insert + finance updates
+    // Service role for catalog lookup + ledger insert + finance updates
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
+
+    // NEVER trust prices from the client — read authoritative price from the catalog
+    const { data: catalogGift, error: catErr } = await admin
+      .from('live_gift_catalog')
+      .select('id, name, name_ar, price_coins, is_active')
+      .eq('id', gift_id)
+      .maybeSingle();
+    if (catErr || !catalogGift || catalogGift.is_active === false) {
+      return json({ error: 'Unknown or inactive gift' }, 400);
+    }
+
+    const unit_price = Number(catalogGift.price_coins);
+    if (!Number.isFinite(unit_price) || unit_price < 0) {
+      return json({ error: 'Invalid gift price' }, 400);
+    }
+    const gift_name = catalogGift.name_ar || catalogGift.name || catalogGift.id;
+
+    const total = Number((unit_price * quantity).toFixed(2));
 
     // Fetch dynamic commission
     const { data: settings } = await admin
@@ -67,6 +83,7 @@ Deno.serve(async (req) => {
     const rate = Number(settings?.platform_commission_rate ?? 0.20);
     const platform_fee = Number((total * rate).toFixed(2));
     const creator_earning = Number((total - platform_fee).toFixed(2));
+
 
     // Verify & deduct sender's gems (server-side authoritative)
     const { data: gems, error: gErr } = await admin
