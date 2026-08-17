@@ -2,7 +2,7 @@ import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bookmark, Clock, Crown, Flag, MoreVertical, Radio, Share2, EyeOff } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import VerifiedBadge from '@/components/VerifiedBadge';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { TV_ACCENT, formatCount, formatDuration, timeAgo, type TvVideo } from '@/lib/networkTv';
