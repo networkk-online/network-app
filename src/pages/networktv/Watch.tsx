@@ -250,10 +250,14 @@ const Watch = () => {
 
   const submitComment = async () => {
     const text = newComment.trim();
-    if (!text || !userId || !videoId) return;
+    if (!text || !videoId) return;
+    if (!userId) return toast.error('يجب تسجيل الدخول');
+    if (sendingComment) return;
+    setSendingComment(true);
     setNewComment('');
     const { error: err } = await (supabase as any).from('video_comments').insert({ video_id: videoId, user_id: userId, content: text });
-    if (err) toast.error('تعذر إضافة التعليق');
+    setSendingComment(false);
+    if (err) { setNewComment(text); toast.error('تعذر إضافة التعليق'); }
     else reloadComments();
   };
 
