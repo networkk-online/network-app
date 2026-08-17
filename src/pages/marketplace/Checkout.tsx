@@ -149,13 +149,18 @@ const Checkout = () => {
 
         <section className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] space-y-2">
           <p className="text-sm font-bold mb-1">طريقة الدفع</p>
-          {METHODS.map((m) => (
-            <button key={m.id} onClick={() => setMethod(m.id)}
-              className={`w-full flex items-center gap-3 p-3 rounded-xl border min-h-[52px] ${method === m.id ? 'border-primary bg-primary/10' : 'border-white/[0.08] bg-white/[0.03]'}`}>
+          {methods.map((m) => (
+            <button key={m.id} disabled={!m.enabled} onClick={() => m.enabled && setMethod(m.id)}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl border min-h-[52px] ${!m.enabled ? 'opacity-40 border-white/[0.06] bg-white/[0.02]' : method === m.id ? 'border-primary bg-primary/10' : 'border-white/[0.08] bg-white/[0.03]'}`}>
               <m.icon className="w-4 h-4 text-primary" />
               <span className="text-sm">{m.label}</span>
             </button>
           ))}
+          <p className="text-[10px] text-white/30 flex items-center gap-1.5">
+            <ShieldCheck className="w-3 h-3" />
+            مدفوعات السوق بالدينار العراقي ومنفصلة تمامًا عن رصيد R Coin والهدايا.
+            {config?.environment === 'test' && ' (وضع تجريبي)'}
+          </p>
         </section>
 
         <section className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] space-y-2">
@@ -166,11 +171,18 @@ const Checkout = () => {
               <span>{formatMoney((effectivePrice(i.product) + Number(i.variant?.price_delta || 0)) * i.quantity)}</span>
             </div>
           ))}
+          {quote?.stores.map((s) => (
+            <div key={s.store_id} className="flex justify-between text-[11px] text-white/40">
+              <span>شحن المتجر</span><span>{formatMoney(s.shipping, s.currency)}</span>
+            </div>
+          ))}
           <div className="flex justify-between text-sm font-bold pt-2 border-t border-white/[0.06]">
-            <span>المجموع الفرعي</span><span className="text-primary">{formatMoney(subtotal)}</span>
+            <span>{quote ? 'الإجمالي (محسوب على الخادم)' : 'المجموع الفرعي'}</span>
+            <span className="text-primary">{formatMoney(quote ? quote.grand_total : localSubtotal)}</span>
           </div>
-          <p className="text-[10px] text-white/30">يتم احتساب الشحن والعمولة والإجمالي النهائي على الخادم.</p>
+          <p className="text-[10px] text-white/30">تُحتسب الأسعار والشحن والعمولة نهائيًا على الخادم عند تأكيد الطلب.</p>
         </section>
+
       </main>
 
       <div className="fixed bottom-0 inset-x-0 z-40 bg-black/90 backdrop-blur-2xl border-t border-white/[0.08] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
