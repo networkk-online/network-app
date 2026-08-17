@@ -104,6 +104,13 @@ const VideoPlayer = lazy(() => import("./pages/VideoPlayer"));
 const CreatorStudio = lazy(() => import("./pages/CreatorStudio"));
 const TvWatch = lazy(() => import("./pages/networktv/Watch"));
 const CreatorUpload = lazy(() => import("./pages/creator-studio/Upload"));
+const Marketplace = lazy(() => import("./pages/marketplace/Marketplace"));
+const MpProductPage = lazy(() => import("./pages/marketplace/ProductPage"));
+const MpStorePage = lazy(() => import("./pages/marketplace/StorePage"));
+const MpCart = lazy(() => import("./pages/marketplace/Cart"));
+const MpCheckout = lazy(() => import("./pages/marketplace/Checkout"));
+const MpOrders = lazy(() => import("./pages/marketplace/Orders"));
+const BusinessStore = lazy(() => import("./pages/business/BusinessStore"));
 const AdminDeposits = lazy(() => import("./pages/AdminDeposits"));
 const AdminCompanies = lazy(() => import("./pages/AdminCompanies"));
 const Tweets = lazy(() => import("./pages/Tweets"));
@@ -254,6 +261,13 @@ const AppContent = () => {
         <Route path="/network-tv/watch/:videoId" element={<TvWatch />} />
         <Route path="/creator-studio/upload" element={<CreatorUpload />} />
         <Route path="/creator-studio" element={<FeatureGate feature="analytics" title="الإحصائيات والتحليلات" description="التحليلات المتقدمة متاحة ضمن الباقات المدفوعة."><CreatorStudio /></FeatureGate>} />
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/product/:id" element={<MpProductPage />} />
+        <Route path="/store/:username" element={<MpStorePage />} />
+        <Route path="/cart" element={<MpCart />} />
+        <Route path="/checkout" element={<MpCheckout />} />
+        <Route path="/orders" element={<MpOrders />} />
+        <Route path="/business/store" element={<BusinessStore />} />
         <Route path="/tweets" element={<Tweets />} />
         <Route path="/admin-control" element={<AdminControl />} />
         <Route path="/admin-networkk-online" element={<NotFound />} />
