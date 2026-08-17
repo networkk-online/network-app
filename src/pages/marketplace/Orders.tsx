@@ -43,6 +43,25 @@ const Orders = () => {
     else { toast({ title: 'تم إلغاء الطلب' }); load(); }
   };
 
+  const [paying, setPaying] = useState<string | null>(null);
+  const payNow = async (orderId: string) => {
+    setPaying(orderId);
+    try {
+      const session = await startPayment(orderId);
+      if (session.checkout_url) { window.location.href = session.checkout_url; return; }
+      toast({
+        title: 'تم تسجيل محاولة الدفع',
+        description: 'سيتم تأكيد الطلب تلقائياً فور استلام تأكيد بوابة الدفع.',
+      });
+      load();
+    } catch (e: any) {
+      toast({ title: 'تعذر بدء الدفع', description: e?.message, variant: 'destructive' });
+    } finally {
+      setPaying(null);
+    }
+  };
+
+
   const openDispute = async () => {
     const { error } = await supabase.rpc('mp_open_dispute', { _order_id: dispute.id, _reason: 'buyer_dispute', _details: disputeText });
     if (error) toast({ title: 'تعذر فتح النزاع', description: error.message, variant: 'destructive' });
