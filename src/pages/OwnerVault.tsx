@@ -30,6 +30,7 @@ const VaultModeration = lazy(() => import('@/components/vault/VaultModeration'))
 const VaultReports = lazy(() => import('@/components/vault/VaultReports'));
 const VaultSecurityCenter = lazy(() => import('@/components/vault/VaultSecurityCenter'));
 const VaultAuditLog = lazy(() => import('@/components/vault/VaultAuditLog'));
+const VaultMarketplace = lazy(() => import('@/components/vault/VaultMarketplace'));
 import VaultMatchesManager from '@/components/vault/VaultMatchesManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
