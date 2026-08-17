@@ -15,6 +15,14 @@ const Upload = () => {
   const fileInput = useRef<HTMLInputElement>(null);
   const thumbInput = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (userId === null) {
+      toast.error('يجب تسجيل الدخول');
+      navigate('/login', { replace: true });
+    }
+  }, [userId, navigate]);
+
+
   const [step, setStep] = useState(1);
   const [file, setFile] = useState<File | null>(null);
   const [thumbFile, setThumbFile] = useState<File | null>(null);
