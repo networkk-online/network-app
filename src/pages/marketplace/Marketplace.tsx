@@ -125,7 +125,7 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen bg-black text-white pb-28" dir="rtl">
-      <SeoHead title="سوق Networkk | تسوّق من المتاجر الموثوقة" description="سوق Networkk — منتجات من متاجر الأعمال الموثوقة داخل التطبيق مع دفع آمن وتوصيل." />
+      <SeoHead route="/marketplace" fallbackTitle="سوق Networkk | تسوّق من المتاجر الموثوقة" fallbackDescription="سوق Networkk — منتجات من متاجر الأعمال الموثوقة داخل التطبيق مع دفع آمن وتوصيل." />
 
       <header className="sticky top-0 z-30 bg-black/80 backdrop-blur-2xl border-b border-white/[0.06] pt-[env(safe-area-inset-top)]">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
