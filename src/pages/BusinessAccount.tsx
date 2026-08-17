@@ -149,6 +149,12 @@ const BusinessAccount = () => {
             )}
           </div>
 
+          <div className="px-4 py-3 border-b border-border/40">
+            <Button variant="outline" className="w-full min-h-[44px]" onClick={() => navigate('/business/store')}>
+              متجري في السوق (Marketplace)
+            </Button>
+          </div>
+
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
