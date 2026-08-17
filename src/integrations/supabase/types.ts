@@ -4841,6 +4841,9 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          is_hidden: boolean
+          is_pinned: boolean
+          likes_count: number
           parent_id: string | null
           user_id: string
           video_id: string
@@ -4849,6 +4852,9 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          is_hidden?: boolean
+          is_pinned?: boolean
+          likes_count?: number
           parent_id?: string | null
           user_id: string
           video_id: string
@@ -4857,6 +4863,9 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_hidden?: boolean
+          is_pinned?: boolean
+          likes_count?: number
           parent_id?: string | null
           user_id?: string
           video_id?: string
@@ -4907,54 +4916,198 @@ export type Database = {
           },
         ]
       }
+      video_saves: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_saves_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_views: {
+        Row: {
+          country: string | null
+          created_at: string
+          device: string | null
+          id: string
+          session_key: string | null
+          source: string | null
+          video_id: string
+          viewer_id: string | null
+          watch_seconds: number
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          session_key?: string | null
+          source?: string | null
+          video_id: string
+          viewer_id?: string | null
+          watch_seconds?: number
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          session_key?: string | null
+          source?: string | null
+          video_id?: string
+          viewer_id?: string | null
+          watch_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_views_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_watch_history: {
+        Row: {
+          id: string
+          position_seconds: number
+          updated_at: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          id?: string
+          position_seconds?: number
+          updated_at?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          id?: string
+          position_seconds?: number
+          updated_at?: string
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_watch_history_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       videos: {
         Row: {
+          allow_comments: boolean
+          allow_embedding: boolean
+          allow_sharing: boolean
+          audience: string
           category: string | null
           comments_count: number | null
           created_at: string
+          deleted_at: string | null
           description: string | null
           duration: number | null
+          hashtags: string[]
           id: string
           is_published: boolean | null
+          language: string | null
           likes_count: number | null
+          published_at: string | null
+          scheduled_at: string | null
+          shares_count: number
           thumbnail_url: string | null
           title: string
           updated_at: string
           user_id: string
           video_url: string
           views_count: number | null
+          visibility: string
+          watch_seconds: number
         }
         Insert: {
+          allow_comments?: boolean
+          allow_embedding?: boolean
+          allow_sharing?: boolean
+          audience?: string
           category?: string | null
           comments_count?: number | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           duration?: number | null
+          hashtags?: string[]
           id?: string
           is_published?: boolean | null
+          language?: string | null
           likes_count?: number | null
+          published_at?: string | null
+          scheduled_at?: string | null
+          shares_count?: number
           thumbnail_url?: string | null
           title: string
           updated_at?: string
           user_id: string
           video_url: string
           views_count?: number | null
+          visibility?: string
+          watch_seconds?: number
         }
         Update: {
+          allow_comments?: boolean
+          allow_embedding?: boolean
+          allow_sharing?: boolean
+          audience?: string
           category?: string | null
           comments_count?: number | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           duration?: number | null
+          hashtags?: string[]
           id?: string
           is_published?: boolean | null
+          language?: string | null
           likes_count?: number | null
+          published_at?: string | null
+          scheduled_at?: string | null
+          shares_count?: number
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
           user_id?: string
           video_url?: string
           views_count?: number | null
+          visibility?: string
+          watch_seconds?: number
         }
         Relationships: []
       }
@@ -5280,6 +5433,7 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
       }
+      can_watch_video: { Args: { _video_id: string }; Returns: boolean }
       claim_treasure_box: { Args: { _box_id: string }; Returns: Json }
       consume_rate_limit: {
         Args: {
@@ -5461,6 +5615,15 @@ export type Database = {
       }
       owner_set_affiliate: {
         Args: { _attach: boolean; _company_id: string; _username: string }
+        Returns: Json
+      }
+      record_video_view: {
+        Args: {
+          _device?: string
+          _source?: string
+          _video_id: string
+          _watch_seconds?: number
+        }
         Returns: Json
       }
       redeem_family_code: { Args: { _code: string }; Returns: Json }
