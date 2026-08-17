@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { formatMoney, ORDER_STATUS_AR } from '@/lib/marketplace';
+import { PAYMENT_STATUS_AR, startPayment } from '@/lib/payments';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Package, Star } from 'lucide-react';
+import { ArrowRight, Package, Star, CreditCard } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+
 
 const Orders = () => {
   const navigate = useNavigate();
