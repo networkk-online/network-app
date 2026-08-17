@@ -108,7 +108,10 @@ const VaultMarketplace = () => {
         <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث..." className="bg-white/[0.05] border-white/[0.08] h-11 rounded-xl text-white" />
       )}
 
+      {section === 'finance' && <VaultFinance />}
+
       {section === 'overview' && overview && (
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {stat('المتاجر', overview.stores_total)}
           {stat('بانتظار المراجعة', overview.stores_pending)}
