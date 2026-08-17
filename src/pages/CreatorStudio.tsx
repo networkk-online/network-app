@@ -1,589 +1,316 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowRight, TrendingUp, Eye, Clock, Gem, Film, Upload, Users,
-  BarChart3, DollarSign, Settings, Video, ThumbsUp, MessageSquare,
-  Play, Radio, MoreVertical, Globe, Lock, Tv, Wallet, ArrowDownToLine,
-  Megaphone, CreditCard, Banknote, Menu, X
+  ArrowRight, BarChart3, Clock, Eye, EyeOff, Film, Heart, LayoutDashboard,
+  MessageSquare, Pin, Trash2, TrendingUp, Upload as UploadIcon, Users,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import {
-  ChartContainer, ChartTooltip, ChartTooltipContent
-} from '@/components/ui/chart';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, BarChart, Bar } from 'recharts';
-import { useCountUp } from '@/hooks/useCountUp';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useCreatorStats, useCreatorViewEvents, useCurrentUserId } from '@/hooks/useNetworkTv';
+import { TV_ACCENT, VISIBILITY_OPTIONS, formatCount, formatDuration, timeAgo, type TvVideo } from '@/lib/networkTv';
+import { cn } from '@/lib/utils';
 
-const sidebarTabs = [
-  { id: 'dashboard', label: 'لوحة التحكم', icon: BarChart3 },
-  { id: 'content', label: 'المحتوى', icon: Video },
-  { id: 'analytics', label: 'التحليلات', icon: TrendingUp },
-  { id: 'monetization', label: 'الأرباح', icon: DollarSign },
-  { id: 'customization', label: 'التخصيص', icon: Settings },
-];
+const db = supabase as any;
 
-const formatViews = (n: number) => {
-  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-  return n.toString();
-};
+const TABS = [
+  { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard },
+  { id: 'content', label: 'المحتوى', icon: Film },
+  { id: 'analytics', label: 'التحليلات', icon: BarChart3 },
+  { id: 'comments', label: 'التعليقات', icon: MessageSquare },
+] as const;
 
-const timeAgo = (date: string) => {
-  const diff = Date.now() - new Date(date).getTime();
-  const hours = Math.floor(diff / 3600000);
-  if (hours < 24) return `منذ ${hours} ساعة`;
-  const days = Math.floor(hours / 24);
-  return `منذ ${days} يوم`;
-};
+type TabId = (typeof TABS)[number]['id'];
 
-/* ───── White Neon Brand ───── */
-const NeonBrand = () => (
-  <h1 className="text-sm sm:text-base font-semibold tracking-tight select-none whitespace-nowrap">
-    <motion.span className="text-foreground"
-      animate={{ textShadow: ['0 0 7px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.2)', '0 0 12px rgba(255,255,255,0.6), 0 0 25px rgba(255,255,255,0.3)', '0 0 7px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.2)'] }}
-      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-    >Networkk</motion.span>
-    <motion.span className="text-foreground ml-1"
-      animate={{ textShadow: ['0 0 7px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.2)', '0 0 12px rgba(255,255,255,0.6), 0 0 25px rgba(255,255,255,0.3)', '0 0 7px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.2)'] }}
-      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-    >Cinema</motion.span>{' '}
-    <span className="text-foreground/60 font-normal">Studio</span>
-  </h1>
+const StatCard = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
+  <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4">
+    <div className="mb-2 flex items-center gap-2 text-[12px] text-foreground/50">
+      <Icon className="h-4 w-4" style={{ color: TV_ACCENT }} /> {label}
+    </div>
+    <p className="text-[22px] font-bold tabular-nums">{value}</p>
+  </div>
 );
 
-/* ───── Animated Stat Card ───── */
-const StatCard = ({ label, value, icon: Icon, accent, delay, onClick }: {
-  label: string; value: number; icon: any; accent: string; delay: number; onClick?: () => void;
-}) => {
-  const count = useCountUp({ end: value, duration: 1200, delay: delay * 100 });
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileTap={{ scale: 0.96 }}
-      transition={{ delay: delay * 0.08, type: 'spring', stiffness: 300, damping: 25 }}
-      onClick={onClick}
-      className={`bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-xl p-3 sm:p-4 relative overflow-hidden ${onClick ? 'cursor-pointer hover:bg-white/[0.05]' : ''}`}
-      style={{ boxShadow: `0 0 20px ${accent}` }}
-    >
-      <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }} />
-      <div className="flex items-center justify-between mb-2 sm:mb-3">
-        <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" strokeWidth={1.5} />
-        <span className="text-muted-foreground text-[9px] sm:text-[10px] uppercase tracking-wider">{label}</span>
-      </div>
-      <p className="text-xl sm:text-2xl font-bold text-foreground text-left" dir="ltr">
-        {label === 'الأرباح' ? `$${count.toLocaleString()}` : count.toLocaleString()}
-      </p>
-    </motion.div>
-  );
-};
-
-/* ───── Withdraw Modal ───── */
-const WithdrawModal = ({ open, onClose, balance }: { open: boolean; onClose: () => void; balance: number }) => {
-  const [amount, setAmount] = useState('');
-  const [method, setMethod] = useState('zaincash');
-
-  const handleWithdraw = () => {
-    if (!amount || Number(amount) <= 0) { toast.error('أدخل مبلغاً صالحاً'); return; }
-    if (Number(amount) > balance) { toast.error('الرصيد غير كافٍ'); return; }
-    toast.success(`تم إرسال طلب سحب $${amount} عبر ${method === 'zaincash' ? 'زين كاش' : 'تحويل بنكي'}`);
-    onClose();
-  };
-
-  return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 z-[80]" onClick={onClose} />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-sm mx-auto z-[90] bg-background/90 backdrop-blur-[60px] border border-white/[0.08] rounded-2xl p-5 sm:p-6"
-            style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}
-            dir="rtl"
-          >
-            <h3 className="text-foreground font-bold text-lg mb-1">سحب الأرباح</h3>
-            <p className="text-muted-foreground text-xs mb-4">الرصيد المتاح: <span className="text-primary font-bold">${balance}</span></p>
-            <label className="text-foreground/60 text-xs mb-1 block">المبلغ ($)</label>
-            <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00"
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-foreground text-lg font-bold outline-none mb-4" />
-            <label className="text-foreground/60 text-xs mb-2 block">طريقة الدفع</label>
-            <div className="flex gap-2 mb-5">
-              {[
-                { id: 'zaincash', label: 'زين كاش', icon: Wallet },
-                { id: 'bank', label: 'تحويل بنكي', icon: Banknote },
-              ].map(m => (
-                <motion.button key={m.id} whileTap={{ scale: 0.95 }}
-                  onClick={() => setMethod(m.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-medium transition-all ${
-                    method === m.id ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-white/[0.03] border-white/[0.06] text-foreground/60'
-                  }`}>
-                  <m.icon className="w-4 h-4" strokeWidth={1.5} />
-                  {m.label}
-                </motion.button>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <motion.button whileTap={{ scale: 0.95 }} onClick={onClose}
-                className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-foreground/60 text-sm font-medium">إلغاء</motion.button>
-              <motion.button whileTap={{ scale: 0.95 }} onClick={handleWithdraw}
-                className="flex-1 py-3 rounded-xl bg-primary/20 border border-primary/30 text-primary text-sm font-bold">سحب</motion.button>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-};
-
-/* ═══════════════════════════════════════════════ */
-/* ═══ Main ═══ */
-/* ═══════════════════════════════════════════════ */
 const CreatorStudio = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ totalViews: 0, totalEarnings: 0, totalHours: 0, videoCount: 0, subscribers: 0, likes: 0 });
-  const [videos, setVideos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [showWithdraw, setShowWithdraw] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const qc = useQueryClient();
+  const userId = useCurrentUserId();
+  const [tab, setTab] = useState<TabId>('overview');
+  const [range, setRange] = useState(28);
+
+  const { stats, videos, profile, isLoading, refetch } = useCreatorStats(userId);
+  const events = useCreatorViewEvents(userId, range);
 
   useEffect(() => {
-    const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate('/login'); return; }
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      if (profile) setUserProfile(profile);
-      const { data: vids } = await supabase.from('videos').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      const v = vids || [];
-      setVideos(v);
-      const totalViews = v.reduce((a, b) => a + (b.views_count || 0), 0);
-      const totalLikes = v.reduce((a, b) => a + (b.likes_count || 0), 0);
-      setStats({
-        totalViews,
-        totalEarnings: 0,
-        totalHours: Math.floor(v.reduce((a, b) => a + (b.duration || 0), 0) / 3600),
-        videoCount: v.length,
-        subscribers: profile?.followers_count || 0,
-        likes: totalLikes,
-      });
-      const days = ['سبت', 'أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة'];
-      setChartData(days.map((day) => ({
-        day,
-        views: Math.floor(Math.random() * (totalViews / 3 || 100) + 20),
-        watchTime: Math.floor(Math.random() * 50 + 5),
-      })));
-      setLoading(false);
-    };
-    load();
-  }, [navigate]);
+    if (userId === null) navigate('/login');
+  }, [userId, navigate]);
 
-  const chartConfig = {
-    views: { label: 'المشاهدات', color: 'hsl(144, 90%, 33%)' },
-    watchTime: { label: 'ساعات المشاهدة', color: 'hsl(144, 70%, 45%)' },
+  const comments = useQuery({
+    queryKey: ['studio-comments', userId],
+    enabled: !!userId && tab === 'comments',
+    queryFn: async () => {
+      const ids = videos.map((v) => v.id);
+      if (!ids.length) return [];
+      const { data } = await db
+        .from('video_comments')
+        .select('*')
+        .in('video_id', ids)
+        .order('created_at', { ascending: false })
+        .limit(200);
+      const rows = (data || []) as any[];
+      const uids = Array.from(new Set(rows.map((r) => r.user_id)));
+      if (!uids.length) return rows;
+      const { data: profs } = await supabase.from('profiles').select('id,username,avatar_url').in('id', uids);
+      const map = new Map((profs || []).map((p: any) => [p.id, p]));
+      return rows.map((r) => ({ ...r, author: map.get(r.user_id) || null }));
+    },
+  });
+
+  const daily = useMemo(() => {
+    const buckets = new Map<string, number>();
+    for (let i = range - 1; i >= 0; i--) {
+      buckets.set(new Date(Date.now() - i * 86400_000).toISOString().slice(0, 10), 0);
+    }
+    (events.data || []).forEach((e: any) => {
+      const k = String(e.created_at).slice(0, 10);
+      if (buckets.has(k)) buckets.set(k, (buckets.get(k) || 0) + 1);
+    });
+    return Array.from(buckets.entries()).map(([date, count]) => ({ date, count }));
+  }, [events.data, range]);
+
+  const maxDaily = Math.max(1, ...daily.map((d) => d.count));
+  const topVideos = useMemo(() => [...videos].sort((a, b) => Number(b.views_count || 0) - Number(a.views_count || 0)).slice(0, 8), [videos]);
+
+  const devices = useMemo(() => {
+    const m = new Map<string, number>();
+    (events.data || []).forEach((e: any) => m.set(e.device || 'unknown', (m.get(e.device || 'unknown') || 0) + 1));
+    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
+  }, [events.data]);
+
+  const updateVideo = async (id: string, patch: Record<string, any>) => {
+    const { error } = await db.from('videos').update(patch).eq('id', id);
+    if (error) return toast.error('تعذر التحديث');
+    toast.success('تم التحديث');
+    refetch();
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
-  }
+  const deleteVideo = async (id: string) => {
+    const { error } = await db.from('videos').update({ deleted_at: new Date().toISOString(), is_published: false }).eq('id', id);
+    if (error) return toast.error('تعذر الحذف');
+    toast.success('تم حذف الفيديو');
+    refetch();
+  };
 
-  /* ───── Tab Content Renderers ───── */
-  const renderDashboard = () => (
-    <div className="space-y-5 sm:space-y-6">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-        <StatCard label="المشتركين" value={stats.subscribers} icon={Users} accent="hsla(144,90%,33%,0.15)" delay={0} onClick={() => setActiveTab('analytics')} />
-        <StatCard label="المشاهدات" value={stats.totalViews} icon={Eye} accent="hsla(0,0%,75%,0.1)" delay={1} onClick={() => setActiveTab('analytics')} />
-        <StatCard label="الأرباح" value={stats.totalEarnings} icon={Gem} accent="hsla(144,90%,33%,0.2)" delay={2} onClick={() => setActiveTab('monetization')} />
-        <StatCard label="الإعجابات" value={stats.likes} icon={ThumbsUp} accent="hsla(220,80%,60%,0.1)" delay={3} onClick={() => setActiveTab('analytics')} />
-      </div>
+  const moderateComment = async (id: string, patch: Record<string, any>) => {
+    const { error } = await db.from('video_comments').update(patch).eq('id', id);
+    if (error) return toast.error('تعذر تنفيذ الإجراء');
+    qc.invalidateQueries({ queryKey: ['studio-comments', userId] });
+  };
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-xl p-4 sm:p-5 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-l from-transparent via-primary/30 to-transparent" />
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-foreground text-sm font-semibold flex items-center gap-2"><TrendingUp className="w-4 h-4 text-primary" strokeWidth={1.5} />تحليلات المشاهدات</h3>
-          <span className="text-muted-foreground text-[11px]">آخر 7 أيام</span>
-        </div>
-        <ChartContainer config={chartConfig} className="h-[180px] sm:h-[220px] w-full">
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(144, 90%, 33%)" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="hsl(144, 90%, 33%)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="day" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Area type="monotone" dataKey="views" stroke="hsl(144, 90%, 33%)" strokeWidth={2} fill="url(#viewsGradient)" />
-          </AreaChart>
-        </ChartContainer>
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-xl p-4 sm:p-5 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-l from-transparent via-primary/20 to-transparent" />
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-foreground text-sm font-semibold flex items-center gap-2"><Clock className="w-4 h-4 text-primary" strokeWidth={1.5} />ساعات المشاهدة</h3>
-          <span className="text-foreground/50 text-lg font-bold">{stats.totalHours}h</span>
-        </div>
-        <ChartContainer config={chartConfig} className="h-[150px] sm:h-[180px] w-full">
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="day" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="watchTime" fill="hsl(144, 70%, 45%)" radius={[4, 4, 0, 0]} opacity={0.8} />
-          </BarChart>
-        </ChartContainer>
-      </motion.div>
-
-      <motion.button whileTap={{ scale: 0.95 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-        className="w-full bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center justify-center gap-3 text-primary hover:bg-primary/15 transition-colors"
-        style={{ boxShadow: '0 0 20px hsla(144, 90%, 33%, 0.1)' }}>
-        <Upload className="w-5 h-5" strokeWidth={1.5} />
-        <span className="text-sm font-medium">رفع فيديو جديد</span>
-      </motion.button>
-    </div>
-  );
-
-  const renderContent = () => (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-xl p-4 sm:p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-foreground text-sm font-semibold flex items-center gap-2"><Film className="w-4 h-4 text-primary" strokeWidth={1.5} />مدير المحتوى</h3>
-        <span className="text-muted-foreground text-[11px]">{stats.videoCount} فيديو</span>
-      </div>
-      {videos.length === 0 ? (
-        <div className="text-center py-8">
-          <Film className="w-10 h-10 text-white/[0.06] mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">لم ترفع أي فيديو بعد</p>
-        </div>
-      ) : (
-        <div className="space-y-1">
-          {videos.slice(0, 10).map((v, i) => (
-            <motion.div key={v.id} whileTap={{ scale: 0.98 }} onClick={() => navigate(`/watch/${v.id}`)}
-              className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-lg hover:bg-white/[0.03] cursor-pointer transition-colors">
-              <div className="relative w-20 sm:w-28 aspect-video rounded-lg overflow-hidden flex-shrink-0 bg-white/[0.03]">
-                {v.thumbnail_url ? (
-                  <img src={v.thumbnail_url} className="w-full h-full object-cover" alt="" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center"><Play className="w-5 h-5 text-white/10" /></div>
-                )}
-                {v.duration > 0 && (
-                  <div className="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-black/80 text-[9px] text-foreground/80 font-mono">
-                    {Math.floor(v.duration / 60)}:{(v.duration % 60).toString().padStart(2, '0')}
-                  </div>
-                )}
-                {i === 0 && (Date.now() - new Date(v.created_at).getTime()) < 86400000 && (
-                  <div className="absolute top-1 left-1 flex items-center gap-1 px-1.5 py-0.5 rounded bg-destructive/90 text-[8px] text-white font-bold">
-                    <Radio className="w-2.5 h-2.5 animate-pulse" />جديد
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-foreground text-xs sm:text-sm font-medium line-clamp-1">{v.title}</p>
-                <div className="flex flex-wrap gap-x-2 sm:gap-x-3 gap-y-0.5 mt-1 text-muted-foreground text-[10px] sm:text-[11px]">
-                  <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {formatViews(v.views_count || 0)}</span>
-                  <span className="flex items-center gap-1"><ThumbsUp className="w-3 h-3" /> {formatViews(v.likes_count || 0)}</span>
-                  <span className="hidden sm:flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {formatViews(v.comments_count || 0)}</span>
-                </div>
-                <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    {v.is_published ? <Globe className="w-2.5 h-2.5 text-primary" /> : <Lock className="w-2.5 h-2.5" />}
-                    {v.is_published ? 'عام' : 'خاص'}
-                  </span>
-                  <span>•</span>
-                  <span>{v.created_at ? timeAgo(v.created_at) : ''}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <motion.button whileTap={{ scale: 0.9 }} onClick={(e) => { e.stopPropagation(); toast.info('ميزة الترويج قريباً'); }}
-                  className="p-1.5 rounded-full hover:bg-primary/10 transition-colors" title="ترويج الفيديو">
-                  <Megaphone className="w-3.5 h-3.5 text-primary/60" />
-                </motion.button>
-                <button className="p-1.5 rounded-full hover:bg-white/[0.06] transition-colors flex-shrink-0">
-                  <MoreVertical className="w-4 h-4 text-foreground/30" />
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
-    </motion.div>
-  );
-
-  const renderAnalytics = () => (
-    <div className="space-y-5 sm:space-y-6">
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-        <StatCard label="المشاهدات" value={stats.totalViews} icon={Eye} accent="hsla(0,0%,75%,0.1)" delay={0} />
-        <StatCard label="ساعات المشاهدة" value={stats.totalHours} icon={Clock} accent="hsla(144,90%,33%,0.15)" delay={1} />
-        <StatCard label="المشتركين" value={stats.subscribers} icon={Users} accent="hsla(144,90%,33%,0.2)" delay={2} />
-      </div>
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-xl p-4 sm:p-5 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-l from-transparent via-primary/30 to-transparent" />
-        <h3 className="text-foreground text-sm font-semibold flex items-center gap-2 mb-4"><TrendingUp className="w-4 h-4 text-primary" />أداء القناة - آخر 7 أيام</h3>
-        <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] w-full">
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="viewsGrad2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(144, 90%, 33%)" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="hsl(144, 90%, 33%)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="day" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Area type="monotone" dataKey="views" stroke="hsl(144, 90%, 33%)" strokeWidth={2} fill="url(#viewsGrad2)" />
-          </AreaChart>
-        </ChartContainer>
-      </motion.div>
-    </div>
-  );
-
-  const renderMonetization = () => (
-    <div className="space-y-5 sm:space-y-6">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-xl p-5 sm:p-6 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-l from-transparent via-primary/40 to-transparent" />
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-foreground text-sm font-semibold flex items-center gap-2"><Wallet className="w-4 h-4 text-primary" />أرباحي</h3>
-          <span className="text-muted-foreground text-[10px]">تقسيم 80/20</span>
-        </div>
-        <p className="text-3xl sm:text-4xl font-bold text-primary mt-3" dir="ltr" style={{ textShadow: '0 0 20px hsla(144,90%,33%,0.3)' }}>
-          ${stats.totalEarnings.toLocaleString()}
-        </p>
-        <p className="text-muted-foreground text-xs mt-1">الرصيد المتاح للسحب</p>
-        <div className="flex gap-3 mt-5">
-          <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowWithdraw(true)}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary/15 border border-primary/25 text-primary text-sm font-bold hover:bg-primary/20 transition-colors">
-            <ArrowDownToLine className="w-4 h-4" />سحب
-          </motion.button>
-          <motion.button whileTap={{ scale: 0.95 }}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-foreground/60 text-sm font-medium hover:bg-white/[0.06] transition-colors">
-            <CreditCard className="w-4 h-4" />سجل الأرباح
-          </motion.button>
-        </div>
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-xl p-4 sm:p-5">
-        <h3 className="text-foreground text-sm font-semibold flex items-center gap-2 mb-4"><DollarSign className="w-4 h-4 text-primary" />مصادر الدخل</h3>
-        <div className="space-y-3">
-          {[
-            { label: 'إعلانات داخلية', amount: 0, icon: Megaphone },
-            { label: 'دعم المشاهدين', amount: 0, icon: Gem },
-            { label: 'ترويج الفيديوهات', amount: 0, icon: TrendingUp },
-          ].map((src, i) => (
-            <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <src.icon className="w-4 h-4 text-primary" strokeWidth={1.5} />
-                </div>
-                <span className="text-foreground/70 text-sm">{src.label}</span>
-              </div>
-              <span className="text-foreground font-bold text-sm" dir="ltr">${src.amount}</span>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-    </div>
-  );
-
-  const renderCustomization = () => (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-xl p-4 sm:p-5">
-      <h3 className="text-foreground text-sm font-semibold flex items-center gap-2 mb-4"><Settings className="w-4 h-4 text-primary" />إعدادات القناة</h3>
-      <div className="space-y-4">
-        {[
-          { label: 'إعدادات التحميل الافتراضية', desc: 'خصوصية، فئة، وصف تلقائي' },
-          { label: 'تحقيق الدخل', desc: 'إعلانات، رعاية، اشتراكات' },
-          { label: 'العلامة التجارية', desc: 'شعار القناة، الألوان، اللافتة' },
-        ].map((item, i) => (
-          <motion.button key={i} whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center justify-between p-3 sm:p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] transition-colors text-right">
-            <div>
-              <p className="text-foreground text-sm font-medium">{item.label}</p>
-              <p className="text-muted-foreground text-[11px] mt-0.5">{item.desc}</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-foreground/20 rotate-180 flex-shrink-0" />
-          </motion.button>
-        ))}
-      </div>
-    </motion.div>
-  );
-
-  const tabContent: Record<string, () => JSX.Element> = {
-    dashboard: renderDashboard,
-    content: renderContent,
-    analytics: renderAnalytics,
-    monetization: renderMonetization,
-    customization: renderCustomization,
+  const deleteComment = async (id: string) => {
+    const { error } = await db.from('video_comments').delete().eq('id', id);
+    if (error) return toast.error('تعذر الحذف');
+    qc.invalidateQueries({ queryKey: ['studio-comments', userId] });
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      <WithdrawModal open={showWithdraw} onClose={() => setShowWithdraw(false)} balance={stats.totalEarnings} />
-
-      {/* Mobile Sidebar Drawer */}
-      <AnimatePresence>
-        {mobileSidebarOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 z-[70]" onClick={() => setMobileSidebarOpen(false)} />
-            <motion.div
-              initial={{ x: 300 }}
-              animate={{ x: 0 }}
-              exit={{ x: 300 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 bottom-0 w-[260px] bg-background/95 backdrop-blur-2xl border-l border-white/[0.06] z-[80] flex flex-col"
-            >
-              <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-                <NeonBrand />
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => setMobileSidebarOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center">
-                  <X className="w-4 h-4 text-foreground/60" />
-                </motion.button>
-              </div>
-              {userProfile && (
-                <div className="p-4 border-b border-white/[0.06]">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-10 h-10 ring-2 ring-primary/30">
-                      <AvatarImage src={userProfile?.avatar_url} />
-                      <AvatarFallback className="bg-primary/20 text-primary font-bold">{(userProfile?.full_name || 'U')[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-foreground text-sm font-semibold truncate">{userProfile?.full_name || 'المبدع'}</p>
-                      <p className="text-muted-foreground text-[10px] truncate">@{userProfile?.username || 'user'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
-                    <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {formatViews(stats.subscribers)}</span>
-                    <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {formatViews(stats.totalViews)}</span>
-                  </div>
-                </div>
-              )}
-              <nav className="flex-1 py-2 overflow-y-auto">
-                {sidebarTabs.map(tab => (
-                  <motion.button key={tab.id} whileTap={{ scale: 0.95 }}
-                    onClick={() => { setActiveTab(tab.id); setMobileSidebarOpen(false); }}
-                    className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-colors ${
-                      activeTab === tab.id ? 'bg-primary/10 text-primary border-r-2 border-primary' : 'text-foreground/60 hover:bg-white/[0.04]'
-                    }`}>
-                    <tab.icon className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
-                    <span>{tab.label}</span>
-                  </motion.button>
-                ))}
-              </nav>
-              <div className="p-3 border-t border-white/[0.06]">
-                <motion.button whileTap={{ scale: 0.95 }} onClick={() => navigate('/network-tv')}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-xs text-foreground/70">
-                  <Tv className="w-4 h-4 text-primary" strokeWidth={1.5} />
-                  العودة إلى Cinema
-                </motion.button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* ═══ Desktop Sidebar ═══ */}
-      <aside className="hidden md:flex flex-col w-[200px] bg-background/80 backdrop-blur-2xl border-l border-white/[0.06] fixed top-0 right-0 bottom-0 z-30">
-        <div className="p-4 border-b border-white/[0.06]">
-          <div className="flex items-center gap-3">
-            <Avatar className="w-10 h-10 ring-2 ring-primary/30">
-              <AvatarImage src={userProfile?.avatar_url} />
-              <AvatarFallback className="bg-primary/20 text-primary font-bold text-base">{(userProfile?.full_name || 'U')[0]}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="text-foreground text-sm font-semibold truncate">{userProfile?.full_name || 'المبدع'}</p>
-              <p className="text-muted-foreground text-[10px] truncate">@{userProfile?.username || 'user'}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
-            <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {formatViews(stats.subscribers)}</span>
-            <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {formatViews(stats.totalViews)}</span>
-            <span className="flex items-center gap-1"><Video className="w-3 h-3" /> {stats.videoCount}</span>
-          </div>
+    <div className="min-h-screen bg-black text-foreground" dir="rtl">
+      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-black/85 backdrop-blur-xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4">
+          <button onClick={() => navigate('/network-tv')} className="grid h-9 w-9 place-items-center rounded-full bg-white/[0.05]" aria-label="رجوع">
+            <ArrowRight className="h-5 w-5" />
+          </button>
+          <h1 className="text-[15px] font-semibold">استوديو المبدعين</h1>
+          <button onClick={() => navigate('/creator-studio/upload')} className="ms-auto flex min-h-[40px] items-center gap-2 rounded-full px-4 text-[13px] font-bold text-black" style={{ background: TV_ACCENT }}>
+            <UploadIcon className="h-4 w-4" /> رفع فيديو
+          </button>
         </div>
+      </header>
 
-        <div className="p-2 border-b border-white/[0.06]">
-          <motion.button whileTap={{ scale: 0.95 }} onClick={() => navigate('/network-tv')}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-colors text-xs">
-            <Tv className="w-4 h-4 text-primary" strokeWidth={1.5} />
-            <span className="text-foreground/70">العودة إلى Cinema</span>
-          </motion.button>
-        </div>
-
-        <nav className="flex-1 py-3">
-          {sidebarTabs.map(tab => (
-            <motion.button key={tab.id} whileTap={{ scale: 0.95 }} onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                activeTab === tab.id ? 'bg-primary/10 text-primary border-r-2 border-primary' : 'text-foreground/60 hover:bg-white/[0.04]'
-              }`}>
-              <tab.icon className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
-              <span>{tab.label}</span>
-            </motion.button>
-          ))}
+      <div className="mx-auto flex max-w-[1600px] gap-6 px-3 pt-4 sm:px-5" style={{ paddingBottom: 'calc(8rem + env(safe-area-inset-bottom))' }}>
+        {/* Sidebar / mobile chips */}
+        <nav className="hidden w-[220px] shrink-0 lg:block">
+          <div className="sticky top-20 space-y-1">
+            {TABS.map((t) => (
+              <button key={t.id} onClick={() => setTab(t.id)} className={cn('flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[13px]', tab === t.id ? 'bg-white/[0.08] font-semibold' : 'text-foreground/60 hover:bg-white/[0.04]')}>
+                <t.icon className="h-4 w-4" style={tab === t.id ? { color: TV_ACCENT } : undefined} /> {t.label}
+              </button>
+            ))}
+          </div>
         </nav>
 
-        <div className="p-4 border-t border-white/[0.06]">
-          <NeonBrand />
-        </div>
-      </aside>
-
-      {/* ═══ Main Content ═══ */}
-      <div className="md:mr-[200px] min-w-0">
-        <header className="sticky top-0 z-40 h-14 bg-background/80 backdrop-blur-2xl border-b border-white/[0.06] flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
-          {/* Mobile hamburger */}
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setMobileSidebarOpen(true)}
-            className="md:hidden w-9 h-9 rounded-full bg-white/[0.04] flex items-center justify-center flex-shrink-0">
-            <Menu className="w-5 h-5 text-foreground/60" strokeWidth={1.5} />
-          </motion.button>
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate(-1)}
-            className="hidden md:flex w-9 h-9 rounded-full bg-white/[0.04] items-center justify-center flex-shrink-0">
-            <ArrowRight className="w-5 h-5 text-foreground/60" strokeWidth={1.4} />
-          </motion.button>
-
-          <div className="flex-1 min-w-0">
-            <NeonBrand />
-          </div>
-
-          {/* Mobile tab icons */}
-          <div className="md:hidden flex gap-0.5 flex-shrink-0">
-            {sidebarTabs.slice(0, 4).map(tab => (
-              <motion.button key={tab.id} whileTap={{ scale: 0.9 }} onClick={() => setActiveTab(tab.id)}
-                className={`p-2 rounded-lg transition-colors ${activeTab === tab.id ? 'bg-primary/10 text-primary' : 'text-foreground/40'}`}>
-                <tab.icon className="w-4 h-4" strokeWidth={1.5} />
-              </motion.button>
+        <main className="min-w-0 flex-1">
+          <div className="mb-4 flex gap-2 overflow-x-auto lg:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {TABS.map((t) => (
+              <button key={t.id} onClick={() => setTab(t.id)} className={cn('min-h-[38px] shrink-0 rounded-full px-4 text-[12px]', tab === t.id ? 'text-black' : 'bg-white/[0.05] text-foreground/70')} style={tab === t.id ? { background: TV_ACCENT } : undefined}>
+                {t.label}
+              </button>
             ))}
           </div>
 
-          <Avatar className="w-7 h-7 sm:w-8 sm:h-8 ring-1 ring-white/10 flex-shrink-0">
-            <AvatarImage src={userProfile?.avatar_url} />
-            <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">{(userProfile?.full_name || 'U')[0]}</AvatarFallback>
-          </Avatar>
-        </header>
+          {tab === 'overview' && (
+            <div className="space-y-5">
+              <div className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4">
+                {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover" /> : <span className="h-14 w-14 rounded-full bg-white/[0.08]" />}
+                <div>
+                  <p className="text-[15px] font-semibold">{profile?.full_name || profile?.username || 'قناتي'}</p>
+                  <p className="text-[12px] text-foreground/50">{formatCount(stats?.followers)} متابع</p>
+                </div>
+              </div>
 
-        <div className="px-3 sm:px-4 md:px-6 pb-28 pt-4 sm:pt-5 max-w-5xl mx-auto">
-          <AnimatePresence mode="wait">
-            <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
-              {tabContent[activeTab]?.()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+                <StatCard icon={Film} label="الفيديوهات" value={formatCount(stats?.videos)} />
+                <StatCard icon={Eye} label="المشاهدات" value={formatCount(stats?.views)} />
+                <StatCard icon={Heart} label="الإعجابات" value={formatCount(stats?.likes)} />
+                <StatCard icon={MessageSquare} label="التعليقات" value={formatCount(stats?.comments)} />
+                <StatCard icon={Clock} label="وقت المشاهدة" value={formatDuration(stats?.watchSeconds)} />
+                <StatCard icon={Users} label="المتابعون" value={formatCount(stats?.followers)} />
+              </div>
+
+              <section>
+                <h2 className="mb-3 flex items-center gap-2 text-[14px] font-semibold"><TrendingUp className="h-4 w-4" style={{ color: TV_ACCENT }} /> الأكثر مشاهدة</h2>
+                <div className="space-y-2">
+                  {topVideos.map((v) => (
+                    <button key={v.id} onClick={() => navigate(`/network-tv/watch/${v.id}`)} className="flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-2 text-right">
+                      <img src={v.thumbnail_url || ''} alt="" className="h-12 w-20 rounded-lg bg-white/[0.05] object-cover" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[13px]">{v.title}</span>
+                        <span className="block text-[11px] text-foreground/45">{formatCount(v.views_count)} مشاهدة · {timeAgo(v.created_at)}</span>
+                      </span>
+                    </button>
+                  ))}
+                  {!isLoading && topVideos.length === 0 && <p className="text-[13px] text-foreground/40">لا توجد فيديوهات بعد</p>}
+                </div>
+              </section>
+            </div>
+          )}
+
+          {tab === 'content' && (
+            <div className="overflow-x-auto rounded-2xl border border-white/[0.06] bg-white/[0.03]">
+              <table className="w-full min-w-[720px] text-right text-[13px]">
+                <thead className="text-[11px] text-foreground/45">
+                  <tr>
+                    <th className="p-3 font-normal">الفيديو</th>
+                    <th className="p-3 font-normal">الظهور</th>
+                    <th className="p-3 font-normal">المشاهدات</th>
+                    <th className="p-3 font-normal">الإعجابات</th>
+                    <th className="p-3 font-normal">التاريخ</th>
+                    <th className="p-3 font-normal">إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {videos.map((v: TvVideo) => (
+                    <tr key={v.id} className="border-t border-white/[0.05]">
+                      <td className="p-3">
+                        <button onClick={() => navigate(`/network-tv/watch/${v.id}`)} className="flex items-center gap-3 text-right">
+                          <img src={v.thumbnail_url || ''} alt="" className="h-11 w-20 rounded-lg bg-white/[0.05] object-cover" />
+                          <span className="line-clamp-2 max-w-[240px] text-[13px]">{v.title}</span>
+                        </button>
+                      </td>
+                      <td className="p-3">
+                        <select
+                          value={v.visibility || 'public'}
+                          onChange={(e) => updateVideo(v.id, { visibility: e.target.value, is_published: e.target.value !== 'private' })}
+                          className="min-h-[36px] rounded-lg border border-white/[0.08] bg-white/[0.05] px-2 text-[12px]"
+                        >
+                          {VISIBILITY_OPTIONS.map((o) => <option key={o.id} value={o.id} className="bg-black">{o.ar}</option>)}
+                        </select>
+                      </td>
+                      <td className="p-3 tabular-nums">{formatCount(v.views_count)}</td>
+                      <td className="p-3 tabular-nums">{formatCount(v.likes_count)}</td>
+                      <td className="p-3 text-[12px] text-foreground/50">{timeAgo(v.created_at)}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => updateVideo(v.id, { is_published: !v.is_published })} className="grid h-9 w-9 place-items-center rounded-lg bg-white/[0.05]" aria-label="نشر/إخفاء">
+                            {v.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                          </button>
+                          <button onClick={() => deleteVideo(v.id)} className="grid h-9 w-9 place-items-center rounded-lg bg-white/[0.05] text-red-400" aria-label="حذف">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {!isLoading && videos.length === 0 && <p className="p-6 text-center text-[13px] text-foreground/40">لم ترفع أي فيديو بعد</p>}
+            </div>
+          )}
+
+          {tab === 'analytics' && (
+            <div className="space-y-5">
+              <div className="flex gap-2">
+                {[7, 28, 90].map((d) => (
+                  <button key={d} onClick={() => setRange(d)} className={cn('min-h-[36px] rounded-full px-4 text-[12px]', range === d ? 'text-black' : 'bg-white/[0.05] text-foreground/70')} style={range === d ? { background: TV_ACCENT } : undefined}>
+                    آخر {d} يوم
+                  </button>
+                ))}
+              </div>
+
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <p className="mb-3 text-[13px] font-semibold">المشاهدات اليومية</p>
+                <div className="flex h-40 items-end gap-[3px]" dir="ltr">
+                  {daily.map((d) => (
+                    <div key={d.date} title={`${d.date}: ${d.count}`} className="flex-1 rounded-t-sm" style={{ height: `${(d.count / maxDaily) * 100}%`, minHeight: 2, background: TV_ACCENT, opacity: d.count ? 0.9 : 0.2 }} />
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] text-foreground/40">إجمالي {formatCount((events.data || []).length)} مشاهدة موثّقة خلال الفترة</p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4">
+                  <p className="mb-3 text-[13px] font-semibold">الأجهزة</p>
+                  {devices.length === 0 && <p className="text-[12px] text-foreground/40">لا توجد بيانات بعد</p>}
+                  {devices.map(([name, count]) => (
+                    <div key={name} className="mb-2">
+                      <div className="flex justify-between text-[12px] text-foreground/60"><span>{name}</span><span>{count}</span></div>
+                      <div className="mt-1 h-1.5 rounded-full bg-white/10">
+                        <div className="h-full rounded-full" style={{ width: `${(count / (events.data?.length || 1)) * 100}%`, background: TV_ACCENT }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4">
+                  <p className="mb-3 text-[13px] font-semibold">أفضل الفيديوهات</p>
+                  {topVideos.slice(0, 5).map((v) => (
+                    <div key={v.id} className="mb-2 flex items-center justify-between gap-2 text-[12px]">
+                      <span className="truncate text-foreground/70">{v.title}</span>
+                      <span className="tabular-nums text-foreground/50">{formatCount(v.views_count)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'comments' && (
+            <div className="space-y-3">
+              {(comments.data || []).map((c: any) => (
+                <div key={c.id} className={cn('rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3', c.is_hidden && 'opacity-50')}>
+                  <div className="flex items-start gap-3">
+                    {c.author?.avatar_url ? <img src={c.author.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover" /> : <span className="h-9 w-9 rounded-full bg-white/[0.08]" />}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[12px] text-foreground/55">@{c.author?.username || 'user'} · {timeAgo(c.created_at)}</p>
+                      <p className="whitespace-pre-wrap text-[13px]">{c.content}</p>
+                    </div>
+                    <div className="flex gap-1">
+                      <button onClick={() => moderateComment(c.id, { is_pinned: !c.is_pinned })} className="grid h-9 w-9 place-items-center rounded-lg bg-white/[0.05]" aria-label="تثبيت">
+                        <Pin className="h-4 w-4" style={c.is_pinned ? { color: TV_ACCENT } : undefined} />
+                      </button>
+                      <button onClick={() => moderateComment(c.id, { is_hidden: !c.is_hidden })} className="grid h-9 w-9 place-items-center rounded-lg bg-white/[0.05]" aria-label="إخفاء">
+                        {c.is_hidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      </button>
+                      <button onClick={() => deleteComment(c.id)} className="grid h-9 w-9 place-items-center rounded-lg bg-white/[0.05] text-red-400" aria-label="حذف">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {comments.isFetched && (comments.data || []).length === 0 && <p className="py-10 text-center text-[13px] text-foreground/40">لا توجد تعليقات</p>}
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );
