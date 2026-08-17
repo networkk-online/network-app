@@ -2985,6 +2985,261 @@ export type Database = {
           },
         ]
       }
+      marketplace_payment_attempts: {
+        Row: {
+          amount_minor: number
+          buyer_id: string
+          checkout_url: string | null
+          created_at: string
+          currency: string
+          environment: string
+          error_code: string | null
+          error_message: string | null
+          expires_at: string
+          id: string
+          idempotency_key: string
+          order_id: string
+          provider: string
+          provider_ref: string | null
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_minor: number
+          buyer_id: string
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          environment: string
+          error_code?: string | null
+          error_message?: string | null
+          expires_at?: string
+          id?: string
+          idempotency_key: string
+          order_id: string
+          provider: string
+          provider_ref?: string | null
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_minor?: number
+          buyer_id?: string
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          environment?: string
+          error_code?: string | null
+          error_message?: string | null
+          expires_at?: string
+          id?: string
+          idempotency_key?: string
+          order_id?: string
+          provider?: string
+          provider_ref?: string | null
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_payment_attempts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_payment_attempts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_payment_providers: {
+        Row: {
+          code: string
+          created_at: string
+          credentials_configured: boolean
+          environment: string
+          is_active: boolean
+          label: string
+          label_ar: string | null
+          logo_url: string | null
+          public_config: Json
+          supports_payout: boolean
+          supports_refund: boolean
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          credentials_configured?: boolean
+          environment?: string
+          is_active?: boolean
+          label: string
+          label_ar?: string | null
+          logo_url?: string | null
+          public_config?: Json
+          supports_payout?: boolean
+          supports_refund?: boolean
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          credentials_configured?: boolean
+          environment?: string
+          is_active?: boolean
+          label?: string
+          label_ar?: string | null
+          logo_url?: string | null
+          public_config?: Json
+          supports_payout?: boolean
+          supports_refund?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      marketplace_payment_transactions: {
+        Row: {
+          attempt_id: string | null
+          buyer_id: string
+          commission_minor: number
+          confirmed_at: string
+          created_at: string
+          currency: string
+          environment: string
+          gross_amount_minor: number
+          id: string
+          kind: string
+          merchant_net_minor: number
+          order_id: string
+          processor_fee_minor: number
+          provider: string
+          provider_txn_id: string
+          raw: Json
+          status: string
+          store_id: string
+        }
+        Insert: {
+          attempt_id?: string | null
+          buyer_id: string
+          commission_minor?: number
+          confirmed_at?: string
+          created_at?: string
+          currency?: string
+          environment: string
+          gross_amount_minor: number
+          id?: string
+          kind?: string
+          merchant_net_minor?: number
+          order_id: string
+          processor_fee_minor?: number
+          provider: string
+          provider_txn_id: string
+          raw?: Json
+          status?: string
+          store_id: string
+        }
+        Update: {
+          attempt_id?: string | null
+          buyer_id?: string
+          commission_minor?: number
+          confirmed_at?: string
+          created_at?: string
+          currency?: string
+          environment?: string
+          gross_amount_minor?: number
+          id?: string
+          kind?: string
+          merchant_net_minor?: number
+          order_id?: string
+          processor_fee_minor?: number
+          provider?: string
+          provider_txn_id?: string
+          raw?: Json
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_payment_transactions_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_payment_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_payment_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_payment_transactions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_payout_methods: {
+        Row: {
+          account_name: string | null
+          account_reference: string | null
+          created_at: string
+          details: Json
+          id: string
+          is_active: boolean
+          is_default: boolean
+          label: string
+          method_type: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          account_name?: string | null
+          account_reference?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          label: string
+          method_type: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string | null
+          account_reference?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          label?: string
+          method_type?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_payout_methods_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_payouts: {
         Row: {
           admin_note: string | null
@@ -3188,6 +3443,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      marketplace_reconciliation_items: {
+        Row: {
+          actual_minor: number | null
+          attempt_id: string | null
+          created_at: string
+          currency: string | null
+          expected_minor: number | null
+          id: string
+          kind: string
+          note: string | null
+          order_id: string | null
+          payout_id: string | null
+          provider: string | null
+          provider_ref: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          transaction_id: string | null
+        }
+        Insert: {
+          actual_minor?: number | null
+          attempt_id?: string | null
+          created_at?: string
+          currency?: string | null
+          expected_minor?: number | null
+          id?: string
+          kind: string
+          note?: string | null
+          order_id?: string | null
+          payout_id?: string | null
+          provider?: string | null
+          provider_ref?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          transaction_id?: string | null
+        }
+        Update: {
+          actual_minor?: number | null
+          attempt_id?: string | null
+          created_at?: string
+          currency?: string | null
+          expected_minor?: number | null
+          id?: string
+          kind?: string
+          note?: string | null
+          order_id?: string | null
+          payout_id?: string | null
+          provider?: string | null
+          provider_ref?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          transaction_id?: string | null
+        }
+        Relationships: []
       }
       marketplace_refunds: {
         Row: {
@@ -3408,6 +3720,8 @@ export type Database = {
           name: string
           orders_count: number
           owner_id: string
+          payout_state: string
+          payouts_enabled: boolean
           rating: number
           rejection_reason: string | null
           reviews_count: number
@@ -3435,6 +3749,8 @@ export type Database = {
           name: string
           orders_count?: number
           owner_id: string
+          payout_state?: string
+          payouts_enabled?: boolean
           rating?: number
           rejection_reason?: string | null
           reviews_count?: number
@@ -3462,12 +3778,53 @@ export type Database = {
           name?: string
           orders_count?: number
           owner_id?: string
+          payout_state?: string
+          payouts_enabled?: boolean
           rating?: number
           rejection_reason?: string | null
           reviews_count?: number
           slug?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      marketplace_webhook_events: {
+        Row: {
+          error: string | null
+          event_id: string
+          event_type: string | null
+          id: string
+          payload: Json
+          processed_at: string | null
+          provider: string
+          received_at: string
+          signature_valid: boolean
+          status: string
+        }
+        Insert: {
+          error?: string | null
+          event_id: string
+          event_type?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider: string
+          received_at?: string
+          signature_valid?: boolean
+          status?: string
+        }
+        Update: {
+          error?: string | null
+          event_id?: string
+          event_type?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider?: string
+          received_at?: string
+          signature_valid?: boolean
+          status?: string
         }
         Relationships: []
       }
@@ -6480,6 +6837,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      mp_admin_finance_overview: { Args: never; Returns: Json }
       mp_admin_overview: { Args: never; Returns: Json }
       mp_admin_payout_action: {
         Args: {
@@ -6494,6 +6852,11 @@ export type Database = {
         Args: { _action: string; _product_id: string; _reason?: string }
         Returns: Json
       }
+      mp_admin_reconcile_resolve: {
+        Args: { _item_id: string; _note?: string; _status: string }
+        Returns: Json
+      }
+      mp_admin_reconcile_scan: { Args: never; Returns: Json }
       mp_admin_refund: {
         Args: { _amount: number; _order_id: string; _reason: string }
         Returns: Json
@@ -6512,6 +6875,14 @@ export type Database = {
           _scope: string
           _store_id?: string
         }
+        Returns: Json
+      }
+      mp_admin_set_payment_env: {
+        Args: { _environment: string; _min_payout?: number; _provider: string }
+        Returns: Json
+      }
+      mp_admin_set_payout_state: {
+        Args: { _reason?: string; _state: string; _store_id: string }
         Returns: Json
       }
       mp_admin_set_setting: {
@@ -6541,6 +6912,26 @@ export type Database = {
         Args: { _order_id: string; _reason?: string }
         Returns: Json
       }
+      mp_cancel_payment_attempt: {
+        Args: { _attempt_id: string }
+        Returns: Json
+      }
+      mp_confirm_payment: {
+        Args: {
+          _amount_minor: number
+          _attempt_id: string
+          _currency: string
+          _processor_fee_minor?: number
+          _provider: string
+          _provider_txn_id: string
+          _raw?: Json
+        }
+        Returns: Json
+      }
+      mp_create_payment_attempt: {
+        Args: { _idempotency_key?: string; _order_id: string }
+        Returns: Json
+      }
       mp_dispute_action: {
         Args: { _action: string; _dispute_id: string; _text?: string }
         Returns: Json
@@ -6548,6 +6939,15 @@ export type Database = {
       mp_effective_commission: {
         Args: { _category?: string; _store_id: string }
         Returns: number
+      }
+      mp_fail_payment: {
+        Args: {
+          _attempt_id: string
+          _error_code?: string
+          _error_message?: string
+          _status: string
+        }
+        Returns: Json
       }
       mp_hold_days: { Args: { _store_id: string }; Returns: number }
       mp_is_admin: { Args: never; Returns: boolean }
@@ -6559,11 +6959,13 @@ export type Database = {
         }
         Returns: Json
       }
+      mp_minor_factor: { Args: { _currency: string }; Returns: number }
       mp_open_dispute: {
         Args: { _details?: string; _order_id: string; _reason: string }
         Returns: Json
       }
       mp_owns_store: { Args: { _store_id: string }; Returns: boolean }
+      mp_payment_config: { Args: never; Returns: Json }
       mp_place_order: {
         Args: {
           _address: string
@@ -6576,6 +6978,7 @@ export type Database = {
         }
         Returns: Json
       }
+      mp_quote_checkout: { Args: { _items: Json }; Returns: Json }
       mp_request_payout: {
         Args: {
           _amount: number
@@ -6588,6 +6991,10 @@ export type Database = {
       }
       mp_set_fulfilment: {
         Args: { _order_id: string; _status: string; _tracking?: string }
+        Returns: Json
+      }
+      mp_settle_order_paid: {
+        Args: { _order_id: string; _processor_fee: number; _reference: string }
         Returns: Json
       }
       mp_store_balances: { Args: { _store_id: string }; Returns: Json }
