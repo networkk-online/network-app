@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { formatMoney, ORDER_STATUS_AR } from '@/lib/marketplace';
+import { PAYMENT_STATUS_AR, startPayment } from '@/lib/payments';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Package, Star } from 'lucide-react';
+import { ArrowRight, Package, Star, CreditCard } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+
 
 const Orders = () => {
   const navigate = useNavigate();
@@ -40,6 +42,25 @@ const Orders = () => {
     if (error) toast({ title: 'تعذر الإلغاء', description: error.message, variant: 'destructive' });
     else { toast({ title: 'تم إلغاء الطلب' }); load(); }
   };
+
+  const [paying, setPaying] = useState<string | null>(null);
+  const payNow = async (orderId: string) => {
+    setPaying(orderId);
+    try {
+      const session = await startPayment(orderId);
+      if (session.checkout_url) { window.location.href = session.checkout_url; return; }
+      toast({
+        title: 'تم تسجيل محاولة الدفع',
+        description: 'سيتم تأكيد الطلب تلقائياً فور استلام تأكيد بوابة الدفع.',
+      });
+      load();
+    } catch (e: any) {
+      toast({ title: 'تعذر بدء الدفع', description: e?.message, variant: 'destructive' });
+    } finally {
+      setPaying(null);
+    }
+  };
+
 
   const openDispute = async () => {
     const { error } = await supabase.rpc('mp_open_dispute', { _order_id: dispute.id, _reason: 'buyer_dispute', _details: disputeText });
@@ -103,11 +124,18 @@ const Orders = () => {
                 <div className="flex justify-between"><span>الشحن</span><span>{formatMoney(o.shipping_amount, o.currency)}</span></div>
                 <div className="flex justify-between text-white font-bold"><span>الإجمالي</span><span className="text-primary">{formatMoney(o.total_amount, o.currency)}</span></div>
                 {o.tracking_number && <div className="flex justify-between"><span>رقم التتبع</span><span>{o.tracking_number}</span></div>}
+                <div className="flex justify-between"><span>حالة الدفع</span><span>{PAYMENT_STATUS_AR[o.payment_status] || o.payment_status}</span></div>
               </div>
               <div className="flex gap-2 flex-wrap">
+                {o.payment_method === 'gateway' && o.payment_status !== 'paid' && !['cancelled', 'refunded'].includes(o.status) && (
+                  <Button size="sm" disabled={paying === o.id} className="rounded-xl bg-primary text-black gap-1.5" onClick={() => payNow(o.id)}>
+                    <CreditCard className="w-3.5 h-3.5" />{paying === o.id ? 'جاري التحويل...' : 'إتمام الدفع'}
+                  </Button>
+                )}
                 {['pending', 'payment_pending', 'confirmed'].includes(o.status) && o.payment_status !== 'paid' && (
                   <Button variant="outline" size="sm" className="rounded-xl border-white/15" onClick={() => cancel(o.id)}>إلغاء الطلب</Button>
                 )}
+
                 {['paid', 'shipped', 'delivered', 'completed'].includes(o.status) && o.dispute_status === 'none' && (
                   <Button variant="outline" size="sm" className="rounded-xl border-white/15" onClick={() => setDispute(o)}>فتح نزاع</Button>
                 )}
