@@ -6480,8 +6480,127 @@ export type Database = {
         }
         Returns: undefined
       }
+      mp_admin_overview: { Args: never; Returns: Json }
+      mp_admin_payout_action: {
+        Args: {
+          _action: string
+          _note?: string
+          _payout_id: string
+          _reference?: string
+        }
+        Returns: Json
+      }
+      mp_admin_product_action: {
+        Args: { _action: string; _product_id: string; _reason?: string }
+        Returns: Json
+      }
+      mp_admin_refund: {
+        Args: { _amount: number; _order_id: string; _reason: string }
+        Returns: Json
+      }
+      mp_admin_report_action: {
+        Args: { _note?: string; _report_id: string; _status: string }
+        Returns: Json
+      }
+      mp_admin_set_commission: {
+        Args: {
+          _category?: string
+          _effective_from?: string
+          _effective_to?: string
+          _note?: string
+          _rate: number
+          _scope: string
+          _store_id?: string
+        }
+        Returns: Json
+      }
+      mp_admin_set_setting: {
+        Args: { _key: string; _value: Json }
+        Returns: Json
+      }
+      mp_admin_set_store_commission: {
+        Args: { _rate: number; _reason?: string; _store_id: string }
+        Returns: Json
+      }
+      mp_admin_store_action: {
+        Args: { _action: string; _reason?: string; _store_id: string }
+        Returns: Json
+      }
+      mp_audit: {
+        Args: {
+          _action: string
+          _new: Json
+          _old: Json
+          _reason: string
+          _target_id: string
+          _target_type: string
+        }
+        Returns: undefined
+      }
+      mp_cancel_order: {
+        Args: { _order_id: string; _reason?: string }
+        Returns: Json
+      }
+      mp_dispute_action: {
+        Args: { _action: string; _dispute_id: string; _text?: string }
+        Returns: Json
+      }
+      mp_effective_commission: {
+        Args: { _category?: string; _store_id: string }
+        Returns: number
+      }
+      mp_hold_days: { Args: { _store_id: string }; Returns: number }
       mp_is_admin: { Args: never; Returns: boolean }
+      mp_mark_order_paid: {
+        Args: {
+          _order_id: string
+          _processor_fee?: number
+          _reference?: string
+        }
+        Returns: Json
+      }
+      mp_open_dispute: {
+        Args: { _details?: string; _order_id: string; _reason: string }
+        Returns: Json
+      }
       mp_owns_store: { Args: { _store_id: string }; Returns: boolean }
+      mp_place_order: {
+        Args: {
+          _address: string
+          _buyer_name: string
+          _buyer_phone: string
+          _city?: string
+          _items: Json
+          _note?: string
+          _payment_method?: string
+        }
+        Returns: Json
+      }
+      mp_request_payout: {
+        Args: {
+          _amount: number
+          _destination?: string
+          _method?: string
+          _note?: string
+          _store_id: string
+        }
+        Returns: Json
+      }
+      mp_set_fulfilment: {
+        Args: { _order_id: string; _status: string; _tracking?: string }
+        Returns: Json
+      }
+      mp_store_balances: { Args: { _store_id: string }; Returns: Json }
+      mp_submit_review: {
+        Args: {
+          _body?: string
+          _images?: Json
+          _order_id: string
+          _product_id: string
+          _rating: number
+        }
+        Returns: Json
+      }
       my_entitlements: {
         Args: never
         Returns: {
