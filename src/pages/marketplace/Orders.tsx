@@ -124,11 +124,18 @@ const Orders = () => {
                 <div className="flex justify-between"><span>الشحن</span><span>{formatMoney(o.shipping_amount, o.currency)}</span></div>
                 <div className="flex justify-between text-white font-bold"><span>الإجمالي</span><span className="text-primary">{formatMoney(o.total_amount, o.currency)}</span></div>
                 {o.tracking_number && <div className="flex justify-between"><span>رقم التتبع</span><span>{o.tracking_number}</span></div>}
+                <div className="flex justify-between"><span>حالة الدفع</span><span>{PAYMENT_STATUS_AR[o.payment_status] || o.payment_status}</span></div>
               </div>
               <div className="flex gap-2 flex-wrap">
+                {o.payment_method === 'gateway' && o.payment_status !== 'paid' && !['cancelled', 'refunded'].includes(o.status) && (
+                  <Button size="sm" disabled={paying === o.id} className="rounded-xl bg-primary text-black gap-1.5" onClick={() => payNow(o.id)}>
+                    <CreditCard className="w-3.5 h-3.5" />{paying === o.id ? 'جاري التحويل...' : 'إتمام الدفع'}
+                  </Button>
+                )}
                 {['pending', 'payment_pending', 'confirmed'].includes(o.status) && o.payment_status !== 'paid' && (
                   <Button variant="outline" size="sm" className="rounded-xl border-white/15" onClick={() => cancel(o.id)}>إلغاء الطلب</Button>
                 )}
+
                 {['paid', 'shipped', 'delivered', 'completed'].includes(o.status) && o.dispute_status === 'none' && (
                   <Button variant="outline" size="sm" className="rounded-xl border-white/15" onClick={() => setDispute(o)}>فتح نزاع</Button>
                 )}
