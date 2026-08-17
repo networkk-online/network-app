@@ -102,6 +102,8 @@ const Recharge = lazy(() => import("./pages/Recharge"));
 const NetworkTV = lazy(() => import("./pages/NetworkTV"));
 const VideoPlayer = lazy(() => import("./pages/VideoPlayer"));
 const CreatorStudio = lazy(() => import("./pages/CreatorStudio"));
+const TvWatch = lazy(() => import("./pages/networktv/Watch"));
+const CreatorUpload = lazy(() => import("./pages/creator-studio/Upload"));
 const AdminDeposits = lazy(() => import("./pages/AdminDeposits"));
 const AdminCompanies = lazy(() => import("./pages/AdminCompanies"));
 const Tweets = lazy(() => import("./pages/Tweets"));
@@ -248,7 +250,9 @@ const AppContent = () => {
         <Route path="/add-funds" element={<AddFunds />} />
         <Route path="/about" element={<About />} />
         <Route path="/network-tv" element={<NetworkTV />} />
-        <Route path="/watch/:videoId" element={<VideoPlayer />} />
+        <Route path="/watch/:videoId" element={<TvWatch />} />
+        <Route path="/network-tv/watch/:videoId" element={<TvWatch />} />
+        <Route path="/creator-studio/upload" element={<CreatorUpload />} />
         <Route path="/creator-studio" element={<FeatureGate feature="analytics" title="الإحصائيات والتحليلات" description="التحليلات المتقدمة متاحة ضمن الباقات المدفوعة."><CreatorStudio /></FeatureGate>} />
         <Route path="/tweets" element={<Tweets />} />
         <Route path="/admin-control" element={<AdminControl />} />
