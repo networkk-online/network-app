@@ -1,0 +1,133 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { formatMoney, effectivePrice } from '@/lib/marketplace';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { ArrowRight, CreditCard, Truck, Wallet } from 'lucide-react';
+
+const METHODS = [
+  { id: 'cod', label: 'الدفع عند الاستلام', icon: Truck },
+  { id: 'wallet', label: 'محفظة Networkk', icon: Wallet },
+  { id: 'gateway', label: 'بوابة دفع إلكترونية', icon: CreditCard },
+];
+
+const Checkout = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [note, setNote] = useState('');
+  const [method, setMethod] = useState('cod');
+
+  useEffect(() => {
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) { navigate('/login'); return; }
+      const [{ data: cart }, { data: profile }] = await Promise.all([
+        supabase.from('marketplace_carts')
+          .select('*, product:marketplace_products(*), variant:marketplace_product_variants(id,label,price_delta)')
+          .eq('user_id', u.user.id),
+        supabase.rpc('get_own_profile'),
+      ]);
+      setItems((cart || []).filter((r: any) => r.product));
+      const p: any = Array.isArray(profile) ? profile[0] : profile;
+      if (p) { setName(p.full_name || p.username || ''); setPhone(p.phone_number || ''); }
+      setLoading(false);
+    })();
+  }, [navigate]);
+
+  const subtotal = items.reduce(
+    (s, i) => s + (effectivePrice(i.product) + Number(i.variant?.price_delta || 0)) * i.quantity, 0);
+
+  const placeOrder = async () => {
+    if (!phone.trim() || !address.trim()) {
+      toast({ title: 'العنوان ورقم الهاتف مطلوبان', variant: 'destructive' });
+      return;
+    }
+    setSubmitting(true);
+    const { data, error } = await supabase.rpc('mp_place_order', {
+      _items: items.map((i) => ({ product_id: i.product_id, variant_id: i.variant_id, quantity: i.quantity })),
+      _buyer_name: name,
+      _buyer_phone: phone,
+      _address: address,
+      _city: city,
+      _note: note,
+      _payment_method: method,
+    });
+    setSubmitting(false);
+    if (error) {
+      toast({ title: 'تعذر إنشاء الطلب', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'تم إنشاء طلبك بنجاح', description: 'يمكنك متابعة الحالة من صفحة الطلبات' });
+    void data;
+    navigate('/orders');
+  };
+
+  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+
+  return (
+    <div className="min-h-screen bg-black text-white pb-32" dir="rtl">
+      <header className="sticky top-0 z-30 bg-black/80 backdrop-blur-2xl border-b border-white/[0.06] pt-[env(safe-area-inset-top)]">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="min-h-[44px] min-w-[44px] flex items-center justify-center"><ArrowRight className="w-5 h-5" /></button>
+          <h1 className="text-base font-bold">إتمام الطلب</h1>
+        </div>
+      </header>
+
+      <main className="max-w-3xl mx-auto px-4 py-4 space-y-4">
+        <section className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] space-y-3">
+          <p className="text-sm font-bold">معلومات التوصيل</p>
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم الكامل" className="bg-white/[0.05] border-white/[0.08] h-11 rounded-xl" />
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="رقم الهاتف *" className="bg-white/[0.05] border-white/[0.08] h-11 rounded-xl" />
+          <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="المدينة" className="bg-white/[0.05] border-white/[0.08] h-11 rounded-xl" />
+          <Textarea value={address} onChange={(e) => setAddress(e.target.value)} placeholder="العنوان التفصيلي *" className="bg-white/[0.05] border-white/[0.08] rounded-xl" />
+          <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="ملاحظات (اختياري)" className="bg-white/[0.05] border-white/[0.08] rounded-xl" />
+        </section>
+
+        <section className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] space-y-2">
+          <p className="text-sm font-bold mb-1">طريقة الدفع</p>
+          {METHODS.map((m) => (
+            <button key={m.id} onClick={() => setMethod(m.id)}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl border min-h-[52px] ${method === m.id ? 'border-primary bg-primary/10' : 'border-white/[0.08] bg-white/[0.03]'}`}>
+              <m.icon className="w-4 h-4 text-primary" />
+              <span className="text-sm">{m.label}</span>
+            </button>
+          ))}
+        </section>
+
+        <section className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] space-y-2">
+          <p className="text-sm font-bold mb-1">ملخص الطلب</p>
+          {items.map((i) => (
+            <div key={i.id} className="flex justify-between text-xs text-white/60">
+              <span className="truncate pl-2">{i.product.name} × {i.quantity}</span>
+              <span>{formatMoney((effectivePrice(i.product) + Number(i.variant?.price_delta || 0)) * i.quantity)}</span>
+            </div>
+          ))}
+          <div className="flex justify-between text-sm font-bold pt-2 border-t border-white/[0.06]">
+            <span>المجموع الفرعي</span><span className="text-primary">{formatMoney(subtotal)}</span>
+          </div>
+          <p className="text-[10px] text-white/30">يتم احتساب الشحن والعمولة والإجمالي النهائي على الخادم.</p>
+        </section>
+      </main>
+
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-black/90 backdrop-blur-2xl border-t border-white/[0.08] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="max-w-3xl mx-auto">
+          <Button disabled={submitting || items.length === 0} onClick={placeOrder} className="w-full h-12 rounded-xl bg-primary text-black font-bold">
+            {submitting ? 'جاري إنشاء الطلب...' : 'تأكيد الطلب'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Checkout;
