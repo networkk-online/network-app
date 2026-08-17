@@ -7,10 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 import {
   MP_CATEGORIES, formatMoney, ORDER_STATUS_AR, STORE_STATUS_AR, PRODUCT_STATUS_AR, PAYOUT_STATUS_AR, categoryLabel,
 } from '@/lib/marketplace';
-import { Store, Package, ShoppingBag, Percent, Wallet, Flag, Scale, RefreshCw } from 'lucide-react';
+import { Store, Package, ShoppingBag, Percent, Wallet, Flag, Scale, RefreshCw, Banknote } from 'lucide-react';
+import VaultFinance from './VaultFinance';
 
 const SECTIONS = [
   { id: 'overview', label: 'نظرة عامة', icon: ShoppingBag },
+  { id: 'finance', label: 'المالية', icon: Banknote },
   { id: 'stores', label: 'المتاجر', icon: Store },
   { id: 'products', label: 'المنتجات', icon: Package },
   { id: 'orders', label: 'الطلبات', icon: ShoppingBag },
@@ -19,6 +21,7 @@ const SECTIONS = [
   { id: 'disputes', label: 'النزاعات', icon: Scale },
   { id: 'reports', label: 'البلاغات', icon: Flag },
 ];
+
 
 const VaultMarketplace = () => {
   const { toast } = useToast();
