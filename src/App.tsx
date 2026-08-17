@@ -262,11 +262,11 @@ const AppContent = () => {
         <Route path="/creator-studio/upload" element={<CreatorUpload />} />
         <Route path="/creator-studio" element={<FeatureGate feature="analytics" title="الإحصائيات والتحليلات" description="التحليلات المتقدمة متاحة ضمن الباقات المدفوعة."><CreatorStudio /></FeatureGate>} />
         <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/marketplace/product/:id" element={<MpProductPage />} />
-        <Route path="/marketplace/store/:slug" element={<MpStorePage />} />
-        <Route path="/marketplace/cart" element={<MpCart />} />
-        <Route path="/marketplace/checkout" element={<MpCheckout />} />
-        <Route path="/marketplace/orders" element={<MpOrders />} />
+        <Route path="/product/:id" element={<MpProductPage />} />
+        <Route path="/store/:username" element={<MpStorePage />} />
+        <Route path="/cart" element={<MpCart />} />
+        <Route path="/checkout" element={<MpCheckout />} />
+        <Route path="/orders" element={<MpOrders />} />
         <Route path="/business/store" element={<BusinessStore />} />
         <Route path="/tweets" element={<Tweets />} />
         <Route path="/admin-control" element={<AdminControl />} />
