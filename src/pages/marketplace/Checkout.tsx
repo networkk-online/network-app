@@ -1,18 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { formatMoney, effectivePrice } from '@/lib/marketplace';
+import { fetchCheckoutQuote, fetchPaymentConfig, startPayment, type CheckoutQuote, type PaymentConfig } from '@/lib/payments';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, CreditCard, Truck, Wallet } from 'lucide-react';
-
-const METHODS = [
-  { id: 'cod', label: 'الدفع عند الاستلام', icon: Truck },
-  { id: 'wallet', label: 'محفظة Networkk', icon: Wallet },
-  { id: 'gateway', label: 'بوابة دفع إلكترونية', icon: CreditCard },
-];
+import { ArrowRight, CreditCard, Truck, ShieldCheck } from 'lucide-react';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -26,26 +21,57 @@ const Checkout = () => {
   const [city, setCity] = useState('');
   const [note, setNote] = useState('');
   const [method, setMethod] = useState('cod');
+  const [quote, setQuote] = useState<CheckoutQuote | null>(null);
+  const [config, setConfig] = useState<PaymentConfig | null>(null);
 
   useEffect(() => {
     (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) { navigate('/login'); return; }
-      const [{ data: cart }, { data: profile }] = await Promise.all([
+      const [{ data: cart }, { data: profile }, cfg] = await Promise.all([
         supabase.from('marketplace_carts')
           .select('*, product:marketplace_products(*), variant:marketplace_product_variants(id,label,price_delta)')
           .eq('user_id', u.user.id),
         supabase.rpc('get_own_profile'),
+        fetchPaymentConfig().catch(() => null),
       ]);
       setItems((cart || []).filter((r: any) => r.product));
       const p: any = Array.isArray(profile) ? profile[0] : profile;
       if (p) { setName(p.full_name || p.username || ''); setPhone(p.phone_number || ''); }
+      setConfig(cfg);
       setLoading(false);
     })();
   }, [navigate]);
 
-  const subtotal = items.reduce(
+  const cartPayload = useMemo(
+    () => items.map((i) => ({ product_id: i.product_id, variant_id: i.variant_id, quantity: i.quantity })),
+    [items],
+  );
+
+  const loadQuote = useCallback(async () => {
+    if (cartPayload.length === 0) { setQuote(null); return; }
+    try {
+      setQuote(await fetchCheckoutQuote(cartPayload));
+    } catch {
+      setQuote(null);
+    }
+  }, [cartPayload]);
+
+  useEffect(() => { void loadQuote(); }, [loadQuote]);
+
+  const localSubtotal = items.reduce(
     (s, i) => s + (effectivePrice(i.product) + Number(i.variant?.price_delta || 0)) * i.quantity, 0);
+
+  const gatewayAvailable = Boolean(config?.provider_ready);
+  const methods = useMemo(() => ([
+    { id: 'cod', label: 'الدفع عند الاستلام', icon: Truck, enabled: true },
+    {
+      id: 'gateway',
+      label: gatewayAvailable ? 'بطاقة / بوابة دفع إلكترونية' : 'بوابة الدفع (غير مفعّلة حالياً)',
+      icon: CreditCard,
+      enabled: gatewayAvailable,
+    },
+  ]), [gatewayAvailable]);
 
   const placeOrder = async () => {
     if (!phone.trim() || !address.trim()) {
@@ -54,7 +80,7 @@ const Checkout = () => {
     }
     setSubmitting(true);
     const { data, error } = await supabase.rpc('mp_place_order', {
-      _items: items.map((i) => ({ product_id: i.product_id, variant_id: i.variant_id, quantity: i.quantity })),
+      _items: cartPayload as any,
       _buyer_name: name,
       _buyer_phone: phone,
       _address: address,
@@ -62,15 +88,43 @@ const Checkout = () => {
       _note: note,
       _payment_method: method,
     });
-    setSubmitting(false);
     if (error) {
+      setSubmitting(false);
       toast({ title: 'تعذر إنشاء الطلب', description: error.message, variant: 'destructive' });
       return;
     }
+
+    const orders = ((data as any)?.orders || []) as { order_id: string }[];
+
+    if (method === 'gateway' && orders.length > 0) {
+      try {
+        const session = await startPayment(orders[0].order_id);
+        setSubmitting(false);
+        if (session.checkout_url) {
+          window.location.href = session.checkout_url;
+          return;
+        }
+        toast({
+          title: 'تم إنشاء الطلب',
+          description: 'سيتم تأكيد الدفع تلقائياً بعد استلام تأكيد بوابة الدفع.',
+        });
+      } catch (e: any) {
+        setSubmitting(false);
+        toast({
+          title: 'تم إنشاء الطلب، لكن تعذر بدء الدفع',
+          description: e?.message || 'يمكنك إعادة محاولة الدفع من صفحة الطلبات.',
+          variant: 'destructive',
+        });
+      }
+      navigate('/orders');
+      return;
+    }
+
+    setSubmitting(false);
     toast({ title: 'تم إنشاء طلبك بنجاح', description: 'يمكنك متابعة الحالة من صفحة الطلبات' });
-    void data;
     navigate('/orders');
   };
+
 
   if (loading) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
 
