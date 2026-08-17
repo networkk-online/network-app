@@ -55,9 +55,9 @@ const VideoCard = ({ video, onHide, compact }: Props) => {
     const { error } = await supabase.from('reports').insert({
       reporter_id: data.user.id,
       reported_user_id: video.user_id,
-      content_type: 'video',
-      content_id: video.id,
-      reason: 'inappropriate_content',
+      report_type: 'video',
+      report_reason: 'inappropriate_content',
+      additional_details: `video:${video.id}`,
     } as any);
     if (error) toast.error('تعذر إرسال البلاغ');
     else toast.success('تم إرسال البلاغ');
