@@ -119,9 +119,10 @@ const Watch = () => {
   /* ── persist position + record real view (server-side, spam-safe) ── */
   useEffect(() => {
     if (!videoId) return;
+    let stopped = false;
     const int = setInterval(async () => {
       const el = videoRef.current;
-      if (!el || el.paused) return;
+      if (!el || el.paused || stopped) return;
       watched.current += 5;
 
       if (!viewSent.current && watched.current >= 15) {
@@ -133,14 +134,15 @@ const Watch = () => {
           _source: 'network_tv',
         });
       }
-      if (userId) {
+      if (userId && !stopped) {
         await (supabase as any)
           .from('video_watch_history')
           .upsert({ user_id: userId, video_id: videoId, position_seconds: Math.round(el.currentTime), updated_at: new Date().toISOString() }, { onConflict: 'user_id,video_id' });
       }
     }, 5000);
-    return () => clearInterval(int);
+    return () => { stopped = true; clearInterval(int); };
   }, [videoId, userId]);
+
 
   useEffect(() => {
     viewSent.current = false;
