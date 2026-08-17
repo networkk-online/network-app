@@ -49,6 +49,8 @@ const Watch = () => {
   const [following, setFollowing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [sendingComment, setSendingComment] = useState(false);
+  const likeBusy = useRef(false);
   const [descOpen, setDescOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -117,9 +119,10 @@ const Watch = () => {
   /* ── persist position + record real view (server-side, spam-safe) ── */
   useEffect(() => {
     if (!videoId) return;
+    let stopped = false;
     const int = setInterval(async () => {
       const el = videoRef.current;
-      if (!el || el.paused) return;
+      if (!el || el.paused || stopped) return;
       watched.current += 5;
 
       if (!viewSent.current && watched.current >= 15) {
@@ -131,14 +134,15 @@ const Watch = () => {
           _source: 'network_tv',
         });
       }
-      if (userId) {
+      if (userId && !stopped) {
         await (supabase as any)
           .from('video_watch_history')
           .upsert({ user_id: userId, video_id: videoId, position_seconds: Math.round(el.currentTime), updated_at: new Date().toISOString() }, { onConflict: 'user_id,video_id' });
       }
     }, 5000);
-    return () => clearInterval(int);
+    return () => { stopped = true; clearInterval(int); };
   }, [videoId, userId]);
+
 
   useEffect(() => {
     viewSent.current = false;
@@ -188,13 +192,23 @@ const Watch = () => {
 
   const toggleLike = async () => {
     if (!userId || !video) return toast.error('يجب تسجيل الدخول');
+    if (likeBusy.current) return;
+    likeBusy.current = true;
     const next = !liked;
     setLiked(next);
     setDisliked(false);
     setLikes((c) => Math.max(0, c + (next ? 1 : -1)));
-    if (next) await supabase.from('video_likes').insert({ video_id: video.id, user_id: userId });
-    else await supabase.from('video_likes').delete().eq('video_id', video.id).eq('user_id', userId);
+    const { error: err } = next
+      ? await supabase.from('video_likes').insert({ video_id: video.id, user_id: userId })
+      : await supabase.from('video_likes').delete().eq('video_id', video.id).eq('user_id', userId);
+    if (err && !String(err.message || '').includes('duplicate')) {
+      setLiked(!next);
+      setLikes((c) => Math.max(0, c + (next ? -1 : 1)));
+      toast.error('تعذر تنفيذ العملية');
+    }
+    likeBusy.current = false;
   };
+
 
   const toggleFollow = async () => {
     if (!userId || !video) return toast.error('يجب تسجيل الدخول');
@@ -238,10 +252,14 @@ const Watch = () => {
 
   const submitComment = async () => {
     const text = newComment.trim();
-    if (!text || !userId || !videoId) return;
+    if (!text || !videoId) return;
+    if (!userId) return toast.error('يجب تسجيل الدخول');
+    if (sendingComment) return;
+    setSendingComment(true);
     setNewComment('');
     const { error: err } = await (supabase as any).from('video_comments').insert({ video_id: videoId, user_id: userId, content: text });
-    if (err) toast.error('تعذر إضافة التعليق');
+    setSendingComment(false);
+    if (err) { setNewComment(text); toast.error('تعذر إضافة التعليق'); }
     else reloadComments();
   };
 

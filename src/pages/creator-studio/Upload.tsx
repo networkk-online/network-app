@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, Film, ImageIcon, Loader2, UploadCloud, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -14,6 +14,14 @@ const Upload = () => {
   const userId = useCurrentUserId();
   const fileInput = useRef<HTMLInputElement>(null);
   const thumbInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (userId === null) {
+      toast.error('يجب تسجيل الدخول');
+      navigate('/login', { replace: true });
+    }
+  }, [userId, navigate]);
+
 
   const [step, setStep] = useState(1);
   const [file, setFile] = useState<File | null>(null);

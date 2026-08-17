@@ -1,0 +1,1 @@
+GRANT SELECT (account_type, specialty, is_live, follower_count_override) ON public.profiles TO authenticated;
