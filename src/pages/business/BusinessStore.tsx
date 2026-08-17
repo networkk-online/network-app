@@ -304,12 +304,21 @@ const BusinessStore = () => {
 
         {store && tab === 'payouts' && (
           <section className="space-y-3">
+            <div className={`p-3 rounded-2xl border text-xs ${store.payouts_enabled ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-amber-500/10 border-amber-500/30 text-amber-300'}`}>
+              {PAYOUT_STATE_AR[store.payout_state] || 'بانتظار توثيق النشاط التجاري'}
+              {!store.payouts_enabled && ' — يجب توثيق النشاط التجاري (KYC) من الإدارة قبل تفعيل السحوبات.'}
+            </div>
             <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] space-y-3">
               <p className="text-sm font-bold">طلب سحب</p>
               <p className="text-xs text-white/50">الرصيد المتاح: {formatMoney(balances?.available || 0)}</p>
+              <p className="text-[11px] text-white/35">
+                يُصرف الرصيد بعد انتهاء فترة التسوية المحددة من الإدارة، والمبالغ بالدينار العراقي ولا علاقة لها برصيد R Coin.
+              </p>
               <Input value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} inputMode="numeric" placeholder="المبلغ" className="bg-white/[0.05] border-white/[0.08] h-11 rounded-xl" />
               <Input value={payoutDest} onChange={(e) => setPayoutDest(e.target.value)} placeholder="جهة الاستلام (زين كاش / حساب بنكي)" className="bg-white/[0.05] border-white/[0.08] h-11 rounded-xl" />
-              <Button onClick={requestPayout} className="w-full h-11 rounded-xl bg-primary text-black font-bold">إرسال الطلب</Button>
+              <Button disabled={!store.payouts_enabled} onClick={requestPayout} className="w-full h-11 rounded-xl bg-primary text-black font-bold disabled:opacity-40">
+                إرسال الطلب
+              </Button>
             </div>
             {payouts.map((p) => (
               <div key={p.id} className="p-3 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex justify-between text-xs">
@@ -319,6 +328,7 @@ const BusinessStore = () => {
             ))}
           </section>
         )}
+
       </main>
 
       <Dialog open={productDialog} onOpenChange={setProductDialog}>
