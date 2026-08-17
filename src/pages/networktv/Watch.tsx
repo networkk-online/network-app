@@ -190,13 +190,23 @@ const Watch = () => {
 
   const toggleLike = async () => {
     if (!userId || !video) return toast.error('يجب تسجيل الدخول');
+    if (likeBusy.current) return;
+    likeBusy.current = true;
     const next = !liked;
     setLiked(next);
     setDisliked(false);
     setLikes((c) => Math.max(0, c + (next ? 1 : -1)));
-    if (next) await supabase.from('video_likes').insert({ video_id: video.id, user_id: userId });
-    else await supabase.from('video_likes').delete().eq('video_id', video.id).eq('user_id', userId);
+    const { error: err } = next
+      ? await supabase.from('video_likes').insert({ video_id: video.id, user_id: userId })
+      : await supabase.from('video_likes').delete().eq('video_id', video.id).eq('user_id', userId);
+    if (err && !String(err.message || '').includes('duplicate')) {
+      setLiked(!next);
+      setLikes((c) => Math.max(0, c + (next ? -1 : 1)));
+      toast.error('تعذر تنفيذ العملية');
+    }
+    likeBusy.current = false;
   };
+
 
   const toggleFollow = async () => {
     if (!userId || !video) return toast.error('يجب تسجيل الدخول');
