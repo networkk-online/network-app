@@ -5,6 +5,8 @@ import {
   MP_CATEGORIES, formatMoney, uploadMarketplaceMedia, STORE_STATUS_AR, PRODUCT_STATUS_AR,
   PAYOUT_STATUS_AR, ORDER_STATUS_AR, effectivePrice,
 } from '@/lib/marketplace';
+import { PAYOUT_STATE_AR } from '@/lib/payments';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
