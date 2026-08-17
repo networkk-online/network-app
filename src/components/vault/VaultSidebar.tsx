@@ -19,6 +19,7 @@ const menuGroups = [
   {
     title: 'المالية',
     items: [
+      { id: 'marketplace', label: 'السوق (Marketplace)', icon: ShoppingBag },
       { id: 'payment-gateways', label: 'بوابات الدفع', icon: CreditCard },
       { id: 'subscriptions', label: 'الاشتراكات والباقات', icon: Crown },
       { id: 'gems-pricing', label: 'تسعير الجواهر', icon: Gift },
