@@ -49,6 +49,8 @@ const Watch = () => {
   const [following, setFollowing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [sendingComment, setSendingComment] = useState(false);
+  const likeBusy = useRef(false);
   const [descOpen, setDescOpen] = useState(false);
   const [search, setSearch] = useState('');
 
