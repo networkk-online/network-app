@@ -261,6 +261,13 @@ const AppContent = () => {
         <Route path="/network-tv/watch/:videoId" element={<TvWatch />} />
         <Route path="/creator-studio/upload" element={<CreatorUpload />} />
         <Route path="/creator-studio" element={<FeatureGate feature="analytics" title="الإحصائيات والتحليلات" description="التحليلات المتقدمة متاحة ضمن الباقات المدفوعة."><CreatorStudio /></FeatureGate>} />
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/marketplace/product/:id" element={<MpProductPage />} />
+        <Route path="/marketplace/store/:slug" element={<MpStorePage />} />
+        <Route path="/marketplace/cart" element={<MpCart />} />
+        <Route path="/marketplace/checkout" element={<MpCheckout />} />
+        <Route path="/marketplace/orders" element={<MpOrders />} />
+        <Route path="/business/store" element={<BusinessStore />} />
         <Route path="/tweets" element={<Tweets />} />
         <Route path="/admin-control" element={<AdminControl />} />
         <Route path="/admin-networkk-online" element={<NotFound />} />
