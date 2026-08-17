@@ -178,6 +178,8 @@ const OwnerVault = () => {
         return <VaultGemsPricing />;
       case 'subscriptions':
         return <VaultSubscriptions />;
+      case 'marketplace':
+        return <VaultMarketplace />;
 
       case 'pages-content':
         return <VaultPagesContent />;
