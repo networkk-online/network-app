@@ -24,6 +24,9 @@ const CreateStory = () => {
     | undefined;
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const sharedTransformRef = useRef<StoryTransform>(DEFAULT_STORY_TRANSFORM);
+
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [previews, setPreviews] = useState<string[]>([]);
