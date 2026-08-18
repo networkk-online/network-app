@@ -424,7 +424,7 @@ const CreateStory = () => {
             <p className="text-gray-400 mt-4 text-sm">اضغط للصورة • اضغط مع الاستمرار للفيديو</p>
           </motion.div>
         ) : (
-          <div className="relative w-full h-full flex items-center justify-center">
+          <div ref={canvasRef} className="relative w-full h-full flex items-center justify-center">
             {/* Navigation Arrows */}
             {currentFileIndex > 0 && (
               <button
