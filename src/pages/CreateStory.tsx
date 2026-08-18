@@ -60,18 +60,28 @@ const CreateStory = () => {
   const currentPreview = previews[currentFileIndex];
   const currentMediaType = mediaTypes[currentFileIndex];
 
-  // Preload embedded post thumbnail as the story background
+  // Generate a gradient backdrop so the shared post card can float over it (Instagram-style)
   useEffect(() => {
-    if (!embeddedPost?.thumbnailUrl || selectedFiles.length > 0) return;
+    if (!embeddedPost || selectedFiles.length > 0) return;
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(embeddedPost.thumbnailUrl!);
-        const blob = await res.blob();
-        const file = new File([blob], `shared-post-${embeddedPost.id}.jpg`, {
-          type: blob.type || 'image/jpeg',
-        });
-        if (cancelled) return;
+        const canvas = document.createElement('canvas');
+        canvas.width = 1080;
+        canvas.height = 1920;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        grad.addColorStop(0, '#04150c');
+        grad.addColorStop(0.5, '#000000');
+        grad.addColorStop(1, '#062b16');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const blob: Blob | null = await new Promise((resolve) =>
+          canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.9),
+        );
+        if (!blob || cancelled) return;
+        const file = new File([blob], `shared-post-${embeddedPost.id}.jpg`, { type: 'image/jpeg' });
         const preview = URL.createObjectURL(file);
         setSelectedFiles([file]);
         setPreviews([preview]);
@@ -82,7 +92,7 @@ const CreateStory = () => {
           description: `منشور @${embeddedPost.creatorName}`,
         });
       } catch (err) {
-        console.error('Failed to load shared post:', err);
+        console.error('Failed to prepare shared post story:', err);
       }
     })();
     return () => {
@@ -90,6 +100,7 @@ const CreateStory = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [embeddedPost?.id]);
+
 
 
   // Handle camera capture
