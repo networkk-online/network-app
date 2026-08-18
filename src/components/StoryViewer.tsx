@@ -41,6 +41,9 @@ interface Story {
   music_title?: string | null;
   music_artist?: string | null;
   music_url?: string | null;
+  shared_post_id?: string | null;
+  shared_post_transform?: any;
+
   profiles?: {
     username: string;
     avatar_url: string;
