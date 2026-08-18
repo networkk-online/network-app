@@ -209,7 +209,10 @@ const CreateStory = () => {
             music_title: selectedMusic?.title || null,
             music_artist: selectedMusic?.artist || null,
             music_url: selectedMusic?.url || null,
+            shared_post_id: embeddedPost?.id ?? null,
+            shared_post_transform: embeddedPost ? (sharedTransformRef.current as any) : null,
           });
+
 
         if (insertError) {
           console.error('Error inserting story:', insertError);
