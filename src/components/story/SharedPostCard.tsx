@@ -307,15 +307,17 @@ export const SharedPostOverlay = ({
         e.stopPropagation();
         onOpen();
       }}
-      className="absolute left-0 top-0 z-20 text-left"
+      className="absolute z-20 text-left"
       style={{
         width: `${BASE_WIDTH_RATIO * 100}%`,
         maxWidth: 380,
-        transform: `translate3d(${t.x * 100}vw, 0, 0)`,
-        // placement handled by wrapper below
+        left: `${t.x * 100}%`,
+        top: `${t.y * 100}%`,
+        transform: `translate(-50%, -50%) rotate(${t.rotation}deg) scale(${t.scale})`,
       }}
     >
       <SharedPostCardVisual post={post} />
     </button>
   );
 };
+
