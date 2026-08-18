@@ -633,7 +633,20 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
             className="max-h-full max-w-full object-contain"
           />
         )}
+
+        {/* Shared post card */}
+        {sharedPost && (
+          <SharedPostOverlay
+            post={sharedPost}
+            transform={parseStoryTransform(currentStory.shared_post_transform)}
+            onOpen={() => {
+              onClose();
+              navigate(`/post/${sharedPost.id}`);
+            }}
+          />
+        )}
       </div>
+
 
       {/* Music sticker */}
       {currentStory.music_title && (
