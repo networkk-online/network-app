@@ -13,6 +13,8 @@ import { Slider } from '@/components/ui/slider';
 import { StoryCameraCapture } from '@/components/StoryCameraCapture';
 import { MusicPicker } from '@/components/MusicPicker';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SharedPostSticker, DEFAULT_STORY_TRANSFORM, type StoryTransform } from '@/components/story/SharedPostCard';
+
 
 const CreateStory = () => {
   const navigate = useNavigate();
