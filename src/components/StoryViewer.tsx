@@ -17,6 +17,12 @@ import { useFollow } from '@/hooks/useFollow';
 import { ScrollArea } from './ui/scroll-area';
 import { AddToHighlightDialog } from './AddToHighlightDialog';
 import { VerifiedBadge } from './VerifiedBadge';
+import {
+  SharedPostOverlay,
+  parseStoryTransform,
+  type SharedPostPreview,
+} from './story/SharedPostCard';
+
 
 interface Story {
   id: string;
