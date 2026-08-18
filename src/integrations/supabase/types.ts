@@ -5198,6 +5198,8 @@ export type Database = {
           poll_question: string | null
           poll_votes: Json | null
           question_text: string | null
+          shared_post_id: string | null
+          shared_post_transform: Json | null
           sticker_data: Json | null
           story_type: string | null
           user_id: string
@@ -5221,6 +5223,8 @@ export type Database = {
           poll_question?: string | null
           poll_votes?: Json | null
           question_text?: string | null
+          shared_post_id?: string | null
+          shared_post_transform?: Json | null
           sticker_data?: Json | null
           story_type?: string | null
           user_id: string
@@ -5244,6 +5248,8 @@ export type Database = {
           poll_question?: string | null
           poll_votes?: Json | null
           question_text?: string | null
+          shared_post_id?: string | null
+          shared_post_transform?: Json | null
           sticker_data?: Json | null
           story_type?: string | null
           user_id?: string

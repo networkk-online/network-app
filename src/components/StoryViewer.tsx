@@ -17,6 +17,12 @@ import { useFollow } from '@/hooks/useFollow';
 import { ScrollArea } from './ui/scroll-area';
 import { AddToHighlightDialog } from './AddToHighlightDialog';
 import { VerifiedBadge } from './VerifiedBadge';
+import {
+  SharedPostOverlay,
+  parseStoryTransform,
+  type SharedPostPreview,
+} from './story/SharedPostCard';
+
 
 interface Story {
   id: string;
@@ -35,6 +41,9 @@ interface Story {
   music_title?: string | null;
   music_artist?: string | null;
   music_url?: string | null;
+  shared_post_id?: string | null;
+  shared_post_transform?: any;
+
   profiles?: {
     username: string;
     avatar_url: string;
@@ -74,6 +83,46 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
   const currentStory = stories[currentIndex];
   const { recordView } = useStoryViews(currentStory?.id || '');
   const { isFollowing, toggleFollow } = useFollow(currentStory?.user_id || '');
+  const [sharedPost, setSharedPost] = useState<SharedPostPreview | null>(null);
+
+  // Load the shared post referenced by this story (never duplicated, always by id)
+  useEffect(() => {
+    const postId = currentStory?.shared_post_id;
+    if (!postId) {
+      setSharedPost(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data: post } = await supabase
+        .from('posts')
+        .select('id, content, media_url, user_id')
+        .eq('id', postId)
+        .maybeSingle();
+      if (cancelled || !post) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username, avatar_url, is_verified')
+        .eq('id', post.user_id)
+        .maybeSingle();
+      if (cancelled) return;
+      const media = post.media_url || '';
+      setSharedPost({
+        id: post.id,
+        thumbnailUrl: media || null,
+        creatorName: profile?.username || 'networkk',
+        creatorAvatar: profile?.avatar_url || null,
+        caption: post.content || null,
+        isVideo: /\.(mp4|webm|mov|m3u8)(\?|$)/i.test(media),
+        isVerified: !!profile?.is_verified,
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentStory?.shared_post_id]);
+
+
 
   // Dialogs should NOT pause story progress — only menus and typing should
   const shouldPause = isPaused || isTypingReply || showMenu || showOwnMenu;
@@ -633,7 +682,20 @@ const StoryViewer = ({ stories, currentIndex, onClose, onNext, onPrev, onStoryVi
             className="max-h-full max-w-full object-contain"
           />
         )}
+
+        {/* Shared post card */}
+        {sharedPost && (
+          <SharedPostOverlay
+            post={sharedPost}
+            transform={parseStoryTransform(currentStory.shared_post_transform)}
+            onOpen={() => {
+              onClose();
+              navigate(`/post/${sharedPost.id}`);
+            }}
+          />
+        )}
       </div>
+
 
       {/* Music sticker */}
       {currentStory.music_title && (

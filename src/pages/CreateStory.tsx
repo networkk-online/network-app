@@ -13,6 +13,8 @@ import { Slider } from '@/components/ui/slider';
 import { StoryCameraCapture } from '@/components/StoryCameraCapture';
 import { MusicPicker } from '@/components/MusicPicker';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SharedPostSticker, DEFAULT_STORY_TRANSFORM, type StoryTransform } from '@/components/story/SharedPostCard';
+
 
 const CreateStory = () => {
   const navigate = useNavigate();
@@ -22,6 +24,9 @@ const CreateStory = () => {
     | undefined;
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const sharedTransformRef = useRef<StoryTransform>(DEFAULT_STORY_TRANSFORM);
+
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -55,18 +60,28 @@ const CreateStory = () => {
   const currentPreview = previews[currentFileIndex];
   const currentMediaType = mediaTypes[currentFileIndex];
 
-  // Preload embedded post thumbnail as the story background
+  // Generate a gradient backdrop so the shared post card can float over it (Instagram-style)
   useEffect(() => {
-    if (!embeddedPost?.thumbnailUrl || selectedFiles.length > 0) return;
+    if (!embeddedPost || selectedFiles.length > 0) return;
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(embeddedPost.thumbnailUrl!);
-        const blob = await res.blob();
-        const file = new File([blob], `shared-post-${embeddedPost.id}.jpg`, {
-          type: blob.type || 'image/jpeg',
-        });
-        if (cancelled) return;
+        const canvas = document.createElement('canvas');
+        canvas.width = 1080;
+        canvas.height = 1920;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        grad.addColorStop(0, '#04150c');
+        grad.addColorStop(0.5, '#000000');
+        grad.addColorStop(1, '#062b16');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const blob: Blob | null = await new Promise((resolve) =>
+          canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.9),
+        );
+        if (!blob || cancelled) return;
+        const file = new File([blob], `shared-post-${embeddedPost.id}.jpg`, { type: 'image/jpeg' });
         const preview = URL.createObjectURL(file);
         setSelectedFiles([file]);
         setPreviews([preview]);
@@ -77,7 +92,7 @@ const CreateStory = () => {
           description: `منشور @${embeddedPost.creatorName}`,
         });
       } catch (err) {
-        console.error('Failed to load shared post:', err);
+        console.error('Failed to prepare shared post story:', err);
       }
     })();
     return () => {
@@ -85,6 +100,7 @@ const CreateStory = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [embeddedPost?.id]);
+
 
 
   // Handle camera capture
@@ -204,7 +220,10 @@ const CreateStory = () => {
             music_title: selectedMusic?.title || null,
             music_artist: selectedMusic?.artist || null,
             music_url: selectedMusic?.url || null,
+            shared_post_id: embeddedPost?.id ?? null,
+            shared_post_transform: embeddedPost ? (sharedTransformRef.current as any) : null,
           });
+
 
         if (insertError) {
           console.error('Error inserting story:', insertError);
@@ -424,7 +443,7 @@ const CreateStory = () => {
             <p className="text-gray-400 mt-4 text-sm">اضغط للصورة • اضغط مع الاستمرار للفيديو</p>
           </motion.div>
         ) : (
-          <div className="relative w-full h-full flex items-center justify-center">
+          <div ref={canvasRef} className="relative w-full h-full flex items-center justify-center">
             {/* Navigation Arrows */}
             {currentFileIndex > 0 && (
               <button
@@ -464,24 +483,24 @@ const CreateStory = () => {
               />
             )}
 
-            {/* Embedded Post Card */}
+            {/* Embedded Post Card — draggable / pinchable / rotatable */}
             {embeddedPost && (
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-[80%] max-w-sm bg-black/60 backdrop-blur-xl rounded-2xl border border-white/20 p-3 shadow-2xl pointer-events-none">
-                <div className="flex items-center gap-2 mb-2">
-                  {embeddedPost.creatorAvatar && (
-                    <img
-                      src={embeddedPost.creatorAvatar}
-                      alt=""
-                      className="w-7 h-7 rounded-full border border-white/20"
-                    />
-                  )}
-                  <span className="text-white text-sm font-medium">@{embeddedPost.creatorName}</span>
-                </div>
-                {embeddedPost.caption && (
-                  <p className="text-white/80 text-xs line-clamp-2">{embeddedPost.caption}</p>
-                )}
-              </div>
+              <SharedPostSticker
+                post={{
+                  id: embeddedPost.id,
+                  thumbnailUrl: embeddedPost.thumbnailUrl,
+                  creatorName: embeddedPost.creatorName,
+                  creatorAvatar: embeddedPost.creatorAvatar,
+                  caption: embeddedPost.caption,
+                }}
+                containerRef={canvasRef}
+                initial={sharedTransformRef.current}
+                onCommit={(t) => {
+                  sharedTransformRef.current = t;
+                }}
+              />
             )}
+
 
             {/* Stickers Overlay */}
             {stickers.map((sticker) => (
