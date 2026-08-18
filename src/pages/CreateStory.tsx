@@ -464,24 +464,24 @@ const CreateStory = () => {
               />
             )}
 
-            {/* Embedded Post Card */}
+            {/* Embedded Post Card — draggable / pinchable / rotatable */}
             {embeddedPost && (
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-[80%] max-w-sm bg-black/60 backdrop-blur-xl rounded-2xl border border-white/20 p-3 shadow-2xl pointer-events-none">
-                <div className="flex items-center gap-2 mb-2">
-                  {embeddedPost.creatorAvatar && (
-                    <img
-                      src={embeddedPost.creatorAvatar}
-                      alt=""
-                      className="w-7 h-7 rounded-full border border-white/20"
-                    />
-                  )}
-                  <span className="text-white text-sm font-medium">@{embeddedPost.creatorName}</span>
-                </div>
-                {embeddedPost.caption && (
-                  <p className="text-white/80 text-xs line-clamp-2">{embeddedPost.caption}</p>
-                )}
-              </div>
+              <SharedPostSticker
+                post={{
+                  id: embeddedPost.id,
+                  thumbnailUrl: embeddedPost.thumbnailUrl,
+                  creatorName: embeddedPost.creatorName,
+                  creatorAvatar: embeddedPost.creatorAvatar,
+                  caption: embeddedPost.caption,
+                }}
+                containerRef={canvasRef}
+                initial={sharedTransformRef.current}
+                onCommit={(t) => {
+                  sharedTransformRef.current = t;
+                }}
+              />
             )}
+
 
             {/* Stickers Overlay */}
             {stickers.map((sticker) => (
