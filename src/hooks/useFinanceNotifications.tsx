@@ -8,7 +8,7 @@ const useFinanceNotifications = () => {
     let userId: string | null = null;
 
     const setup = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();\n      const user = session?.user;
       if (!user) return;
       userId = user.id;
 
