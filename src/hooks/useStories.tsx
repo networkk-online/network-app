@@ -65,7 +65,7 @@ export const useStories = (currentUserId?: string) => {
       // Get all non-expired stories
       const { data: storiesData, error: storiesError } = await supabase
         .from('stories')
-        .select('*')
+        .select('id, user_id, media_url, media_type, created_at, expires_at')
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false })
         .limit(100);
