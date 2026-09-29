@@ -5,6 +5,18 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// Networkk data-source invariant: Android app and website must use the same
+// Supabase project. This prevents a deployment with a different VITE_SUPABASE_URL
+// from silently creating a second, separate website database.
+const CANONICAL_SUPABASE_PROJECT_ID = 'ykjnpcrseiyltsazbnci';
+const canonicalHost = `${CANONICAL_SUPABASE_PROJECT_ID}.supabase.co`;
+
+if (SUPABASE_URL && !SUPABASE_URL.includes(canonicalHost)) {
+  throw new Error(
+    `[Networkk] Invalid data source. This build must use the canonical Supabase project: ${CANONICAL_SUPABASE_PROJECT_ID}`
+  );
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
