@@ -52,7 +52,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const userIdRef = useRef<string | null>(null);
 
   const load = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();\n    const user = session?.user;
     userIdRef.current = user?.id ?? null;
     if (!user) {
       setState(FREE_STATE);
