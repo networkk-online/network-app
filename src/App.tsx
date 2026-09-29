@@ -250,7 +250,7 @@ const AppContent = () => {
         <Route path="/system-panel/wheel" element={<StealthWheel />} />
         <Route path="/rewards-wheel" element={<RewardsWheel />} />
         <Route path="/redeem" element={<RedeemGiftCard />} />
-        <Route path="/admin/gift-codes" element={<NotFound />} />
+        <Route path="/admin/gift-codes" element={<AdminGiftCodes />} />
         <Route path="/store" element={<CoinStore />} />
         <Route path="/transactions" element={<TransactionHistory />} />
         <Route path="/recharge" element={<Recharge />} />
