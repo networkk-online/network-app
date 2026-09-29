@@ -90,7 +90,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     load();
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       setLoading(true);
-      load();
+      // Keep auth callbacks synchronous; defer the data request.
+      setTimeout(() => { void load(); }, 0);
     });
     return () => subscription.unsubscribe();
   }, [load]);
