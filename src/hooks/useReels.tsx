@@ -39,7 +39,7 @@ export const useReels = (currentUserId?: string, filterForFeed?: boolean) => {
             full_name
           )
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })\n        .limit(20);
 
       // Filter for feed if requested
       if (filterForFeed) {
@@ -56,7 +56,9 @@ export const useReels = (currentUserId?: string, filterForFeed?: boolean) => {
         const { data: likes } = await supabase
           .from('reel_likes')
           .select('reel_id')
-          .eq('user_id', currentUserId);
+          .eq('user_id', currentUserId)
+          .in('reel_id', (data || []).map(reel => reel.id))
+          .limit(100);
 
         if (likes) {
           setLikedReels(likes.map(like => like.reel_id));
