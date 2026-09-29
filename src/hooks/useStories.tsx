@@ -102,9 +102,9 @@ export const useStories = (currentUserId?: string) => {
 
       // Group stories by user
       const grouped: GroupedStories = {};
-      
+      const profileById = new Map((profilesData || []).map(profile => [profile.id, profile]));
       storiesData.forEach(story => {
-        const profile = profilesData?.find(p => p.id === story.user_id);
+        const profile = profileById.get(story.user_id);
         
         if (!profile) return;
 
