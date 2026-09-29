@@ -140,7 +140,17 @@ import AdminRouteBlocker from "./components/guards/AdminRouteBlocker";
 const Subscriptions = lazy(() => import("./pages/Subscriptions"));
 const SubscriptionManage = lazy(() => import("./pages/SubscriptionManage"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      retry: 1,
+    },
+  },
+});
 
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 

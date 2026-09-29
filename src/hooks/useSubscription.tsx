@@ -52,7 +52,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const userIdRef = useRef<string | null>(null);
 
   const load = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     userIdRef.current = user?.id ?? null;
     if (!user) {
       setState(FREE_STATE);
@@ -89,7 +90,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     load();
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       setLoading(true);
-      load();
+      // Keep auth callbacks synchronous; defer the data request.
+      setTimeout(() => { void load(); }, 0);
     });
     return () => subscription.unsubscribe();
   }, [load]);

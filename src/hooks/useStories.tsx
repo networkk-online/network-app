@@ -65,9 +65,10 @@ export const useStories = (currentUserId?: string) => {
       // Get all non-expired stories
       const { data: storiesData, error: storiesError } = await supabase
         .from('stories')
-        .select('*')
+        .select('id, user_id, media_url, media_type, created_at, expires_at')
         .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (storiesError) throw storiesError;
 
@@ -101,9 +102,9 @@ export const useStories = (currentUserId?: string) => {
 
       // Group stories by user
       const grouped: GroupedStories = {};
-      
+      const profileById = new Map((profilesData || []).map(profile => [profile.id, profile]));
       storiesData.forEach(story => {
-        const profile = profilesData?.find(p => p.id === story.user_id);
+        const profile = profileById.get(story.user_id);
         
         if (!profile) return;
 
@@ -172,16 +173,16 @@ export const useStories = (currentUserId?: string) => {
     // Save views to database
     if (currentUserId && stories[userId]) {
       const storyIds = stories[userId].stories.map(s => s.id);
-      for (const storyId of storyIds) {
+      if (storyIds.length > 0) {
         try {
           await supabase
             .from('story_views')
             .upsert(
-              { user_id: currentUserId, story_id: storyId },
+              storyIds.map(storyId => ({ user_id: currentUserId, story_id: storyId })),
               { onConflict: 'user_id,story_id', ignoreDuplicates: true }
             );
         } catch (error) {
-          console.error('Error saving story view:', error);
+          console.error('Error saving story views:', error);
         }
       }
     }

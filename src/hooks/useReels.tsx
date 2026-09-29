@@ -32,14 +32,15 @@ export const useReels = (currentUserId?: string, filterForFeed?: boolean) => {
       let query = supabase
         .from('reels')
         .select(`
-          *,
+          id, user_id, video_url, thumbnail_url, caption, likes_count, comments_count, shares_count, views_count, duration, created_at, show_in_feed,
           profiles:user_id (
             username,
             avatar_url,
             full_name
           )
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(20);
 
       // Filter for feed if requested
       if (filterForFeed) {
@@ -56,7 +57,9 @@ export const useReels = (currentUserId?: string, filterForFeed?: boolean) => {
         const { data: likes } = await supabase
           .from('reel_likes')
           .select('reel_id')
-          .eq('user_id', currentUserId);
+          .eq('user_id', currentUserId)
+          .in('reel_id', (data || []).map(reel => reel.id))
+          .limit(100);
 
         if (likes) {
           setLikedReels(likes.map(like => like.reel_id));
