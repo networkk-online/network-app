@@ -19,7 +19,8 @@ const BottomNav = () => {
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {\n      const user = session?.user;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const user = session?.user;
       setUser(user);
       if (user) loadProfile(user.id);
     });
