@@ -67,7 +67,7 @@ export const useStories = (currentUserId?: string) => {
         .from('stories')
         .select('*')
         .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })\n        .limit(100);
 
       if (storiesError) throw storiesError;
 
@@ -172,16 +172,16 @@ export const useStories = (currentUserId?: string) => {
     // Save views to database
     if (currentUserId && stories[userId]) {
       const storyIds = stories[userId].stories.map(s => s.id);
-      for (const storyId of storyIds) {
+      if (storyIds.length > 0) {
         try {
           await supabase
             .from('story_views')
             .upsert(
-              { user_id: currentUserId, story_id: storyId },
+              storyIds.map(storyId => ({ user_id: currentUserId, story_id: storyId })),
               { onConflict: 'user_id,story_id', ignoreDuplicates: true }
             );
         } catch (error) {
-          console.error('Error saving story view:', error);
+          console.error('Error saving story views:', error);
         }
       }
     }
