@@ -67,7 +67,8 @@ export const useStories = (currentUserId?: string) => {
         .from('stories')
         .select('*')
         .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false })\n        .limit(100);
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (storiesError) throw storiesError;
 
