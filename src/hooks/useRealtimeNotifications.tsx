@@ -65,7 +65,7 @@ export function useRealtimeNotifications() {
     };
 
     const setup = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();\n      const user = session?.user;
       userIdRef.current = user?.id ?? null;
 
       // Global broadcast channel
