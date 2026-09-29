@@ -32,7 +32,7 @@ export const useReels = (currentUserId?: string, filterForFeed?: boolean) => {
       let query = supabase
         .from('reels')
         .select(`
-          *,
+          id, user_id, video_url, thumbnail_url, caption, likes_count, comments_count, shares_count, views_count, duration, created_at, show_in_feed,
           profiles:user_id (
             username,
             avatar_url,
