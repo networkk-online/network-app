@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;\n\n// Networkk source-of-truth invariant: Android and website must use the same\n// Supabase project. A different project URL would silently split users/posts.\nconst CANONICAL_SUPABASE_PROJECT_ID = 'ykjnpcrseiyltsazbnci';\nconst CANONICAL_SUPABASE_HOST = CANONICAL_SUPABASE_PROJECT_ID + '.supabase.co';\n\nif (SUPABASE_URL && !SUPABASE_URL.includes(CANONICAL_SUPABASE_HOST)) {\n  throw new Error(\n    '[Networkk] Invalid data source. This build must use the canonical Supabase project: ' + CANONICAL_SUPABASE_PROJECT_ID\n  );\n}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
