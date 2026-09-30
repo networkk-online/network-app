@@ -4,13 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       count:
-        description: "Number of test accounts (1-1000)"
+        description: "Number of test accounts (1-10000)"
         required: true
-        default: "100"
+        default: "10000"
       prefix:
         description: "Username prefix"
         required: true
-        default: "loadtest"
+        default: "networkk"
+      concurrency:
+        description: "Parallel requests (1-50)"
+        required: true
+        default: "20"
 
 jobs:
   generate:
@@ -27,6 +31,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           COUNT: ${{ inputs.count }}
           PREFIX: ${{ inputs.prefix }}
+          CONCURRENCY: ${{ inputs.concurrency }}
         run: bun scripts/generate-test-users.mjs
       - name: Upload credentials securely
         uses: actions/upload-artifact@v4
