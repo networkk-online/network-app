@@ -1,0 +1,36 @@
+name: Generate Networkk Test Users
+
+on:
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "Number of test accounts (1-1000)"
+        required: true
+        default: "100"
+      prefix:
+        description: "Username prefix"
+        required: true
+        default: "loadtest"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun add @supabase/supabase-js
+      - name: Generate accounts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          COUNT: ${{ inputs.count }}
+          PREFIX: ${{ inputs.prefix }}
+        run: bun scripts/generate-test-users.mjs
+      - name: Upload credentials securely
+        uses: actions/upload-artifact@v4
+        with:
+          name: networkk-test-users
+          path: test-users.json
+          retention-days: 1
