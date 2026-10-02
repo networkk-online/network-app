@@ -44,19 +44,24 @@ const VaultBroadcast = () => {
       return;
     }
     setSending(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from('system_broadcasts').insert({
-      title: title.trim(),
-      body: body.trim(),
-      variant: 'info',
-      created_by: user?.id,
+    const { data, error } = await supabase.functions.invoke('send-broadcast-push', {
+      body: {
+        title: title.trim(),
+        body: body.trim(),
+        variant: 'info',
+        route: '/',
+      },
     });
     setSending(false);
     if (error) {
-      toast.error('فشل الإرسال: ' + error.message);
+      toast.error('فشل إرسال Push: ' + error.message);
       return;
     }
-    toast.success('📢 تم البث لجميع المستخدمين');
+    if (data?.error) {
+      toast.error('فشل إرسال Push: ' + data.error);
+      return;
+    }
+    toast.success(`📢 تم إرسال الإشعار إلى ${data?.sent ?? 0} جهاز`);
     setTitle('');
     setBody('');
   };
@@ -82,7 +87,7 @@ const VaultBroadcast = () => {
         </div>
         <div>
           <h2 className="text-xl font-bold text-white">إشعار عام للجميع</h2>
-          <p className="text-xs text-white/50">يصل فوراً لكل مستخدم متصل بالموقع</p>
+          <p className="text-xs text-white/50">إشعار Push حقيقي يصل لهواتف Networkk حتى والتطبيق مغلق</p>
         </div>
       </div>
 
