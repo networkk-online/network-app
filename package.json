@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "desktop:dev": "npm run build && electron .",
-    "desktop:build": "npm run build && electron-builder --win nsis --x64"
+    "desktop:build": "npm run build && electron-builder --win nsis --x64 --publish never"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
