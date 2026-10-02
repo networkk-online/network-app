@@ -71,6 +71,23 @@ export const usePushNotifications = () => {
         return;
       }
 
+      // Android 8+ notification channel used by Networkk system broadcasts.
+      if (platform === 'android') {
+        try {
+          await PushNotifications.createChannel({
+            id: 'networkk_default',
+            name: 'Networkk Notifications',
+            description: 'إشعارات Networkk العامة والتحديثات',
+            importance: 5,
+            visibility: 1,
+            sound: 'default',
+            vibration: true,
+          });
+        } catch (channelError) {
+          console.warn('Could not create Networkk notification channel:', channelError);
+        }
+      }
+
       // Register with Apple/Google
       await PushNotifications.register();
 
