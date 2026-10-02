@@ -33,11 +33,6 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Restore Firebase config
-        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
-        run: |
-          printf '%s' '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
-
       - name: Restore Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/networkk-release.jks
