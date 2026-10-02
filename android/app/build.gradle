@@ -5,7 +5,7 @@ android {
     compileSdk = rootProject.ext.compileSdkVersion
 
     defaultConfig {
-        applicationId "app.networkk.online"
+        applicationId "com.networkk.online"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
 
