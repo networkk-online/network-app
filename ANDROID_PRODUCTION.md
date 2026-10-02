@@ -203,7 +203,53 @@ The following flows have been prepared for the WebView:
 | Push Notifications | `@capacitor/push-notifications` (requires FCM setup — step 11) |
 | File upload        | Filesystem + Camera plugins                                    |
 
-## 11. (Optional) Firebase Cloud Messaging for push
+
+## 11A. Networkk Admin → real phone Push broadcasts
+
+The app already registers Android push tokens in `public.push_tokens`. For
+real push delivery while the app is closed/backgrounded, Firebase Cloud
+Messaging (FCM) must be connected to the Android application.
+
+### Firebase Android setup
+
+The Firebase Android package **must be exactly**:
+
+`com.networkk.online`
+
+1. In Firebase Console create/select the Firebase project for Networkk.
+2. Add Android app with package `com.networkk.online`.
+3. Download `google-services.json`.
+4. Put it at `android/app/google-services.json` before the release build.
+5. The repository already contains the Google Services Gradle plugin.
+6. Build the AAB again after adding the file.
+
+### Supabase Edge Function secret
+
+The Edge Function `send-broadcast-push` sends FCM messages securely from the
+server. Never put a Firebase service-account private key in React code or
+inside the APK.
+
+In Supabase Dashboard → Edge Functions → Secrets, add:
+
+`FIREBASE_SERVICE_ACCOUNT_JSON`
+
+Value: the complete Firebase/Google service-account JSON for the Networkk
+Firebase project.
+
+The Admin page calls this server function; the service-account private key
+never reaches the browser.
+
+### Sending
+
+Networkk Admin → **بث إشعار للجميع** → enter title + message → **بث الإشعار
+للجميع**.
+
+The server sends a real Android Push notification to the registered Networkk
+devices, removes invalid/expired device tokens, and records the broadcast in
+the existing `system_broadcasts` history.
+
+
+## 11. Firebase Cloud Messaging for push
 
 To receive pushes on Android:
 
