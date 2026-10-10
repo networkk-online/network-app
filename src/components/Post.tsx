@@ -63,33 +63,45 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
   const { isReposted, repostCount, loading: repostLoading, toggleRepost } = useRepost(id);
   const affiliation = useAffiliation(userId);
 
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
+
   useEffect(() => {
-    checkUser();
-    checkIfLiked();
-    loadComments();
+    let cancelled = false;
+
+    const loadPostViewerState = async () => {
+      // Read the already-cached session locally; getUser() can add a network
+      // round-trip for every post rendered in the feed.
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
+      if (cancelled) return;
+      setCurrentUser(user);
+
+      if (!user) {
+        setIsLiked(false);
+        return;
+      }
+
+      const { data } = await supabase
+        .from('likes')
+        .select('id')
+        .eq('post_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!cancelled) setIsLiked(!!data);
+    };
+
+    setComments([]);
+    setCommentsLoaded(false);
+    loadPostViewerState();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setCurrentUser(user);
-  };
-
-  const checkIfLiked = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data } = await supabase
-      .from('likes')
-      .select('id')
-      .eq('post_id', id)
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    setIsLiked(!!data);
-  };
-
   const loadComments = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('comments')
       .select(`
         *,
@@ -103,7 +115,18 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
       .order('created_at', { ascending: false })
       .limit(3);
 
-    setComments(data || []);
+    if (!error) {
+      setComments(data || []);
+      setCommentsLoaded(true);
+    }
+  };
+
+  const toggleComments = () => {
+    const nextShowComments = !showComments;
+    setShowComments(nextShowComments);
+    if (nextShowComments && !commentsLoaded) {
+      void loadComments();
+    }
   };
 
   const handleLike = async () => {
@@ -537,7 +560,7 @@ const Post = ({ id, userId, username, userAvatar, isVerified = false, image, cap
         {commentsCount > 0 && (
           <div className="mb-3">
             <button 
-              onClick={() => setShowComments(!showComments)}
+              onClick={toggleComments}
               className="text-muted-foreground text-sm hover:text-foreground/80 transition-colors"
             >
               عرض جميع التعليقات ({commentsCount})
