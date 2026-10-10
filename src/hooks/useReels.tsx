@@ -40,7 +40,7 @@ export const useReels = (currentUserId?: string, filterForFeed?: boolean) => {
           )
         `)
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(filterForFeed ? 8 : 20);
 
       // Filter for feed if requested
       if (filterForFeed) {
