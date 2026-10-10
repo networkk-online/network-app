@@ -27,6 +27,8 @@ const Index = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [featuredPosts, setFeaturedPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [userId, setUserId] = useState<string>('');
   const [userProfile, setUserProfile] = useState<any>(null);
   const [viewingStories, setViewingStories] = useState<any[]>([]);
@@ -119,19 +121,25 @@ const Index = () => {
     navigate('/create-story');
   };
 
-  const loadPosts = async () => {
+  const loadPosts = async (reset = true) => {
+    if (reset) setLoading(true);
+    else setLoadingMore(true);
     try {
-      // Get posts first
+      // Fetch a small page instead of downloading the entire feed at once.
+      const start = reset ? 0 : posts.length;
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(start, start + 19);
+
+      setHasMorePosts((postsData?.length ?? 0) === 20);
 
       if (postsError) throw postsError;
 
       if (!postsData || postsData.length === 0) {
-        setPosts([]);
-        setLoading(false);
+        if (reset) setPosts([]);
+        setHasMorePosts(false);
         return;
       }
 
@@ -167,7 +175,7 @@ const Index = () => {
         };
       });
 
-      setPosts(formattedPosts);
+      setPosts((current) => reset ? formattedPosts : [...current, ...formattedPosts]);
     } catch (error: any) {
       console.error('Error loading posts:', error);
       toast({
@@ -176,7 +184,8 @@ const Index = () => {
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      if (reset) setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -366,6 +375,18 @@ const Index = () => {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground text-sm">لا توجد منشورات بعد</p>
+                </div>
+              )}
+              {!loading && posts.length > 0 && hasMorePosts && (
+                <div className="flex justify-center py-4">
+                  <button
+                    type="button"
+                    onClick={() => loadPosts(false)}
+                    disabled={loadingMore}
+                    className="rounded-full border border-primary/30 px-5 py-2 text-sm text-primary transition-opacity disabled:opacity-50"
+                  >
+                    {loadingMore ? 'جاري تحميل المزيد...' : 'تحميل المزيد'}
+                  </button>
                 </div>
               )}
             </div>
