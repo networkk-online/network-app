@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { formatNumber } from '@/lib/utils';
-import { Wallet, TrendingUp, Eye, EyeOff, Gem, Coins, ArrowDownToLine, ArrowRightLeft, Plus } from 'lucide-react';
+import { Wallet, TrendingUp, Eye, EyeOff, Gem, Coins, ArrowDownToLine, ArrowRightLeft, Plus, Bitcoin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -129,6 +129,24 @@ const WalletCard = ({ balance, todayEarnings, totalPosts }: WalletCardProps) => 
         <div className="flex items-center justify-center gap-2 py-2 mb-5 rounded-lg bg-muted/20">
           <span className="text-[10px] text-muted-foreground">سعر الصرف:</span>
           <span className="text-[10px] font-medium text-foreground">100 جوهرة = $1.00</span>
+        </div>
+
+        {/* Digital assets are deliberately unavailable until a custody/provider integration is reviewed. */}
+        <div className="flex items-center justify-between gap-3 rounded-xl p-3 mb-5"
+          style={{
+            background: 'linear-gradient(135deg, rgba(247,147,26,0.08), rgba(247,147,26,0.02))',
+            border: '1px solid rgba(247,147,26,0.16)',
+          }}>
+          <div className="flex items-center gap-2.5">
+            <Bitcoin className="w-5 h-5 shrink-0" style={{ color: '#F7931A' }} />
+            <div>
+              <p className="text-xs font-semibold text-foreground">الأصول الرقمية</p>
+              <p className="text-[10px] text-muted-foreground">Bitcoin والعملات الرقمية</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-semibold rounded-full px-2.5 py-1 bg-muted/30 text-muted-foreground whitespace-nowrap">
+            غير مفعّلة حالياً
+          </span>
         </div>
 
         {/* Action Buttons */}
