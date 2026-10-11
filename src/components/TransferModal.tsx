@@ -93,7 +93,7 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
       });
 
       if (error) throw error;
-      const result = data as {
+      const result = data as unknown as {
         success?: boolean;
         error?: string;
         new_balance?: number;
