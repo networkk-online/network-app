@@ -85,18 +85,6 @@ BEGIN
     (v_sender, v_sender, v_fee, 'transfer_fee', 'completed',
       'عمولة تحويل 2% من ' || _amount || ' جوهرة');
 
-  PERFORM public.log_finance_event(
-    v_sender, 'gem_transfer_out', 'user_gems', -v_total,
-    v_sender_balance, v_new_sender_balance,
-    jsonb_build_object('recipient_id', _recipient_id, 'amount', _amount, 'fee', v_fee)
-  );
-
-  PERFORM public.log_finance_event(
-    _recipient_id, 'gem_transfer_in', 'user_gems', _amount,
-    v_recipient_balance, v_recipient_balance + _amount,
-    jsonb_build_object('sender_id', v_sender)
-  );
-
   RETURN jsonb_build_object(
     'success', true,
     'new_balance', v_new_sender_balance,
