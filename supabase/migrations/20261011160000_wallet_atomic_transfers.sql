@@ -23,7 +23,8 @@ BEGIN
     RETURN jsonb_build_object('success', false, 'error', 'unauthenticated');
   END IF;
 
-  IF _recipient_id IS NULL OR _recipient_id = v_sender THEN
+  IF _recipient_id IS NULL OR _recipient_id = v_sender
+     OR NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = _recipient_id) THEN
     RETURN jsonb_build_object('success', false, 'error', 'invalid_recipient');
   END IF;
 
@@ -108,3 +109,10 @@ $function$;
 
 REVOKE ALL ON FUNCTION public.transfer_gems_atomic(uuid, integer, text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.transfer_gems_atomic(uuid, integer, text) TO authenticated;
+
+-- Prevent authenticated clients from directly minting or changing their own
+-- R Coins. Admin policies remain available; normal wallet mutations go through
+-- audited SECURITY DEFINER functions.
+DROP POLICY IF EXISTS "Users can update their own gems" ON public.user_gems;
+DROP POLICY IF EXISTS "Users can insert their own gems" ON public.user_gems;
+
