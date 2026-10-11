@@ -57,9 +57,9 @@ const T = {
     amount: 'المبلغ',
     outOfRange: (min: number, max: number) => `هذه الطريقة تقبل من $${min} إلى $${max} فقط`,
     success: 'تم إرسال طلب الشحن',
-    f1: 'معاملات فورية ومشفّرة',
-    f2: 'لا توجد رسوم خفية',
-    f3: 'مكافآت على الدفعات الكبيرة',
+    f1: 'تأكيد الشحن بعد مراجعة الإدارة',
+    f2: 'تفاصيل الباقة والمبلغ واضحة قبل الطلب',
+    f3: 'تابع طلبك مع فريق الدعم',
   },
   en: {
     dir: 'ltr' as const,
@@ -81,9 +81,9 @@ const T = {
     amount: 'Amount',
     outOfRange: (min: number, max: number) => `This method accepts $${min} – $${max} only`,
     success: 'Top-up request submitted',
-    f1: 'Instant, fully encrypted transactions',
-    f2: 'No hidden fees',
-    f3: 'Bonuses on larger top-ups',
+    f1: 'Top-ups are confirmed by the support team',
+    f2: 'Package and amount shown before you submit',
+    f3: 'Follow up with support on your request',
   },
 };
 

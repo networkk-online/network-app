@@ -7082,6 +7082,10 @@ export type Database = {
         }
         Returns: Json
       }
+      transfer_gems_atomic: {
+        Args: { _amount: number; _note?: string | null; _recipient_id: string }
+        Returns: Json
+      }
       send_live_gift: {
         Args: { _gift_id: string; _quantity?: number; _stream_id: string }
         Returns: Json

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowRightLeft, Search, Coins, AlertCircle, FileText, Wallet, Lock, CheckCircle } from 'lucide-react';
+import { X, ArrowRightLeft, Search, Coins, AlertCircle, FileText, Wallet, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,8 +21,7 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
-  const [securityPassword, setSecurityPassword] = useState('');
-  const [step, setStep] = useState<'form' | 'confirm' | 'password' | 'success'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [isProcessing, setIsProcessing] = useState(false);
   const [searching, setSearching] = useState(false);
   const [liveBalance, setLiveBalance] = useState(0);
@@ -31,7 +30,7 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
   const numAmount = parseFloat(amount) || 0;
   const fee = Math.max(Math.ceil(numAmount * TRANSFER_FEE_RATE), 1);
   const total = numAmount > 0 ? numAmount + fee : 0;
-  const canTransfer = recipientProfile && numAmount > 0 && total <= liveBalance;
+  const canTransfer = recipientProfile && Number.isInteger(numAmount) && numAmount > 0 && total <= liveBalance;
 
   // Fetch gems balance directly when modal opens
   const fetchBalance = useCallback(async () => {
@@ -83,91 +82,42 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
   };
 
   const handleConfirm = async () => {
-    if (isProcessing) return;
+    if (isProcessing || !recipientProfile || !Number.isInteger(numAmount) || numAmount <= 0) return;
     setIsProcessing(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const { data, error } = await supabase.rpc('transfer_gems_atomic', {
+        _recipient_id: recipientProfile.id,
+        _amount: numAmount,
+        _note: note || null,
+      });
 
-      if (user.id === recipientProfile.id) {
-        toast({ title: 'خطأ', description: 'لا يمكنك التحويل لنفسك', variant: 'destructive' });
-        setIsProcessing(false);
-        return;
-      }
+      if (error) throw error;
+      const result = data as unknown as {
+        success?: boolean;
+        error?: string;
+        new_balance?: number;
+        balance?: number;
+        required?: number;
+      } | null;
 
-      // Re-check sender gems at transaction time
-      const { data: senderGems } = await supabase
-        .from('user_gems')
-        .select('balance')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (!senderGems || Number(senderGems.balance) < total) {
-        toast({ title: 'خطأ', description: 'رصيدك لا يكفي لتغطية مبلغ التحويل والعمولة', variant: 'destructive' });
-        setIsProcessing(false);
-        return;
-      }
-
-      // Deduct from sender (amount + fee)
-      await supabase
-        .from('user_gems')
-        .update({ balance: Number(senderGems.balance) - total })
-        .eq('user_id', user.id);
-
-      // Add to recipient (only the transfer amount, not the fee)
-      const { data: recipientGems } = await supabase
-        .from('user_gems')
-        .select('balance, total_earned')
-        .eq('user_id', recipientProfile.id)
-        .maybeSingle();
-
-      if (recipientGems) {
-        await supabase
-          .from('user_gems')
-          .update({ balance: Number(recipientGems.balance) + numAmount, total_earned: Number(recipientGems.total_earned) + numAmount })
-          .eq('user_id', recipientProfile.id);
-      } else {
-        await supabase.from('user_gems').insert({
-          user_id: recipientProfile.id,
-          balance: numAmount,
-          total_earned: numAmount,
+      if (!result?.success) {
+        const messages: Record<string, string> = {
+          unauthenticated: 'يرجى تسجيل الدخول من جديد',
+          invalid_recipient: 'المستلم غير صالح',
+          invalid_amount: 'أدخل مبلغاً صحيحاً',
+          insufficient_balance: 'رصيدك لا يكفي لتغطية المبلغ والعمولة',
+        };
+        toast({
+          title: 'تعذر إتمام التحويل',
+          description: messages[result?.error || ''] || 'لم يتم تنفيذ التحويل. لم يُعتمد أي تحويل.',
+          variant: 'destructive',
         });
+        await fetchBalance();
+        return;
       }
 
-      // Record transaction for sender
-      await supabase.from('transactions').insert({
-        user_id: user.id,
-        admin_id: recipientProfile.id,
-        amount: numAmount,
-        type: 'transfer_out',
-        status: 'completed',
-        notes: `تحويل إلى ${recipientProfile.username || recipientProfile.full_name}${note ? ' - ' + note : ''} (عمولة 2%: ${fee} جوهرة)`,
-      });
-
-      // Record transaction for receiver
-      await supabase.from('transactions').insert({
-        user_id: recipientProfile.id,
-        admin_id: user.id,
-        amount: numAmount,
-        type: 'transfer_in',
-        status: 'completed',
-        notes: `تحويل من مستخدم${note ? ' - ' + note : ''}`,
-      });
-
-      // Record fee as system earnings
-      await supabase.from('transactions').insert({
-        user_id: user.id,
-        admin_id: user.id,
-        amount: fee,
-        type: 'transfer_fee',
-        status: 'completed',
-        notes: `عمولة تحويل 2% من ${numAmount} جوهرة`,
-      });
-
-      // Update local balance
-      setLiveBalance(prev => prev - total);
-
+      setLiveBalance(Number(result.new_balance) || 0);
       setStep('success');
       if (navigator.vibrate) navigator.vibrate([50, 30, 100]);
 
@@ -180,9 +130,14 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
         resetForm();
         onClose();
       }, 3000);
-    } catch (error: any) {
-      console.error('Transfer error:', error);
-      toast({ title: 'خطأ', description: 'حدث خطأ أثناء التحويل', variant: 'destructive' });
+    } catch (error) {
+      console.error('Atomic transfer error:', error);
+      toast({
+        title: 'تعذر إتمام التحويل',
+        description: 'حدث خطأ أثناء التحويل. يرجى التحقق من سجل العمليات قبل إعادة المحاولة.',
+        variant: 'destructive',
+      });
+      await fetchBalance();
     } finally {
       setIsProcessing(false);
     }
@@ -194,7 +149,6 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
     setRecipientProfile(null);
     setAmount('');
     setNote('');
-    setSecurityPassword('');
   };
 
   const handleClose = () => {
@@ -208,18 +162,6 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
     if (navigator.vibrate) navigator.vibrate(15);
   };
 
-  const proceedToPassword = () => {
-    setStep('password');
-    if (navigator.vibrate) navigator.vibrate(20);
-  };
-
-  const verifyPassword = () => {
-    if (securityPassword === '123456') {
-      handleConfirm();
-    } else {
-      toast({ title: 'خطأ', description: 'كلمة المرور غير صحيحة', variant: 'destructive' });
-    }
-  };
 
   return (
     <AnimatePresence>
@@ -283,27 +225,6 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
                   <p className="text-sm text-muted-foreground">{numAmount.toLocaleString()} عملة → {recipientProfile?.username}</p>
                   {note && <p className="text-xs text-muted-foreground">"{note}"</p>}
                 </motion.div>
-              ) : step === 'password' ? (
-                <motion.div key="password" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="px-4 pb-8 space-y-4">
-                  <div className="text-center mb-4">
-                    <Lock className="w-10 h-10 text-primary mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">أدخل كلمة المرور الأمنية</p>
-                  </div>
-                  <Input
-                    type="password"
-                    value={securityPassword}
-                    onChange={(e) => setSecurityPassword(e.target.value)}
-                    placeholder="كلمة المرور"
-                    className="bg-background/50 border-border/30 text-center text-lg"
-                    onKeyPress={(e) => e.key === 'Enter' && verifyPassword()}
-                  />
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setStep('confirm')} className="flex-1 rounded-2xl border-border/30">رجوع</Button>
-                    <Button onClick={verifyPassword} disabled={!securityPassword || isProcessing} className="flex-1 rounded-2xl">
-                      {isProcessing ? 'جاري التحويل...' : 'تأكيد'}
-                    </Button>
-                  </div>
-                </motion.div>
               ) : step === 'confirm' ? (
                 <motion.div key="confirm" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="px-4 pb-8 space-y-4">
                   <div className="rounded-2xl p-4 space-y-3 border border-border/30" style={{ background: 'rgba(255,255,255,0.02)' }}>
@@ -332,7 +253,7 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setStep('form')} className="flex-1 rounded-2xl border-border/30">رجوع</Button>
-                    <Button onClick={proceedToPassword} className="flex-1 rounded-2xl">متابعة</Button>
+                    <Button onClick={handleConfirm} disabled={isProcessing} className="flex-1 rounded-2xl">{isProcessing ? 'جاري التحويل...' : 'تأكيد التحويل'}</Button>
                   </div>
                 </motion.div>
               ) : (
@@ -376,7 +297,7 @@ const TransferModal = ({ isOpen, onClose }: TransferModalProps) => {
                     <label className="text-xs font-medium text-muted-foreground mb-1.5 block">المبلغ</label>
                     <div className="relative">
                       <Coins className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="عدد العملات" className="pl-9 pr-16 bg-background/50 border-border/30" min={1} max={liveBalance} />
+                      <Input type="number" step={1} value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="عدد العملات" className="pl-9 pr-16 bg-background/50 border-border/30" min={1} max={liveBalance} />
                       <button onClick={setMax} className="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-primary/15 text-primary hover:bg-primary/25 transition-colors">MAX</button>
                     </div>
                     {numAmount > 0 && (

@@ -45,7 +45,6 @@ const Withdraw = () => {
   const [methodName, setMethodName] = useState('');
   const [selectedSavedMethod, setSelectedSavedMethod] = useState<string | null>(null);
 
-  const btcPrice = 43000;
   const minimumWithdraw = 50.00;
 
   useEffect(() => {
@@ -620,6 +619,10 @@ const Withdraw = () => {
         </div>
       </div>
 
+      <div className="max-w-4xl mx-auto mb-5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+        تنبيه: هذا النموذج يرسل طلب سحب للمراجعة اليدوية فقط. لا يتم تحويل الأموال تلقائياً من التطبيق؛ يجب التحقق من الطلب وربط مزوّد الدفع المناسب قبل اعتماد أي عملية.
+      </div>
+
       <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Wallet Summary */}
         <div className="lg:col-span-1">
@@ -642,10 +645,6 @@ const Withdraw = () => {
                 </div>
                 <p className="text-2xl font-bold text-foreground">
                   ${totalEarnings.toFixed(2)}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                  <Bitcoin className="w-3 h-3" />
-                  {(totalEarnings / btcPrice).toFixed(6)} BTC
                 </p>
               </div>
 
