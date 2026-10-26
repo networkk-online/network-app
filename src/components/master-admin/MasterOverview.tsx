@@ -12,6 +12,15 @@ const AUTOGEN_FLAG_TTL_MS = 5 * 60 * 1000; // stale lock auto-clears after 5 min
 
 const MasterOverview = () => {
   const [stats, setStats] = useState({ users: 0, posts: 0, reels: 0, deposits: 0 });
+  // Demo-only display counter: separate from real Supabase user totals.
+  const [displayUsers, setDisplayUsers] = useState(() => {
+    try {
+      const saved = Number(localStorage.getItem('networkk_admin_display_counter_v1'));
+      return Number.isFinite(saved) && saved >= 3000 ? saved : 3000;
+    } catch {
+      return 3000;
+    }
+  });
   const [busy, setBusy] = useState<null | 'create' | 'delete'>(null);
   const [statusMsg, setStatusMsg] = useState<string>('');
   const autoTriggeredRef = useRef(false);
@@ -42,7 +51,17 @@ const MasterOverview = () => {
     return () => clearInterval(id);
   }, [busy, loadStats]);
 
-  const animatedUsers = useCountUp({ end: stats.users, duration: 1200 });
+  useEffect(() => {
+    try { localStorage.setItem('networkk_admin_display_counter_v1', String(displayUsers)); } catch {}
+    const id = window.setInterval(() => {
+      setDisplayUsers(current => {
+        const next = current + 1;
+        try { localStorage.setItem('networkk_admin_display_counter_v1', String(next)); } catch {}
+        return next;
+      });
+    }, 60_000);
+    return () => window.clearInterval(id);
+  }, []);
 
   const runGenerate = useCallback(async (count: number, silent = false) => {
     setBusy('create');
@@ -114,7 +133,7 @@ const MasterOverview = () => {
   };
 
   const cards = [
-    { label: 'المستخدمين', value: animatedUsers, icon: Users, color: '#39FF14' },
+    { label: 'عداد العرض (تجريبي)', value: displayUsers, icon: Users, color: '#39FF14' },
     { label: 'المنشورات', value: stats.posts, icon: FileText, color: '#00D4FF' },
     { label: 'الريلز', value: stats.reels, icon: Film, color: '#FF6B35' },
     { label: 'إيداعات معلقة', value: stats.deposits, icon: TrendingUp, color: '#FFD700' },
