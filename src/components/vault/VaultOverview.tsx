@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -11,8 +12,34 @@ interface VaultOverviewProps {
   lastSecurityLog?: string;
 }
 
+const DISPLAY_COUNTER_KEY = 'networkk_owner_vault_display_counter_v1';
+const DISPLAY_COUNTER_START = 1000;
+
 const VaultOverview = ({ stats, maintenanceMode, onToggleMaintenance, lastSecurityLog }: VaultOverviewProps) => {
+  const [displayUsers, setDisplayUsers] = useState(() => {
+    try {
+      const saved = Number(localStorage.getItem(DISPLAY_COUNTER_KEY));
+      return Number.isFinite(saved) && saved >= DISPLAY_COUNTER_START ? saved : DISPLAY_COUNTER_START;
+    } catch {
+      return DISPLAY_COUNTER_START;
+    }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem(DISPLAY_COUNTER_KEY, String(displayUsers)); } catch {}
+    const id = window.setInterval(() => {
+      setDisplayUsers(current => {
+        const next = current + 1;
+        try { localStorage.setItem(DISPLAY_COUNTER_KEY, String(next)); } catch {}
+        return next;
+      });
+    }, 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+
   const statCards = [
+    { label: 'المستخدمون الفعليون', value: stats.users, icon: Users, color: '#08A045', glow: 'rgba(8,160,69,0.15)' },
+    { label: 'عداد العرض (تجريبي)', value: displayUsers, icon: TrendingUp, color: '#FFD700', glow: 'rgba(255,215,0,0.15)' },
     { label: 'المنشورات', value: stats.posts, icon: Activity, color: '#00D4FF', glow: 'rgba(0,212,255,0.15)' },
     { label: 'إيداعات معلقة', value: stats.deposits, icon: DollarSign, color: '#FFD700', glow: 'rgba(255,215,0,0.15)' },
     { label: 'المشرفون', value: stats.mods, icon: Shield, color: '#A855F7', glow: 'rgba(168,85,247,0.15)' },
@@ -20,7 +47,6 @@ const VaultOverview = ({ stats, maintenanceMode, onToggleMaintenance, lastSecuri
 
   return (
     <div className="space-y-6">
-      {/* Live Counters */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map((s) => (
           <Card key={s.label} className="bg-white/[0.03] border-white/[0.08] backdrop-blur-sm overflow-hidden relative group hover:border-white/20 transition-all">
@@ -36,8 +62,6 @@ const VaultOverview = ({ stats, maintenanceMode, onToggleMaintenance, lastSecuri
           </Card>
         ))}
       </div>
-
-      {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="bg-white/[0.03] border-white/[0.08] backdrop-blur-sm">
           <CardContent className="p-5">
@@ -53,16 +77,13 @@ const VaultOverview = ({ stats, maintenanceMode, onToggleMaintenance, lastSecuri
             </div>
           </CardContent>
         </Card>
-
         <Card className="bg-white/[0.03] border-white/[0.08] backdrop-blur-sm">
           <CardContent className="p-5">
             <h3 className="text-sm text-gray-400 mb-3 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" /> آخر تنبيه أمني
             </h3>
             <p className="text-white text-sm">
-              {lastSecurityLog
-                ? new Date(lastSecurityLog).toLocaleString('ar-IQ')
-                : 'لا توجد تنبيهات أمنية ✅'}
+              {lastSecurityLog ? new Date(lastSecurityLog).toLocaleString('ar-IQ') : 'لا توجد تنبيهات أمنية ✅'}
             </p>
           </CardContent>
         </Card>
