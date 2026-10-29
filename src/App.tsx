@@ -14,6 +14,7 @@ import FeatureGate from "@/components/subscription/FeatureGate";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
+const PartnersPortal = lazy(() => import("./pages/PartnersPortal"));
 const Explore = lazy(() => import("./pages/Explore"));
 const Broadcast = lazy(() => import("./pages/Broadcast"));
 const BusinessAccount = lazy(() => import("./pages/BusinessAccount"));
@@ -291,6 +292,7 @@ const AppContent = () => {
         <Route path="/matches" element={<Matches />} />
         <Route path="/matches/:matchId" element={<MatchDetails />} />
         {/* Public footer pages (admin-editable) */}
+        <Route path="/partners" element={<PartnersPortal />} />
         <Route path="/careers" element={<Careers />} />
         <Route path="/help" element={<SupportCenter />} />
         <Route path="/child-safety" element={<ChildSafety />} />
