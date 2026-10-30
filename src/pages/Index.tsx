@@ -19,6 +19,7 @@ import { PostSkeleton, StoriesRowSkeleton } from '@/components/skeletons';
 import { Film, Feather } from 'lucide-react';
 import SeoHead from '@/components/seo/SeoHead';
 import { hasCachedSession } from '@/lib/authBoot';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 
 const Index = () => {
@@ -227,13 +228,14 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <SeoHead route="/" />
-      <Header postSize={postSize} onPostSizeChange={setPostSize} />
+      <ErrorBoundary fallback={<div className="h-14" />}><Header postSize={postSize} onPostSizeChange={setPostSize} /></ErrorBoundary>
       <FloatingWheelIcon />
       
       <main className="pt-16 sm:pt-20 pb-24">
         <div className="desktop-layout">
           <div className="container-responsive mobile-padding">
             {/* Stories */}
+            <ErrorBoundary fallback={<div className="h-24" />}>
             <div className="border-b border-white/[0.04] pb-4 mb-6">
               {storiesLoading ? (
                 <StoriesRowSkeleton count={6} />
@@ -276,6 +278,7 @@ const Index = () => {
                 </div>
               )}
             </div>
+            </ErrorBoundary>
 
 
             {/* Tweets Section Link */}
@@ -301,6 +304,7 @@ const Index = () => {
             </div>
 
             {/* Feed Reels Section */}
+            <ErrorBoundary fallback={null}>
             {!reelsLoading && feedReels.length > 0 && (
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
@@ -334,8 +338,10 @@ const Index = () => {
                 </div>
               </div>
             )}
+            </ErrorBoundary>
             
             {/* Posts Feed */}
+            <ErrorBoundary fallback={<div className="text-center py-6 text-muted-foreground text-sm">تعذر عرض جزء من المنشورات. بقية الصفحة متاحة.</div>}>
             <div className="space-y-4 sm:space-y-6 lg:space-y-8">
               {loading ? (
                 <div className="space-y-6">
@@ -369,11 +375,14 @@ const Index = () => {
                 </div>
               )}
             </div>
+            </ErrorBoundary>
 
             {/* Local Fame Rank Section */}
-            <div className="mt-6">
-              <LocalFameRankSection />
-            </div>
+            <ErrorBoundary fallback={null}>
+              <div className="mt-6">
+                <LocalFameRankSection />
+              </div>
+            </ErrorBoundary>
           </div>
         </div>
       </main>
