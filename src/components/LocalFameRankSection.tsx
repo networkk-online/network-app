@@ -95,7 +95,7 @@ const LocalFameRankSection = () => {
             </div>
             <div className="text-left">
               <Badge variant="secondary" className="text-xs">
-                {user.fame_score.toLocaleString()}
+                {(user.fame_score ?? 0).toLocaleString()}
               </Badge>
             </div>
           </div>
