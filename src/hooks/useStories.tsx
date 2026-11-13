@@ -95,7 +95,8 @@ export const useStories = (currentUserId?: string) => {
         const { data: viewsData } = await supabase
           .from('story_views')
           .select('story_id')
-          .eq('user_id', currentUserId);
+          .eq('user_id', currentUserId)
+          .in('story_id', storiesData.map(story => story.id));
         
         viewedStoryIds = viewsData?.map(v => v.story_id) || [];
       }
